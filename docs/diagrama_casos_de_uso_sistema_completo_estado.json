@@ -1,0 +1,415 @@
+{
+  "version": 2,
+  "title": "Diagrama de casos de uso — Sistema completo GammaLab 2.0 (23 CU)",
+  "canvasWidth": "3077px",
+  "canvasHeight": "2262px",
+  "state": {
+    "systemBoundary": {
+      "shape": "boundary",
+      "outer": true,
+      "x": 190,
+      "y": 40,
+      "w": 2303,
+      "h": 1483,
+      "text": "«system» GammaLab 2.0"
+    },
+    "preproc": {
+      "shape": "boundary",
+      "outer": false,
+      "x": 750,
+      "y": 80,
+      "w": 818,
+      "h": 452,
+      "text": "«subsistema» Preprocesamiento"
+    },
+    "interfaz": {
+      "shape": "boundary",
+      "outer": false,
+      "x": 242,
+      "y": 564,
+      "w": 568,
+      "h": 522,
+      "text": "«subsistema» Interfaz y Usabilidad"
+    },
+    "nucleo": {
+      "shape": "boundary",
+      "outer": false,
+      "x": 872,
+      "y": 601,
+      "w": 721,
+      "h": 550,
+      "text": "«subsistema» Núcleo y Ciclo de Vida"
+    },
+    "analisis": {
+      "shape": "boundary",
+      "outer": false,
+      "x": 1760,
+      "y": 632,
+      "w": 701,
+      "h": 571,
+      "text": "«subsistema» Análisis"
+    },
+    "exportPkg": {
+      "shape": "boundary",
+      "outer": false,
+      "x": 1007,
+      "y": 1299,
+      "w": 460,
+      "h": 200,
+      "text": "«subsistema» Exportación"
+    },
+    "actor": {
+      "shape": "actor",
+      "x": 45,
+      "y": 327,
+      "w": 110,
+      "h": 150,
+      "text": "Investigador"
+    },
+    "cu011": {
+      "shape": "ellipse",
+      "x": 892,
+      "y": 646,
+      "w": 190,
+      "h": 95,
+      "text": "CU-011\nIniciar la aplicación"
+    },
+    "cu020": {
+      "shape": "ellipse",
+      "x": 1244,
+      "y": 632,
+      "w": 190,
+      "h": 95,
+      "text": "CU-020\nOrquestador del núcleo\n(ejecutar análisis pesado)"
+    },
+    "cu023": {
+      "shape": "ellipse",
+      "x": 890,
+      "y": 839,
+      "w": 190,
+      "h": 95,
+      "text": "CU-023\nAbrir un proyecto"
+    },
+    "cu003": {
+      "shape": "ellipse",
+      "x": 1106,
+      "y": 787,
+      "w": 190,
+      "h": 95,
+      "text": "CU-003\nCargar señal (con\ngestión de memoria)"
+    },
+    "cu021": {
+      "shape": "ellipse",
+      "x": 890,
+      "y": 1025,
+      "w": 190,
+      "h": 95,
+      "text": "CU-021\nCerrar un proyecto"
+    },
+    "cu022": {
+      "shape": "ellipse",
+      "x": 1255,
+      "y": 1018,
+      "w": 190,
+      "h": 95,
+      "text": "CU-022\nCerrar la aplicación"
+    },
+    "cu014": {
+      "shape": "ellipse",
+      "x": 1316,
+      "y": 883,
+      "w": 190,
+      "h": 95,
+      "text": "CU-014\nCancelar procesamiento\npesado"
+    },
+    "cu004": {
+      "shape": "ellipse",
+      "x": 1043,
+      "y": 102,
+      "w": 190,
+      "h": 95,
+      "text": "CU-004\nGenerar y modificar\ntrials"
+    },
+    "cu006": {
+      "shape": "ellipse",
+      "x": 1371,
+      "y": 204,
+      "w": 190,
+      "h": 95,
+      "text": "CU-006\nSeleccionar trials\npara análisis"
+    },
+    "cu007": {
+      "shape": "ellipse",
+      "x": 778,
+      "y": 375,
+      "w": 190,
+      "h": 95,
+      "text": "CU-007\nRemover artefacto\ncon medidas"
+    },
+    "cu016": {
+      "shape": "ellipse",
+      "x": 1180,
+      "y": 250,
+      "w": 190,
+      "h": 95,
+      "text": "CU-016\nAplicar filtros\ndigitales"
+    },
+    "cu018": {
+      "shape": "ellipse",
+      "x": 788,
+      "y": 176,
+      "w": 190,
+      "h": 95,
+      "text": "CU-018\nAjustar frecuencia\nde muestreo"
+    },
+    "cu008": {
+      "shape": "ellipse",
+      "x": 265,
+      "y": 609,
+      "w": 190,
+      "h": 95,
+      "text": "CU-008\nNavegar y cambiar\nde módulo"
+    },
+    "cu012": {
+      "shape": "ellipse",
+      "x": 597,
+      "y": 708,
+      "w": 190,
+      "h": 95,
+      "text": "CU-012\nInteractuar visualmente\ncon la señal"
+    },
+    "cu019": {
+      "shape": "ellipse",
+      "x": 337,
+      "y": 768,
+      "w": 190,
+      "h": 95,
+      "text": "CU-019\nOptimizar renderizado\n(submuestreo)"
+    },
+    "cu009": {
+      "shape": "ellipse",
+      "x": 544,
+      "y": 915,
+      "w": 194,
+      "h": 97,
+      "text": "CU-009\nLimpiar formulario\n(Clear)"
+    },
+    "cu010": {
+      "shape": "ellipse",
+      "x": 225,
+      "y": 954,
+      "w": 190,
+      "h": 95,
+      "text": "CU-010\nConsultar ayuda\ncontextual"
+    },
+    "pacAbs": {
+      "shape": "ellipse",
+      "abstract": true,
+      "x": 2014,
+      "y": 653,
+      "w": 400,
+      "h": 95,
+      "text": "«abstract»\nEjecutar Análisis PAC / PPC\n(acoplamiento fase-amplitud)"
+    },
+    "cu001": {
+      "shape": "ellipse",
+      "x": 1778,
+      "y": 670,
+      "w": 190,
+      "h": 95,
+      "text": "CU-001\nAnálisis PAC\n1 canal"
+    },
+    "cu002": {
+      "shape": "ellipse",
+      "x": 2090,
+      "y": 887,
+      "w": 190,
+      "h": 95,
+      "text": "CU-002\nAnálisis PAC 2 canales\n/ PPC"
+    },
+    "cu013": {
+      "shape": "ellipse",
+      "x": 1761,
+      "y": 1059,
+      "w": 190,
+      "h": 95,
+      "text": "CU-013\nCalcular Wavelet\n(normalización/escala)"
+    },
+    "cu015": {
+      "shape": "ellipse",
+      "x": 1971,
+      "y": 980,
+      "w": 190,
+      "h": 95,
+      "text": "CU-015\nCálculo de promedio\nde trials"
+    },
+    "cu005": {
+      "shape": "ellipse",
+      "x": 1027,
+      "y": 1344,
+      "w": 190,
+      "h": 95,
+      "text": "CU-005\nGuardado y\nexportación de datos"
+    },
+    "cu017": {
+      "shape": "ellipse",
+      "x": 1237,
+      "y": 1344,
+      "w": 190,
+      "h": 95,
+      "text": "CU-017\nExportación gráfica\nvectorial (EMF)"
+    }
+  },
+  "relations": [
+    {
+      "id": "cu001__cu020__include",
+      "from": "cu001",
+      "to": "cu020",
+      "type": "include"
+    },
+    {
+      "id": "cu002__cu020__include",
+      "from": "cu002",
+      "to": "cu020",
+      "type": "include"
+    },
+    {
+      "id": "cu003__cu020__include",
+      "from": "cu003",
+      "to": "cu020",
+      "type": "include"
+    },
+    {
+      "id": "cu003__cu021__include",
+      "from": "cu003",
+      "to": "cu021",
+      "type": "include"
+    },
+    {
+      "id": "cu004__cu020__include",
+      "from": "cu004",
+      "to": "cu020",
+      "type": "include"
+    },
+    {
+      "id": "cu006__cu020__include",
+      "from": "cu006",
+      "to": "cu020",
+      "type": "include"
+    },
+    {
+      "id": "cu007__cu020__include",
+      "from": "cu007",
+      "to": "cu020",
+      "type": "include"
+    },
+    {
+      "id": "cu008__cu020__include",
+      "from": "cu008",
+      "to": "cu020",
+      "type": "include"
+    },
+    {
+      "id": "cu012__cu019__include",
+      "from": "cu012",
+      "to": "cu019",
+      "type": "include"
+    },
+    {
+      "id": "cu013__cu020__include",
+      "from": "cu013",
+      "to": "cu020",
+      "type": "include"
+    },
+    {
+      "id": "cu015__cu020__include",
+      "from": "cu015",
+      "to": "cu020",
+      "type": "include"
+    },
+    {
+      "id": "cu016__cu020__include",
+      "from": "cu016",
+      "to": "cu020",
+      "type": "include"
+    },
+    {
+      "id": "cu018__cu004__include",
+      "from": "cu018",
+      "to": "cu004",
+      "type": "include"
+    },
+    {
+      "id": "cu021__cu005__include",
+      "from": "cu021",
+      "to": "cu005",
+      "type": "include"
+    },
+    {
+      "id": "cu022__cu021__include",
+      "from": "cu022",
+      "to": "cu021",
+      "type": "include"
+    },
+    {
+      "id": "cu023__cu011__include",
+      "from": "cu023",
+      "to": "cu011",
+      "type": "include"
+    },
+    {
+      "id": "cu023__cu021__include",
+      "from": "cu023",
+      "to": "cu021",
+      "type": "include"
+    },
+    {
+      "id": "cu023__cu003__include",
+      "from": "cu023",
+      "to": "cu003",
+      "type": "include"
+    },
+    {
+      "id": "cu014__cu020__extend",
+      "from": "cu014",
+      "to": "cu020",
+      "type": "extend"
+    },
+    {
+      "id": "cu001__pacAbs__generalize",
+      "from": "cu001",
+      "to": "pacAbs",
+      "type": "generalize"
+    },
+    {
+      "id": "cu002__pacAbs__generalize",
+      "from": "cu002",
+      "to": "pacAbs",
+      "type": "generalize"
+    },
+    {
+      "id": "rel_1787447105606_bu6gf",
+      "from": "actor",
+      "to": "cu011",
+      "type": "assoc"
+    },
+    {
+      "id": "rel_1787447130419_g9om6",
+      "from": "cu019",
+      "to": "cu008",
+      "type": "include"
+    },
+    {
+      "id": "rel_1787447143764_xksl6",
+      "from": "cu010",
+      "to": "cu008",
+      "type": "extend"
+    },
+    {
+      "id": "rel_1787447152869_wmfem",
+      "from": "cu009",
+      "to": "cu008",
+      "type": "extend"
+    }
+  ]
+}

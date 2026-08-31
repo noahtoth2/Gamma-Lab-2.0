@@ -1,0 +1,769 @@
+\documentclass[11pt,a4paper]{article}
+
+% ------------------------------------------------------------------
+% Paquetes (todos estándar, compatibles con Overleaf sin configuración extra)
+% ------------------------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{ragged2e}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{colortbl}
+\usepackage{multicol}
+
+\definecolor{critico}{RGB}{178,34,34}
+\definecolor{advertencia}{RGB}{184,115,10}
+\definecolor{ok}{RGB}{30,120,90}
+\definecolor{gris}{RGB}{90,90,90}
+\definecolor{fondoheader}{RGB}{240,240,240}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=teal,
+  citecolor=teal,
+  urlcolor=teal,
+  pdftitle={Gamma Lab - Informe de rendimiento (línea base v1.0)},
+  pdfauthor={Auditoría de rendimiento}
+}
+
+\newcommand{\okmark}{\textcolor{ok}{\textbf{RÁPIDO}}}
+\newcommand{\warnmark}{\textcolor{advertencia}{\textbf{A VIGILAR}}}
+\newcommand{\critmark}{\textcolor{critico}{\textbf{CUELLO DE BOTELLA}}}
+\newcommand{\estmark}{\textcolor{gris}{\textit{[estimado]}}}
+
+\newcolumntype{L}[1]{>{\small\RaggedRight\arraybackslash}p{#1}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{Gamma Lab -- Informe de rendimiento (línea base v1.0)}
+\fancyhead[R]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\titleformat{\section}{\normalfont\Large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\normalfont\large\bfseries}{\thesubsection}{1em}{}
+
+\title{\textbf{Gamma Lab}\\[4pt]\large Informe de rendimiento: línea base de Gamma Lab 1.0\\
+\large Kernel, plugins, cómputo numérico y renderizado VTK -- pensado para comparar contra Gamma Lab 2.0}
+\author{Auditoría de rendimiento}
+\date{16 de agosto de 2026}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\begin{abstract}
+\noindent
+Este informe documenta el rendimiento medido de \textbf{Gamma Lab 1.0} completo: arranque del kernel y del
+sistema de plugins, carga de archivos, corte de trials, preprocesamiento (filtro), cómputo numérico de cada
+plugin de análisis (FFT, PSD, Wavelet) y \textbf{todo} el renderizado VTK de la aplicación (los 19 archivos
+del repositorio que usan VTK). Ningún archivo de \texttt{core/} o \texttt{plugins/} fue modificado para
+producir este informe -- todas las cifras provienen de ejecuciones reales de \texttt{pytest} contra el
+código real de la aplicación, con el archivo ABF real de \texttt{test/data/17308005.abf}, sin mockear
+ninguna fórmula matemática ni ninguna llamada a VTK. La suite que genera estos números vive en
+\texttt{test/performance\_\allowbreak test/} y está explícitamente diseñada para volver a correrse, sin
+cambios de metodología, contra \textbf{Gamma Lab 2.0} durante su desarrollo este mes -- la
+sección~\ref{sec:comparacion-v2} explica el procedimiento exacto.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+% ==================================================================
+\section{Resumen ejecutivo}
+% ==================================================================
+
+Gamma Lab 1.0, medido en la máquina de referencia de la sección~\ref{sec:entorno}, tarda:
+
+\begin{itemize}[nosep]
+  \item \textbf{$\approx$20\,ms} en arrancar el kernel y cargar los 16 plugins (irrelevante frente al resto).
+  \item \textbf{$\approx$78\,ms} en cargar un archivo ABF de 1.8\,M muestras y cortarlo en 60 trials.
+  \item \textbf{$\approx$1.02\,s} en total desde que el usuario pide un escalograma de wavelet de un solo
+        trial hasta que aparece en pantalla -- de los cuales el \textbf{95\%} son solo dos pasos: el CWT
+        (216\,ms) y el render del mapa 2D (725\,ms).
+  \item \textbf{$\approx$12.6\,s} (estimado por extrapolación lineal) en calcular el escalograma promedio de
+        una sesión típica de 60 trials en \texttt{wavelet\_\allowbreak average} -- ya corre en un
+        \texttt{QThread} y no congela la interfaz, pero sigue siendo el número más grande de toda la
+        aplicación.
+\end{itemize}
+
+\textbf{El hallazgo central es el mismo patrón, repetido en al menos cinco lugares del código:} construir un
+arreglo VTK con un bucle de Python (\texttt{InsertNextValue}/\texttt{SetScalarComponentFromFloat} punto por
+punto) en vez de vectorizar con \texttt{numpy\_\allowbreak to\_\allowbreak vtk}, algo que \textbf{ya existe,
+ya funciona y ya se usa en 9 de los 19 archivos que usan VTK en el repositorio}
+(\texttt{core/utils/adapters.py} y sus consumidores). El micro-benchmark sintético de la
+sección~\ref{sec:micro-bench} mide una diferencia de \textbf{65x a 150x} entre ambos patrones para el mismo
+volumen de datos. Vectorizar los cuatro puntos que faltan (\texttt{wavelet}, \texttt{wavelet\_\allowbreak
+average}, \texttt{erp} para su mapa 2D, y \texttt{filter} para su gráfico de línea) es, con estos números
+sobre la mesa, la optimización de mayor impacto por esfuerzo disponible para Gamma Lab 2.0.
+
+\begin{center}
+\begin{tabular}{lrrl}
+\toprule
+\textbf{Cuello de botella} & \textbf{Costo medido} & \textbf{Hilo} & \textbf{Prioridad} \\
+\midrule
+\texttt{wavelet\_\allowbreak average} -- CWT $\times$60 trials & $\approx$12.6\,s \estmark & QThread & \warnmark \\
+\texttt{wavelet}/\texttt{wavelet\_\allowbreak average} -- render 2D & 725--742\,ms & Principal & \critmark \\
+\texttt{wavelet} -- CWT (1 trial) & 216\,ms & Principal & \critmark \\
+\texttt{filter} -- render de línea (señal completa) & $\approx$336\,ms \estmark & Principal & \critmark \\
+\texttt{fft\_\allowbreak average}/\texttt{psd\_\allowbreak average} -- cómputo & 9--11\,ms & Principal & \warnmark \\
+Arranque del kernel y los 16 plugins & 20\,ms & Principal & \okmark \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ==================================================================
+\section{Objetivo y alcance}
+% ==================================================================
+
+Este informe tiene un único propósito: dejar una \textbf{línea base numérica y reproducible} del rendimiento
+de Gamma Lab 1.0 completo, para que dentro de este mismo mes -- mientras se desarrolla Gamma Lab 2.0 -- se
+pueda responder con datos, no con impresiones, a la pregunta ``¿la versión nueva es más rápida?''.
+
+Por eso el alcance es deliberadamente amplio: no se midió solo el renderizado VTK (que ya se había medido
+parcialmente en \texttt{docs/reporte\_\allowbreak tests.tex}, sección de rendimiento), sino \textbf{el kernel},
+\textbf{el sistema de plugins}, \textbf{la carga de archivos}, \textbf{el corte de trials}, \textbf{el
+preprocesamiento} y \textbf{el cómputo de cada plugin de análisis}, además de repasar y ampliar la parte de
+VTK con un inventario completo de los 19 archivos del repositorio que lo usan (sección~\ref{sec:inventario-vtk}).
+
+\subsection{Qué NO cubre este informe}
+
+\begin{itemize}[nosep]
+  \item \textbf{Corrección numérica} de los plugins (si el resultado matemático es el correcto) -- eso ya
+        está cubierto en \texttt{docs/reporte\_\allowbreak tests.tex}, que valida cada plugin contra una
+        referencia de MATLAB. Este informe asume que el código hace lo que dice hacer y mide únicamente
+        cuanto tarda en hacerlo.
+  \item La construcción de \texttt{MainWindow} (la ventana principal) -- requiere una \texttt{QApplication}
+        con un ciclo de eventos completo, no solo un stack VTK offscreen; ver
+        sección~\ref{sec:limitaciones}.
+  \item \texttt{FileIOService.load\_\allowbreak edf}/\texttt{load\_\allowbreak mat} -- no hay ningún archivo
+        \texttt{.edf}/\texttt{.mat} de referencia en \texttt{test/data/}.
+\end{itemize}
+
+% ==================================================================
+\section{Metodología}
+% ==================================================================
+
+La suite completa vive en \texttt{test/performance\_\allowbreak test/} y sigue exactamente la misma filosofía
+que el resto de la suite de pruebas del proyecto: \textbf{código real, datos reales, sin mocks}.
+
+\begin{enumerate}
+  \item \textbf{Datos reales:} todos los benchmarks que necesitan una señal usan el mismo archivo ABF real,
+        \texttt{test/data/17308005.abf} (2 canales, 1\,800\,000 muestras cada uno, 600\,kHz$\to$600\,s a
+        3\,kHz de tasa de muestreo), cortado en 60 trials con los mismos parámetros que
+        \texttt{test/plugins\_\allowbreak test/} (canal 0, canal de estímulo 1, umbral 0.7, ventana
+        $t_0=-0.05\,s$ a $t_1=4.00\,s$, modo \texttt{until\_\allowbreak next\_\allowbreak onset}).
+  \item \textbf{Código real, sin mockear:} cada benchmark llama directamente al método real del plugin o
+        servicio bajo prueba (\texttt{plug.\_\allowbreak compute\_\allowbreak fft}, \texttt{plug.compute\_\allowbreak
+        wavelet}, \texttt{plug.render\_\allowbreak scalogram}, \texttt{FileIOService.load\_\allowbreak abf},
+        \texttt{core.plugins.loader.discover}, etc.) -- ninguna fórmula matemática ni ninguna llamada a VTK
+        está sustituida por un doble (\textit{mock}).
+  \item \textbf{Cronometraje:} \texttt{bench\_\allowbreak common.time\_\allowbreak block(fn, reps=N,
+        warmup=W)} ejecuta la función \texttt{W} veces de calentamiento (se descartan, para no medir el
+        costo de la primera importación/JIT/cache) y luego \texttt{N} veces cronometradas con
+        \texttt{time.perf\_\allowbreak counter()} (reloj monotónico de alta resolución). Se reporta mínimo,
+        mediana, media y máximo; este informe usa siempre la \textbf{mediana} como cifra representativa, por
+        ser más robusta a un outlier puntual que la media.
+  \item \textbf{Persistencia con etiqueta:} cada corrida completa de la suite se guarda en
+        \texttt{results/perf\_\allowbreak results.json} bajo una etiqueta (\texttt{GAMMA\_\allowbreak PERF\_\allowbreak
+        LABEL}). Los números de este informe corresponden a la etiqueta
+        \texttt{gammalab1\_\allowbreak baseline\_\allowbreak 2026\allowbreak-08\allowbreak-16}, generada en la
+        misma sesión en la que se escribió este documento.
+  \item \textbf{Snapshot de entorno:} cada corrida guarda automáticamente que SO, CPU, Python y versiones de
+        librerías (VTK, numpy, scipy, Qt) se usaron (\texttt{bench\_\allowbreak common.record\_\allowbreak
+        environment}), justamente para poder juzgar después si una diferencia de tiempos entre v1 y v2 es un
+        cambio de código o un cambio de máquina.
+\end{enumerate}
+
+% ==================================================================
+\section{Entorno de medición}
+\label{sec:entorno}
+% ==================================================================
+
+Todas las cifras de este informe se midieron en una única corrida, en la siguiente máquina y con las
+siguientes versiones de librerías (capturado automáticamente por
+\texttt{bench\_\allowbreak common.system\_\allowbreak info()} y por \texttt{Get-\allowbreak CimInstance} de
+PowerShell):
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+\textbf{Componente} & \textbf{Valor} \\
+\midrule
+CPU & 13th Gen Intel(R) Core(TM) i7-13620H \\
+Núcleos físicos / lógicos & 10 / 16 \\
+RAM & 31.7\,GB \\
+Sistema operativo & Windows 11 Home, build 26200 (64 bits) \\
+Python & 3.11.9 (entorno virtual del proyecto, \texttt{.venv}) \\
+VTK & 9.5.2 \\
+PyQt5 (Qt) & 5.15.2 \\
+numpy & 2.3.4 \\
+scipy & 1.16.2 \\
+PyWavelets & 1.8.0 \\
+pyabf & 2.3.8 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Por qué importa dejar esto por escrito:} un número de rendimiento sin su entorno es casi inútil para
+comparar. Si Gamma Lab 2.0 se mide en otra máquina, con otra versión de VTK o de numpy, cualquier diferencia
+observada puede deberse al cambio de entorno y no al cambio de código. La
+sección~\ref{sec:comparacion-v2} retoma este punto.
+
+\newpage
+% ==================================================================
+\section{Inventario completo de VTK en Gamma Lab}
+\label{sec:inventario-vtk}
+% ==================================================================
+
+Como este informe busca cubrir ``todo el VTK de Gamma Lab'', esta sección enumera los \textbf{19 archivos}
+del repositorio que importan \texttt{vtk}/\texttt{vtkmodules}, clasificados según el patrón que usan para
+convertir datos de NumPy a estructuras VTK.
+
+\subsection{Patrón vectorizado (\texttt{numpy\_\allowbreak to\_\allowbreak vtk}) -- 10 archivos}
+
+Construyen el arreglo VTK de una sola vez con \texttt{vtk.util.numpy\_\allowbreak support.numpy\_\allowbreak
+to\_\allowbreak vtk}, sin iterar en Python. Es el patrón rápido, medido en la
+sección~\ref{sec:resultados-render-vectorizado}.
+
+\begin{multicols}{2}
+\begin{itemize}[nosep]
+  \item \texttt{core/utils/adapters.py} (el helper compartido: \texttt{dataset\_\allowbreak to\_\allowbreak
+        vtk\_\allowbreak table}, \texttt{trials\_\allowbreak matrix\_\allowbreak to\_\allowbreak vtk\_\allowbreak table})
+  \item \texttt{plugins/analysis/frequency/fft/}
+  \item \texttt{plugins/analysis/frequency/fft\_\allowbreak average/}
+  \item \texttt{plugins/analysis/frequency/psd/}
+  \item \texttt{plugins/analysis/frequency/psd\_\allowbreak average/}
+  \item \texttt{plugins/analysis/frequency/relative\_\allowbreak psd/}
+  \item \texttt{plugins/analysis/time/erp/} (solo su gráfico \textit{butterfly}; el mapa 2D es aparte, ver abajo)
+  \item \texttt{plugins/preprocessing/trials/}
+  \item \texttt{plugins/io/open\_\allowbreak signal/}
+  \item \texttt{plugins/preprocessing/prepare/artifact\_\allowbreak remove/} (usa \texttt{numpy\_\allowbreak
+        to\_\allowbreak vtk} directo, sin pasar por \texttt{adapters.py}, pero el mismo patrón vectorizado)
+\end{itemize}
+\end{multicols}
+
+\subsection{Patrón de bucle Python (\texttt{InsertNextValue} / \texttt{SetScalarComponentFromFloat}) -- 5 archivos}
+
+Construyen el arreglo VTK punto por punto, dentro de un \texttt{for} de Python. Es el patrón lento, medido
+en la sección~\ref{sec:resultados-render-lento} y estimado en la sección~\ref{sec:estimaciones}.
+
+\begin{center}
+\begin{longtable}{L{5.7cm}L{2.2cm}L{6.6cm}}
+\toprule
+\textbf{Archivo} & \textbf{Línea} & \textbf{Qué construye / estado} \\
+\midrule
+\endhead
+\texttt{wavelet\_\allowbreak plugin.py} & 334--336 & Mapa 2D del escalograma. \textbf{Medido}: 725\,ms para 3.05\,M puntos. \\
+\texttt{wavelet\_\allowbreak average\_\allowbreak plugin.py} & 444--446 & Mapa 2D del escalograma promedio. \textbf{Medido}: 742\,ms para 3.05\,M puntos. \\
+\texttt{erp\_\allowbreak plugin.py} & 340--342 & Mapa 2D \textit{butterfly}. \textbf{Medido}: 36\,ms -- protegido por un tope interno (\texttt{MAX\_\allowbreak SAMPLES=2000}) que recorta el eje de tiempo antes del bucle. \\
+\texttt{filter\_\allowbreak plugin.py} & 251--254 & Gráfico de línea de la señal filtrada. \textbf{Sin} tope de muestras -- procesa la señal completa. \textbf{No medido en vivo} (requiere un \texttt{QVTKRenderWindowInteractor} real); \textbf{estimado} en $\approx$336\,ms para 1.8\,M muestras (\S\ref{sec:estimaciones}). \\
+\texttt{average\_\allowbreak plugin.py} & 110--112 & Gráfico de línea del promedio entre trials. Protegido por el mismo tope \texttt{MAX\_\allowbreak SAMPLES=2000} que \texttt{erp} -- impacto estimado $<$0.5\,ms, no es prioridad. \\
+\bottomrule
+\end{longtable}
+\end{center}
+
+\subsection{Uso de VTK no relacionado con volumen de datos -- 3 archivos}
+
+Usan VTK pero no construyen arreglos de $N$ puntos en un bucle, así que no aplica esta clasificación
+rápido/lento: \texttt{core/utils/vtk\_\allowbreak context\_\allowbreak menu.py} (menu contextual, interacción
+de usuario), \texttt{core/services/measurement\_\allowbreak service.py} (mediciones interactivas click A/B) y
+\texttt{core/services/export\_\allowbreak service.py} (exportar a imagen/tabla, un archivo por click). Ninguno
+de los tres aparece en este informe como benchmark porque su costo está dominado por I/O de disco o por
+interacción humana, no por cómputo.
+
+\newpage
+% ==================================================================
+\section{Resultados: kernel y sistema de plugins}
+\label{sec:resultados-kernel}
+% ==================================================================
+
+Mide \texttt{core/kernel.py} y \texttt{core/plugins/} reproduciendo exactamente la secuencia de arranque
+real de \texttt{main.py} (pasos 1--3, sin la ventana principal -- ver
+sección~\ref{sec:limitaciones}): \texttt{PluginManager(plugins\_\allowbreak dir).load\_\allowbreak all()}
+(descubre + instancia los 16 plugins reales bajo \texttt{plugins/}) seguido de \texttt{kernel.register\_\allowbreak
+plugin(meta.name, plugin)} para cada uno.
+
+\begin{center}
+\begin{tabular}{lrr}
+\toprule
+\textbf{Benchmark} & \textbf{Mediana} & \textbf{Detalle} \\
+\midrule
+\texttt{plugins.discover} & 19.6\,ms & Escanea \texttt{plugins/}, valida \texttt{properties.yml}, importa cada clase. \\
+\texttt{PluginManager.load\_\allowbreak all} & 20.2\,ms & \texttt{discover} + instanciar \texttt{PluginCls(meta)} de los 16 plugins. \\
+Arranque completo del kernel & 19.9\,ms & \texttt{load\_\allowbreak all} + \texttt{kernel.register\_\allowbreak plugin} $\times$16 (incluye \texttt{initialize()} de cada plugin). \\
+\texttt{Kernel.register\_\allowbreak plugin} (aislado) & 1.4\,ms & Costo propio del kernel con 200 plugins \textit{ficticios} -- 0.007\,ms/plugin. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Interpretación:} el arranque del kernel \textbf{no es un cuello de botella} -- 20\,ms es
+imperceptible comparado con cualquier otra operación de este informe (100$\times$ más rápido que un solo CWT
+de wavelet). Además, el propio \texttt{Kernel.register\_\allowbreak plugin} aporta una fracción insignificante
+de ese costo (0.007\,ms por plugin, medido de forma aislada con dobles \textit{ficticios} que no importan
+PyQt5/VTK/scipy): casi todo el tiempo de arranque es el costo de (re)importar cada módulo de plugin real, que
+a su vez está dominado por la primera importación de PyQt5/VTK/scipy en el proceso (compartida entre los 16
+plugins, no repetida). \textbf{Recomendación para 2.0:} no invertir esfuerzo de optimización aquí; el
+presupuesto de rendimiento rinde mucho más en las secciones siguientes.
+
+% ==================================================================
+\section{Resultados: carga de archivos y corte de trials}
+% ==================================================================
+
+\begin{center}
+\begin{tabular}{lrl}
+\toprule
+\textbf{Benchmark} & \textbf{Mediana} & \textbf{Tamaño} \\
+\midrule
+\texttt{FileIOService.load\_\allowbreak abf} & 59.8\,ms & 2 canales $\times$ 1\,800\,000 muestras \\
+\texttt{trials.cut\_\allowbreak trials\_\allowbreak single\_\allowbreak channel} & 18.6\,ms & salida 30\,501 $\times$ 60 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Juntas, cargar un archivo y generar sus trials toma $\approx$78\,ms -- el usuario lo percibe como
+prácticamente instantáneo. No se encontró ninguna operación cuadrática ni ningún recorrido redundante en
+ninguno de los dos caminos.
+
+\texttt{FileIOService.load\_\allowbreak edf} y \texttt{load\_\allowbreak mat} no se midieron: \texttt{test/data/}
+no tiene ningún archivo \texttt{.edf}/\texttt{.mat} de referencia. Agregar uno (y su benchmark
+correspondiente en \texttt{test\_\allowbreak io\_\allowbreak bench.py}) es directo y queda como trabajo
+futuro.
+
+% ==================================================================
+\section{Resultados: preprocesamiento (filtro)}
+% ==================================================================
+
+\texttt{Filter\_\allowbreak plugin.run\_\allowbreak filter} (Butterworth pasa-banda, \texttt{scipy.signal.butter}
++ \texttt{sosfiltfilt}, orden 8, 0.5--4\,Hz) es una función pura, benchmarkeada directamente:
+
+\begin{center}
+\begin{tabular}{lrl}
+\toprule
+\textbf{Benchmark} & \textbf{Mediana} & \textbf{Tamaño} \\
+\midrule
+\texttt{run\_\allowbreak filter} (señal completa) & 43.2\,ms & 1\,800\,000 muestras \\
+\texttt{run\_\allowbreak filter} (1 trial) & 1.8\,ms & 30\,501 muestras \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+El cómputo del filtro en sí es rápido y escala linealmente con el tamaño, como se espera de
+\texttt{sosfiltfilt}. El costo real de "Aplicar Filtro" está, en cambio, dominado por su \textbf{renderizado}
+-- ver sección~\ref{sec:estimaciones}.
+
+\newpage
+% ==================================================================
+\section{Resultados: cómputo de los plugins de análisis}
+% ==================================================================
+
+Reproduce, con una corrida nueva en la misma máquina que el resto de este informe, la sección de rendimiento
+de \texttt{docs/reporte\_\allowbreak tests.tex} (los números de esta sección reemplazan a los de esa
+auditoría anterior como referencia vigente). Salvo \texttt{wavelet\_\allowbreak average}, todos
+corren hoy en el \textbf{hilo principal de Qt} sin \texttt{QThread} -- la mediana es una medida directa de
+cuanto se congela la interfaz por cada clic en ``Calcular''.
+
+\begin{center}
+\begin{tabular}{lrl}
+\toprule
+\textbf{Benchmark} & \textbf{Mediana} & \textbf{Hilo hoy} \\
+\midrule
+\texttt{fft.\_\allowbreak compute\_\allowbreak fft} (60 trials) & 3.8\,ms & Principal \\
+\texttt{fft\_\allowbreak average.\_\allowbreak compute\_\allowbreak fft\_\allowbreak average} & 11.5\,ms & Principal \\
+\texttt{psd.\_\allowbreak compute\_\allowbreak psd} (Welch) & 5.3\,ms & Principal \\
+\texttt{psd\_\allowbreak average.\_\allowbreak compute\_\allowbreak psd} (Welch) & 9.2\,ms & Principal \\
+\texttt{relative\_\allowbreak psd.\_\allowbreak compute\_\allowbreak psd} (Welch) & 6.3\,ms & Principal \\
+\texttt{relative\_\allowbreak psd.\_\allowbreak compute\_\allowbreak relative\_\allowbreak psd} (razón) & 0.07\,ms & Principal \\
+\texttt{wavelet.compute\_\allowbreak wavelet} (1 trial, CWT) & \textbf{215.6\,ms} & Principal \\
+\texttt{wavelet\_\allowbreak average.compute\_\allowbreak wavelet} ($\times$20 trials) & \textbf{4190.2\,ms} & \textit{QThread ya} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Lectura:} FFT, PSD y PSD promedio son todos submilisegundo a un dígito de milisegundos -- ninguno
+justifica moverse a un \texttt{QThread} por sí solo. \texttt{wavelet.compute\_\allowbreak wavelet}, en
+cambio, es \textbf{60 veces más lento que el siguiente peor} (\texttt{fft\_\allowbreak average}) y corre en
+el hilo principal: cada clic en ``Calcular Wavelet'' congela la interfaz $\approx$216\,ms de forma
+perceptible. \texttt{wavelet\_\allowbreak average} escala lo mismo por trial ($\approx$209.5\,ms/trial,
+consistente con el número de \texttt{wavelet} individual) pero ya corre en background -- es el número más
+grande de todo el informe en términos absolutos ($\approx$4.2\,s para 20 trials, $\approx$12.6\,s
+extrapolado a 60), pero al no bloquear la UI su prioridad de arreglo es menor que la de
+\texttt{wavelet.compute\_\allowbreak wavelet}, que sí la bloquea.
+
+% ==================================================================
+\section{Resultados: renderizado VTK -- patrón lento (bucle Python)}
+\label{sec:resultados-render-lento}
+% ==================================================================
+
+\begin{center}
+\begin{tabular}{lrr}
+\toprule
+\textbf{Benchmark} & \textbf{Tamaño} & \textbf{Mediana} \\
+\midrule
+\texttt{wavelet.render\_\allowbreak scalogram} & 998$\times$3051 (3.05\,M puntos) & \textbf{725.3\,ms} \\
+\texttt{wavelet\_\allowbreak average.render\_\allowbreak scalogram} & 998$\times$3051 (3.05\,M puntos) & \textbf{741.6\,ms} \\
+\texttt{erp.\_\allowbreak render\_\allowbreak heatmap} & 60$\times$30501 $\to$ recortado a 60$\times$1907 & 35.8\,ms \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Los tres construyen su \texttt{vtkImageData} con \texttt{img.SetScalarComponentFromFloat(i, j, 0, 0, valor)}
+dentro de un doble \texttt{for} de Python. \texttt{erp} sale barato en la comparación no porque su código sea
+distinto, sino porque un límite interno (\texttt{MAX\_\allowbreak SAMPLES=2000}) ya recorta el eje de tiempo
+\emph{antes} de entrar al bucle -- en la práctica itera sobre $\approx$114\,000 puntos, no 1.8\,millones.
+\texttt{wavelet} y \texttt{wavelet\_\allowbreak average} no tienen ese límite y pagan el costo completo de 3.05\,M
+puntos.
+
+\textbf{Nota de variabilidad medida:} en una corrida anterior de esta misma suite (14 de agosto de 2026, ver
+\texttt{results/perf\_\allowbreak results.json}, etiqueta \texttt{v1\_\allowbreak baseline}) este mismo
+benchmark de \texttt{wavelet.render\_\allowbreak scalogram} midió 5.70\,s -- casi 8$\times$ más lento que en
+la corrida de este informe (725\,ms), sin ningún cambio de código entre ambas. Es una variación atribuible al
+primer render offscreen de VTK en un proceso nuevo (inicialización de contexto gráfico), no al código. Al
+comparar Gamma Lab 1.0 contra 2.0 (\S\ref{sec:comparacion-v2}) conviene correr cada lado 2--3 veces y mirar
+consistencia, no una única corrida.
+
+% ==================================================================
+\section{Resultados: renderizado VTK -- patrón vectorizado}
+\label{sec:resultados-render-vectorizado}
+% ==================================================================
+
+\subsection{Los dos caminos ya vectorizados de \texttt{core/utils/adapters.py}}
+
+\begin{center}
+\begin{tabular}{lrr}
+\toprule
+\textbf{Benchmark} & \textbf{Tamaño} & \textbf{Mediana} \\
+\midrule
+\texttt{adapters.dataset\_\allowbreak to\_\allowbreak vtk\_\allowbreak table} & 1\,800\,000 filas $\times$ 3 col. & \textbf{21.0\,ms} \\
+\texttt{adapters.trials\_\allowbreak matrix\_\allowbreak to\_\allowbreak vtk\_\allowbreak table} & 30\,501 filas $\times$ 61 col. & \textbf{11.1\,ms} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Estos dos caminos alimentan los gráficos de línea de 9 de los 16 plugins (sección~\ref{sec:inventario-vtk}) y
+son, en volumen de datos equivalente o mayor, \textbf{órdenes de magnitud más rápidos} que el patrón de
+bucle: convertir la señal completa de 1.8\,M muestras a una tabla VTK (21\,ms) es más rápido que renderizar un
+solo escalograma de 3.05\,M puntos con el patrón de bucle (725\,ms) -- pese a que el volumen de datos es
+comparable.
+
+\subsection{Micro-benchmark sintético: bucle vs. vectorizado}
+\label{sec:micro-bench}
+
+Para aislar el costo del patrón en sí (sin CWT, sin ABF, solo la conversión a VTK), se construyó el mismo
+arreglo de $N$ números aleatorios con \texttt{vtkFloatArray.InsertNextValue} en un bucle de Python, y con
+\texttt{numpy\_\allowbreak to\_\allowbreak vtk}:
+
+\begin{center}
+\begin{tabular}{rrrr}
+\toprule
+\textbf{N puntos} & \textbf{Bucle Python} & \textbf{Vectorizado} & \textbf{Factor} \\
+\midrule
+50\,000  & 4.58\,ms  & 0.031\,ms & \textbf{147.7x} \\
+300\,000 & 28.45\,ms & 0.432\,ms & \textbf{65.8x} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+El factor no es una constante exacta (el camino vectorizado tiene un costo fijo pequeño que pesa más a $N$
+chico, y a submilisegundo el ruido de medición es mayor), pero el orden de magnitud es consistente:
+\textbf{vectorizar cuesta entre 65 y 150 veces menos} que el bucle de Python, para el mismo volumen de datos,
+en esta máquina. Esta cifra es la que sostiene la estimación de la sección siguiente y la recomendación
+principal de este informe.
+
+\newpage
+% ==================================================================
+\section{Estimaciones derivadas (no medidas en vivo)}
+\label{sec:estimaciones}
+% ==================================================================
+
+Esta sección combina mediciones reales de otras secciones para estimar el costo de dos operaciones que no se
+pudieron benchmarkear en vivo por requerir una \texttt{QApplication} completa (ver
+sección~\ref{sec:limitaciones}). Se marcan explícitamente \estmark\ y se muestra el cálculo, para que puedan
+reemplazarse por una medición real apenas exista un arnés de prueba adecuado.
+
+\subsection{\texttt{filter\_\allowbreak plugin.\_\allowbreak render\_\allowbreak filtered}}
+
+\texttt{filter\_\allowbreak plugin.py:251--254} construye el gráfico de la señal filtrada con un \texttt{for}
+que llama dos veces a \texttt{InsertNextValue} por muestra (tiempo y señal), \textbf{sin} ningún tope de
+downsampling previo (a diferencia de \texttt{erp}/\texttt{average}, que recortan a 2000 puntos antes de
+renderizar). \texttt{on\_apply\_filter} llama a este render \textbf{dos veces} por clic: una para la señal
+completa y otra para el trial.
+
+Tomando el costo medido por punto del micro-benchmark
+(\S\ref{sec:micro-bench}: $\approx$93\,ns por llamada a \texttt{InsertNextValue} sobre un arreglo, promediado
+entre los dos tamaños medidos) y contando 2 llamadas por iteración:
+
+\begin{center}
+\begin{tabular}{lrr}
+\toprule
+\textbf{Render} & \textbf{Tamaño} & \textbf{Estimado} \\
+\midrule
+Señal completa & 1\,800\,000 muestras & $\approx$336\,ms \estmark \\
+Trial individual & 30\,501 muestras & $\approx$5.7\,ms \estmark \\
+\midrule
+\textbf{Total por clic en "Aplicar Filtro"} & (render) + (cómputo, \S6, medido: 44.9\,ms) & \textbf{$\approx$386\,ms} \estmark \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Si esta estimación es siquiera aproximadamente correcta, \texttt{filter} tiene el mismo problema que
+\texttt{wavelet}: un render sin vectorizar que domina por completo el tiempo total de la operación (87\% del
+estimado), muy por encima del costo real del filtro Butterworth en sí (13\%, medido). Es, junto con
+\texttt{wavelet}/\texttt{wavelet\_\allowbreak average}, el otro candidato prioritario a vectorizar.
+
+\subsection{Pipeline completo percibido por el usuario}
+
+Sumando benchmarks medidos de distintas secciones (todos en el hilo principal, por lo que se perciben como
+un solo bloqueo de la interfaz):
+
+\begin{center}
+\begin{tabular}{lr}
+\toprule
+\textbf{Flujo} & \textbf{Tiempo total} \\
+\midrule
+Cargar ABF + cortar trials & 78.4\,ms (medido) \\
++ Ver escalograma wavelet de 1 trial & $+$941\,ms (216\,ms CWT $+$ 725\,ms render, medidos) \\
+\midrule
+\textbf{Total: abrir archivo $\to$ ver 1 escalograma} & \textbf{$\approx$1.02\,s} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ==================================================================
+\section{Resultados: \texttt{DataStore}}
+% ==================================================================
+
+\begin{center}
+\begin{tabular}{lrl}
+\toprule
+\textbf{Benchmark} & \textbf{Mediana} & \textbf{Detalle} \\
+\midrule
+\texttt{add\_\allowbreak signal} ($\times$500) & 13.0\,ms & 0.026\,ms/señal; genera claves \texttt{raw\_\allowbreak signal\_\allowbreak N} con un \texttt{while} que revisa colisiones. \\
+\texttt{set}$+$\texttt{get} ($\times$2000 pares) & 0.6\,ms & 0.00015\,ms/operación -- diccionario puro, O(1) como se espera. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\texttt{DataStore} no es, ni de cerca, un cuello de botella incluso en escenarios con muchas más señales
+cargadas de las que un usuario típico acumularia en una sesión. No requiere atención en 2.0.
+
+\newpage
+% ==================================================================
+\section{Hallazgos priorizados}
+% ==================================================================
+
+\begin{enumerate}
+  \item \critmark\ \textbf{Renderizado 2D sin vectorizar en \texttt{wavelet}/\texttt{wavelet\_\allowbreak
+        average}} (725--742\,ms, hilo principal) -- el bloqueo de interfaz más grande y más fácil de
+        eliminar de todo el informe: reemplazar el bucle
+        \texttt{SetScalarComponentFromFloat} por \texttt{numpy\_\allowbreak to\_\allowbreak vtk} (mismo
+        patrón que ya usa \texttt{core/utils/adapters.py}) puede reducirlo, según el micro-benchmark de
+        \S\ref{sec:micro-bench}, a pocos milisegundos.
+  \item \critmark\ \textbf{\texttt{wavelet.compute\_\allowbreak wavelet} en el hilo principal} (216\,ms) --
+        el segundo bloqueo más grande. A diferencia del render, este es un problema algorítmico/de
+        threading, no solo de vectorización: mover el CWT a un \texttt{QThread} (como ya hace
+        \texttt{wavelet\_\allowbreak average}) resuelve el bloqueo de UI sin tocar la matemática.
+  \item \critmark\ \textbf{Renderizado de línea sin vectorizar ni topar en \texttt{filter}} ($\approx$336\,ms
+        estimado, hilo principal, sin tope de muestras) -- mismo patrón que (1), pero además sin el límite
+        de seguridad (\texttt{MAX\_\allowbreak SAMPLES}) que sí tienen \texttt{erp}/\texttt{average}.
+  \item \warnmark\ \textbf{\texttt{wavelet\_\allowbreak average.compute\_\allowbreak wavelet}}
+        ($\approx$12.6\,s estimado para 60 trials) -- el número absoluto más grande del informe, pero de
+        menor prioridad relativa porque ya corre fuera del hilo principal (QThread) y no congela la
+        interfaz; sigue siendo candidato a paralelizar entre trials o cachear resultados parciales en 2.0.
+  \item \warnmark\ \textbf{Inconsistencia de patrón en \texttt{average\_\allowbreak plugin.py}} (bucle sin
+        vectorizar, pero topado a 2000 puntos, impacto $<$0.5\,ms) -- no es una prioridad de rendimiento, pero
+        es la misma deuda de código que (1) y (3): en vez de 5 implementaciones distintas del mismo patrón,
+        Gamma Lab 2.0 debería tener un único helper vectorizado para \emph{cualquier} conversión NumPy$\to$VTK
+        (imagen 2D o tabla), reutilizado por todos los plugins.
+  \item \okmark\ \textbf{Arranque del kernel, carga de ABF, corte de trials, \texttt{DataStore}, FFT/PSD} --
+        todos por debajo de 80\,ms, ninguno requiere optimización en 2.0. No gastar presupuesto de ingeniería
+        aquí.
+\end{enumerate}
+
+% ==================================================================
+\section{Recomendaciones para Gamma Lab 2.0}
+% ==================================================================
+
+\begin{enumerate}
+  \item \textbf{Un único helper vectorizado para imágenes 2D}, análogo a
+        \texttt{core/utils/adapters.py} pero para \texttt{vtkImageData}: recibir una matriz \texttt{Z}
+        (frecuencia $\times$ tiempo, o trial $\times$ tiempo) y construir el \texttt{vtkImageData} con
+        \texttt{numpy\_\allowbreak to\_\allowbreak vtk(Z.ravel(order="C"))} $+$
+        \texttt{img.GetPointData().SetScalars(...)}, en vez de que cada uno de \texttt{wavelet},
+        \texttt{wavelet\_\allowbreak average} y \texttt{erp} reimplemente su propio doble \texttt{for}. Esto
+        ataca los hallazgos (1) y (5) a la vez.
+  \item \textbf{Usar el helper de tablas ya existente en \texttt{filter\_\allowbreak plugin.py}} en vez de su
+        bucle propio de \texttt{InsertNextValue} -- ataca el hallazgo (3), y de paso agregar el mismo tope
+        \texttt{MAX\_\allowbreak SAMPLES} que ya tienen \texttt{erp}/\texttt{average} como red de seguridad
+        adicional.
+  \item \textbf{Mover todo cómputo pesado a \texttt{QThread} de forma sistemática}, no solo donde ya se hizo
+        (\texttt{wavelet\_\allowbreak average}): en particular \texttt{wavelet.compute\_\allowbreak wavelet}
+        (216\,ms, hallazgo 2). El resto (FFT/PSD, $<$12\,ms) no lo necesita hoy, pero conviene decidir un
+        criterio único (p.\,ej. ``todo cómputo $>$50\,ms va a QThread'') en vez de que sea caso por caso.
+  \item \textbf{Conservar esta suite de benchmarks como guardia de regresión}, corriéndola en cada cambio
+        significativo de rendimiento durante el desarrollo de 2.0 -- no solo al final. Ver
+        sección~\ref{sec:comparacion-v2}.
+  \item \textbf{Evaluar cachear o paralelizar el CWT entre trials} en \texttt{wavelet\_\allowbreak average}
+        (hallazgo 4) -- a 209.5\,ms/trial, 60 trials en serie son $\approx$12.6\,s; con 16 núcleos lógicos
+        disponibles en la máquina de referencia, paralelizar los CWT independientes entre trials (son
+        embarrasingly parallel) podría reducir ese número de forma significativa sin cambiar el algoritmo.
+  \item \textbf{Agregar un archivo \texttt{.edf} y/o \texttt{.mat} de referencia a \texttt{test/data/}} para
+        poder benchmarkear (y validar contra MATLAB) los otros dos formatos que soporta
+        \texttt{FileIOService}, hoy sin cobertura de ningún tipo.
+\end{enumerate}
+
+\newpage
+% ==================================================================
+\section{Metodología de comparación con Gamma Lab 2.0}
+\label{sec:comparacion-v2}
+% ==================================================================
+
+Esta es la parte pensada explícitamente para dentro de un mes. El procedimiento:
+
+\begin{enumerate}
+  \item \textbf{No tocar \texttt{bench\_\allowbreak common.py} ni \texttt{compare\_\allowbreak report.py}} --
+        son agnósticos a la versión de la app: solo cronometran funciones y comparan dos etiquetas del mismo
+        JSON.
+  \item \textbf{Copiar (o adaptar) los archivos \texttt{test\_\allowbreak *\_\allowbreak bench.py}} al
+        repositorio de Gamma Lab 2.0. Si 2.0 mantiene los mismos nombres de módulo/función
+        (\texttt{FileIOService.load\_\allowbreak abf}, \texttt{cut\_\allowbreak trials\_\allowbreak
+        single\_\allowbreak channel}, \texttt{\_\allowbreak compute\_\allowbreak fft}, \texttt{compute\_\allowbreak
+        wavelet}, \texttt{render\_\allowbreak scalogram}, \texttt{core.plugins.loader.discover}, etc.), los
+        archivos deberían correr prácticamente sin cambios. Si 2.0 renombra o reorganiza módulos, el único
+        ajuste necesario son los \texttt{import} de cada archivo -- la lógica de medición no cambia.
+  \item \textbf{Correr contra 1.0 con una etiqueta clara} (ya hecho en este informe):
+        \begin{verbatim}
+$env:GAMMA_PERF_LABEL = "gammalab1_baseline_2026-08-16"
+pytest test/performance_test -s
+        \end{verbatim}
+  \item \textbf{Correr la misma suite contra 2.0}, en la \textbf{misma máquina} si es posible (o dejando
+        registrado el entorno de cada lado, capturado automáticamente por \texttt{record\_\allowbreak
+        environment()} -- ver \S\ref{sec:entorno}):
+        \begin{verbatim}
+$env:GAMMA_PERF_LABEL = "gammalab2_baseline_2026-09-XX"
+pytest test/performance_test -s
+        \end{verbatim}
+  \item \textbf{Comparar con el script ya existente:}
+        \begin{verbatim}
+python test/performance_test/compare_report.py `
+    gammalab1_baseline_2026-08-16 gammalab2_baseline_2026-09-XX
+        \end{verbatim}
+        Esto imprime una tabla con el tiempo ``antes'', ``después'' y el factor de aceleración por cada
+        benchmark que exista en ambas etiquetas, además del entorno de cada lado.
+  \item \textbf{Repetir cada lado 2--3 veces} antes de sacar conclusiones sobre los benchmarks de
+        renderizado VTK, por la variabilidad de primer render offscreen documentada en
+        \S\ref{sec:resultados-render-lento}.
+\end{enumerate}
+
+\textbf{Qué preguntas debería poder responder esta comparación en 2.0:}
+\begin{itemize}[nosep]
+  \item ¿Se corrigió el patrón de renderizado sin vectorizar? (factor esperado: 65--150x en los benchmarks de
+        \texttt{wavelet}/\texttt{wavelet\_\allowbreak average}/\texttt{filter}).
+  \item ¿\texttt{wavelet.compute\_\allowbreak wavelet} sigue bloqueando el hilo principal, o se movió a
+        background?
+  \item ¿El arranque del kernel se mantuvo liviano, o una arquitectura nueva (más plugins, más servicios) lo
+        volvió perceptible?
+  \item ¿La carga de archivos y el corte de trials se mantienen submedio-segundo?
+\end{itemize}
+
+% ==================================================================
+\section{Limitaciones conocidas}
+\label{sec:limitaciones}
+% ==================================================================
+
+\begin{itemize}
+  \item \textbf{\texttt{MainWindow} no se benchmarkeó.} Requiere una \texttt{QApplication} real con ciclo de
+        eventos (\texttt{app.exec\_\allowbreak ()}), no solo un \texttt{vtkRenderWindow} offscreen como el
+        resto de la suite -- automatizar esto de forma confiable (sin dejar procesos colgados) es trabajo
+        adicional fuera del alcance de esta corrida. Es la única pieza de la secuencia de arranque real de
+        \texttt{main.py} que falta medir.
+  \item \textbf{\texttt{filter\_\allowbreak plugin.\_\allowbreak render\_\allowbreak filtered} no se
+        benchmarkeó en vivo}, por la misma razón: construye un \texttt{QVTKRenderWindowInteractor} real y un
+        \texttt{VTKContextMenu} que instancia un \texttt{QMenu} de Qt -- sin una \texttt{QApplication} viva,
+        PyQt5 puede abortar el proceso en vez de lanzar una excepción Python capturable. La cifra de
+        \S\ref{sec:estimaciones} es una \textbf{estimación} derivada del micro-benchmark sintético, no una
+        medición directa.
+  \item \textbf{\texttt{load\_\allowbreak edf}/\texttt{load\_\allowbreak mat} sin cobertura} -- no hay
+        archivo de referencia en \texttt{test/data/}.
+  \item \textbf{Los tiempos de renderizado VTK offscreen tienen variabilidad de proceso a proceso}, documentada
+        en \S\ref{sec:resultados-render-lento} con un ejemplo real (5.70\,s vs.\ 725\,ms para el mismo
+        código). Tratar una única corrida como definitiva, especialmente para los benchmarks de render, es
+        un error metodológico -- de ahí la recomendación de repetir 2--3 veces en
+        \S\ref{sec:comparacion-v2}.
+  \item \textbf{Todas las cifras son de una sola máquina} (\S\ref{sec:entorno}). No se afirma que sean
+        representativas de otro hardware -- son una línea base válida \emph{para comparar en esa misma
+        máquina}, que es exactamente el uso previsto este mes.
+\end{itemize}
+
+% ==================================================================
+\section{Tabla completa de resultados (apéndice)}
+% ==================================================================
+
+Todas las cifras de este informe, en un solo lugar, tal como quedaron guardadas en
+\texttt{test/performance\_\allowbreak test/results/perf\_\allowbreak results.json} bajo la etiqueta
+\texttt{gammalab1\_\allowbreak baseline\_\allowbreak 2026\allowbreak-08\allowbreak-16}.
+
+\begin{center}
+\begin{longtable}{L{9.5cm}rc}
+\toprule
+\textbf{Benchmark} & \textbf{Mediana} & \textbf{n} \\
+\midrule
+\endhead
+\texttt{kernel.plugins.discover} (16 plugins) & 19.6\,ms & 5 \\
+\texttt{kernel.plugin\_\allowbreak manager.load\_\allowbreak all} (16 plugins) & 20.2\,ms & 5 \\
+\texttt{kernel.bootstrap\_\allowbreak completo} (16 plugins) & 19.9\,ms & 5 \\
+\texttt{kernel.register\_\allowbreak plugin} (overhead, x200 ficticios) & 1.4\,ms & 10 \\
+\texttt{fileio.load\_\allowbreak abf} (2x1\,800\,000) & 59.8\,ms & 5 \\
+\texttt{trials.cut\_\allowbreak trials\_\allowbreak single\_\allowbreak channel} (30501x60) & 18.6\,ms & 10 \\
+\texttt{filter.run\_\allowbreak filter} (señal completa, 1\,800\,000) & 43.2\,ms & 10 \\
+\texttt{filter.run\_\allowbreak filter} (1 trial, 30501) & 1.8\,ms & 20 \\
+\texttt{fft.\_\allowbreak compute\_\allowbreak fft} (todos los trials) & 3.8\,ms & 5 \\
+\texttt{fft\_\allowbreak average.\_\allowbreak compute\_\allowbreak fft\_\allowbreak average} & 11.5\,ms & 5 \\
+\texttt{psd.\_\allowbreak compute\_\allowbreak psd} (Welch) & 5.3\,ms & 5 \\
+\texttt{psd\_\allowbreak average.\_\allowbreak compute\_\allowbreak psd} (Welch) & 9.2\,ms & 5 \\
+\texttt{relative\_\allowbreak psd.\_\allowbreak compute\_\allowbreak psd} (Welch) & 6.3\,ms & 5 \\
+\texttt{relative\_\allowbreak psd.\_\allowbreak compute\_\allowbreak relative\_\allowbreak psd} & 0.07\,ms & 5 \\
+\texttt{wavelet.compute\_\allowbreak wavelet} (1 trial) & 215.6\,ms & 3 \\
+\texttt{wavelet\_\allowbreak average.compute\_\allowbreak wavelet} (x20 trials) & 4190.2\,ms & 2 \\
+\texttt{wavelet.render\_\allowbreak scalogram} (998x3051) & 725.3\,ms & 3 \\
+\texttt{wavelet\_\allowbreak average.render\_\allowbreak scalogram} (998x3051) & 741.6\,ms & 3 \\
+\texttt{erp.\_\allowbreak render\_\allowbreak heatmap} (60x30501$\to$60x1907) & 35.8\,ms & 3 \\
+\texttt{adapters.dataset\_\allowbreak to\_\allowbreak vtk\_\allowbreak table} (1800000x3) & 21.0\,ms & 10 \\
+\texttt{adapters.trials\_\allowbreak matrix\_\allowbreak to\_\allowbreak vtk\_\allowbreak table} (30501x61) & 11.1\,ms & 10 \\
+\texttt{vtk\_\allowbreak array.bucle\_\allowbreak python} (50\,000 puntos) & 4.6\,ms & 5 \\
+\texttt{vtk\_\allowbreak array.numpy\_\allowbreak to\_\allowbreak vtk} (50\,000 puntos) & 0.031\,ms & 5 \\
+\texttt{vtk\_\allowbreak array.bucle\_\allowbreak python} (300\,000 puntos) & 28.4\,ms & 5 \\
+\texttt{vtk\_\allowbreak array.numpy\_\allowbreak to\_\allowbreak vtk} (300\,000 puntos) & 0.432\,ms & 5 \\
+\texttt{data\_\allowbreak store.add\_\allowbreak signal} (x500) & 13.0\,ms & 5 \\
+\texttt{data\_\allowbreak store.set+get} (x2000 pares) & 0.6\,ms & 5 \\
+\bottomrule
+\end{longtable}
+\end{center}
+
+% ==================================================================
+\section{Conclusión}
+% ==================================================================
+
+Gamma Lab 1.0 es, para la enorme mayoría de sus operaciones (arranque, carga de archivos, FFT, PSD,
+\texttt{DataStore}), rápido: por debajo de 80\,ms, imperceptible para el usuario. El rendimiento de la
+aplicación como un todo está, sin embargo, dominado por un número pequeño de puntos muy concentrados: el CWT
+de wavelet (un problema de threading, ya resuelto parcialmente en \texttt{wavelet\_\allowbreak average} pero
+no en \texttt{wavelet}) y el renderizado VTK sin vectorizar de los mapas 2D y de al menos un gráfico de línea
+(\texttt{filter}) -- un problema que, a diferencia del anterior, \textbf{ya tiene una solución probada y en
+uso dentro del mismo repositorio} (\texttt{core/utils/adapters.py}), solo que no se aplicó de forma
+consistente a los cinco lugares que comparten el mismo patrón.
+
+Esta suite de benchmarks y este informe quedan pensados para no ser un documento de una sola vez: la
+sección~\ref{sec:comparacion-v2} deja el procedimiento exacto para que, durante el desarrollo de Gamma Lab
+2.0 este mes, cada decisión de arquitectura pueda contrastarse contra esta línea base con
+\texttt{compare\_\allowbreak report.py}, en vez de depender de percepciones subjetivas de velocidad.
+
+\end{document}

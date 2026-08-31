@@ -1,0 +1,30 @@
+.env
+**/__pycache__/
+**.pytest_cache
+# Entornos virtuales
+venv/
+.env/
+.venv/
+# Compilaciones
+build/
+dist/
+
+# Archivos de PyInstaller
+*.spec
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDE configuration
+.vscode/
+.idea/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+#Configuraciones de gamma lab
+gamma_lab_settings.json

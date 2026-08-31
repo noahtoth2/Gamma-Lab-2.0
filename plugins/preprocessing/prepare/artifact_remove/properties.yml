@@ -1,0 +1,8 @@
+id: "artifact_remove"
+name: "Remove Artifact"
+category: "Preprocessing"
+subcategory: "Prepare"
+version: "1.0.0"
+icon: "icn_artifact_remove.png"
+logic_class: "ArtifactRemovePlugin"
+ui_class: ""

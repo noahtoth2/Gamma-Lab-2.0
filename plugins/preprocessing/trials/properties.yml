@@ -1,0 +1,8 @@
+id: "trials"
+name: "Trials"
+category: "Preprocessing"
+subcategory: "Trials"
+version: "1.0"
+icon: "icn_trials.png"
+logic_class: "TrialsPlugin"
+ui_class: ""

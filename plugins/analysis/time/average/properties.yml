@@ -1,0 +1,8 @@
+id: "average"
+name: "Average"
+category: "Analysis"
+subcategory: "Time"
+version: "1.0"
+icon: "icn_average.png"
+logic_class: "Average_plugin"
+ui_class: ""

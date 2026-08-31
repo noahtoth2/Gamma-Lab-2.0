@@ -1,0 +1,503 @@
+{
+  "baseline": {
+    "erp._render_heatmap (60x30501 points before downsample)": {
+      "max_s": 0.03693760000169277,
+      "mean_s": 0.03613970000393844,
+      "median_s": 0.0358293000026606,
+      "min_s": 0.03565220000746194,
+      "reps": 3,
+      "timestamp": "2026-08-14T14:19:08.694893+00:00"
+    },
+    "fft._compute_fft (all trials)": {
+      "max_s": 0.004361600003903732,
+      "mean_s": 0.004118300002301112,
+      "median_s": 0.004106899999896996,
+      "min_s": 0.0038148000021465123,
+      "reps": 5,
+      "timestamp": "2026-08-14T14:18:45.915023+00:00"
+    },
+    "fft_average._compute_fft_average (all trials)": {
+      "max_s": 0.010350800002925098,
+      "mean_s": 0.009088940004585312,
+      "median_s": 0.0089777000102913,
+      "min_s": 0.008380500003113411,
+      "reps": 5,
+      "timestamp": "2026-08-14T14:18:45.972942+00:00"
+    },
+    "psd._compute_psd (all trials, Welch)": {
+      "max_s": 0.006007799995131791,
+      "mean_s": 0.005272500001592561,
+      "median_s": 0.005294799993862398,
+      "min_s": 0.00457220000680536,
+      "reps": 5,
+      "timestamp": "2026-08-14T14:18:46.006113+00:00"
+    },
+    "psd_average._compute_psd (all trials, Welch)": {
+      "max_s": 0.010521200005314313,
+      "mean_s": 0.00943875999946613,
+      "median_s": 0.00917029999254737,
+      "min_s": 0.008926499998779036,
+      "reps": 5,
+      "timestamp": "2026-08-14T14:18:46.065014+00:00"
+    },
+    "relative_psd._compute_psd (all trials, Welch)": {
+      "max_s": 0.007111099999747239,
+      "mean_s": 0.0064566599990939725,
+      "median_s": 0.0063879999943310395,
+      "min_s": 0.005982399990898557,
+      "reps": 5,
+      "timestamp": "2026-08-14T14:18:46.118170+00:00"
+    },
+    "relative_psd._compute_relative_psd (ratio only)": {
+      "max_s": 9.06999921426177e-05,
+      "mean_s": 8.049999887589365e-05,
+      "median_s": 7.959999493323267e-05,
+      "min_s": 7.270000060088933e-05,
+      "reps": 5,
+      "timestamp": "2026-08-14T14:18:46.077637+00:00"
+    },
+    "wavelet.compute_wavelet (1 trial, main thread today)": {
+      "max_s": 0.24271790000784677,
+      "mean_s": 0.22424676667045182,
+      "median_s": 0.2167131000023801,
+      "min_s": 0.21330930000112858,
+      "reps": 3,
+      "timestamp": "2026-08-14T14:18:47.004717+00:00"
+    },
+    "wavelet.render_scalogram (998x3051 points)": {
+      "max_s": 0.7234289000043646,
+      "mean_s": 0.7156268333346816,
+      "median_s": 0.7159241000044858,
+      "min_s": 0.7075274999951944,
+      "reps": 3,
+      "timestamp": "2026-08-14T14:19:03.213499+00:00"
+    },
+    "wavelet_average.compute_wavelet (x20 trials, background thread today)": {
+      "max_s": 4.303646300002583,
+      "mean_s": 4.287640150003426,
+      "median_s": 4.287640150003426,
+      "min_s": 4.271634000004269,
+      "reps": 2,
+      "timestamp": "2026-08-14T14:18:59.823727+00:00"
+    },
+    "wavelet_average.render_scalogram (998x3051 points)": {
+      "max_s": 0.7421617999934824,
+      "mean_s": 0.7390122333357189,
+      "median_s": 0.7400673000083771,
+      "min_s": 0.734807600005297,
+      "reps": 3,
+      "timestamp": "2026-08-14T14:19:08.416125+00:00"
+    }
+  },
+  "gammalab1_baseline_2026-08-16": {
+    "_entorno": {
+      "arquitectura": "AMD64",
+      "cpus_logicas": 16,
+      "numpy": "2.3.4",
+      "procesador": "Intel64 Family 6 Model 186 Stepping 2, GenuineIntel",
+      "pyabf": "2.3.8",
+      "pyqt5_qt": "5.15.2",
+      "python": "3.11.9",
+      "pywt": "1.8.0",
+      "scipy": "1.16.2",
+      "sistema_operativo": "Windows-10-10.0.26200-SP0",
+      "vtk": "9.5.2"
+    },
+    "adapters.dataset_to_vtk_table (1800000x3, vectorizado)": {
+      "max_s": 0.02264059998560697,
+      "mean_s": 0.020988849992863833,
+      "median_s": 0.02103420000639744,
+      "min_s": 0.018889399943873286,
+      "reps": 10,
+      "timestamp": "2026-08-16T20:13:09.156741+00:00"
+    },
+    "adapters.trials_matrix_to_vtk_table (30501x61, vectorizado)": {
+      "max_s": 0.012313400045968592,
+      "mean_s": 0.011124730005394667,
+      "median_s": 0.011109400016721338,
+      "min_s": 0.010063999972771853,
+      "reps": 10,
+      "timestamp": "2026-08-16T20:13:09.323023+00:00"
+    },
+    "data_store.add_signal (x500 se\u00f1ales, clave autogenerada)": {
+      "max_s": 0.013268699985928833,
+      "mean_s": 0.012988539994694293,
+      "median_s": 0.013046699983533472,
+      "min_s": 0.012693200027570128,
+      "reps": 5,
+      "timestamp": "2026-08-16T20:12:58.909282+00:00"
+    },
+    "data_store.set+get (x2000 pares clave/valor)": {
+      "max_s": 0.0006664000102318823,
+      "mean_s": 0.0005971599952317774,
+      "median_s": 0.000591500021982938,
+      "min_s": 0.0005586999468505383,
+      "reps": 5,
+      "timestamp": "2026-08-16T20:12:58.915024+00:00"
+    },
+    "erp._render_heatmap (60x30501 puntos antes del downsample)": {
+      "max_s": 0.03618730005109683,
+      "mean_s": 0.035449433334482215,
+      "median_s": 0.03584339999360964,
+      "min_s": 0.034317599958740175,
+      "reps": 3,
+      "timestamp": "2026-08-16T20:13:08.819958+00:00"
+    },
+    "fft._compute_fft (todos los trials)": {
+      "max_s": 0.00424790004035458,
+      "mean_s": 0.0038919800077565013,
+      "median_s": 0.0038177999667823315,
+      "min_s": 0.003688500029966235,
+      "reps": 5,
+      "timestamp": "2026-08-16T20:12:44.518196+00:00"
+    },
+    "fft_average._compute_fft_average (todos los trials)": {
+      "max_s": 0.012789600004907697,
+      "mean_s": 0.011017880006693303,
+      "median_s": 0.011499400017783046,
+      "min_s": 0.007832899980712682,
+      "reps": 5,
+      "timestamp": "2026-08-16T20:12:44.583055+00:00"
+    },
+    "fileio.load_abf (2 canales x 1800000 muestras)": {
+      "max_s": 0.063038999971468,
+      "mean_s": 0.060596359998453406,
+      "median_s": 0.05978389998199418,
+      "min_s": 0.05948340002214536,
+      "reps": 5,
+      "timestamp": "2026-08-16T20:12:58.531551+00:00"
+    },
+    "filter.run_filter (1 trial, 30501 muestras)": {
+      "max_s": 0.0028611000161617994,
+      "mean_s": 0.0018946150026749819,
+      "median_s": 0.00176599997212179,
+      "min_s": 0.0016045999946072698,
+      "reps": 20,
+      "timestamp": "2026-08-16T20:13:00.016005+00:00"
+    },
+    "filter.run_filter (se\u00f1al completa, 1800000 muestras)": {
+      "max_s": 0.04536280001047999,
+      "mean_s": 0.043148339999606836,
+      "median_s": 0.04316200001630932,
+      "min_s": 0.04113839997444302,
+      "reps": 10,
+      "timestamp": "2026-08-16T20:12:59.952958+00:00"
+    },
+    "kernel.bootstrap_completo (discover+load_all+register, 16 plugins)": {
+      "max_s": 0.020774000033270568,
+      "mean_s": 0.019957920000888408,
+      "median_s": 0.019871899974532425,
+      "min_s": 0.01917370001319796,
+      "reps": 5,
+      "timestamp": "2026-08-16T20:12:59.338874+00:00"
+    },
+    "kernel.plugin_manager.load_all (16 plugins)": {
+      "max_s": 0.020857000024989247,
+      "mean_s": 0.020009999989997595,
+      "median_s": 0.02023249998455867,
+      "min_s": 0.018933999992441386,
+      "reps": 5,
+      "timestamp": "2026-08-16T20:12:59.215932+00:00"
+    },
+    "kernel.plugins.discover (16 plugins)": {
+      "max_s": 0.020838099997490644,
+      "mean_s": 0.01957786000566557,
+      "median_s": 0.019565699971280992,
+      "min_s": 0.018642200040630996,
+      "reps": 5,
+      "timestamp": "2026-08-16T20:12:59.095079+00:00"
+    },
+    "kernel.register_plugin (overhead propio, x200 plugins ficticios)": {
+      "max_s": 0.0034522999776527286,
+      "mean_s": 0.0016840399941429496,
+      "median_s": 0.0014491000038105994,
+      "min_s": 0.0013235000078566372,
+      "reps": 10,
+      "timestamp": "2026-08-16T20:12:59.360442+00:00"
+    },
+    "psd._compute_psd (todos los trials, Welch)": {
+      "max_s": 0.005697600019630045,
+      "mean_s": 0.0054769800044596195,
+      "median_s": 0.005343500000890344,
+      "min_s": 0.005313200003001839,
+      "reps": 5,
+      "timestamp": "2026-08-16T20:12:44.620682+00:00"
+    },
+    "psd_average._compute_psd (todos los trials, Welch)": {
+      "max_s": 0.010212499997578561,
+      "mean_s": 0.009385439998004586,
+      "median_s": 0.009159399953205138,
+      "min_s": 0.008866999996826053,
+      "reps": 5,
+      "timestamp": "2026-08-16T20:12:44.679620+00:00"
+    },
+    "relative_psd._compute_psd (todos los trials, Welch)": {
+      "max_s": 0.007104900025296956,
+      "mean_s": 0.006292399996891618,
+      "median_s": 0.0062676999950781465,
+      "min_s": 0.005551200010813773,
+      "reps": 5,
+      "timestamp": "2026-08-16T20:12:44.731763+00:00"
+    },
+    "relative_psd._compute_relative_psd (solo la raz\u00f3n)": {
+      "max_s": 8.289999095723033e-05,
+      "mean_s": 7.499998901039362e-05,
+      "median_s": 7.290003122761846e-05,
+      "min_s": 7.159996312111616e-05,
+      "reps": 5,
+      "timestamp": "2026-08-16T20:12:44.693387+00:00"
+    },
+    "trials.cut_trials_single_channel (30501x60)": {
+      "max_s": 0.020260499964933842,
+      "mean_s": 0.01869179999921471,
+      "median_s": 0.018602200027089566,
+      "min_s": 0.017818199994508177,
+      "reps": 10,
+      "timestamp": "2026-08-16T20:12:58.828543+00:00"
+    },
+    "vtk_array.bucle_python (x300000 puntos, patr\u00f3n lento actual)": {
+      "max_s": 0.028959100018255413,
+      "mean_s": 0.028487019997555763,
+      "median_s": 0.028447499964386225,
+      "min_s": 0.02801549999276176,
+      "reps": 5,
+      "timestamp": "2026-08-16T20:13:09.534991+00:00"
+    },
+    "vtk_array.bucle_python (x50000 puntos, patr\u00f3n lento actual)": {
+      "max_s": 0.004693399998359382,
+      "mean_s": 0.0045763799920678135,
+      "median_s": 0.00457960000494495,
+      "min_s": 0.004466399957891554,
+      "reps": 5,
+      "timestamp": "2026-08-16T20:13:09.357037+00:00"
+    },
+    "vtk_array.numpy_to_vtk (x300000 puntos, patr\u00f3n vectorizado)": {
+      "max_s": 0.0004390999674797058,
+      "mean_s": 0.00042212000116705897,
+      "median_s": 0.0004322000313550234,
+      "min_s": 0.00038670003414154053,
+      "reps": 5,
+      "timestamp": "2026-08-16T20:13:09.539287+00:00"
+    },
+    "vtk_array.numpy_to_vtk (x50000 puntos, patr\u00f3n vectorizado)": {
+      "max_s": 0.00010600005043670535,
+      "mean_s": 4.420001059770584e-05,
+      "median_s": 3.0800001695752144e-05,
+      "min_s": 2.2199994418770075e-05,
+      "reps": 5,
+      "timestamp": "2026-08-16T20:13:09.358693+00:00"
+    },
+    "wavelet.compute_wavelet (1 trial, hilo principal hoy)": {
+      "max_s": 0.22488230001181364,
+      "mean_s": 0.21636633332430696,
+      "median_s": 0.2155678999843076,
+      "min_s": 0.20864879997679964,
+      "reps": 3,
+      "timestamp": "2026-08-16T20:12:45.591790+00:00"
+    },
+    "wavelet.render_scalogram (998x3051 puntos)": {
+      "max_s": 0.740853600029368,
+      "mean_s": 0.7193423666758463,
+      "median_s": 0.7252667000284418,
+      "min_s": 0.691906799969729,
+      "reps": 3,
+      "timestamp": "2026-08-16T20:13:03.426252+00:00"
+    },
+    "wavelet_average.compute_wavelet (x20 trials, hilo secundario hoy)": {
+      "max_s": 4.1905662000062875,
+      "mean_s": 4.190181349986233,
+      "median_s": 4.190181349986233,
+      "min_s": 4.189796499966178,
+      "reps": 2,
+      "timestamp": "2026-08-16T20:12:58.164504+00:00"
+    },
+    "wavelet_average.render_scalogram (998x3051 puntos)": {
+      "max_s": 0.7421937999897636,
+      "mean_s": 0.7399558666511439,
+      "median_s": 0.7415816999855451,
+      "min_s": 0.7360920999781229,
+      "reps": 3,
+      "timestamp": "2026-08-16T20:13:08.546691+00:00"
+    }
+  },
+  "v1_2026-08-16": {
+    "erp._render_heatmap (60x30501 points before downsample)": {
+      "max_s": 0.035223099985159934,
+      "mean_s": 0.03504603332839906,
+      "median_s": 0.0352026000036858,
+      "min_s": 0.03471239999635145,
+      "reps": 3,
+      "timestamp": "2026-08-16T20:07:42.349611+00:00"
+    },
+    "fft._compute_fft (all trials)": {
+      "max_s": 0.004717700008768588,
+      "mean_s": 0.003919819998554885,
+      "median_s": 0.0037048999802209437,
+      "min_s": 0.003633100015576929,
+      "reps": 5,
+      "timestamp": "2026-08-16T20:07:19.404688+00:00"
+    },
+    "fft_average._compute_fft_average (all trials)": {
+      "max_s": 0.008041199995204806,
+      "mean_s": 0.007801099994685501,
+      "median_s": 0.00787009997293353,
+      "min_s": 0.007421799993608147,
+      "reps": 5,
+      "timestamp": "2026-08-16T20:07:19.453084+00:00"
+    },
+    "psd._compute_psd (all trials, Welch)": {
+      "max_s": 0.005676200031302869,
+      "mean_s": 0.005147800000850111,
+      "median_s": 0.005067699996288866,
+      "min_s": 0.0047694999957457185,
+      "reps": 5,
+      "timestamp": "2026-08-16T20:07:19.489325+00:00"
+    },
+    "psd_average._compute_psd (all trials, Welch)": {
+      "max_s": 0.011028099979739636,
+      "mean_s": 0.009870299987960606,
+      "median_s": 0.009554699994623661,
+      "min_s": 0.009357500006444752,
+      "reps": 5,
+      "timestamp": "2026-08-16T20:07:19.551391+00:00"
+    },
+    "relative_psd._compute_psd (all trials, Welch)": {
+      "max_s": 0.005473599943798035,
+      "mean_s": 0.005253619991708547,
+      "median_s": 0.005299300013575703,
+      "min_s": 0.0049866000190377235,
+      "reps": 5,
+      "timestamp": "2026-08-16T20:07:19.596646+00:00"
+    },
+    "relative_psd._compute_relative_psd (ratio only)": {
+      "max_s": 4.680000711232424e-05,
+      "mean_s": 4.084000829607248e-05,
+      "median_s": 4.0700018871575594e-05,
+      "min_s": 3.6999990697950125e-05,
+      "reps": 5,
+      "timestamp": "2026-08-16T20:07:19.563393+00:00"
+    },
+    "wavelet.compute_wavelet (1 trial, main thread today)": {
+      "max_s": 0.22222439997131005,
+      "mean_s": 0.21996683332448205,
+      "median_s": 0.2204675999819301,
+      "min_s": 0.21720850002020597,
+      "reps": 3,
+      "timestamp": "2026-08-16T20:07:20.478583+00:00"
+    },
+    "wavelet.render_scalogram (998x3051 points)": {
+      "max_s": 0.7141372000332922,
+      "mean_s": 0.709673966669167,
+      "median_s": 0.7087386999628507,
+      "min_s": 0.7061460000113584,
+      "reps": 3,
+      "timestamp": "2026-08-16T20:07:36.974507+00:00"
+    },
+    "wavelet_average.compute_wavelet (x20 trials, background thread today)": {
+      "max_s": 4.447117200004868,
+      "mean_s": 4.415635100012878,
+      "median_s": 4.415635100012878,
+      "min_s": 4.384153000020888,
+      "reps": 2,
+      "timestamp": "2026-08-16T20:07:33.619788+00:00"
+    },
+    "wavelet_average.render_scalogram (998x3051 points)": {
+      "max_s": 0.7326587999705225,
+      "mean_s": 0.7301369333290495,
+      "median_s": 0.7313089999952354,
+      "min_s": 0.7264430000213906,
+      "reps": 3,
+      "timestamp": "2026-08-16T20:07:42.077566+00:00"
+    }
+  },
+  "v1_baseline": {
+    "erp._render_heatmap (60x30501 points before downsample)": {
+      "max_s": 0.037892899999860674,
+      "mean_s": 0.03672183333643867,
+      "median_s": 0.036766600009286776,
+      "min_s": 0.03550600000016857,
+      "reps": 3,
+      "timestamp": "2026-08-14T14:02:35.624702+00:00"
+    },
+    "fft._compute_fft (all trials)": {
+      "max_s": 0.00440629999502562,
+      "mean_s": 0.004104879999067635,
+      "median_s": 0.004216000001179054,
+      "min_s": 0.0036490999918896705,
+      "reps": 5,
+      "timestamp": "2026-08-14T14:01:37.475378+00:00"
+    },
+    "fft_average._compute_fft_average (all trials)": {
+      "max_s": 0.010716500008129515,
+      "mean_s": 0.009449920002953149,
+      "median_s": 0.009218699997290969,
+      "min_s": 0.008550000013201497,
+      "reps": 5,
+      "timestamp": "2026-08-14T14:01:37.533571+00:00"
+    },
+    "psd._compute_psd (all trials, Welch)": {
+      "max_s": 0.007231399999000132,
+      "mean_s": 0.006483339998521842,
+      "median_s": 0.0063421000086236745,
+      "min_s": 0.005934899993008003,
+      "reps": 5,
+      "timestamp": "2026-08-14T14:01:37.575083+00:00"
+    },
+    "psd_average._compute_psd (all trials, Welch)": {
+      "max_s": 0.01211660000262782,
+      "mean_s": 0.010923579998780042,
+      "median_s": 0.010690800001611933,
+      "min_s": 0.010300200010533445,
+      "reps": 5,
+      "timestamp": "2026-08-14T14:01:37.643611+00:00"
+    },
+    "relative_psd._compute_psd (all trials, Welch)": {
+      "max_s": 0.0073678000044310465,
+      "mean_s": 0.00629882000212092,
+      "median_s": 0.00611159999971278,
+      "min_s": 0.005760900006862357,
+      "reps": 5,
+      "timestamp": "2026-08-14T14:01:37.702255+00:00"
+    },
+    "relative_psd._compute_relative_psd (ratio only)": {
+      "max_s": 0.0005071000050520524,
+      "mean_s": 0.000264019999303855,
+      "median_s": 0.0002055000077234581,
+      "min_s": 0.0001917000045068562,
+      "reps": 5,
+      "timestamp": "2026-08-14T14:01:37.660672+00:00"
+    },
+    "wavelet.compute_wavelet (1 trial, main thread today)": {
+      "max_s": 0.21473789999436121,
+      "mean_s": 0.2113052666633545,
+      "median_s": 0.21067929999844637,
+      "min_s": 0.20849859999725595,
+      "reps": 3,
+      "timestamp": "2026-08-14T14:01:38.545616+00:00"
+    },
+    "wavelet.render_scalogram (998x3051 points)": {
+      "max_s": 5.952514500007965,
+      "mean_s": 5.648967500004801,
+      "median_s": 5.702763799999957,
+      "min_s": 5.291624200006481,
+      "reps": 3,
+      "timestamp": "2026-08-14T14:02:20.912257+00:00"
+    },
+    "wavelet_average.compute_wavelet (x20 trials, background thread today)": {
+      "max_s": 5.490504500005045,
+      "mean_s": 4.8618290000085835,
+      "median_s": 4.8618290000085835,
+      "min_s": 4.233153500012122,
+      "reps": 2,
+      "timestamp": "2026-08-14T14:01:52.553737+00:00"
+    },
+    "wavelet_average.render_scalogram (998x3051 points)": {
+      "max_s": 0.7458507999981521,
+      "mean_s": 0.7367563333342938,
+      "median_s": 0.7328322000103071,
+      "min_s": 0.7315859999944223,
+      "reps": 3,
+      "timestamp": "2026-08-14T14:02:35.335412+00:00"
+    }
+  }
+}

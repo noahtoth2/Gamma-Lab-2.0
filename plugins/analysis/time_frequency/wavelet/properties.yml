@@ -1,0 +1,8 @@
+id: "wavelet"
+name: "Wavelet"
+category: "Analysis"
+subcategory: "Time-Frequency"
+version: "1.0"
+icon: "icn_wavelet.png"
+logic_class: "Wavelet_plugin"
+ui_class: ""

@@ -1,0 +1,915 @@
+\documentclass[11pt,a4paper]{article}
+
+% ------------------------------------------------------------------
+% Paquetes (todos estándar, compatibles con Overleaf sin configuración extra)
+% ------------------------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{ragged2e}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{colortbl}
+\usepackage{multicol}
+
+\definecolor{critico}{RGB}{178,34,34}
+\definecolor{advertencia}{RGB}{184,115,10}
+\definecolor{ok}{RGB}{30,120,90}
+\definecolor{gris}{RGB}{90,90,90}
+\definecolor{fondoheader}{RGB}{240,240,240}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=teal,
+  citecolor=teal,
+  urlcolor=teal,
+  pdftitle={Gamma Lab - Informe de la suite de pruebas},
+  pdfauthor={Auditoria de codigo}
+}
+
+\newcommand{\okmark}{\textcolor{ok}{\textbf{OK}}}
+\newcommand{\errmark}{\textcolor{critico}{\textbf{ERROR}}}
+\newcommand{\warnmark}{\textcolor{advertencia}{\textbf{ADVERTENCIA}}}
+
+\newcolumntype{L}[1]{>{\small\RaggedRight\arraybackslash}p{#1}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{Gamma Lab -- Informe de la suite de pruebas}
+\fancyhead[R]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\titleformat{\section}{\normalfont\Large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\normalfont\large\bfseries}{\thesubsection}{1em}{}
+
+\title{\textbf{Gamma Lab}\\[4pt]\large Informe técnico: análisis de la suite de pruebas\\
+\large Qué prueba cada test, cómo funciona y qué está mal}
+\author{Auditoría de código}
+\date{14 de agosto de 2026}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\begin{abstract}
+\noindent
+Este informe documenta, archivo por archivo, la suite de pruebas automatizadas de \textbf{Gamma Lab}
+(\texttt{test/}): qué verifica cada test, cómo está construido paso a paso, y qué errores concretos se
+encontraron al ejecutarla realmente contra el código actual. La suite tiene tres carpetas:
+\texttt{services\_\allowbreak test} (pruebas unitarias de servicios), \texttt{plugins\_\allowbreak test} (pruebas de integración
+contra una referencia de MATLAB) y \texttt{performance\_\allowbreak test} (benchmarks de rendimiento, agregados durante
+esta auditoría). Ningún archivo de \texttt{core/} o \texttt{plugins/} fue modificado para producir este
+informe; todas las cifras provienen de ejecuciones reales de \texttt{pytest} sobre el repositorio.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+% ==================================================================
+\section{Resumen ejecutivo}
+% ==================================================================
+
+Al ejecutar \texttt{pytest} sobre el repositorio tal como está hoy, el resultado es:
+
+\begin{center}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Carpeta} & \textbf{Archivos} & \textbf{Tests} & \textbf{Estado} \\
+\midrule
+\texttt{test/services\_\allowbreak test/} & 6 & 60 & \okmark\ (60/60 pasan) \\
+\texttt{test/plugins\_\allowbreak test/}  & 8 & 24 & \errmark\ (0/24 se ejecutan -- error de importación) \\
+\texttt{test/performance\_\allowbreak test/} & 2 & 10 & \okmark\ (10/10 pasan) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent\textbf{Total real medido:} \texttt{70 passed, 8 errors} (los 8 errores son archivos completos que
+no logran ni importarse, no fallas de aserciones).
+
+El hallazgo más importante: \textbf{los 8 archivos que validan los plugins de análisis contra una referencia
+de MATLAB no se ejecutan en absoluto}, por un import roto que sobrevivió a un refactor de módulos. Al
+corregir ese import en una copia aislada (fuera del repositorio, solo para diagnóstico -- el repositorio real
+nunca fue modificado), 19 de 24 tests pasan y \textbf{5 fallan de verdad}, revelando errores numéricos reales
+en los plugins \texttt{wavelet}, \texttt{wavelet\_\allowbreak average} y \texttt{psd\_\allowbreak average}.
+
+% ==================================================================
+\section{Arquitectura general de la suite}
+% ==================================================================
+
+\texttt{test/conftest.py} es el único archivo compartido por toda la suite. Hace dos cosas:
+
+\begin{enumerate}
+  \item Agrega la raíz del repositorio a \texttt{sys.path}, para que \texttt{import core...} y
+        \texttt{import plugins...} funcionen sin instalar el proyecto como paquete.
+  \item Registra el marcador \texttt{perf} de \texttt{pytest} (agregado en esta auditoría junto con la
+        carpeta \texttt{performance\_\allowbreak test}, ver sección~\ref{sec:performance}) para que no aparezca un
+        \textit{warning} de marcador desconocido.
+\end{enumerate}
+
+No hay más fixtures compartidas: cada archivo de test define sus propios \textit{helpers} y datos de
+prueba, lo cual produce bastante duplicación de código entre archivos (se detalla por sección).
+
+\subsection{Las tres capas}
+
+\begin{itemize}
+  \item \textbf{\texttt{services\_\allowbreak test/}} -- pruebas unitarias clásicas. Todo lo externo (PyQt5, VTK,
+        \texttt{pyabf}, \texttt{pyedflib}) se sustituye por objetos \textit{Dummy} escritos a mano o por
+        \texttt{unittest.mock.Mock}. No dependen de archivos reales ni de una interfaz gráfica.
+  \item \textbf{\texttt{plugins\_\allowbreak test/}} -- pruebas de integración. Cargan el archivo ABF real de
+        \texttt{test/data/17308005.abf}, cortan los ensayos (\textit{trials}) con la lógica real de
+        \texttt{core/filters/trials.py}, ejecutan el método de cálculo real de cada plugin (usando una
+        subclase ``sin cabeza'' que solo desactiva el renderizado VTK/Qt) y comparan el resultado contra un
+        CSV de referencia generado en MATLAB.
+  \item \textbf{\texttt{performance\_\allowbreak test/}} -- no verifica corrección, mide tiempo de ejecución del código
+        real (cómputo y renderizado) para poder comparar ``antes'' y ``después'' de futuras optimizaciones.
+\end{itemize}
+
+\newpage
+% ==================================================================
+\section{\texttt{test/services\_\allowbreak test/} -- pruebas unitarias de servicios}
+% ==================================================================
+
+Los 6 archivos de esta carpeta suman 60 tests. Todos pasan, todos corren en aproximadamente 1 segundo en
+total, y ninguno toca disco salvo para escribir archivos temporales de exportación (CSV/JSON) que luego se
+leen y verifican.
+
+% ------------------------------------------------------------------
+\subsection{\texttt{test\_\allowbreak dataset.py} -- 7 tests}
+% ------------------------------------------------------------------
+
+\textbf{Qué prueba:} la clase \texttt{DataStore} (\texttt{core/services/data\_\allowbreak store.py}), el diccionario
+central donde se guardan las señales cargadas y cuál está ``activa''.
+
+\textbf{Cómo funciona, paso a paso:}
+\begin{enumerate}
+  \item Un \textit{helper} \texttt{make\_\allowbreak signal\_\allowbreak dataset(...)} construye un \texttt{SignalDataset} real
+        (no un mock) con señales aleatorias de NumPy, para no depender de ningún archivo.
+  \item Cada test crea un \texttt{DataStore()} nuevo (vacío) y ejercita una operación puntual.
+  \item No hay mocks: es todo objeto real, así que si \texttt{DataStore} cambia su comportamiento interno,
+        el test lo detecta de verdad.
+\end{enumerate}
+
+\begin{center}
+\begin{longtable}{L{5.5cm}L{9cm}}
+\toprule
+\textbf{Test} & \textbf{Qué verifica} \\
+\midrule
+\endhead
+\texttt{test\_\allowbreak set\_\allowbreak get\_\allowbreak has\_\allowbreak remove\_\allowbreak and\_\allowbreak items} & \texttt{set/get/has/remove/items} básicos del diccionario. \\
+\texttt{test\_\allowbreak add\_\allowbreak signal\_\allowbreak with\_\allowbreak explicit\_\allowbreak key\_\allowbreak and\_\allowbreak get\_\allowbreak signals\_\allowbreak filters} & Al agregar una señal con clave explícita, \texttt{get\_\allowbreak signals()} la devuelve y excluye entradas no-señal. \\
+\texttt{test\_\allowbreak add\_\allowbreak signal\_\allowbreak auto\_\allowbreak keys\_\allowbreak increment} & Sin clave explícita, las claves autogeneradas siguen el patrón \texttt{raw\_\allowbreak signal\_\allowbreak 1, \_\allowbreak 2, \_\allowbreak 3...} \\
+\texttt{test\_\allowbreak set\_\allowbreak active\_\allowbreak signal\_\allowbreak success\_\allowbreak and\_\allowbreak getters} & Marcar una señal como activa y leerla de vuelta con los distintos getters. \\
+\texttt{test\_\allowbreak set\_\allowbreak active\_\allowbreak signal\_\allowbreak invalid\_\allowbreak key\_\allowbreak raises} & Marcar como activa una clave inexistente lanza \texttt{ValueError}. \\
+\texttt{test\_\allowbreak set\_\allowbreak active\_\allowbreak signal\_\allowbreak non\_\allowbreak signal\_\allowbreak raises} & Marcar como activo algo que no es un \texttt{SignalDataset} lanza \texttt{ValueError}. \\
+\texttt{test\_\allowbreak clear\_\allowbreak active\_\allowbreak signal\_\allowbreak and\_\allowbreak is\_\allowbreak active\_\allowbreak signal} & \texttt{clear\_\allowbreak active\_\allowbreak signal()} deja el store sin señal activa. \\
+\bottomrule
+\end{longtable}
+\end{center}
+
+\textbf{Errores encontrados:} ninguno. Es, junto con \texttt{test\_\allowbreak trials.py}, el archivo mejor construido de
+toda la suite: sin mocks innecesarios, aserciones concretas, nombres de test que describen exactamente el
+caso cubierto.
+
+% ------------------------------------------------------------------
+\subsection{\texttt{test\_\allowbreak export.py} -- 8 tests}
+% ------------------------------------------------------------------
+
+\textbf{Qué prueba:} \texttt{ExportService} (\texttt{core/services/export\_\allowbreak service.py}), que exporta el
+gráfico activo a imagen (PNG/JPEG/BMP/TIFF) o la tabla de datos a CSV/JSON/XLSX.
+
+\textbf{Cómo funciona, paso a paso:}
+\begin{enumerate}
+  \item Un \textit{helper} \texttt{make\_\allowbreak service(tmp\_\allowbreak path, ...)} construye un \texttt{ExportService} real,
+        pero con \texttt{parent}, \texttt{vtk\_\allowbreak widget} y \texttt{alerts} reemplazados por
+        \texttt{unittest.mock.Mock()}.
+  \item Para los tests de imagen, se usa \texttt{monkeypatch} para sustituir las clases de VTK
+        (\texttt{vtkWindowToImageFilter}, \texttt{vtkPNGWriter}, etc.) por clases \texttt{Dummy*} que solo
+        registran si fueron llamadas, sin generar un archivo real.
+  \item Para los tests de tabla, se construyen objetos \texttt{DummyTable}/\texttt{DummyChart}/\texttt{DummyPlot}
+        que imitan la interfaz mínima de VTK que \texttt{export\_\allowbreak table} necesita, y luego se \textbf{lee el
+        archivo CSV/JSON real que quedó escrito en disco} y se compara su contenido.
+\end{enumerate}
+
+\begin{center}
+\begin{longtable}{L{6cm}L{8.5cm}}
+\toprule
+\textbf{Test} & \textbf{Qué verifica} \\
+\midrule
+\endhead
+\texttt{test\_\allowbreak export\_\allowbreak image\_\allowbreak png\_\allowbreak ..\_\allowbreak uses\_\allowbreak png\_\allowbreak writer\_\allowbreak and\_\allowbreak sets\_\allowbreak last\_\allowbreak dir} & Exportar PNG con nombre de archivo explícito dispara el alerta de éxito y actualiza el último directorio usado. \\
+\texttt{test\_\allowbreak export\_\allowbreak image\_\allowbreak dialog\_\allowbreak cancel\_\allowbreak returns\_\allowbreak without\_\allowbreak error} & Cancelar el diálogo de guardado no dispara ningún alerta. \\
+\texttt{test\_\allowbreak export\_\allowbreak image\_\allowbreak unsupported\_\allowbreak format\_\allowbreak calls\_\allowbreak error} & Un formato no soportado (\texttt{gif}) dispara \texttt{alerts.error}. \\
+\texttt{test\_\allowbreak export\_\allowbreak table\_\allowbreak no\_\allowbreak chart\_\allowbreak triggers\_\allowbreak error} & Sin gráfico activo, exportar tabla dispara error. \\
+\texttt{test\_\allowbreak export\_\allowbreak table\_\allowbreak chart\_\allowbreak with\_\allowbreak zero\_\allowbreak plots\_\allowbreak triggers\_\allowbreak error} & Gráfico sin curvas dispara error. \\
+\texttt{test\_\allowbreak export\_\allowbreak table\_\allowbreak csv\_\allowbreak writes\_\allowbreak headers\_\allowbreak and\_\allowbreak rows} & El CSV escrito tiene el encabezado \texttt{P1\_\allowbreak X,P1\_\allowbreak Y,P2\_\allowbreak X,P2\_\allowbreak Y} y las filas correctas -- \textbf{se lee el archivo real}. \\
+\texttt{test\_\allowbreak export\_\allowbreak table\_\allowbreak json\_\allowbreak writes\_\allowbreak records} & El JSON escrito tiene los registros y claves correctos -- \textbf{se lee el archivo real}. \\
+\texttt{test\_\allowbreak export\_\allowbreak table\_\allowbreak uses\_\allowbreak dialog\_\allowbreak and\_\allowbreak respects\_\allowbreak cancel} & Cancelar el diálogo al exportar tabla no escribe nada ni dispara alertas. \\
+\bottomrule
+\end{longtable}
+\end{center}
+
+\textbf{Errores encontrados:}
+\begin{itemize}
+  \item \warnmark\ Los dos primeros tests de exportación de imagen \textbf{no verifican realmente que se
+        haya usado el escritor PNG correcto}. El propio comentario del código lo admite:
+        \textit{``Our Dummy writers are indistinguishable from outside... we rely on the absence of
+        errors''}. Es decir, el test pasaría igual si el código exportara accidentalmente con el escritor de
+        JPEG en vez del de PNG.
+\end{itemize}
+
+\textbf{Cómo mejorarlo:} dar a cada clase \texttt{Dummy*Writer} un atributo de clase distinto (por ejemplo
+\texttt{FORMAT = "png"}) y, tras llamar a \texttt{export\_\allowbreak image}, inspeccionar qué clase fue realmente
+instanciada (guardando la referencia en un contenedor mutable capturado por closure, o parcheando el
+constructor para que registre la instancia creada). Así el test detectaría si el mapeo
+formato→escritor se rompe.
+
+% ------------------------------------------------------------------
+\subsection{\texttt{test\_\allowbreak fileio\_\allowbreak abf.py} -- 2 tests}
+% ------------------------------------------------------------------
+
+\textbf{Qué prueba:} \texttt{FileIOService.load\_\allowbreak abf()}.
+
+\textbf{Cómo funciona, paso a paso:}
+\begin{enumerate}
+  \item Una clase \texttt{DummyABF} simula el objeto que devuelve la librería \texttt{pyabf}: 2 canales de
+        1000 muestras a 1000\,Hz, canal 0 = seno de 5\,Hz, canal 1 = coseno de 7\,Hz.
+  \item \texttt{monkeypatch.setattr(fileio\_\allowbreak mod, "pyabf", ...)} reemplaza el módulo \texttt{pyabf} completo
+        dentro de \texttt{core.services.fileio\_\allowbreak service} por un objeto que expone \texttt{ABF = DummyABF}.
+  \item Se llama a \texttt{FileIOService().load\_\allowbreak abf(...)} de verdad, y se verifica la forma, la tasa de
+        muestreo, los nombres de canal y valores puntuales conocidos (\texttt{sin(0)=0}, \texttt{cos(0)=1}).
+  \item Una segunda clase \texttt{DummyABF\_\allowbreak Raises} simula un archivo corrupto (el constructor lanza
+        \texttt{IOError}) y se verifica que el servicio propague la excepción.
+\end{enumerate}
+
+\begin{center}
+\begin{longtable}{L{5.5cm}L{9cm}}
+\toprule
+\textbf{Test} & \textbf{Qué verifica} \\
+\midrule
+\endhead
+\texttt{test\_\allowbreak load\_\allowbreak abf\_\allowbreak valid} & Carga correcta: forma \texttt{(2,1000)}, \texttt{fs=1000.0}, nombres de canal, valores en \texttt{t=0} correctos, eje de tiempo del mismo largo que la señal. \\
+\texttt{test\_\allowbreak load\_\allowbreak abf\_\allowbreak corrupted} & Un ABF que lanza \texttt{IOError} al abrirse propaga \texttt{IOError} o \texttt{ValueError}, no lo esconde. \\
+\bottomrule
+\end{longtable}
+\end{center}
+
+\textbf{Errores encontrados:} ninguno funcional. Es un archivo pequeño pero completo para lo que cubre.
+
+\textbf{Cómo mejorarlo:} existe una clase \texttt{DummyABF\_\allowbreak BadShape} (canales de largo distinto) definida
+en el archivo pero \textbf{sin ningún test que la use} -- el caso ``canales con longitudes inconsistentes''
+está escrito pero nunca se ejecuta. Agregar un tercer test que la use y documente si el loader debe recortar,
+rellenar o lanzar una excepción en ese caso.
+
+% ------------------------------------------------------------------
+\subsection{\texttt{test\_\allowbreak fileio\_\allowbreak edf.py} -- 2 tests}
+% ------------------------------------------------------------------
+
+\textbf{Qué prueba:} \texttt{FileIOService.load\_\allowbreak edf()}. Mismo patrón que el archivo ABF, pero simulando
+\texttt{pyedflib.EdfReader}.
+
+\textbf{Cómo funciona, paso a paso:}
+\begin{enumerate}
+  \item \texttt{DummyEDF\_\allowbreak Uniform} simula un EDF válido de 2 canales, misma longitud (1000 muestras) y misma
+        frecuencia de muestreo (1000\,Hz) en ambos.
+  \item \texttt{monkeypatch} reemplaza \texttt{pyedflib.EdfReader} por esta clase.
+  \item Se verifica forma, formato, nombres de canal y unidades.
+  \item \texttt{DummyEDF\_\allowbreak Raises} simula un archivo corrupto; se verifica que el servicio propague la
+        excepción.
+\end{enumerate}
+
+\begin{center}
+\begin{longtable}{L{5.5cm}L{9cm}}
+\toprule
+\textbf{Test} & \textbf{Qué verifica} \\
+\midrule
+\endhead
+\texttt{test\_\allowbreak load\_\allowbreak edf\_\allowbreak valid\_\allowbreak uniform} & Carga correcta de un EDF con canales uniformes: forma, formato, nombres y unidades. \\
+\texttt{test\_\allowbreak load\_\allowbreak edf\_\allowbreak corrupted} & Un EDF que lanza \texttt{IOError} al abrirse propaga la excepción. \\
+\bottomrule
+\end{longtable}
+\end{center}
+
+\textbf{Errores encontrados:}
+\begin{itemize}
+  \item \warnmark\ El archivo define \texttt{DummyEDF\_\allowbreak Inconsistent} -- un EDF donde los dos canales tienen
+        \textbf{distinta longitud y distinta frecuencia de muestreo} (1000 vs.\ 900 muestras, 1000\,Hz vs.\
+        500\,Hz), con un comentario explícito: \textit{``Depending on your implementation this should raise
+        (preferred) or trigger a resampling path. Here we expect a failure.''} Pero \textbf{ningún test la
+        usa}. El caso más realista y más propenso a bugs (archivos EDF reales casi nunca tienen todos los
+        canales a la misma frecuencia) es precisamente el que quedó sin cubrir, a pesar de que alguien ya
+        había pensado en él y escrito el \textit{fixture}.
+\end{itemize}
+
+\textbf{Cómo mejorarlo:} agregar
+\texttt{test\_\allowbreak load\_\allowbreak edf\_\allowbreak inconsistent\_\allowbreak channels\_\allowbreak raises\_\allowbreak or\_\allowbreak resamples} usando
+\texttt{DummyEDF\_\allowbreak Inconsistent}, y decidir (y documentar en el propio \texttt{fileio\_\allowbreak service.py}) cuál de
+los dos comportamientos es el esperado -- hoy no se sabe si el servicio maneja ese caso correctamente porque
+nunca se ejecutó contra él.
+
+% ------------------------------------------------------------------
+\subsection{\texttt{test\_\allowbreak measurement.py} -- 28 tests}
+% ------------------------------------------------------------------
+
+\textbf{Qué prueba:} \texttt{MeasurementService} (\texttt{core/services/measurement\_\allowbreak service.py}), la
+máquina de estados que maneja las mediciones interactivas de pendiente/amplitud sobre los gráficos VTK
+(click en punto A, click en punto B, guardar medición).
+
+\textbf{Cómo funciona, paso a paso:}
+\begin{enumerate}
+  \item \texttt{create\_\allowbreak basic\_\allowbreak service()} construye un \texttt{MeasurementService} con \texttt{parent},
+        \texttt{vtk\_\allowbreak widget}, \texttt{get\_\allowbreak active\_\allowbreak chart}, \texttt{ds\_\allowbreak get} y \texttt{ds\_\allowbreak set} todos
+        \texttt{Mock()} -- nunca toca VTK ni Qt real.
+  \item \texttt{create\_\allowbreak service\_\allowbreak with\_\allowbreak data()} además precarga \texttt{svc.\_\allowbreak ref\_\allowbreak data} con un par de listas
+        \texttt{xs}/\texttt{ys} conocidas, para los tests de búsqueda de punto más cercano.
+  \item Cada grupo de tests ejercita una porción de la máquina de estados y luego \textbf{inspecciona
+        atributos internos} (\texttt{svc.\_\allowbreak state}, \texttt{svc.\_\allowbreak current}, \texttt{svc.\_\allowbreak ref\_\allowbreak axes}, etc.)
+        directamente -- es una prueba de caja blanca, no solo de la interfaz pública.
+  \item Para las funciones que calculan la medición en sí (\texttt{two\_\allowbreak point\_\allowbreak metrics},
+        \texttt{amplitude\_\allowbreak in\_\allowbreak window}), se usa \texttt{@patch(...)} para inyectar un resultado conocido y
+        así aislar la lógica de guardado/estado de la lógica numérica (que vive en
+        \texttt{core/filters/measurements.py} y \textbf{no tiene test propio}, ver
+        sección~\ref{sec:cobertura}).
+\end{enumerate}
+
+Los 28 tests se agrupan en 8 bloques temáticos dentro del propio archivo:
+
+\begin{center}
+\begin{longtable}{L{4.5cm}p{1cm}L{7.5cm}}
+\toprule
+\textbf{Bloque} & \textbf{\#} & \textbf{Qué cubre} \\
+\midrule
+\endhead
+Máquina de estados (\texttt{start}/\texttt{cancel}) & 7 & Iniciar medición de pendiente/amplitud, bloqueo por reentrada, rechazo si se pide \texttt{slope\_\allowbreak all\_\allowbreak trials} desde un plugin que no es \texttt{trials}, cancelar limpia todo el estado. \\
+Persistencia (\texttt{\_\allowbreak save\_\allowbreak measurement}) & 5 & IDs autoincrementales (\texttt{slope-001, -002...}, incluso pasando de 999 a 1000), contexto (\texttt{view\_\allowbreak id}, \texttt{trial\_\allowbreak id}, \texttt{channel\_\allowbreak name}) guardado y sobreescribible. \\
+Pendientes por trial & 3 & \texttt{\_\allowbreak compute\_\allowbreak and\_\allowbreak save\_\allowbreak slopes\_\allowbreak each\_\allowbreak trial\_\allowbreak by\_\allowbreak index} recorre todas las columnas \texttt{trial\_\allowbreak N} de la tabla VTK activa, calcula la pendiente de cada una y genera overlays solo para el trial actualmente mostrado. \\
+Eliminación & 3 & Quitar la última medición, manejar lista vacía, limpiar todas las mediciones. \\
+Helpers de búsqueda & 4 & \texttt{\_\allowbreak nearest\_\allowbreak index} (coincidencia exacta, interpolado, sin datos, con duplicados). \\
+Contexto/limpieza & 2 & \texttt{cancel()} limpia todo el estado interno; \texttt{clear\_\allowbreak all\_\allowbreak measurements()} preserva el contexto (\texttt{view\_\allowbreak id}, \texttt{trial\_\allowbreak id}) aunque borre las mediciones. \\
+Flujos de integración & 3 & Flujo completo de una medición de pendiente y una de amplitud de principio a fin; múltiples mediciones consecutivas incrementan el contador correctamente. \\
+\bottomrule
+\end{longtable}
+\end{center}
+
+\textbf{Errores encontrados:} ninguno funcional en este archivo -- es el más grande y, junto con
+\texttt{test\_\allowbreak trials.py}, el más exhaustivo de la suite (28 tests para un solo servicio).
+
+\textbf{Cómo mejorarlo:} al ser pruebas de caja blanca (dependen de nombres de atributos privados como
+\texttt{\_\allowbreak state}, \texttt{\_\allowbreak current}), son frágiles ante refactors internos de \texttt{MeasurementService}
+aunque el comportamiento externo no cambie. No es un error, pero conviene documentarlo como una decisión de
+diseño consciente: si se refactoriza el servicio, hay que actualizar estos 28 tests aunque la interfaz
+pública no cambie.
+
+% ------------------------------------------------------------------
+\subsection{\texttt{test\_\allowbreak trials.py} -- 13 tests}
+% ------------------------------------------------------------------
+
+\textbf{Qué prueba:} \texttt{core/filters/trials.py}, el módulo que detecta estímulos y corta la señal
+continua en ensayos (\textit{trials}). Es el \textbf{único archivo de \texttt{services\_\allowbreak test} que no usa
+ningún mock}: corre la lógica real sobre señales sintéticas (senos e impulsos) construidas a mano y sobre
+objetos \texttt{SignalDataset} reales.
+
+\textbf{Cómo funciona, paso a paso:}
+\begin{enumerate}
+  \item Dos generadores, \texttt{impulse\_\allowbreak train(...)} (tren de impulsos en índices dados) y
+        \texttt{sine(...)} (seno de frecuencia conocida), producen señales sintéticas donde el resultado
+        esperado se puede calcular a mano.
+  \item \texttt{make\_\allowbreak signal\_\allowbreak dataset(...)} las empaqueta en un \texttt{SignalDataset} real.
+  \item Los tests atacan el módulo en tres niveles: funciones internas de bajo nivel
+        (\texttt{\_\allowbreak detect\_\allowbreak onsets\_\allowbreak abs}, \texttt{\_\allowbreak compute\_\allowbreak windows}, \texttt{\_\allowbreak extract\_\allowbreak trials\_\allowbreak matrix},
+        \texttt{\_\allowbreak assemble\_\allowbreak trials\_\allowbreak general}) y la función pública de extremo a extremo
+        (\texttt{cut\_\allowbreak trials\_\allowbreak single\_\allowbreak channel}).
+\end{enumerate}
+
+\begin{center}
+\begin{longtable}{L{6.3cm}L{8.2cm}}
+\toprule
+\textbf{Test} & \textbf{Qué verifica} \\
+\midrule
+\endhead
+\texttt{test\_\allowbreak detect\_\allowbreak onsets\_\allowbreak abs\_\allowbreak no\_\allowbreak crossings} & Señal en cero no detecta ningún cruce de umbral. \\
+\texttt{test\_\allowbreak detect\_\allowbreak onsets\_\allowbreak abs\_\allowbreak single\_\allowbreak crossing} & Un único impulso se detecta en el índice correcto. \\
+\texttt{test\_\allowbreak detect\_\allowbreak onsets\_\allowbreak abs\_\allowbreak multiple\_\allowbreak crossings\_\allowbreak mixed\_\allowbreak sign} & Detecta cruces positivos y negativos por igual (usa valor absoluto). \\
+\texttt{test\_\allowbreak compute\_\allowbreak windows\_\allowbreak fixed\_\allowbreak basic\_\allowbreak clipping\_\allowbreak and\_\allowbreak ns} & Modo \texttt{fixed}: la ventana se recorta correctamente contra los bordes de la señal y \texttt{Ns} coincide con \texttt{(t1-t0)*fs}. \\
+\texttt{test\_\allowbreak compute\_\allowbreak windows\_\allowbreak until\_\allowbreak next\_\allowbreak onset\_\allowbreak groups\_\allowbreak and\_\allowbreak last\_\allowbreak to\_\allowbreak end} & Modo \texttt{until\_\allowbreak next\_\allowbreak onset}: cada ventana termina donde empieza la siguiente, y la última llega hasta el final de la señal. \\
+\texttt{test\_\allowbreak extract\_\allowbreak trials\_\allowbreak matrix\_\allowbreak alignment\_\allowbreak and\_\allowbreak padding} & El relleno (\textit{padding}) con NaN al inicio/final de cada columna respeta el \texttt{lead\_\allowbreak pad} calculado. \\
+\texttt{test\_\allowbreak assemble\_\allowbreak trials\_\allowbreak general\_\allowbreak groups\_\allowbreak three\_\allowbreak per\_\allowbreak trial} & Con 3 estímulos por ensayo, agrupa correctamente 6 columnas en 2 trials. \\
+\texttt{test\_\allowbreak cut\_\allowbreak trials\_\allowbreak no\_\allowbreak stimuli\_\allowbreak returns\_\allowbreak single\_\allowbreak column} & Sin estímulos detectados, devuelve 1 sola columna (toda la señal como un trial). \\
+\texttt{test\_\allowbreak cut\_\allowbreak trials\_\allowbreak forced\_\allowbreak no\_\allowbreak stimulus\_\allowbreak even\_\allowbreak with\_\allowbreak triggers} & Con \texttt{stim\_\allowbreak expected=0}, ignora los disparos presentes en el canal de estímulo aunque existan. \\
+\texttt{test\_\allowbreak cut\_\allowbreak trials\_\allowbreak single\_\allowbreak stim\_\allowbreak fixed\_\allowbreak window\_\allowbreak alignment\_\allowbreak and\_\allowbreak ns} & Con 2 estímulos, ventana fija: el valor de la señal en el instante del estímulo (índice cero relativo) coincide exactamente con la señal original. \\
+\texttt{test\_\allowbreak cut\_\allowbreak trials\_\allowbreak single\_\allowbreak stim\_\allowbreak until\_\allowbreak next\_\allowbreak onset\_\allowbreak variable\_\allowbreak lengths} & 3 estímulos separados de forma desigual producen columnas de largo variable, rellenadas con NaN donde corresponde. \\
+\texttt{test\_\allowbreak cut\_\allowbreak trials\_\allowbreak multi\_\allowbreak stim\_\allowbreak assemble\_\allowbreak ok} & 2 trials de 3 estímulos cada uno se agrupan correctamente y \texttt{stim\_\allowbreak per\_\allowbreak trial}/\texttt{stim\_\allowbreak detected} quedan bien en los metadatos. \\
+\texttt{test\_\allowbreak cut\_\allowbreak trials\_\allowbreak stim\_\allowbreak channel\_\allowbreak differs\_\allowbreak from\_\allowbreak target\_\allowbreak channel} & El canal de detección de estímulo puede ser distinto del canal que se corta, y la alineación sigue siendo exacta. \\
+\bottomrule
+\end{longtable}
+\end{center}
+
+\textbf{Errores encontrados:} ninguno. Es, con \texttt{test\_\allowbreak dataset.py}, el ejemplo a seguir del resto de la
+suite: sin mocks, con valores esperados calculados de forma independiente (no copiados de la salida del
+propio código), y con nombres de test que documentan exactamente la condición de borde cubierta.
+
+\newpage
+% ==================================================================
+\section{\texttt{test/plugins\_\allowbreak test/} -- validación contra referencia de MATLAB}
+\label{sec:plugins-test}
+% ==================================================================
+
+Los 8 archivos de esta carpeta comparten \textbf{exactamente la misma metodología} y los mismos parámetros
+de corte de ensayos -- solo cambian el plugin bajo prueba y las tolerancias numéricas.
+
+\subsection{Metodología común, paso a paso}
+
+\begin{enumerate}
+  \item \textbf{Carga real:} \texttt{FileIOService().load\_\allowbreak abf("test/data/17308005.abf")} -- el mismo
+        archivo ABF real en los 8 archivos.
+  \item \textbf{Corte de trials real:} \texttt{core.filters.trials.cut\_\allowbreak trials\_\allowbreak single\_\allowbreak channel(...)} con los
+        mismos parámetros en los 8 archivos: canal objetivo \texttt{0}, canal de estímulo \texttt{1}, umbral
+        \texttt{0.7}, ventana \texttt{t0=-0.05\,s} a \texttt{t1=4.00\,s}, modo \texttt{until\_\allowbreak next\_\allowbreak onset}.
+  \item \textbf{Doble ``sin cabeza'':} se define una subclase del plugin real (p.\ ej.\
+        \texttt{AverageDouble(Average\_\allowbreak plugin)}) que sobreescribe \emph{únicamente} los métodos de
+        creación de VTK/renderizado (\texttt{ensure\_\allowbreak vtk}, \texttt{render\_\allowbreak *}) para que no hagan nada, y
+        expone un método \texttt{run()} que reproduce la lógica de cálculo real del botón ``Calcular'' sin
+        pasar por la interfaz gráfica.
+  \item \textbf{Cálculo real:} se invoca el método de cálculo real del plugin (p.\ ej.\
+        \texttt{\_\allowbreak compute\_\allowbreak fft}, \texttt{compute\_\allowbreak wavelet}) -- ninguna fórmula matemática está mockeada.
+  \item \textbf{Referencia MATLAB:} se carga un CSV (\texttt{test/data/*\_\allowbreak data\_\allowbreak matlab.csv}) generado
+        previamente en MATLAB con el mismo ABF y los mismos parámetros.
+  \item \textbf{Tres comparaciones} entre el resultado de la app y la referencia:
+  \begin{enumerate}[label=(\alph*)]
+    \item \textbf{Forma:} ambas matrices son 2D y no están vacías tras recortarlas al tamaño mínimo común.
+    \item \textbf{Correlación de Pearson} por columna (un trial/canal) o por fila (una frecuencia, en los
+          plugins de tiempo-frecuencia), exigiendo un mínimo \texttt{MIN\_\allowbreak CORR}.
+    \item \textbf{Tolerancia puntual:} al menos \texttt{FRAC\_\allowbreak MIN\_\allowbreak PASS} (95\% en los 8 archivos) de los
+          puntos deben cumplir \texttt{|APP - MATLAB| <= FRAC\_\allowbreak ATOL}, con un reporte detallado de las peores
+          filas/columnas si falla.
+  \end{enumerate}
+\end{enumerate}
+
+\subsection{Tabla de tolerancias por plugin}
+
+\begin{center}
+\begin{tabular}{lccl}
+\toprule
+\textbf{Plugin} & \textbf{Correlación mín.} & \textbf{Tolerancia puntual} & \textbf{Eje de comparación} \\
+\midrule
+\texttt{average}         & 0.98 & 0.001  & columna (trial) \\
+\texttt{erp}              & 0.98 & 0.001  & columna \\
+\texttt{fft}              & 0.98 & 0.75   & columna \\
+\texttt{fft\_\allowbreak average}     & 0.98 & 0.15   & columna \\
+\texttt{psd}              & 0.88 & 0.0001 & columna \\
+\texttt{psd\_\allowbreak average}     & 0.95 & 0.0001 & columna \\
+\texttt{wavelet}          & 0.80 & 0.0001 & fila (frecuencia) \\
+\texttt{wavelet\_\allowbreak average} & 0.80 & 0.0001 & fila (frecuencia) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Estas tolerancias no siguen ningún criterio común: \texttt{fft} acepta un error puntual de \texttt{0.75}
+mientras \texttt{psd} exige \texttt{0.0001} -- cuatro órdenes de magnitud de diferencia entre dos plugins que
+calculan cosas relacionadas (espectro de frecuencia). Todo indica que se ajustaron caso por caso hasta que el
+test pasara, no a partir de un presupuesto de error definido de antemano.
+
+\subsection{Error crítico \#1: los 8 archivos no se pueden ni importar}
+\label{sec:import-error}
+
+\errmark\ Los 8 archivos contienen, en sus primeras líneas, estos dos imports:
+
+\begin{verbatim}
+from core.services.fileio import FileIOService
+from core.services.trial_dataset import TrialDataset
+\end{verbatim}
+
+Ninguno de esos dos módulos existe hoy en el repositorio. Los módulos reales son:
+
+\begin{verbatim}
+from core.services.fileio_service import FileIOService   # antes: core.services.fileio
+from core.model.trial_dataset import TrialDataset         # antes: core.services.trial_dataset
+\end{verbatim}
+
+Al ejecutar \texttt{pytest} sobre el repositorio real, esto es lo que ocurre (salida real, verificada):
+
+\begin{verbatim}
+ERROR test/plugins_test/test_average_plugin.py
+ERROR test/plugins_test/test_erp_plugin.py
+ERROR test/plugins_test/test_fft_average_plugin.py
+ERROR test/plugins_test/test_fft_plugin.py
+ERROR test/plugins_test/test_psd_average_plugin.py
+ERROR test/plugins_test/test_psd_plugin.py
+ERROR test/plugins_test/test_wavelet_average_plugin.py
+ERROR test/plugins_test/test_wavelet_plugin.py
+8 errors during collection
+\end{verbatim}
+
+\textbf{Por qué pasó:} en algún momento se movió/renombró \texttt{core/services/fileio.py} a
+\texttt{core/services/fileio\_\allowbreak service.py}, y se separó \texttt{TrialDataset} de \texttt{core/services/} a un
+módulo nuevo \texttt{core/model/trial\_\allowbreak dataset.py}. Los 8 archivos de test nunca se actualizaron para
+reflejar ese refactor. Como no hay integración continua (\textit{CI}) configurada en el repositorio, nadie lo
+notó: la validación contra MATLAB de 8 de los plugins más importantes de la aplicación lleva rota desde ese
+refactor sin que ninguna corrida automática lo haya señalado.
+
+\textbf{Cómo mejorarlo:}
+\begin{enumerate}
+  \item Corregir los dos imports en los 8 archivos (cambio mecánico, una línea por archivo).
+  \item Agregar un \textit{workflow} de CI (por ejemplo GitHub Actions) que corra \texttt{pytest} en cada
+        \textit{push}/\textit{pull request}, para que un error de este tipo se detecte en minutos y no de
+        forma manual meses después.
+\end{enumerate}
+
+\subsection{Qué se descubre al corregir el import (diagnóstico, no aplicado al repositorio)}
+\label{sec:tras-fix}
+
+Para saber si, más allá del import, el resto de la lógica de estos 8 archivos funciona, se corrigieron esos
+dos imports \textbf{en una copia del código fuera del repositorio} (usada solo para diagnóstico y luego
+eliminada; el repositorio real de Gamma Lab nunca fue modificado). Resultado real de esa ejecución:
+
+\begin{center}
+\begin{tabular}{lccl}
+\toprule
+\textbf{Archivo} & \textbf{Tests} & \textbf{Resultado} & \textbf{Detalle} \\
+\midrule
+\texttt{test\_\allowbreak average\_\allowbreak plugin.py} & 3 & \okmark & todos pasan \\
+\texttt{test\_\allowbreak erp\_\allowbreak plugin.py} & 3 & \okmark & todos pasan \\
+\texttt{test\_\allowbreak fft\_\allowbreak plugin.py} & 3 & \okmark & todos pasan \\
+\texttt{test\_\allowbreak fft\_\allowbreak average\_\allowbreak plugin.py} & 3 & \okmark & todos pasan \\
+\texttt{test\_\allowbreak psd\_\allowbreak plugin.py} & 3 & \okmark & todos pasan \\
+\texttt{test\_\allowbreak psd\_\allowbreak average\_\allowbreak plugin.py} & 3 & \warnmark & 1 falla (correlación columna~0 = 0.58, se exige 0.95) \\
+\texttt{test\_\allowbreak wavelet\_\allowbreak plugin.py} & 3 & \errmark & 2 fallan (ver \S\ref{sec:wavelet-root-cause}) \\
+\texttt{test\_\allowbreak wavelet\_\allowbreak average\_\allowbreak plugin.py} & 3 & \errmark & 2 fallan (mismo patrón) \\
+\midrule
+\textbf{Total} & \textbf{24} & \textbf{19 pasan / 5 fallan} & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection{Causa raíz del fallo en \texttt{wavelet} y \texttt{wavelet\_\allowbreak average}}
+\label{sec:wavelet-root-cause}
+
+Los tests \texttt{test\_\allowbreak correlation\_\allowbreak by\_\allowbreak row} y \texttt{test\_\allowbreak pointwise\_\allowbreak fraction\_\allowbreak allowing\_\allowbreak outliers} de
+ambos archivos fallan de forma severa: correlación mínima por fila de \textbf{-0.23} (se exige 0.80) y solo
+el \textbf{0.26\%} de los puntos dentro de tolerancia (se exige 95\%). Investigando el porqué:
+
+\begin{enumerate}
+  \item Los tests usan por defecto \texttt{scale\_\allowbreak log=True} (remuestreo del eje de frecuencia a escala
+        logarítmica antes de comparar), igual que la interfaz cuando el usuario activa la casilla ``Log''.
+  \item Al desactivar únicamente ese paso (\texttt{\_\allowbreak scale\_\allowbreak log}, en
+        \texttt{wavelet\_\allowbreak plugin.py}, líneas 242--267) y comparar el escalograma \emph{crudo} contra la misma
+        referencia de MATLAB, la correlación media por fila sube de \textbf{0.22 a 0.75}. Esto aísla a
+        \texttt{\_\allowbreak scale\_\allowbreak log} como el responsable principal del colapso: el remuestreo interpola
+        linealmente sobre una rejilla de solo 998 puntos (\textasciitilde0.5\,Hz de paso), lo cual degrada
+        gravemente la resolución cerca de 1\,Hz.
+  \item Aun así, con el escalograma crudo (sin ese paso), el \textbf{60\% de las filas (596 de 998)} siguen
+        por debajo del umbral de correlación, y la razón de magnitud APP/MATLAB varía fila a fila entre
+        \textbf{0.54$\times$ y 11.3$\times$} -- no es un factor de escala constante corregible con un
+        multiplicador único. Esto es compatible con dos causas adicionales ya identificadas en el código:
+        la decimación de la señal (\texttt{sig[::factor]}, línea 202) \textbf{sin filtro anti-aliasing}
+        previo, y una posible diferencia de convención de normalización entre el wavelet Morlet de
+        \texttt{pywt.cwt} y el \texttt{cwt} de MATLAB.
+\end{enumerate}
+
+\textbf{Cómo mejorarlo:}
+\begin{enumerate}
+  \item Revisar y corregir \texttt{\_\allowbreak scale\_\allowbreak log} en \texttt{wavelet\_\allowbreak plugin.py} -- probablemente necesita una
+        rejilla de interpolación más fina que la resolución lineal original, no la misma cantidad de puntos.
+  \item Agregar un filtro pasa-bajos antes de cualquier decimación en \texttt{compute\_\allowbreak wavelet}.
+  \item Verificar contra la documentación de MATLAB qué convención de normalización usa su \texttt{cwt} para
+        el wavelet de Morlet, y ajustar el cálculo de \texttt{pywt} para que coincida (factor de escala
+        explícito si es necesario).
+  \item Una vez corregido, bajar \texttt{FRAC\_\allowbreak ATOL} y subir \texttt{MIN\_\allowbreak CORR} a valores acordes al resto de
+        la suite (hoy estos dos plugins tienen, con diferencia, las tolerancias más laxas) para que el test
+        siga siendo una guardia de regresión útil y no solo un test que ``pasa como sea''.
+\end{enumerate}
+
+\subsubsection{Fallo en \texttt{psd\_\allowbreak average}}
+
+La columna~0 (el primer trial) tiene correlación 0.58 contra un umbral de 0.95. Es consistente con un
+hallazgo de corrección independiente detectado al leer el código:
+\texttt{psd\_\allowbreak average\_\allowbreak plugin.py}, línea 255, llama a
+\texttt{np.nan\_\allowbreak to\_\allowbreak num(Xds, copy=False, ...)} -- cuando no hay decimación (\texttt{srt==1}),
+\texttt{Xds} es literalmente el mismo array en memoria que \texttt{X}, así que esta limpieza de NaN
+\textbf{muta el array de trials compartido en el sitio}, en vez de trabajar sobre una copia. Cualquier otro
+plugin que use el mismo \texttt{TrialDataset} después puede estar viendo datos ya alterados.
+
+\textbf{Cómo mejorarlo:} cambiar la línea 255 a
+\texttt{Xds = np.nan\_\allowbreak to\_\allowbreak num(Xds, copy=True, ...)} (o copiar \texttt{X} antes de decimar), y agregar un test
+unitario en \texttt{services\_\allowbreak test} que verifique explícitamente que \texttt{\_\allowbreak compute\_\allowbreak psd} no modifica su
+argumento de entrada.
+
+\newpage
+% ==================================================================
+\section{Detalle por archivo de \texttt{test/plugins\_\allowbreak test/}}
+% ==================================================================
+
+Todos siguen la plantilla de la sección anterior; aquí se detalla qué calcula específicamente cada plugin y
+sus 3 tests.
+
+\subsection{\texttt{test\_\allowbreak average\_\allowbreak plugin.py}}
+Compara el promedio punto a punto entre trials (\texttt{np.mean} sobre el eje de trials) contra
+\texttt{average\_\allowbreak data\_\allowbreak matlab.csv}.
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+\texttt{test\_\allowbreak shape\_\allowbreak and\_\allowbreak length} & Forma no vacía tras recorte a tamaño común. \\
+\texttt{test\_\allowbreak correlation\_\allowbreak with\_\allowbreak matlab} & Correlación $\geq 0.98$. \\
+\texttt{test\_\allowbreak pointwise\_\allowbreak fraction\_\allowbreak allowing\_\allowbreak outliers} & $\geq$95\% de puntos con error $\leq 0.001$. \\
+\bottomrule
+\end{tabular}
+\end{center}
+Estado real: \okmark\ los 3 pasan (una vez corregido el import de la sección~\ref{sec:import-error}).
+
+\subsection{\texttt{test\_\allowbreak erp\_\allowbreak plugin.py}}
+Compara la matriz \textit{butterfly} (una fila por trial) contra \texttt{erp\_\allowbreak data\_\allowbreak matlab.csv}.
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+\texttt{test\_\allowbreak shape\_\allowbreak and\_\allowbreak columns} & Forma no vacía tras recorte. \\
+\texttt{test\_\allowbreak correlation\_\allowbreak by\_\allowbreak column} & Correlación por trial $\geq 0.98$. \\
+\texttt{test\_\allowbreak pointwise\_\allowbreak fraction\_\allowbreak allowing\_\allowbreak outliers} & $\geq$95\% de puntos con error $\leq 0.001$. \\
+\bottomrule
+\end{tabular}
+\end{center}
+Estado real: \okmark\ los 3 pasan.
+
+\subsection{\texttt{test\_\allowbreak fft\_\allowbreak plugin.py}}
+Compara la magnitud de \texttt{np.fft.rfft} (sin ventana, sin normalizar) contra \texttt{fft\_\allowbreak data\_\allowbreak matlab.csv}.
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+\texttt{test\_\allowbreak shape\_\allowbreak and\_\allowbreak columns} & Forma no vacía tras recorte. \\
+\texttt{test\_\allowbreak correlation\_\allowbreak by\_\allowbreak column} & Correlación por trial $\geq 0.98$. \\
+\texttt{test\_\allowbreak pointwise\_\allowbreak fraction\_\allowbreak allowing\_\allowbreak outliers} & $\geq$95\% de puntos con error $\leq 0.75$ (tolerancia más laxa de toda la suite). \\
+\bottomrule
+\end{tabular}
+\end{center}
+Estado real: \okmark\ los 3 pasan -- pero con una tolerancia puntual de \texttt{0.75} que oculta casi
+cualquier discrepancia salvo las más groseras.
+
+\subsection{\texttt{test\_\allowbreak fft\_\allowbreak average\_\allowbreak plugin.py}}
+Igual que el anterior, pero sobre el promedio de la magnitud FFT entre trials; referencia
+\texttt{fft\_\allowbreak average\_\allowbreak data\_\allowbreak matlab.csv}. Estado real: \okmark\ los 3 pasan (tolerancia \texttt{0.15}).
+
+\subsection{\texttt{test\_\allowbreak psd\_\allowbreak plugin.py}}
+Compara la densidad espectral de potencia (\texttt{scipy.signal.welch}) contra \texttt{psd\_\allowbreak data\_\allowbreak matlab.csv}.
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+\texttt{test\_\allowbreak shape\_\allowbreak and\_\allowbreak columns} & Forma no vacía tras recorte. \\
+\texttt{test\_\allowbreak correlation\_\allowbreak by\_\allowbreak column} & Correlación por trial $\geq 0.88$. \\
+\texttt{test\_\allowbreak pointwise\_\allowbreak fraction\_\allowbreak allowing\_\allowbreak outliers} & $\geq$95\% de puntos con error $\leq 0.0001$. \\
+\bottomrule
+\end{tabular}
+\end{center}
+Estado real: \okmark\ los 3 pasan.
+
+\subsection{\texttt{test\_\allowbreak psd\_\allowbreak average\_\allowbreak plugin.py}}
+Igual que el anterior sobre el promedio entre trials; referencia \texttt{psd\_\allowbreak average\_\allowbreak data\_\allowbreak matlab.csv}.
+Estado real: \warnmark\ \texttt{test\_\allowbreak shape\_\allowbreak and\_\allowbreak columns} y \texttt{test\_\allowbreak pointwise\_\allowbreak fraction\_\allowbreak allowing\_\allowbreak outliers}
+pasan; \textbf{\texttt{test\_\allowbreak correlation\_\allowbreak by\_\allowbreak column} falla} (columna~0, corr.\ 0.58 vs.\ umbral 0.95). Ver
+causa raíz en la sección anterior (mutación in-place de NaN).
+
+\subsection{\texttt{test\_\allowbreak wavelet\_\allowbreak plugin.py}}
+Compara el escalograma de un único trial (CWT con wavelet de Morlet vía \texttt{pywt.cwt}) contra
+\texttt{wavelet\_\allowbreak data\_\allowbreak matlab.csv}.
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+\texttt{test\_\allowbreak shape\_\allowbreak and\_\allowbreak size} & Forma no vacía tras recorte. \\
+\texttt{test\_\allowbreak correlation\_\allowbreak by\_\allowbreak row} & Correlación por frecuencia $\geq 0.80$. \\
+\texttt{test\_\allowbreak pointwise\_\allowbreak fraction\_\allowbreak allowing\_\allowbreak outliers} & $\geq$95\% de puntos con error $\leq 0.0001$. \\
+\bottomrule
+\end{tabular}
+\end{center}
+Estado real: \errmark\ solo \texttt{test\_\allowbreak shape\_\allowbreak and\_\allowbreak size} pasa; los otros dos fallan. Ver
+sección~\ref{sec:wavelet-root-cause}.
+
+\subsection{\texttt{test\_\allowbreak wavelet\_\allowbreak average\_\allowbreak plugin.py}}
+Igual que el anterior, promediando el escalograma de todos los trials; referencia
+\texttt{wavelet\_\allowbreak average\_\allowbreak data\_\allowbreak matlab.csv}. Estado real: \errmark\ mismo patrón de fallo que
+\texttt{wavelet}.
+
+\newpage
+% ==================================================================
+\section{\texttt{test/performance\_\allowbreak test/} -- benchmarks de rendimiento}
+\label{sec:performance}
+% ==================================================================
+
+Carpeta agregada durante esta auditoría (no existía antes). No verifica corrección -- mide tiempo de
+ejecución del código \textbf{real}, sin mocks, contra el ABF real, para poder comparar ``antes'' y
+``después'' de futuras optimizaciones de rendimiento.
+
+\subsection{Infraestructura compartida: \texttt{bench\_\allowbreak common.py}}
+
+No es un archivo de test en sí, sino el módulo de utilidades que usan los otros dos:
+
+\begin{enumerate}
+  \item \texttt{time\_\allowbreak block(fn, *args, reps=5, warmup=1, **kwargs)} -- ejecuta \texttt{fn} una vez de
+        calentamiento (se descarta) y luego \texttt{reps} veces cronometradas con
+        \texttt{time.perf\_\allowbreak counter()}; devuelve mínimo, mediana, media y máximo en segundos.
+  \item \texttt{record(nombre, stats, label=...)} -- agrega el resultado a
+        \texttt{results/perf\_\allowbreak results.json}, bajo la etiqueta del \textit{run} (variable de entorno
+        \texttt{GAMMA\_\allowbreak PERF\_\allowbreak LABEL}, por defecto \texttt{"baseline"}). Etiquetas distintas no se pisan entre
+        sí.
+  \item \texttt{compare\_\allowbreak report.py} -- script standalone que lee ese JSON y imprime una tabla
+        antes/después con el factor de aceleración (\textit{speedup}) por benchmark.
+\end{enumerate}
+
+\subsection{\texttt{test\_\allowbreak compute\_\allowbreak bench.py} -- 7 tests}
+
+\textbf{Qué mide:} el tiempo de cómputo puro (sin VTK) de los 6 plugins de análisis. Hoy, 5 de esos 6
+(\texttt{fft}, \texttt{fft\_\allowbreak average}, \texttt{psd}, \texttt{psd\_\allowbreak average}, \texttt{relative\_\allowbreak psd}) y el
+\texttt{wavelet} simple corren \textbf{en el hilo principal de Qt}, sin \texttt{QThread} -- así que este
+número es directamente ``cuánto se congela la interfaz por cada clic en Calcular''.
+
+\textbf{Cómo funciona, paso a paso:}
+\begin{enumerate}
+  \item \textit{Fixtures} de módulo cargan el ABF real una sola vez y cortan los trials con los mismos
+        parámetros que \texttt{plugins\_\allowbreak test} (sección~\ref{sec:plugins-test}).
+  \item Cada test instancia el plugin real (sin interfaz gráfica) y llama a \texttt{time\_\allowbreak block} sobre su
+        método de cálculo real (p.\ ej.\ \texttt{plug.\_\allowbreak compute\_\allowbreak fft}, \texttt{plug.compute\_\allowbreak wavelet}).
+  \item Los resultados se imprimen en vivo con \texttt{pytest -s} y quedan guardados en el JSON.
+\end{enumerate}
+
+\begin{center}
+\begin{tabular}{lr}
+\toprule
+\textbf{Benchmark} & \textbf{Mediana medida} \\
+\midrule
+\texttt{fft.\_\allowbreak compute\_\allowbreak fft} (60 trials) & 3.7\,ms \\
+\texttt{fft\_\allowbreak average.\_\allowbreak compute\_\allowbreak fft\_\allowbreak average} (60 trials) & 8.3\,ms \\
+\texttt{psd.\_\allowbreak compute\_\allowbreak psd} (Welch, 60 trials) & 4.9\,ms \\
+\texttt{psd\_\allowbreak average.\_\allowbreak compute\_\allowbreak psd} (Welch, 60 trials) & 9.6\,ms \\
+\texttt{relative\_\allowbreak psd.\_\allowbreak compute\_\allowbreak psd} (Welch, 60 trials) & 5.7\,ms \\
+\texttt{relative\_\allowbreak psd.\_\allowbreak compute\_\allowbreak relative\_\allowbreak psd} (razón) & 0.07\,ms \\
+\texttt{wavelet.compute\_\allowbreak wavelet} (1 trial, CWT) & \textbf{203\,ms} \\
+\texttt{wavelet\_\allowbreak average.compute\_\allowbreak wavelet} ($\times$20 trials) & \textbf{4.17\,s} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{``Error'' encontrado (de firma, no de lógica):} al escribirlo, \texttt{psd\_\allowbreak average.\_\allowbreak compute\_\allowbreak psd}
+resultó tener \textbf{una firma distinta} a \texttt{psd}/\texttt{relative\_\allowbreak psd} (no acepta el parámetro
+\texttt{detrend}) -- confirmado al leer el código, no es un bug del test sino una inconsistencia real entre
+plugins que deberían ser gemelos. El benchmark se ajustó para llamarlo con su firma real.
+
+\textbf{Cómo mejorarlo (del código bajo prueba, no del test):} unificar la firma de \texttt{\_\allowbreak compute\_\allowbreak psd}
+entre \texttt{psd}, \texttt{psd\_\allowbreak average} y \texttt{relative\_\allowbreak psd} -- hoy son tres copias casi idénticas con
+pequeñas diferencias accidentales, lo cual además facilita que un fix se aplique a una copia y se olvide en
+las otras (exactamente lo que pasó con el bug de NaN de la sección~\ref{sec:tras-fix}).
+
+\subsection{\texttt{test\_\allowbreak render\_\allowbreak bench.py} -- 3 tests}
+
+\textbf{Qué mide:} el bucle \texttt{for i... for j...: img.SetScalarComponentFromFloat(...)} que construyen
+\texttt{wavelet}, \texttt{wavelet\_\allowbreak average} y \texttt{erp} para dibujar su mapa 2D en VTK, en vez de
+vectorizar con \texttt{vtk.util.numpy\_\allowbreak support.numpy\_\allowbreak to\_\allowbreak vtk} (como ya hace
+\texttt{core/utils/adapters.py} para todos los gráficos de líneas de la app).
+
+\textbf{Cómo funciona, paso a paso:}
+\begin{enumerate}
+  \item Se instancia el plugin real y se le asignan los atributos mínimos que \texttt{render\_\allowbreak scalogram}/
+        \texttt{\_\allowbreak render\_\allowbreak heatmap} necesitan (\texttt{vtk\_\allowbreak widget}, \texttt{\_\allowbreak context\_\allowbreak view}) apuntando a
+        una \texttt{vtkRenderWindow} en modo \textit{offscreen} (\texttt{SetOffScreenRendering(1)}) -- no se
+        abre ninguna ventana, pero el código de renderizado que corre es exactamente el real.
+  \item Se cronometra la llamada real a \texttt{render\_\allowbreak scalogram}/\texttt{\_\allowbreak render\_\allowbreak heatmap} con datos
+        reales (un escalograma calculado con \texttt{compute\_\allowbreak wavelet} sobre el ABF real).
+\end{enumerate}
+
+\begin{center}
+\begin{tabular}{lrr}
+\toprule
+\textbf{Benchmark} & \textbf{Tamaño} & \textbf{Mediana} \\
+\midrule
+\texttt{wavelet.render\_\allowbreak scalogram} & 998$\times$3051 (3.0M puntos) & \textbf{701\,ms} \\
+\texttt{wavelet\_\allowbreak average.render\_\allowbreak scalogram} & 998$\times$3051 (3.0M puntos) & \textbf{728\,ms} \\
+\texttt{erp.\_\allowbreak render\_\allowbreak heatmap} & 60$\times$30501 $\to$ recortado internamente a 60$\times$1907 & 34\,ms \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Por qué \texttt{erp} sale tan barato en comparación:} \texttt{erp\_\allowbreak plugin.py} tiene un límite interno
+(\texttt{MAX\_\allowbreak SAMPLES = 2000}) que recorta el eje de tiempo \emph{antes} de entrar al bucle, así que en la
+práctica solo itera sobre $\sim$114\,000 puntos, no 1.8 millones. Sufre el mismo defecto de diseño que
+\texttt{wavelet}/\texttt{wavelet\_\allowbreak average}, pero un límite de resolución ya existente lo protege de pagar el
+costo completo.
+
+\textbf{Cómo mejorarlo:} reemplazar el doble bucle de Python en los tres archivos por
+\texttt{numpy\_\allowbreak support.numpy\_\allowbreak to\_\allowbreak vtk(Z.ravel(order="C"))} seguido de
+\texttt{img.GetPointData().SetScalars(vtk\_\allowbreak array)} -- el mismo patrón que ya usa
+\texttt{core/utils/adapters.py}. Es una función existente y probada en el propio repositorio; el problema no
+es la ausencia de la herramienta correcta, sino que estos tres archivos nunca la adoptaron.
+
+\newpage
+% ==================================================================
+\section{Cobertura: qué no tiene ningún test}
+\label{sec:cobertura}
+% ==================================================================
+
+No hay archivo de test para:
+
+\begin{multicols}{2}
+\begin{itemize}[nosep]
+  \item \texttt{core/kernel.py}
+  \item \texttt{core/plugins/loader.py}
+  \item \texttt{core/plugins/manager.py}
+  \item \texttt{core/plugins/interfaces.py}
+  \item \texttt{core/services/settings\_\allowbreak service.py}
+  \item \texttt{core/utils/adapters.py}
+  \item \texttt{core/utils/plugin\_\allowbreak alerts.py}
+  \item \texttt{core/utils/vtk\_\allowbreak context\_\allowbreak menu.py}
+  \item \texttt{core/filters/measurements.py}
+  \item \texttt{app/view/main\_\allowbreak window.py}
+  \item \texttt{plugins/preprocessing/prepare/filter/}
+  \item \texttt{plugins/preprocessing/prepare/artifact\_\allowbreak remove/}
+  \item \texttt{plugins/preprocessing/trials/} (el plugin de UI, solo el módulo interno \texttt{core.filters.trials} tiene test)
+  \item \texttt{plugins/io/open\_\allowbreak signal/}
+  \item \texttt{plugins/measure/amplitude/}
+  \item \texttt{plugins/measure/slope/}
+  \item \texttt{plugins/analysis/frequency/relative\_\allowbreak psd/} (sección \S\ref{sec:relative-psd-bug})
+  \item \texttt{plugins/faq/help/}
+  \item Todos los archivos \texttt{*\_\allowbreak ui.py} de cada plugin
+\end{itemize}
+\end{multicols}
+
+Sobre este último punto: \texttt{relative\_\allowbreak psd} no tiene ningún archivo en \texttt{test/plugins\_\allowbreak test/} --
+fue precisamente el plugin cuyo comportamiento revisamos manualmente en esta auditoría (el selector
+``Calculation Mode (GF)'' no tiene ningún efecto posible sobre el resultado de Potencia Relativa, por
+construcción algebraica de la fórmula en \texttt{\_\allowbreak compute\_\allowbreak relative\_\allowbreak psd}). Es un ejemplo concreto de cómo
+un hueco de cobertura se traduce directamente en un bug que llegó al usuario final sin que ningún test lo
+hubiera podido atrapar.
+\label{sec:relative-psd-bug}
+
+\newpage
+% ==================================================================
+\section{Tabla resumen de todos los errores encontrados}
+% ==================================================================
+
+\begin{center}
+\begin{longtable}{L{1.6cm}L{4.3cm}L{8.3cm}}
+\toprule
+\textbf{Severidad} & \textbf{Ubicación} & \textbf{Descripción} \\
+\midrule
+\endhead
+\errmark & \texttt{test/plugins\_\allowbreak test/*.py} (8 archivos) & Import roto: \texttt{core.services.fileio} / \texttt{core.services.trial\_\allowbreak dataset} no existen. 0 de 24 tests se ejecutan. \\
+\errmark & \texttt{wavelet\_\allowbreak plugin.py} \texttt{\_\allowbreak scale\_\allowbreak log} & Remuestreo a escala log degrada la correlación con MATLAB de 0.75 a 0.22; bug real de implementación, no solo de tolerancia. \\
+\errmark & \texttt{wavelet\_\allowbreak plugin.py} \texttt{compute\_\allowbreak wavelet} & Decimación sin filtro anti-aliasing + posible desajuste de normalización Morlet vs.\ MATLAB; 60\% de filas por debajo del umbral incluso sin el bug de \texttt{\_\allowbreak scale\_\allowbreak log}. \\
+\errmark & \texttt{psd\_\allowbreak average\_\allowbreak plugin.py}:255 & \texttt{np.nan\_\allowbreak to\_\allowbreak num(Xds, copy=False)} muta en el sitio el array de trials compartido; probable causa del fallo de correlación en columna~0. \\
+\warnmark & \texttt{test\_\allowbreak export.py} & Los tests de exportación PNG no verifican qué escritor VTK se usó realmente, solo que no hubo excepción. \\
+\warnmark & \texttt{test\_\allowbreak fileio\_\allowbreak edf.py} & \texttt{DummyEDF\_\allowbreak Inconsistent} (canales de distinta frecuencia) está escrita pero ningún test la usa. \\
+\warnmark & \texttt{test\_\allowbreak fileio\_\allowbreak abf.py} & \texttt{DummyABF\_\allowbreak BadShape} está escrita pero ningún test la usa. \\
+\warnmark & Tolerancias de \texttt{plugins\_\allowbreak test} & Sin criterio común (0.0001 a 0.75); parecen ajustadas para pasar, no derivadas de un presupuesto de error. \\
+\warnmark & \texttt{psd\_\allowbreak average.\_\allowbreak compute\_\allowbreak psd} & Firma distinta a \texttt{psd}/\texttt{relative\_\allowbreak psd} (sin parámetro \texttt{detrend}) sin razón aparente. \\
+\warnmark & Toda la suite & Sin integración continua (CI): el import roto de 8 archivos completos no se detectó automáticamente. \\
+\warnmark & \S\ref{sec:cobertura} & 12 archivos de \texttt{core/} y 8 plugins sin ningún test, incluyendo \texttt{relative\_\allowbreak psd}, donde ya se confirmó un bug real. \\
+\bottomrule
+\end{longtable}
+\end{center}
+
+% ==================================================================
+\section{Recomendaciones priorizadas}
+% ==================================================================
+
+\begin{enumerate}
+  \item \textbf{Corregir los dos imports} en los 8 archivos de \texttt{test/plugins\_\allowbreak test/} -- cambio de una
+        línea por archivo, restaura de inmediato el 100\% de la validación contra MATLAB.
+  \item \textbf{Agregar un \textit{workflow} de CI} que corra \texttt{pytest} en cada cambio, para que este
+        tipo de rotura se detecte en minutos, no en la siguiente auditoría manual.
+  \item \textbf{Investigar y corregir \texttt{\_\allowbreak scale\_\allowbreak log} y la decimación sin filtro} en
+        \texttt{wavelet\_\allowbreak plugin.py}/\texttt{wavelet\_\allowbreak average\_\allowbreak plugin.py} -- es el fallo más severo
+        encontrado (correlación negativa contra la referencia).
+  \item \textbf{Corregir la mutación in-place de NaN} en \texttt{psd\_\allowbreak average\_\allowbreak plugin.py:255} -- copiar el
+        array antes de limpiar.
+  \item \textbf{Vectorizar el renderizado} de \texttt{wavelet}, \texttt{wavelet\_\allowbreak average} y \texttt{erp} con
+        \texttt{numpy\_\allowbreak to\_\allowbreak vtk}, reutilizando el patrón que ya existe en \texttt{core/utils/adapters.py}
+        (fix de rendimiento medido en \S\ref{sec:performance}: hasta 700\,ms por cálculo).
+  \item \textbf{Cubrir con tests} el kernel, el sistema de plugins, \texttt{filter}, \texttt{artifact\_\allowbreak remove},
+        \texttt{trials\_\allowbreak plugin}, \texttt{open\_\allowbreak signal}, \texttt{amplitude}/\texttt{slope} y, en particular,
+        \texttt{relative\_\allowbreak psd} -- donde ya se confirmó un bug de comportamiento sin ningún test que lo
+        hubiera atrapado.
+  \item \textbf{Revisar las tolerancias} de \texttt{fft}/\texttt{fft\_\allowbreak average}/\texttt{wavelet} una vez
+        corregidos los bugs de fondo, para que dejen de estar ajustadas ``a que pase'' y vuelvan a ser una
+        guardia de regresión real.
+  \item \textbf{Completar los casos de borde ya escritos pero sin usar:} \texttt{DummyEDF\_\allowbreak Inconsistent} y
+        \texttt{DummyABF\_\allowbreak BadShape} solo necesitan un test que los invoque.
+\end{enumerate}
+
+% ==================================================================
+\section{Conclusión}
+% ==================================================================
+
+La suite de pruebas de Gamma Lab tiene, en las partes que sí se ejecutan
+(\texttt{services\_\allowbreak test} y la nueva \texttt{performance\_\allowbreak test}), un diseño sólido: datos reales o sintéticos
+con resultado esperado calculado de forma independiente, mocking quirúrgico solo donde hace falta (VTK, Qt,
+\texttt{pyabf}, \texttt{pyedflib}), y aserciones concretas. El problema no es de diseño sino de
+\textbf{mantenimiento}: la capa que más importa para la credibilidad científica de la aplicación --la
+validación de cada plugin de análisis contra una referencia de MATLAB-- lleva rota por un import desde un
+refactor que nadie sincronizó con los tests, y nadie lo detectó porque no hay integración continua. Al
+corregir ese único punto de falla, la suite deja de ``pasar en silencio'' y empieza a hacer su trabajo:
+señala tres plugins (\texttt{wavelet}, \texttt{wavelet\_\allowbreak average}, \texttt{psd\_\allowbreak average}) con errores
+numéricos reales que hoy llegan al usuario sin ninguna alerta.
+
+\end{document}

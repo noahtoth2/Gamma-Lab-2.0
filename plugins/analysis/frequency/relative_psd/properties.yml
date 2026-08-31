@@ -1,0 +1,8 @@
+id: "relative_psd"
+name: "Relative PSD"
+category: "Analysis"
+subcategory: "Frequency"
+version: "1.0"
+icon: "icn_relative_psd.png"
+logic_class: "Relative_psd_plugin"
+ui_class: ""

@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Diagrama de componentes - Sistema Completo - GammaLab 2.0</title>
+<style>
+  :root{
+    --bg:#f5f4f0; --panel:#ffffff; --border:#d8d5cb; --border-strong:#b8b4a6;
+    --text:#20291d; --text-secondary:#5f5e5a; --canvas-bg:#faf9f6;
+    --comp-bg:#f7ecc0; --comp-border:#33342e;
+    --core-bg:#dfeaf5; --core-border:#2b5f8a;
+    --new-bg:#f9ddd6; --new-border:#8a3a2b;
+    --neutral-bg:#eceae4; --neutral-border:#6b6a63;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--text);background:var(--bg);}
+  #toolbar{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--border);flex-wrap:wrap;position:sticky;top:0;z-index:50;}
+  #toolbar h1{font-size:15px;font-weight:600;margin:0 16px 0 0;color:var(--text);white-space:nowrap;cursor:text;padding:4px 6px;border-radius:4px;}
+  #toolbar h1[contenteditable="true"]:hover{background:#f0efe9;}
+  #toolbar h1[contenteditable="true"]:focus{outline:1.5px solid #6f9c4d;background:#fff;}
+  button,select{font-family:inherit;font-size:13px;padding:7px 12px;border-radius:6px;border:1px solid var(--border-strong);background:#fff;color:var(--text);cursor:pointer;}
+  button:hover{background:#f0efe9;}
+  button.primary{background:#6f9c4d;color:#fff;border-color:#6f9c4d;}
+  button:disabled{opacity:0.6;cursor:default;}
+  .hint{font-size:12px;color:var(--text-secondary);margin-left:auto;white-space:nowrap;}
+  #wrap{width:100%;height:calc(100% - 54px);overflow:auto;background:var(--canvas-bg);}
+  #canvas{position:relative;width:1660px;height:860px;background-image:radial-gradient(#eae8e0 1px, transparent 1px);background-size:20px 20px;}
+  svg#lines{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;}
+
+  .comp-box{position:absolute;background:var(--comp-bg);border:1.6px solid var(--comp-border);border-radius:3px;box-shadow:0 1px 3px rgba(0,0,0,0.12);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 12px;cursor:move;text-align:center;}
+  .comp-box.connect-armed{outline:3px solid #0f6e56;outline-offset:2px;z-index:8;}
+  .comp-box.core{background:var(--core-bg);border-color:var(--core-border);}
+  .comp-box.nuevo{background:var(--new-bg);border-color:var(--new-border);}
+  .comp-box.neutral{background:var(--neutral-bg);border-color:var(--neutral-border);}
+  .comp-box .stereo{font-size:11px;opacity:0.85;}
+  .comp-box .name{font-size:13px;font-weight:700;margin-top:3px;line-height:1.3;}
+  .comp-box .status{font-size:10px;margin-top:3px;opacity:0.8;line-height:1.3;}
+  .comp-box [contenteditable="true"]:focus{outline:1px solid #6f9c4d;background:#fffef6;}
+  .comp-icon{position:absolute;top:10px;right:-9px;width:16px;height:22px;pointer-events:none;}
+  .comp-icon .r{position:absolute;left:0;width:16px;height:7px;border:1.3px solid var(--comp-border);}
+  .comp-box .comp-icon .r{background:var(--comp-bg);}
+  .comp-box.core .comp-icon .r{background:var(--core-bg);border-color:var(--core-border);}
+  .comp-box.nuevo .comp-icon .r{background:var(--new-bg);border-color:var(--new-border);}
+  .comp-box.neutral .comp-icon .r{background:var(--neutral-bg);border-color:var(--neutral-border);}
+  .comp-icon .r1{top:0;} .comp-icon .r2{top:13px;}
+  .comp-delete{position:absolute;top:-9px;right:-9px;width:20px;height:20px;border-radius:50%;background:#c0392b;color:#fff;border:none;font-size:13px;line-height:1;cursor:pointer;display:none;align-items:center;justify-content:center;padding:0;z-index:9;}
+  .comp-box:hover .comp-delete{display:flex;}
+  .resize-handle{position:absolute;right:0;bottom:0;width:16px;height:16px;cursor:nwse-resize;background:linear-gradient(135deg, transparent 50%, #8a8878 50%);z-index:9;}
+
+  .iface-label{position:absolute;font-size:10.5px;color:var(--text);background:var(--canvas-bg);padding:1px 4px;white-space:pre;cursor:text;max-width:260px;z-index:3;}
+  .iface-label[contenteditable="true"]:focus{outline:1px solid #6f9c4d;background:#fff;}
+  .waypoint-handle{position:absolute;width:13px;height:13px;margin-left:-6.5px;margin-top:-6.5px;border-radius:50%;background:#0f6e56;border:2px solid #fff;box-shadow:0 0 0 1px #0f6e56;cursor:grab;z-index:5;}
+  .waypoint-handle:active{cursor:grabbing;}
+  .waypoint-handle.auto{background:#b8b4a6;box-shadow:0 0 0 1px #b8b4a6;opacity:0.85;}
+  .endpoint-handle{position:absolute;width:11px;height:11px;margin-left:-5.5px;margin-top:-5.5px;border-radius:50%;background:#2b5f8a;border:2px solid #fff;box-shadow:0 0 0 1px #2b5f8a;cursor:grab;z-index:5;}
+  .endpoint-handle:active{cursor:grabbing;}
+  .endpoint-handle.auto{background:#b8b4a6;box-shadow:0 0 0 1px #b8b4a6;opacity:0.7;}
+  .legend{position:absolute;left:20px;top:20px;background:#fff;border:1px solid var(--border-strong);border-radius:6px;padding:8px 12px;font-size:11px;z-index:10;display:flex;gap:14px;align-items:center;box-shadow:0 1px 3px rgba(0,0,0,0.1);flex-wrap:wrap;max-width:280px;}
+  .legend .sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:middle;}
+</style>
+</head>
+<body>
+
+<div id="toolbar">
+  <h1 contenteditable="true" spellcheck="false">Diagrama de componentes — Sistema completo GammaLab 2.0 (23 CU)</h1>
+  <button id="btnConnect">🔗 Conectar</button>
+  <button id="btnDeleteConn">🗑 Borrar conexión</button>
+  <select id="exportScale" title="Resolución de la imagen exportada">
+    <option value="1">PNG 1x (rápido)</option>
+    <option value="2" selected>PNG 2x (alta calidad)</option>
+    <option value="3">PNG 3x (máxima calidad)</option>
+    <option value="4">PNG 4x (impresión)</option>
+  </select>
+  <button id="btnExport">Exportar PNG</button>
+  <button id="btnSaveFile" class="primary">💾 Guardar cambios</button>
+  <button id="btnLoadFile">📂 Cargar cambios</button>
+  <input type="file" id="fileLoadInput" accept="application/json" style="display:none">
+  <button id="btnReset" title="Vuelve al diseño original, descartando tus cambios guardados en este navegador">↺ Restablecer diseño</button>
+  <span class="hint" id="hint">Arrastra o redimensiona cualquier caja · Puntos azules = extremos, verde = curvatura (doble clic restablece) · "Conectar" agrega líneas · Clic en una línea para borrarla · Autoguardado</span>
+</div>
+
+<div id="wrap"><div id="canvas">
+  <div class="legend">
+    <span><span class="sw" style="background:#dfeaf5;border:1.5px solid #2b5f8a;"></span>Núcleo (ya existe)</span>
+    <span><span class="sw" style="background:#f7ecc0;border:1.5px solid #33342e;"></span>Servicio / plugin (ya existe)</span>
+    <span><span class="sw" style="background:#f9ddd6;border:1.5px solid #8a3a2b;"></span>Nuevo</span>
+    <span><span class="sw" style="background:#eceae4;border:1.5px solid #6b6a63;"></span>Fuera del alcance de los 23 CU</span>
+  </div>
+  <svg id="lines"></svg>
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+/*
+  Vista de componentes del SISTEMA COMPLETO. Agrupa las 23 fichas en
+  categorias reales de plugins ya existentes en el arbol del proyecto
+  (io, preprocessing, analysis, measure, faq) mas los componentes nuevos
+  que casi todas las fichas terminan necesitando: TaskOrchestrator
+  (CU-020/014, el verdadero centro de gravedad segun el propio campo
+  "Extensiones" de las fichas), ProjectService (CU-021/023/005),
+  TooltipHelper (CU-010). measure/* y faq/* existen en el codigo pero
+  NINGUNA de las 23 fichas los cubre -- se muestran en gris neutro.
+
+  Cada conexion conserva la notacion bola-zocalo (bola = interfaz que
+  ofrece el proveedor, zocalo = interfaz que requiere el consumidor) pero
+  ahora es editable: los extremos (azul) y el punto de curvatura (verde)
+  se pueden arrastrar igual que en el resto de los diagramas del sistema
+  completo.
+*/
+const canvas = document.getElementById('canvas');
+const svg = document.getElementById('lines');
+
+const STORAGE_KEY = 'gammalab_diagrama_componentes_sistema_completo_v1';
+const CANVAS_MARGIN = 400;
+
+function ensureCanvasFits(x, y, w, h){
+  const neededW = x + w + 100;
+  const neededH = y + h + 100;
+  const curW = canvas.offsetWidth, curH = canvas.offsetHeight;
+  if (neededW > curW) canvas.style.width = (neededW + CANVAS_MARGIN) + 'px';
+  if (neededH > curH) canvas.style.height = (neededH + CANVAS_MARGIN) + 'px';
+}
+
+let legendPos = { x: 20, y: 20 };
+function layoutLegend(){
+  const el = document.querySelector('.legend');
+  el.style.left = legendPos.x + 'px';
+  el.style.top = legendPos.y + 'px';
+}
+function attachLegendDrag(){
+  const el = document.querySelector('.legend');
+  el.style.cursor = 'move';
+  el.addEventListener('mousedown', (e)=>{
+    const DRAG_THRESHOLD = 4;
+    const startX = e.clientX, startY = e.clientY;
+    const startLeft = legendPos.x, startTop = legendPos.y;
+    let dragging = false;
+    function onMove(ev){
+      const dx = ev.clientX - startX, dy = ev.clientY - startY;
+      if (!dragging){
+        if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return;
+        dragging = true; ev.preventDefault();
+      }
+      legendPos.x = startLeft + dx; legendPos.y = startTop + dy;
+      layoutLegend();
+      ensureCanvasFits(legendPos.x, legendPos.y, el.offsetWidth, el.offsetHeight);
+    }
+    function onUp(){
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      if (dragging) scheduleSave();
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+}
+
+const defaultState = {
+  boxMain:     {x:360,  y:40,  w:600, h:100, core:true,  name:'MainWindow / Interfaz Principal', status:'ya existe'},
+  boxKernel:   {x:360,  y:190, w:600, h:110, core:true,  name:'Kernel — Registro de plugins y servicios', status:'ya existe (execute() de\ndespacho está comentado, sin uso)'},
+  boxDataStore:{x:40,   y:350, w:280, h:110,              name:'DataStore', status:'ya existe'},
+  boxOrch:     {x:360,  y:350, w:600, h:130, nuevo:true,  name:'TaskOrchestrator — Orquestador del núcleo', status:'nuevo — CU-020 / CU-014\n(centro de gravedad real del sistema)'},
+  boxExport:   {x:1320, y:350, w:280, h:110,              name:'ExportService', status:'ya existe — raster (png/jpg/\nbmp/tiff) + tablas; EMF nuevo (CU-017)'},
+  boxFileIO:   {x:40,   y:530, w:280, h:110,              name:'FileIOService', status:'ya existe — abf/edf/mat'},
+  boxProject:  {x:360,  y:530, w:280, h:110, nuevo:true,  name:'ProjectService (.glab)', status:'nuevo — CU-021 / CU-023 / CU-005'},
+  boxTooltip:  {x:680,  y:530, w:280, h:110, nuevo:true,  name:'TooltipHelper', status:'nuevo — CU-010'},
+  boxSettings: {x:1000, y:530, w:280, h:110,              name:'SettingsService', status:'ya existe — clase completa,\nno registrada en main.py hoy'},
+  boxPM:       {x:1320, y:530, w:280, h:110,              name:'PluginManager + Loader (YAML)', status:'ya existe'},
+  boxIO:       {x:40,   y:690, w:280, h:130,              name:'Plugins · E/S\n(OpenSignal)', status:'ya existe'},
+  boxPrep:     {x:360,  y:690, w:280, h:130,              name:'Plugins · Preprocesamiento\n(Trials, ArtifactRemove, Filter)', status:'ya existen; Ajuste de\nmuestreo nuevo (CU-018)'},
+  boxAnalysis: {x:680,  y:690, w:280, h:130,              name:'Plugins · Análisis\n(FFT*, PSD*, Average, ERP, Wavelet*)', status:'ya existen; PAC/PPC\nnuevos (CU-001 / CU-002)'},
+  boxMeasure:  {x:1000, y:690, w:280, h:130, neutral:true, name:'Plugins · Medición\n(Amplitude, Slope)', status:'ya existen — fuera del\nalcance de los 23 CU'},
+  boxFAQ:      {x:1320, y:690, w:280, h:130, neutral:true, name:'Plugins · FAQ/Ayuda\n(manual PDF estático)', status:'ya existe — distinto de la\nayuda contextual del CU-010'},
+};
+
+const defaultConnections = [
+  { id:'c01', from:'boxKernel',    fromSide:'top',    to:'boxMain',     toSide:'bottom', label:'get_service() /\nget_plugins_by_category()', labelOffset:{dx:0,dy:-16} },
+  { id:'c02', from:'boxPM',        fromSide:'left',   to:'boxKernel',   toSide:'right',  label:'load_all() / discover()\n(YAML properties.yml)', labelOffset:{dx:0,dy:-30} },
+  { id:'c03', from:'boxDataStore', fromSide:'top',    to:'boxKernel',   toSide:'bottom', label:'register_service\n"DataStore"', labelOffset:{dx:-40,dy:-8} },
+  { id:'c04', from:'boxFileIO',    fromSide:'top',    to:'boxKernel',   toSide:'bottom', label:'register_service\n"FileIO"', labelOffset:{dx:-40,dy:14} },
+  { id:'c05', from:'boxOrch',      fromSide:'top',    to:'boxKernel',   toSide:'bottom', label:'register_service\n"task_orchestrator" (nuevo)', labelOffset:{dx:60,dy:-8} },
+  { id:'c06', from:'boxSettings',  fromSide:'top',    to:'boxKernel',   toSide:'bottom', label:'nuevo — hoy NO\nregistrada en main.py', labelOffset:{dx:40,dy:14} },
+  { id:'c07', from:'boxProject',   fromSide:'top',    to:'boxMain',     toSide:'bottom', label:'guardar()/abrir()/\ncerrar() (nuevo)', labelOffset:{dx:-260,dy:60} },
+  { id:'c08', from:'boxKernel',    fromSide:'bottom', to:'boxIO',       toSide:'top',    label:'register_plugin', labelOffset:{dx:-60,dy:-8} },
+  { id:'c09', from:'boxKernel',    fromSide:'bottom', to:'boxPrep',     toSide:'top',    label:'register_plugin', labelOffset:{dx:-30,dy:-8} },
+  { id:'c10', from:'boxKernel',    fromSide:'bottom', to:'boxAnalysis', toSide:'top',    label:'register_plugin', labelOffset:{dx:30,dy:-8} },
+  { id:'c11', from:'boxKernel',    fromSide:'bottom', to:'boxMeasure',  toSide:'top',    label:'register_plugin', labelOffset:{dx:60,dy:-8} },
+  { id:'c12', from:'boxKernel',    fromSide:'bottom', to:'boxFAQ',      toSide:'top',    label:'register_plugin', labelOffset:{dx:90,dy:-8} },
+  { id:'c13', from:'boxOrch',      fromSide:'bottom', to:'boxPrep',     toSide:'top',    label:'solicitar() —\nincluye CU-020 (nuevo)', labelOffset:{dx:80,dy:-20} },
+  { id:'c14', from:'boxOrch',      fromSide:'bottom', to:'boxAnalysis', toSide:'top',    label:'solicitar() —\nincluye CU-020 (nuevo)', labelOffset:{dx:-40,dy:-20} },
+  { id:'c15', from:'boxOrch',      fromSide:'left',   to:'boxIO',       toSide:'right',  label:'solicitar() —\ncarga de señal (nuevo)', labelOffset:{dx:0,dy:20} },
+  { id:'c16', from:'boxDataStore', fromSide:'bottom', to:'boxProject',  toSide:'top',    label:'guardar/abrir (nuevo)', labelOffset:{dx:-30,dy:-8} },
+  { id:'c17', from:'boxFileIO',    fromSide:'right',  to:'boxProject',  toSide:'left',   label:'carga señal referenciada (nuevo)', labelOffset:{dx:0,dy:-16} },
+  { id:'c18', from:'boxTooltip',   fromSide:'bottom', to:'boxPrep',     toSide:'right',  label:'aplicar_tooltips() (nuevo)', labelOffset:{dx:40,dy:30} },
+];
+
+let state = {};
+let elMap = {};
+let connections = [];
+let labelEls = {};
+let waypointEls = {};
+let startEls = {};
+let endEls = {};
+let connectMode = false, connectFrom = null, selectedConnId = null;
+const DEFAULT_TITLE = document.querySelector('#toolbar h1').innerHTML;
+
+function applyPos(el, s){ el.style.left = s.x+'px'; el.style.top = s.y+'px'; el.style.width = s.w+'px'; el.style.height = s.h+'px'; }
+
+function createNode(key){
+  const s = state[key];
+  const el = document.createElement('div');
+  el.className = 'comp-box' + (s.core ? ' core' : '') + (s.nuevo ? ' nuevo' : '') + (s.neutral ? ' neutral' : '');
+  applyPos(el, s);
+  el.innerHTML = `
+    <button class="comp-delete" title="Eliminar">×</button>
+    <div class="comp-icon"><div class="r r1"></div><div class="r r2"></div></div>
+    <div class="stereo" contenteditable="true" spellcheck="false">«component»</div>
+    <div class="name" contenteditable="true" spellcheck="false">${s.name}</div>
+    <div class="status" contenteditable="true" spellcheck="false">${s.status || ''}</div>
+    <div class="resize-handle" title="Redimensionar"></div>
+  `;
+  canvas.appendChild(el);
+  elMap[key] = el;
+  attachInteractions(key);
+  return el;
+}
+
+function handleConnectClick(key){
+  const el = elMap[key];
+  if (!connectFrom){
+    connectFrom = key;
+    el.classList.add('connect-armed');
+  } else if (connectFrom === key){
+    el.classList.remove('connect-armed');
+    connectFrom = null;
+  } else {
+    const id = 'conn_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+    connections.push({ id, from: connectFrom, fromSide:'bottom', to: key, toSide:'top' });
+    const fromEl = elMap[connectFrom];
+    if (fromEl) fromEl.classList.remove('connect-armed');
+    connectFrom = null;
+    redraw();
+    scheduleSave();
+  }
+}
+
+function attachInteractions(key){
+  const el = elMap[key];
+  const s = state[key];
+
+  el.addEventListener('mousedown', (e)=>{
+    if (connectMode){ e.stopPropagation(); handleConnectClick(key); return; }
+    if (e.target.closest('.resize-handle') || e.target.closest('.comp-delete')) return;
+    if (document.activeElement === e.target && e.target.isContentEditable){ e.stopPropagation(); return; }
+    const DRAG_THRESHOLD = 4;
+    const startX = e.clientX, startY = e.clientY;
+    const startLeft = s.x, startTop = s.y;
+    let dragging = false;
+    function onMove(ev){
+      const dx = ev.clientX - startX, dy = ev.clientY - startY;
+      if (!dragging){
+        if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return;
+        dragging = true; ev.preventDefault();
+        if (window.getSelection) window.getSelection().removeAllRanges();
+      }
+      s.x = startLeft + dx; s.y = startTop + dy;
+      applyPos(el, s);
+      ensureCanvasFits(s.x, s.y, s.w, s.h);
+      redraw();
+    }
+    function onUp(){
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      if (!dragging){ const editable = e.target.closest('[contenteditable="true"]'); if (editable) editable.focus(); }
+      else scheduleSave();
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+
+  const handle = el.querySelector('.resize-handle');
+  if (handle){
+    handle.addEventListener('mousedown', (e)=>{
+      e.preventDefault(); e.stopPropagation();
+      const startX = e.clientX, startY = e.clientY;
+      const startW = s.w, startH = s.h;
+      function onMove(ev){
+        s.w = Math.max(200, startW + (ev.clientX - startX));
+        s.h = Math.max(90, startH + (ev.clientY - startY));
+        applyPos(el, s);
+        ensureCanvasFits(s.x, s.y, s.w, s.h);
+        redraw();
+      }
+      function onUp(){ document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); scheduleSave(); }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  }
+
+  el.querySelectorAll('[contenteditable="true"]').forEach(part=>{
+    part.addEventListener('mousedown', (e)=>{ if (connectMode) return; if (document.activeElement===part) e.stopPropagation(); });
+    part.addEventListener('input', ()=>{
+      if (part.classList.contains('name')) s.name = part.innerHTML;
+      else if (part.classList.contains('status')) s.status = part.innerHTML;
+      else if (part.classList.contains('stereo')) s.stereo = part.innerHTML;
+      scheduleSave();
+    });
+  });
+
+  el.querySelector('.comp-delete').addEventListener('click', (e)=>{
+    e.stopPropagation();
+    delete state[key];
+    el.remove();
+    delete elMap[key];
+    connections = connections.filter(c => c.from !== key && c.to !== key);
+    redraw();
+    scheduleSave();
+  });
+}
+
+function pt(node, side){
+  if (side==='top')    return {x:node.x+node.w/2, y:node.y};
+  if (side==='bottom') return {x:node.x+node.w/2, y:node.y+node.h};
+  if (side==='left')   return {x:node.x, y:node.y+node.h/2};
+  if (side==='right')  return {x:node.x+node.w, y:node.y+node.h/2};
+}
+
+function createLabelEl(conn){
+  const el = document.createElement('div');
+  el.className = 'iface-label';
+  el.setAttribute('contenteditable', 'true'); el.setAttribute('spellcheck', 'false');
+  el.textContent = conn.label || '';
+  canvas.appendChild(el);
+  el.addEventListener('mousedown', (e)=>{ if (document.activeElement===el) e.stopPropagation(); });
+  el.addEventListener('input', ()=>{ conn.label = el.innerHTML; scheduleSave(); });
+  return el;
+}
+
+function createWaypointHandle(conn){
+  const el = document.createElement('div');
+  el.className = 'waypoint-handle' + (conn.waypoint ? '' : ' auto');
+  el.title = 'Arrastra para curvar esta conexión · doble clic para enderezarla';
+  canvas.appendChild(el);
+  el.addEventListener('mousedown', (e)=>{
+    e.preventDefault(); e.stopPropagation();
+    function onMove(ev){
+      const rect = canvas.getBoundingClientRect();
+      conn.waypoint = { x: ev.clientX - rect.left, y: ev.clientY - rect.top };
+      el.classList.remove('auto');
+      redraw();
+    }
+    function onUp(){ document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); scheduleSave(); }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+  el.addEventListener('dblclick', (e)=>{ e.stopPropagation(); conn.waypoint = null; redraw(); scheduleSave(); });
+  return el;
+}
+
+function createEndpointHandle(conn, which){
+  const el = document.createElement('div');
+  const hasCustom = which === 'from' ? !!conn.fromOffset : !!conn.toOffset;
+  el.className = 'endpoint-handle' + (hasCustom ? '' : ' auto');
+  el.title = 'Arrastra para mover este extremo · doble clic para restablecerlo';
+  canvas.appendChild(el);
+  el.addEventListener('mousedown', (e)=>{
+    e.preventDefault(); e.stopPropagation();
+    function onMove(ev){
+      const rect = canvas.getBoundingClientRect();
+      const node = state[which === 'from' ? conn.from : conn.to];
+      if (!node) return;
+      const offset = { x: (ev.clientX - rect.left) - node.x, y: (ev.clientY - rect.top) - node.y };
+      if (which === 'from') conn.fromOffset = offset; else conn.toOffset = offset;
+      el.classList.remove('auto');
+      redraw();
+    }
+    function onUp(){ document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); scheduleSave(); }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+  el.addEventListener('dblclick', (e)=>{
+    e.stopPropagation();
+    if (which === 'from') conn.fromOffset = null; else conn.toOffset = null;
+    redraw(); scheduleSave();
+  });
+  return el;
+}
+
+function syncOverlays(){
+  const validIds = new Set(connections.map(c => c.id));
+  Object.keys(labelEls).forEach(id => { if (!validIds.has(id)){ labelEls[id].remove(); delete labelEls[id]; } });
+  Object.keys(waypointEls).forEach(id => { if (!validIds.has(id)){ waypointEls[id].remove(); delete waypointEls[id]; } });
+  Object.keys(startEls).forEach(id => { if (!validIds.has(id)){ startEls[id].remove(); delete startEls[id]; } });
+  Object.keys(endEls).forEach(id => { if (!validIds.has(id)){ endEls[id].remove(); delete endEls[id]; } });
+  connections.forEach(conn => {
+    if (conn.label !== undefined && conn.label !== null && !labelEls[conn.id]) labelEls[conn.id] = createLabelEl(conn);
+    if (!waypointEls[conn.id]) waypointEls[conn.id] = createWaypointHandle(conn);
+    if (!startEls[conn.id]) startEls[conn.id] = createEndpointHandle(conn, 'from');
+    if (!endEls[conn.id]) endEls[conn.id] = createEndpointHandle(conn, 'to');
+  });
+}
+
+function ballSVG(cx, cy){ return `<circle cx="${cx}" cy="${cy}" r="5" fill="#faf9f6" stroke="#33342e" stroke-width="1.4"/>`; }
+function socketSVG(cx, cy, vertical){
+  if (vertical) return `<path d="M ${cx-6} ${cy} A 6 6 0 0 1 ${cx+6} ${cy}" fill="none" stroke="#33342e" stroke-width="1.4"/>`;
+  return `<path d="M ${cx} ${cy-6} A 6 6 0 0 1 ${cx} ${cy+6}" fill="none" stroke="#33342e" stroke-width="1.4"/>`;
+}
+
+function redraw(){
+  syncOverlays();
+  let out = '';
+
+  connections.forEach(conn => {
+    const fromNode = state[conn.from], toNode = state[conn.to];
+    const label = labelEls[conn.id];
+    const wpEl = waypointEls[conn.id];
+    const stEl = startEls[conn.id];
+    const enEl = endEls[conn.id];
+    if (!fromNode || !toNode){
+      if (label) label.style.display='none';
+      if (wpEl) wpEl.style.display='none';
+      if (stEl) stEl.style.display='none';
+      if (enEl) enEl.style.display='none';
+      return;
+    }
+    const p1 = conn.fromOffset ? { x: fromNode.x + conn.fromOffset.x, y: fromNode.y + conn.fromOffset.y } : pt(fromNode, conn.fromSide);
+    const p2 = conn.toOffset ? { x: toNode.x + conn.toOffset.x, y: toNode.y + conn.toOffset.y } : pt(toNode, conn.toSide);
+    const mid = conn.waypoint || { x: (p1.x+p2.x)/2, y: (p1.y+p2.y)/2 };
+    const lastSegStart = conn.waypoint || p1;
+    const sockPt = { x: p2.x + (lastSegStart.x-p2.x)*0.22, y: p2.y + (lastSegStart.y-p2.y)*0.22 };
+    const vertical = Math.abs(lastSegStart.x-p2.x) < Math.abs(lastSegStart.y-p2.y);
+    const isSel = conn.id === selectedConnId;
+    const stroke = isSel ? '#0f6e56' : '#33342e';
+    const width = isSel ? 2.2 : 1.2;
+    const points = conn.waypoint ? `${p1.x},${p1.y} ${mid.x},${mid.y} ${p2.x},${p2.y}` : `${p1.x},${p1.y} ${p2.x},${p2.y}`;
+    out += `<polyline data-conn-id="${conn.id}" points="${points}" fill="none" stroke="${stroke}" stroke-width="${width}" style="pointer-events:stroke;cursor:pointer;"/>`;
+    out += socketSVG(sockPt.x, sockPt.y, vertical);
+    out += ballSVG(p1.x, p1.y);
+
+    const lo = conn.labelOffset || { dx:0, dy:-8 };
+    if (label){ label.style.display=''; label.style.left = (mid.x + lo.dx) + 'px'; label.style.top = (mid.y + lo.dy) + 'px'; label.style.transform = 'translate(-50%,0)'; }
+    if (wpEl){ wpEl.style.display=''; wpEl.style.left = mid.x+'px'; wpEl.style.top = mid.y+'px'; }
+    if (stEl){ stEl.style.display=''; stEl.style.left = p1.x+'px'; stEl.style.top = p1.y+'px'; }
+    if (enEl){ enEl.style.display=''; enEl.style.left = p2.x+'px'; enEl.style.top = p2.y+'px'; }
+  });
+
+  svg.innerHTML = out;
+  svg.querySelectorAll('polyline[data-conn-id]').forEach(p => {
+    p.addEventListener('click', ()=>{ selectedConnId = p.getAttribute('data-conn-id'); redraw(); });
+  });
+}
+
+function rebuildAll(){
+  Object.keys(elMap).forEach(k => elMap[k].remove());
+  elMap = {};
+  Object.values(labelEls).forEach(l => l.remove()); labelEls = {};
+  Object.values(waypointEls).forEach(w => w.remove()); waypointEls = {};
+  Object.values(startEls).forEach(w => w.remove()); startEls = {};
+  Object.values(endEls).forEach(w => w.remove()); endEls = {};
+  Object.keys(state).forEach(createNode);
+  redraw();
+}
+
+function serializeState(){
+  return {
+    version: 1,
+    title: document.querySelector('#toolbar h1').innerHTML,
+    canvasWidth: canvas.style.width || (canvas.offsetWidth + 'px'),
+    canvasHeight: canvas.style.height || (canvas.offsetHeight + 'px'),
+    state: state,
+    connections: connections,
+    legendPos: legendPos,
+  };
+}
+
+function restoreState(data){
+  if (data.title) document.querySelector('#toolbar h1').innerHTML = data.title;
+  if (data.canvasWidth) canvas.style.width = data.canvasWidth;
+  if (data.canvasHeight) canvas.style.height = data.canvasHeight;
+  state = data.state || {};
+  connections = data.connections ? JSON.parse(JSON.stringify(data.connections)) : JSON.parse(JSON.stringify(defaultConnections));
+  legendPos = data.legendPos ? JSON.parse(JSON.stringify(data.legendPos)) : { x: 20, y: 20 };
+  layoutLegend();
+  selectedConnId = null; connectFrom = null;
+  rebuildAll();
+  Object.values(state).forEach(s => ensureCanvasFits(s.x, s.y, s.w, s.h));
+}
+
+let saveTimeout = null;
+function scheduleSave(){
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(()=>{
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(serializeState())); }
+    catch(e){ console.warn('No se pudo autoguardar en este navegador', e); }
+  }, 400);
+}
+
+function showToast(msg){
+  let toast = document.getElementById('toast');
+  if (!toast){
+    toast = document.createElement('div');
+    toast.id = 'toast';
+    toast.style.cssText = 'position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#2b2b2b;color:#fff;padding:10px 18px;border-radius:6px;font-size:13px;z-index:1000;opacity:0;transition:opacity 0.3s;pointer-events:none;';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=>{ toast.style.opacity = '0'; }, 2600);
+}
+
+document.getElementById('btnConnect').addEventListener('click', function(){
+  connectMode = !connectMode;
+  this.classList.toggle('primary', connectMode);
+  if (connectFrom){ const el = elMap[connectFrom]; if (el) el.classList.remove('connect-armed'); connectFrom = null; }
+  document.getElementById('hint').textContent = connectMode
+    ? 'Modo conectar: haz clic en el componente proveedor y luego en el consumidor.'
+    : 'Arrastra o redimensiona cualquier caja · Puntos azules = extremos, verde = curvatura (doble clic restablece) · "Conectar" agrega líneas · Clic en una línea para borrarla · Autoguardado';
+  canvas.style.cursor = connectMode ? 'crosshair' : 'default';
+});
+
+document.getElementById('btnDeleteConn').addEventListener('click', ()=>{
+  if (!selectedConnId){ alert('Haz clic en una línea para seleccionarla, luego presiona este botón.'); return; }
+  connections = connections.filter(c => c.id !== selectedConnId);
+  selectedConnId = null;
+  redraw();
+  scheduleSave();
+});
+
+document.getElementById('btnSaveFile').addEventListener('click', ()=>{
+  const data = serializeState();
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.download = 'diagrama_componentes_sistema_completo_estado.json';
+  link.href = url;
+  link.click();
+  URL.revokeObjectURL(url);
+  showToast('Archivo de respaldo descargado.');
+});
+document.getElementById('btnLoadFile').addEventListener('click', ()=>{ document.getElementById('fileLoadInput').click(); });
+document.getElementById('fileLoadInput').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev)=>{
+    try {
+      const data = JSON.parse(ev.target.result);
+      restoreState(data);
+      scheduleSave();
+      showToast('Estado cargado desde el archivo.');
+    } catch(err){
+      alert('No se pudo leer el archivo: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+document.getElementById('btnReset').addEventListener('click', ()=>{
+  if (!confirm('¿Restablecer el diagrama a su diseño original? Se perderán las posiciones, tamaños, textos y líneas que hayas agregado o modificado.')) return;
+  try { localStorage.removeItem(STORAGE_KEY); } catch(e){}
+  state = JSON.parse(JSON.stringify(defaultState));
+  connections = JSON.parse(JSON.stringify(defaultConnections));
+  legendPos = { x: 20, y: 20 };
+  layoutLegend();
+  selectedConnId = null; connectFrom = null; connectMode = false;
+  document.getElementById('btnConnect').classList.remove('primary');
+  canvas.style.cursor = 'default';
+  canvas.style.width = ''; canvas.style.height = '';
+  document.querySelector('#toolbar h1').innerHTML = DEFAULT_TITLE;
+  rebuildAll();
+  showToast('Diagrama restablecido al diseño original.');
+});
+
+document.getElementById('btnExport').addEventListener('click', ()=>{
+  selectedConnId = null; redraw();
+  const scale = parseInt(document.getElementById('exportScale').value, 10) || 2;
+  const btn = document.getElementById('btnExport');
+  const originalText = btn.textContent;
+  btn.textContent = 'Generando…'; btn.disabled = true;
+  html2canvas(canvas, { backgroundColor: '#faf9f6', scale: scale }).then(c => {
+    const link = document.createElement('a'); link.download = 'diagrama_componentes_sistema_completo.png'; link.href = c.toDataURL('image/png'); link.click();
+    showToast('PNG exportado a ' + scale + 'x (' + c.width + '×' + c.height + ' px).');
+  }).finally(()=>{ btn.textContent = originalText; btn.disabled = false; });
+});
+
+function loadInitial(){
+  let saved = null;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) saved = JSON.parse(raw);
+  } catch(e){ console.warn('No se pudo leer el estado guardado', e); }
+
+  if (saved && saved.state && Object.keys(saved.state).length){
+    restoreState(saved);
+    showToast('Se restauraron tus cambios guardados en este navegador.');
+  } else {
+    state = JSON.parse(JSON.stringify(defaultState));
+    connections = JSON.parse(JSON.stringify(defaultConnections));
+    rebuildAll();
+  }
+  attachLegendDrag();
+}
+loadInitial();
+</script>
+</body>
+</html>

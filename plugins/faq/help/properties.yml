@@ -1,0 +1,8 @@
+id: "help"
+name: "Help"
+category: "FAQ"
+subcategory: "Help"
+version: "1.0"
+icon: "icn_help.png"            
+logic_class: "HelpPlugin"
+ui_class: ""  

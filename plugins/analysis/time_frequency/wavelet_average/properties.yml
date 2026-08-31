@@ -1,0 +1,8 @@
+id: "wavelet_average"
+name: "Wavelet Average"
+category: "Analysis"
+subcategory: "Time-Frequency"
+version: "1.0"
+icon: "icn_wavelet_average.png"
+logic_class: "Wavelet_average_plugin"
+ui_class: ""

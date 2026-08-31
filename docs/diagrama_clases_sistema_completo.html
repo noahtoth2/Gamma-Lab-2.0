@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Diagrama de clases - Sistema Completo - GammaLab 2.0</title>
+<style>
+  :root{
+    --bg:#f5f4f0; --panel:#ffffff; --border:#d8d5cb; --border-strong:#b8b4a6;
+    --text:#20291d; --text-secondary:#5f5e5a;
+    --canvas-bg:#faf9f6; --grid:#eae8e0;
+    --box-bg:#e9f6da; --box-border:#6f9c4d; --box-divider:#8fbd6c;
+    --new-bg:#f9ddd6; --new-border:#8a3a2b; --new-divider:#c07a68;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--text);background:var(--bg);}
+  #toolbar{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--border);flex-wrap:wrap;position:sticky;top:0;z-index:50;}
+  #toolbar h1{font-size:15px;font-weight:600;margin:0 16px 0 0;color:var(--text);white-space:nowrap;cursor:text;padding:4px 6px;border-radius:4px;}
+  #toolbar h1[contenteditable="true"]:hover{background:#f0efe9;}
+  #toolbar h1[contenteditable="true"]:focus{outline:1.5px solid #6f9c4d;background:#fff;}
+  button{font-family:inherit;font-size:13px;padding:7px 12px;border-radius:6px;border:1px solid var(--border-strong);background:#fff;color:var(--text);cursor:pointer;}
+  button:hover{background:#f0efe9;}
+  button.primary{background:#6f9c4d;color:#fff;border-color:#6f9c4d;}
+  .hint{font-size:12px;color:var(--text-secondary);margin-left:auto;white-space:nowrap;}
+  #wrap{width:100%;height:calc(100% - 54px);overflow:auto;background:var(--canvas-bg);}
+  #canvas{position:relative;width:1620px;height:1180px;background-image:radial-gradient(var(--grid) 1px, transparent 1px);background-size:20px 20px;}
+  svg#lines{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;}
+
+  .box{position:absolute;min-width:170px;min-height:110px;background:var(--box-bg);border:1.5px solid var(--box-border);border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,0.08);display:flex;flex-direction:column;overflow:hidden;}
+  .box.nuevo{background:var(--new-bg);border-color:var(--new-border);}
+  .box.selected{border-color:#3c5a28;box-shadow:0 0 0 2px rgba(111,156,77,0.35);}
+  .box-header{padding:8px 10px;font-size:13.5px;font-weight:700;text-align:center;color:var(--text);cursor:move;user-select:none;line-height:1.3;}
+  .box-header[contenteditable="true"]:focus{outline:none;background:#fff;}
+  .box-divider{height:1px;background:var(--box-divider);margin:0;flex:0 0 auto;}
+  .box.nuevo .box-divider{background:var(--new-divider);}
+  .box-section{flex:1 1 0;padding:6px 10px;font-size:11.5px;line-height:1.55;color:var(--text);white-space:pre-wrap;overflow:auto;cursor:text;}
+  .box-section[contenteditable="true"]:focus{outline:none;background:#fff;}
+  .box-delete{position:absolute;top:-9px;right:-9px;width:20px;height:20px;border-radius:50%;background:#c0392b;color:#fff;border:none;font-size:13px;line-height:1;cursor:pointer;display:none;align-items:center;justify-content:center;padding:0;z-index:5;}
+  .box:hover .box-delete{display:flex;}
+  .resize-handle{position:absolute;right:0;bottom:0;width:16px;height:16px;cursor:nwse-resize;background:linear-gradient(135deg, transparent 50%, var(--box-border) 50%);}
+  .box.nuevo .resize-handle{background:linear-gradient(135deg, transparent 50%, var(--new-border) 50%);}
+  .conn-label{position:absolute;font-size:11px;background:var(--canvas-bg);padding:1px 5px;color:var(--text-secondary);border-radius:3px;transform:translate(-50%,-50%);pointer-events:none;}
+  .legend{position:absolute;left:20px;top:20px;background:#fff;border:1px solid var(--border-strong);border-radius:6px;padding:8px 12px;font-size:11.5px;z-index:10;display:flex;gap:16px;align-items:center;box-shadow:0 1px 3px rgba(0,0,0,0.1);}
+  .legend .sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:middle;}
+</style>
+</head>
+<body>
+
+<div id="toolbar">
+  <h1 contenteditable="true" spellcheck="false">Diagrama de clases — Sistema completo GammaLab 2.0 (23 CU)</h1>
+  <button id="btnAdd" class="primary">+ Agregar clase</button>
+  <button id="btnConnect">Conectar clases</button>
+  <select id="connType">
+    <option value="assoc">Asociación (línea + flecha)</option>
+    <option value="inherit">Herencia / Realización (punteada + triángulo)</option>
+  </select>
+  <button id="btnDeleteConn">Borrar conexión</button>
+  <select id="exportScale" title="Resolución de la imagen exportada">
+    <option value="1">PNG 1x (rápido)</option>
+    <option value="2" selected>PNG 2x (alta calidad)</option>
+    <option value="3">PNG 3x (máxima calidad)</option>
+    <option value="4">PNG 4x (impresión)</option>
+  </select>
+  <button id="btnExport">Exportar PNG</button>
+  <button id="btnSaveFile" class="primary">💾 Guardar cambios</button>
+  <button id="btnLoadFile">📂 Cargar cambios</button>
+  <input type="file" id="fileLoadInput" accept="application/json" style="display:none">
+  <button id="btnReset" title="Vuelve al diseño original, descartando tus cambios guardados en este navegador">↺ Restablecer diseño</button>
+  <span class="hint" id="hint">Verde = ya existe · Rojo = nuevo · Arrastra el título para mover, la esquina inferior derecha para redimensionar · "Conectar clases" agrega líneas · Clic en atributos/métodos para editar · El lienzo se expande solo · Autoguardado en este navegador</span>
+</div>
+
+<div id="wrap"><div id="canvas">
+  <div class="legend"><span><span class="sw" style="background:#e9f6da;border:1.5px solid #6f9c4d;"></span>Ya existe en el código</span><span><span class="sw" style="background:#f9ddd6;border:1.5px solid #8a3a2b;"></span>Nuevo — por implementar</span></div>
+  <svg id="lines"></svg>
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+const canvas = document.getElementById('canvas');
+const svg = document.getElementById('lines');
+const wrap = document.getElementById('wrap');
+const DEFAULT_TITLE = document.querySelector('#toolbar h1').innerHTML;
+let boxes = [], connections = [], boxIdCounter = 0, connectMode = false, connectFrom = null, selectedConn = null;
+
+const STORAGE_KEY = 'gammalab_diagrama_clases_sistema_completo_v1';
+const CANVAS_MARGIN = 400;
+
+function ensureCanvasFits(x, y, w, h){
+  const neededW = x + w + 100;
+  const neededH = y + h + 100;
+  const curW = canvas.offsetWidth, curH = canvas.offsetHeight;
+  if (neededW > curW) canvas.style.width = (neededW + CANVAS_MARGIN) + 'px';
+  if (neededH > curH) canvas.style.height = (neededH + CANVAS_MARGIN) + 'px';
+}
+
+/*
+  Vista de clases del SISTEMA COMPLETO (union de las 23 fichas CU-001..CU-023).
+  No es una copia de ningun diagrama por CU: aqui solo aparecen las clases que
+  sostienen la arquitectura compartida (nucleo, servicios, contrato de plugin) mas
+  representantes de las familias de plugins ya existentes y las piezas nuevas que
+  TODAS las fichas terminan requiriendo (TaskOrchestrator via CU-020/014,
+  ProjectService via CU-021/023/005, TooltipHelper via CU-010, clear_params via
+  CU-009, export_vector via CU-017, PACAnalysisPlugin via CU-001/002).
+
+  Grounding verificado directamente en el codigo (no en memoria de sesiones
+  anteriores): Kernel, PluginManager, loader.discover(), PluginMeta, IPlugin,
+  SignalDataset, TrialDataset, DataStore, FileIOService, ExportService,
+  SettingsService, VTKContextMenu, MainWindow, main.py (bootstrap real).
+  Hallazgo clave: kernel.py tiene un metodo execute(name,data) ESCRITO PERO
+  COMENTADO (nunca activado) -- prueba directa de que el despacho de tareas
+  del CU-020 se intento una vez y se abandono, no que nunca se penso en ello.
+*/
+
+const initialBoxes = [
+  {x:40,   y:40,  w:260, h:170, title:'MainWindow  (ya existe)',
+    attrs:'- kernel: Kernel',
+    methods:'+ switch_module(categoria)\n+ show_home()\n+ build_home_welcome()\n   (parcial — panel estático de\n   Home, NO detecta primera\n   ejecución; falta R10)'},
+
+  {x:330,  y:40,  w:560, h:190, title:'Kernel  (ya existe)',
+    attrs:'- _plugins: dict\n- _services: dict',
+    methods:'+ register_plugin(nombre, plugin)\n+ get_plugin(nombre) / get_plugins()\n+ get_plugins_by_category(categoria)\n+ register_service(clave, servicio) / get_service(clave)\n+ stop_plugins()\n+ emit_event(topico, payload)\n// execute(nombre, data) EXISTE EN EL CÓDIGO PERO\n// COMENTADO — intento de orquestador abandonado'},
+
+  {x:1200, y:40,  w:270, h:190, title:'ExportService  (ya existe)',
+    attrs:'- vtk_widget\n- get_active_chart: callable',
+    methods:'+ export_image(fmt) → png/jpg/bmp/tiff\n+ export_table(fmt) → csv/xlsx/json\n+ export_vector(fmt="emf")\n   (nuevo, CU-017 — hoy NO existe\n   ningún export vectorial)'},
+
+  {x:40,   y:260, w:260, h:130, title:'PluginManager  (ya existe)',
+    attrs:'- plugins_dir: Path\n- registry: dict',
+    methods:'+ load_all()\n+ all() / get(plugin_id)'},
+
+  {x:330,  y:260, w:260, h:130, title:'SignalDataset  (ya existe)',
+    attrs:'- signals: ndarray\n- sampling_rate: float\n- channel_names: list',
+    methods:''},
+
+  {x:620,  y:260, w:260, h:190, title:'DataStore  (ya existe)',
+    attrs:'- _data: dict',
+    methods:'+ set(k,v) / get(k) / has(k)\n+ add_signal(signal)\n+ set_active_signal(k) /\n   get_active_signal()\n+ clear_active_signal()\n+ remove(k)'},
+
+  {x:910,  y:260, w:260, h:130, title:'FileIOService  (ya existe)',
+    attrs:'',
+    methods:'+ load_abf(ruta) SignalDataset\n+ load_edf(ruta) SignalDataset\n+ load_mat(ruta) SignalDataset'},
+
+  {x:1200, y:260, w:270, h:150, title:'SettingsService  (ya existe,\nno conectada)',
+    attrs:'- data: dict (JSON)',
+    methods:'+ get(clave) / set(clave, valor)\n+ load() / save()\n// clase completa, pero main.py NO\n// la registra como servicio hoy'},
+
+  {x:40,   y:490, w:260, h:130, title:'VTKContextMenu  (ya existe)',
+    attrs:'',
+    methods:'+ show_menu(pos)\n+ export_image(fmt) / export_table(fmt)'},
+
+  {x:330,  y:490, w:260, h:130, title:'TrialDataset  (ya existe)',
+    attrs:'- trials: ndarray (Ns, T)\n- onsets_s: list\n- isi_s: list',
+    methods:''},
+
+  {x:620,  y:490, w:560, h:230, title:'TaskOrchestrator  (nuevo — CU-020 / CU-014)', nuevo:true,
+    attrs:'- cola: list  (nuevo)\n- tarea_actual  (nuevo)\n- umbral_progreso_s: float = 1.0',
+    methods:'+ solicitar(funcion, params, origen)  (nuevo)\n+ encolar(solicitud) — si ya hay operación en curso (R70)\n+ cancelar(id_tarea)  (nuevo, CU-014)\n+ forzar_terminacion(tarea)  (nuevo, CU-014 exc. 2a)\n+ publicar_resultado(...) — escritura sincronizada,\n   un único propietario de escritura (R54)'},
+
+  {x:1200, y:490, w:270, h:190, title:'ProjectService  (nuevo — CU-021 / 023 / 005)', nuevo:true,
+    attrs:'- formato = ".glab"',
+    methods:'+ guardar(ruta, señal, trials,\n   análisis, parámetros)  (nuevo)\n+ abrir(ruta) → ProjectData  (nuevo)\n+ cerrar() — libera memoria activa\n+ validar_ruta_señal(ruta) bool'},
+
+  {x:40,   y:730, w:260, h:130, title:'TooltipHelper  (nuevo — CU-010)', nuevo:true,
+    attrs:'- descripciones: dict[str, str]',
+    methods:'+ aplicar_tooltips(widget)  (nuevo)\n+ al_cambiar_habilitado(widget,\n   habilitado)  (nuevo, alt 2a)'},
+
+  {x:330,  y:730, w:560, h:190, title:'«interface» IPlugin  (ya existe)',
+    attrs:'',
+    methods:'+ get_widget(parent) QWidget\n+ process(data)\n+ stop()\n+ get_active_signal() / get_active_trials()\n+ clear_params()  (nuevo, CU-009 — hoy ningún\n   plugin del proyecto implementa esto)'},
+
+  {x:1200, y:730, w:270, h:160, title:'«abstract» PACAnalysisPlugin\n(nuevo — CU-001 / CU-002)', nuevo:true,
+    attrs:'- banda_fase: tuple\n- rango_amplitud: tuple',
+    methods:'+ calcular_mapa_fase_frecuencia()\n   (nuevo — mediante wavelet)'},
+
+  {x:40,   y:970, w:230, h:100, title:'OpenSignalPlugin  (ya existe)',
+    attrs:'', methods:'+ get_widget()\n+ process(data)'},
+
+  {x:290,  y:970, w:230, h:100, title:'TrialsPlugin  (ya existe)',
+    attrs:'', methods:'+ get_widget()\n+ process(data)'},
+
+  {x:540,  y:970, w:230, h:100, title:'FilterPlugin  (ya existe)',
+    attrs:'', methods:'+ get_widget()\n+ process(data)'},
+
+  {x:790,  y:970, w:230, h:100, title:'WaveletPlugin  (ya existe)',
+    attrs:'', methods:'+ get_widget()\n+ process(data)'},
+
+  {x:1040, y:970, w:230, h:110, title:'PACSingleChannelPlugin\n(nuevo — CU-001)', nuevo:true,
+    attrs:'', methods:'+ calcular_pac_1_canal()  (nuevo)'},
+
+  {x:1290, y:970, w:230, h:110, title:'PACInterChannelPlugin\n(nuevo — CU-002)', nuevo:true,
+    attrs:'', methods:'+ calcular_pac_2_canales()  (nuevo)\n+ calcular_ppc()  (nuevo)'},
+];
+
+const initialConnIndex = [
+  [0,1,'assoc'], [0,11,'assoc'],
+  [1,3,'assoc'], [1,5,'assoc'], [1,6,'assoc'], [1,7,'assoc'], [1,10,'assoc'], [1,13,'assoc'],
+  [3,13,'assoc'],
+  [8,2,'assoc'],
+  [10,5,'assoc'],
+  [11,5,'assoc'], [11,6,'assoc'],
+  [12,13,'assoc'],
+  [13,15,'inherit'], [13,16,'inherit'], [13,17,'inherit'], [13,18,'inherit'], [13,14,'inherit'],
+  [14,19,'inherit'], [14,20,'inherit'],
+  [16,10,'assoc'], [17,10,'assoc'], [18,10,'assoc'], [19,10,'assoc'], [20,10,'assoc'],
+  [13,4,'assoc'], [13,9,'assoc'],
+];
+
+function createBox(data){
+  const id = data.id || ('box' + (boxIdCounter++));
+  const el = document.createElement('div');
+  el.className = 'box' + (data.nuevo ? ' nuevo' : ''); el.id = id;
+  el.style.left = data.x+'px'; el.style.top = data.y+'px'; el.style.width = data.w+'px'; el.style.height = data.h+'px';
+  el.innerHTML = `
+    <button class="box-delete" title="Eliminar clase">×</button>
+    <div class="box-header" contenteditable="true" spellcheck="false">${data.title}</div>
+    <div class="box-divider"></div>
+    <div class="box-section box-attrs" contenteditable="true" spellcheck="false">${data.attrs || ''}</div>
+    <div class="box-divider"></div>
+    <div class="box-section box-methods" contenteditable="true" spellcheck="false">${data.methods || ''}</div>
+    <div class="resize-handle"></div>
+  `;
+  canvas.appendChild(el);
+  boxes.push({id, el});
+  attachBoxBehavior(el);
+  return id;
+}
+
+function attachBoxBehavior(el){
+  const header = el.querySelector('.box-header');
+  const sections = el.querySelectorAll('.box-section');
+  const delBtn = el.querySelector('.box-delete');
+  const handle = el.querySelector('.resize-handle');
+
+  el.addEventListener('mousedown', (e)=>{
+    if (connectMode && e.target !== handle){ e.stopPropagation(); handleConnectClick(el); return; }
+    selectBox(el);
+  });
+
+  header.addEventListener('mousedown', (e)=>{
+    if (connectMode) return;
+    if (document.activeElement === header){ e.stopPropagation(); return; }
+    const DRAG_THRESHOLD = 4;
+    const startX = e.clientX, startY = e.clientY;
+    const startLeft = el.offsetLeft, startTop = el.offsetTop;
+    let dragging = false;
+    function onMove(ev){
+      const dx = ev.clientX - startX, dy = ev.clientY - startY;
+      if (!dragging){
+        if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return;
+        dragging = true; ev.preventDefault();
+        if (window.getSelection) window.getSelection().removeAllRanges();
+      }
+      el.style.left = (startLeft + dx) + 'px'; el.style.top = (startTop + dy) + 'px';
+      ensureCanvasFits(el.offsetLeft, el.offsetTop, el.offsetWidth, el.offsetHeight);
+      updateLines();
+    }
+    function onUp(){
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      if (!dragging) header.focus();
+      else scheduleSave();
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+
+  handle.addEventListener('mousedown', (e)=>{
+    e.preventDefault(); e.stopPropagation();
+    const startX = e.clientX, startY = e.clientY;
+    const startW = el.offsetWidth, startH = el.offsetHeight;
+    function onMove(ev){
+      el.style.width = Math.max(170, startW + (ev.clientX - startX)) + 'px';
+      el.style.height = Math.max(110, startH + (ev.clientY - startY)) + 'px';
+      ensureCanvasFits(el.offsetLeft, el.offsetTop, el.offsetWidth, el.offsetHeight);
+      updateLines();
+    }
+    function onUp(){ document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); scheduleSave(); }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+
+  delBtn.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    connections = connections.filter(c => c.from !== el.id && c.to !== el.id);
+    boxes = boxes.filter(b => b.id !== el.id);
+    el.remove(); updateLines(); scheduleSave();
+  });
+
+  sections.forEach(part=>{
+    part.addEventListener('mousedown', (e)=>{ if (connectMode) return; if (document.activeElement === part) e.stopPropagation(); });
+    part.addEventListener('input', ()=>{ updateLines(); scheduleSave(); });
+  });
+  header.addEventListener('input', ()=>{ updateLines(); scheduleSave(); });
+}
+
+function selectBox(el){ boxes.forEach(b => b.el.classList.remove('selected')); el.classList.add('selected'); }
+function handleConnectClick(el){
+  if (!connectFrom){ connectFrom = el.id; el.classList.add('selected'); }
+  else if (connectFrom === el.id){ connectFrom = null; el.classList.remove('selected'); }
+  else {
+    const type = document.getElementById('connType').value;
+    connections.push({from: connectFrom, to: el.id, type, id: 'c'+Date.now()+Math.random()});
+    document.getElementById(connectFrom).classList.remove('selected');
+    connectFrom = null; updateLines(); scheduleSave();
+  }
+}
+function boxCenter(el){ return {x: el.offsetLeft + el.offsetWidth/2, y: el.offsetTop + el.offsetHeight/2, w: el.offsetWidth, h: el.offsetHeight}; }
+function edgePoint(cx, cy, w, h, tx, ty){
+  const dx = tx - cx, dy = ty - cy;
+  if (dx === 0 && dy === 0) return {x:cx, y:cy};
+  const halfW = w/2, halfH = h/2;
+  const scaleX = dx !== 0 ? halfW / Math.abs(dx) : Infinity;
+  const scaleY = dy !== 0 ? halfH / Math.abs(dy) : Infinity;
+  const scale = Math.min(scaleX, scaleY);
+  return {x: cx + dx*scale, y: cy + dy*scale};
+}
+function updateLines(){
+  svg.innerHTML = `<defs><marker id="arrowhead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M1 1 L9 5 L1 9" fill="none" stroke="#5f5e5a" stroke-width="1.6"/></marker></defs>`;
+  const labels = [];
+  connections.forEach(conn => {
+    const fromEl = document.getElementById(conn.from), toEl = document.getElementById(conn.to);
+    if (!fromEl || !toEl) return;
+    const a = boxCenter(fromEl), b = boxCenter(toEl);
+    const p1 = edgePoint(a.x, a.y, a.w, a.h, b.x, b.y);
+    const p2 = edgePoint(b.x, b.y, b.w, b.h, a.x, a.y);
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1', p1.x); line.setAttribute('y1', p1.y);
+    line.setAttribute('x2', p2.x); line.setAttribute('y2', p2.y);
+    line.setAttribute('stroke', selectedConn === conn.id ? '#0f6e56' : '#8a8878');
+    line.setAttribute('stroke-width', selectedConn === conn.id ? '2.2' : '1.3');
+    line.style.pointerEvents = 'stroke'; line.style.cursor = 'pointer';
+    if (conn.type === 'inherit') line.setAttribute('stroke-dasharray', '5 4');
+    line.setAttribute('marker-end', 'url(#arrowhead)');
+    line.addEventListener('click', ()=>{ selectedConn = conn.id; updateLines(); });
+    svg.appendChild(line);
+    if (conn.type === 'inherit') labels.push({x:(p1.x+p2.x)/2, y:(p1.y+p2.y)/2, text:'hereda / implementa'});
+  });
+  canvas.querySelectorAll('.conn-label').forEach(l => l.remove());
+  labels.forEach(l => {
+    const div = document.createElement('div');
+    div.className = 'conn-label'; div.style.left = l.x + 'px'; div.style.top = l.y + 'px'; div.textContent = l.text;
+    canvas.appendChild(div);
+  });
+}
+
+document.getElementById('btnAdd').addEventListener('click', ()=>{
+  const scrollLeft = wrap.scrollLeft, scrollTop = wrap.scrollTop;
+  createBox({x: scrollLeft + 120, y: scrollTop + 120, w:220, h:170, title:'NuevaClase', attrs:'+ atributo: tipo', methods:'+ metodo() tipo'});
+  ensureCanvasFits(scrollLeft + 120, scrollTop + 120, 220, 170);
+  updateLines();
+  scheduleSave();
+});
+document.getElementById('btnConnect').addEventListener('click', function(){
+  connectMode = !connectMode; this.classList.toggle('active', connectMode); connectFrom = null;
+  boxes.forEach(b => b.el.classList.remove('selected'));
+  document.getElementById('hint').textContent = connectMode
+    ? 'Modo conexión: haz clic en la clase de origen y luego en la de destino.'
+    : 'Verde = ya existe · Rojo = nuevo · Arrastra el título para mover · Clic en atributos/métodos para editar';
+  canvas.style.cursor = connectMode ? 'crosshair' : 'default';
+});
+document.getElementById('btnDeleteConn').addEventListener('click', ()=>{
+  if (!selectedConn) { alert('Haz clic en una línea de conexión para seleccionarla, luego presiona este botón.'); return; }
+  connections = connections.filter(c => c.id !== selectedConn); selectedConn = null; updateLines();
+  scheduleSave();
+});
+document.getElementById('btnExport').addEventListener('click', ()=>{
+  boxes.forEach(b => b.el.classList.remove('selected')); selectedConn = null; updateLines();
+  let maxX=0, maxY=0;
+  boxes.forEach(b=>{ maxX = Math.max(maxX, b.el.offsetLeft + b.el.offsetWidth); maxY = Math.max(maxY, b.el.offsetTop + b.el.offsetHeight); });
+  const scale = parseInt(document.getElementById('exportScale').value, 10) || 2;
+  const btn = document.getElementById('btnExport');
+  const originalText = btn.textContent;
+  btn.textContent = 'Generando…'; btn.disabled = true;
+  html2canvas(canvas, { backgroundColor: '#faf9f6', width: maxX + 60, height: maxY + 60, windowWidth: maxX + 60, windowHeight: maxY + 60, scale: scale }).then(c => {
+    const link = document.createElement('a'); link.download = 'diagrama_clases_sistema_completo.png'; link.href = c.toDataURL('image/png'); link.click();
+    showToast('PNG exportado a ' + scale + 'x (' + c.width + '×' + c.height + ' px).');
+  }).finally(()=>{ btn.textContent = originalText; btn.disabled = false; });
+});
+
+function serializeState(){
+  return {
+    version: 1,
+    title: document.querySelector('#toolbar h1').innerHTML,
+    canvasWidth: canvas.style.width || (canvas.offsetWidth + 'px'),
+    canvasHeight: canvas.style.height || (canvas.offsetHeight + 'px'),
+    boxes: boxes.map(b => {
+      const el = b.el;
+      return {
+        id: b.id,
+        x: el.offsetLeft, y: el.offsetTop, w: el.offsetWidth, h: el.offsetHeight,
+        nuevo: el.classList.contains('nuevo'),
+        title: el.querySelector('.box-header').innerHTML,
+        attrs: el.querySelector('.box-attrs').innerHTML,
+        methods: el.querySelector('.box-methods').innerHTML,
+      };
+    }),
+    connections: connections.map(c => ({ from: c.from, to: c.to, type: c.type })),
+  };
+}
+
+function restoreState(data){
+  boxes.forEach(b => b.el.remove());
+  boxes = []; connections = []; selectedConn = null; connectFrom = null;
+  if (data.title) document.querySelector('#toolbar h1').innerHTML = data.title;
+  if (data.canvasWidth) canvas.style.width = data.canvasWidth;
+  if (data.canvasHeight) canvas.style.height = data.canvasHeight;
+  (data.boxes || []).forEach(bd => {
+    createBox({ id: bd.id, x: bd.x, y: bd.y, w: bd.w, h: bd.h, nuevo: bd.nuevo, title: bd.title, attrs: bd.attrs, methods: bd.methods });
+  });
+  (data.connections || []).forEach(cd => {
+    connections.push({ from: cd.from, to: cd.to, type: cd.type, id: 'c'+cd.from+'_'+cd.to+'_'+Math.random().toString(36).slice(2,7) });
+  });
+  let maxNum = 0;
+  (data.boxes || []).forEach(bd => { const m = /^box(\d+)$/.exec(bd.id || ''); if (m) maxNum = Math.max(maxNum, parseInt(m[1],10)); });
+  boxIdCounter = maxNum + 1;
+  boxes.forEach(b => ensureCanvasFits(b.el.offsetLeft, b.el.offsetTop, b.el.offsetWidth, b.el.offsetHeight));
+  updateLines();
+}
+
+let saveTimeout = null;
+function scheduleSave(){
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(()=>{
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(serializeState())); }
+    catch(e){ console.warn('No se pudo autoguardar en este navegador', e); }
+  }, 400);
+}
+
+function showToast(msg){
+  let toast = document.getElementById('toast');
+  if (!toast){
+    toast = document.createElement('div');
+    toast.id = 'toast';
+    toast.style.cssText = 'position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#2b2b2b;color:#fff;padding:10px 18px;border-radius:6px;font-size:13px;z-index:1000;opacity:0;transition:opacity 0.3s;pointer-events:none;';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=>{ toast.style.opacity = '0'; }, 2600);
+}
+
+document.getElementById('btnSaveFile').addEventListener('click', ()=>{
+  const data = serializeState();
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.download = 'diagrama_clases_sistema_completo_estado.json';
+  link.href = url;
+  link.click();
+  URL.revokeObjectURL(url);
+  showToast('Archivo de respaldo descargado.');
+});
+
+document.getElementById('btnLoadFile').addEventListener('click', ()=>{
+  document.getElementById('fileLoadInput').click();
+});
+document.getElementById('fileLoadInput').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev)=>{
+    try {
+      const data = JSON.parse(ev.target.result);
+      restoreState(data);
+      scheduleSave();
+      showToast('Estado cargado desde el archivo.');
+    } catch(err){
+      alert('No se pudo leer el archivo: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+function loadInitial(){
+  let saved = null;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) saved = JSON.parse(raw);
+  } catch(e){ console.warn('No se pudo leer el estado guardado', e); }
+
+  if (saved && saved.boxes && saved.boxes.length){
+    restoreState(saved);
+    showToast('Se restauraron tus cambios guardados en este navegador.');
+  } else {
+    initialBoxes.forEach(createBox);
+    initialConnIndex.forEach(([fromIdx, toIdx, type])=>{ connections.push({from: boxes[fromIdx].id, to: boxes[toIdx].id, type, id:'c'+fromIdx+'_'+toIdx}); });
+    updateLines();
+  }
+}
+
+document.getElementById('btnReset').addEventListener('click', ()=>{
+  if (!confirm('¿Restablecer el diagrama a su diseño original? Se perderán las clases, conexiones y textos que hayas agregado o modificado.')) return;
+  boxes.forEach(b => b.el.remove());
+  boxes = []; connections = []; selectedConn = null; connectFrom = null; connectMode = false;
+  boxIdCounter = 0;
+  document.getElementById('hint').textContent = 'Verde = ya existe · Rojo = nuevo · Arrastra el título para mover, la esquina inferior derecha para redimensionar · "Conectar clases" agrega líneas · Clic en atributos/métodos para editar · El lienzo se expande solo · Autoguardado en este navegador';
+  canvas.style.cursor = 'default';
+  canvas.style.width = ''; canvas.style.height = '';
+  document.querySelector('#toolbar h1').innerHTML = DEFAULT_TITLE;
+  try { localStorage.removeItem(STORAGE_KEY); } catch(e){}
+  initialBoxes.forEach(createBox);
+  initialConnIndex.forEach(([fromIdx, toIdx, type])=>{ connections.push({from: boxes[fromIdx].id, to: boxes[toIdx].id, type, id:'c'+fromIdx+'_'+toIdx}); });
+  updateLines();
+  showToast('Diagrama restablecido al diseño original.');
+});
+
+loadInitial();
+canvas.addEventListener('mousedown', (e)=>{ if (e.target === canvas || e.target === svg) boxes.forEach(b => b.el.classList.remove('selected')); });
+</script>
+</body>
+</html>

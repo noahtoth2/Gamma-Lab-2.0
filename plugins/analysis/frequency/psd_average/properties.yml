@@ -1,0 +1,8 @@
+id: "psd_average"
+name: "PSD Average"
+category: "Analysis"
+subcategory: "Frequency"
+version: "1.0"
+icon: "icn_psd_average.png" 
+logic_class: "Psd_average_plugin"
+ui_class: ""

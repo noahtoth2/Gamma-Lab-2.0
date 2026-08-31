@@ -1,0 +1,8 @@
+id: "fft_average"
+name: "FFT Average"
+category: "Analysis"
+subcategory: "Frequency"
+version: "1.0"
+icon: "icn_fft_average.png"
+logic_class: "Fft_average_plugin"
+ui_class: ""

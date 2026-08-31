@@ -1,0 +1,8 @@
+id: "open_signal"
+name: "Open Signal"
+category: "Home"
+subcategory: "Signal"
+version: "1.0"
+icon: "icn_load_signal.png"            
+logic_class: "OpenSignalPlugin"
+ui_class: ""   

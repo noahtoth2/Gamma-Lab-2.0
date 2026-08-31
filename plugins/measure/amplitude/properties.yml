@@ -1,0 +1,8 @@
+id: "amplitude_Results"
+name: "Amplitude Results"
+category: "Measure"
+subcategory: "Measures"
+version: "1.0"
+icon: "icn_amplitude.png"
+logic_class: "AmplitudePlugin"
+ui_class: ""

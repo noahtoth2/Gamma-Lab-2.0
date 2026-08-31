@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Diagrama de casos de uso - Sistema Completo - GammaLab 2.0</title>
+<style>
+  :root{
+    --bg:#f5f4f0; --panel:#ffffff; --border:#d8d5cb; --border-strong:#b8b4a6;
+    --text:#1c2a44; --text-secondary:#5f5e5a; --canvas-bg:#ffffff; --line:#1f4e8c;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--text);background:var(--bg);}
+  #toolbar{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--border);flex-wrap:wrap;position:sticky;top:0;z-index:50;}
+  #toolbar h1{font-size:15px;font-weight:600;margin:0 16px 0 0;color:var(--text);white-space:nowrap;cursor:text;padding:4px 6px;border-radius:4px;}
+  #toolbar h1[contenteditable="true"]:hover{background:#f0efe9;}
+  #toolbar h1[contenteditable="true"]:focus{outline:1.5px solid #6f9c4d;background:#fff;}
+  button,select{font-family:inherit;font-size:13px;padding:7px 12px;border-radius:6px;border:1px solid var(--border-strong);background:#fff;color:var(--text);cursor:pointer;}
+  button:hover{background:#f0efe9;}
+  button.primary{background:#6f9c4d;color:#fff;border-color:#6f9c4d;}
+  button:disabled{opacity:0.6;cursor:default;}
+  .hint{font-size:12px;color:var(--text-secondary);margin-left:auto;white-space:nowrap;}
+  #wrap{width:100%;height:calc(100% - 54px);overflow:auto;background:#eee;}
+  #canvas{position:relative;width:1850px;height:1420px;background:var(--canvas-bg);}
+  svg#lines{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2;}
+
+  .uc-node{position:absolute;cursor:move;}
+  .uc-node:not(.uc-boundary-node){z-index:3;}
+  .uc-node.uc-boundary-node{z-index:1;}
+  .uc-node.connect-armed{outline:3px solid #0f6e56;outline-offset:2px;z-index:8;}
+  .uc-node .box-delete{position:absolute;top:-9px;right:-9px;width:20px;height:20px;border-radius:50%;background:#c0392b;color:#fff;border:none;font-size:13px;line-height:1;cursor:pointer;display:none;align-items:center;justify-content:center;padding:0;z-index:6;}
+  .uc-node:hover .box-delete{display:flex;}
+  .resize-handle{position:absolute;right:0;bottom:0;width:16px;height:16px;cursor:nwse-resize;background:linear-gradient(135deg, transparent 50%, #8a8878 50%);z-index:7;}
+
+  .uc-boundary-node{border-radius:8px;}
+  .uc-boundary-node.is-outer{border:1.6px solid #222;background:rgba(31,78,140,0.015);}
+  .uc-boundary-node.is-pkg{border:1.4px dashed #6b6a63;background:rgba(111,156,77,0.04);}
+  .uc-boundary-node.is-outer .resize-handle{background:linear-gradient(135deg, transparent 50%, #222 50%);}
+  .uc-boundary-node.is-pkg .resize-handle{background:linear-gradient(135deg, transparent 50%, #6b6a63 50%);}
+  .boundary-title{position:absolute;top:6px;left:12px;font-size:13px;font-weight:700;color:var(--text);cursor:text;}
+  .pkg-title{position:absolute;top:6px;left:12px;font-size:11.5px;font-weight:700;color:#4a4942;background:#fdfcf9;padding:1px 6px;border-radius:3px;cursor:text;}
+  .boundary-title[contenteditable="true"]:focus, .pkg-title[contenteditable="true"]:focus{outline:1px solid #6f9c4d;background:#fff;}
+
+  .uc-ellipse-wrap{width:100%;height:100%;position:relative;}
+  .uc-ellipse-wrap svg{position:absolute;top:0;left:0;pointer-events:none;}
+  .uc-text{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;text-align:center;font-size:10.5px;padding:10px;line-height:1.3;white-space:pre-wrap;color:var(--line);}
+  .uc-text.abstract{font-style:italic;}
+  .uc-text[contenteditable="true"]:focus{outline:1px solid #6f9c4d;background:rgba(255,255,255,0.95);}
+  .actor-wrap{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;}
+  .actor-wrap svg{flex:0 0 auto;pointer-events:none;}
+  .actor-label{font-size:13px;font-weight:600;margin-top:4px;text-align:center;color:var(--line);padding:2px 6px;border-radius:4px;}
+  .actor-label[contenteditable="true"]:focus{outline:1px solid #6f9c4d;background:#fffef6;}
+  .rel-label{position:absolute;font-size:9.5px;color:var(--line);background:#fff;padding:0px 4px;white-space:pre;cursor:text;z-index:4;font-style:italic;text-align:center;}
+  .rel-label[contenteditable="true"]:focus{outline:1px solid #6f9c4d;}
+</style>
+</head>
+<body>
+
+<div id="toolbar">
+  <h1 contenteditable="true" spellcheck="false">Diagrama de casos de uso — Sistema completo GammaLab 2.0 (23 CU)</h1>
+  <select id="relType" title="Tipo de relación a crear">
+    <option value="assoc" selected>Asociación</option>
+    <option value="include">«include»</option>
+    <option value="extend">«extend»</option>
+    <option value="generalize">Generalización</option>
+  </select>
+  <button id="btnConnect">🔗 Conectar</button>
+  <button id="btnDeleteRel">🗑 Borrar conexión</button>
+  <select id="exportScale" title="Resolución de la imagen exportada">
+    <option value="1">PNG 1x (rápido)</option>
+    <option value="2" selected>PNG 2x (alta calidad)</option>
+    <option value="3">PNG 3x (máxima calidad)</option>
+    <option value="4">PNG 4x (impresión)</option>
+  </select>
+  <button id="btnExport">Exportar PNG</button>
+  <button id="btnSaveFile" class="primary">💾 Guardar cambios</button>
+  <button id="btnLoadFile">📂 Cargar cambios</button>
+  <input type="file" id="fileLoadInput" accept="application/json" style="display:none">
+  <button id="btnReset" title="Vuelve al diseño original, descartando tus cambios guardados en este navegador">↺ Restablecer diseño</button>
+  <span class="hint" id="hint">Arrastra o redimensiona cualquier óvalo, actor o recuadro · Arrastrar un recuadro mueve lo que esté dentro · "Conectar" agrega líneas nuevas · Clic en una línea para seleccionarla y borrarla · Autoguardado en este navegador</span>
+</div>
+
+<div id="wrap"><div id="canvas">
+  <svg id="lines"></svg>
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+/*
+  Vista de casos de uso del SISTEMA COMPLETO: las 23 fichas + 1 caso de uso
+  abstracto, agrupadas en 5 subsistemas segun su naturaleza real. CADA flecha
+  include/extend por defecto viene LITERAL del campo "Extensiones" de la
+  ficha correspondiente. La disposicion en cruz (Nucleo al centro) refleja
+  que 10 de las otras 22 fichas dependen de CU-020/CU-021/CU-003/CU-011.
+
+  Los 5 recuadros de subsistema y el limite del sistema son nodos
+  "boundary" con el mismo motor de arrastre/redimension que los ovalos y el
+  actor; arrastrar un recuadro mueve consigo todo lo que este geometricamente
+  contenido en el (ver getContainedKeys). Las relaciones (include/extend/
+  generalizacion/asociacion) tambien son editables: boton "Conectar" +
+  selector de tipo para agregar, clic en una linea + "Borrar conexion" para
+  quitar.
+*/
+const canvas = document.getElementById('canvas');
+const svg = document.getElementById('lines');
+const EW = 190, EH = 95;
+
+const STORAGE_KEY = 'gammalab_diagrama_casos_de_uso_sistema_completo_v1';
+const CANVAS_MARGIN = 400;
+
+function ensureCanvasFits(x, y, w, h){
+  const neededW = x + w + 100;
+  const neededH = y + h + 100;
+  const curW = canvas.offsetWidth, curH = canvas.offsetHeight;
+  if (neededW > curW) canvas.style.width = (neededW + CANVAS_MARGIN) + 'px';
+  if (neededH > curH) canvas.style.height = (neededH + CANVAS_MARGIN) + 'px';
+}
+
+const defaultState = {
+  systemBoundary: {shape:'boundary', outer:true, x:190, y:40,   w:1580, h:1320, text:'«system» GammaLab 2.0'},
+  preproc:        {shape:'boundary', outer:false, x:750, y:80,   w:460, h:400, text:'«subsistema» Preprocesamiento'},
+  interfaz:       {shape:'boundary', outer:false, x:230, y:600,  w:460, h:400, text:'«subsistema» Interfaz y Usabilidad'},
+  nucleo:         {shape:'boundary', outer:false, x:750, y:540,  w:460, h:520, text:'«subsistema» Núcleo y Ciclo de Vida'},
+  analisis:       {shape:'boundary', outer:false, x:1270,y:590,  w:460, h:420, text:'«subsistema» Análisis'},
+  exportPkg:      {shape:'boundary', outer:false, x:750, y:1120, w:460, h:200, text:'«subsistema» Exportación'},
+
+  actor: {shape:'actor', x:40, y:725, w:110, h:150, text:'Investigador'},
+
+  cu011: {shape:'ellipse', x:770, y:585, w:EW, h:EH, text:'CU-011\nIniciar la aplicación'},
+  cu020: {shape:'ellipse', x:980, y:585, w:EW, h:EH, text:'CU-020\nOrquestador del núcleo\n(ejecutar análisis pesado)'},
+  cu023: {shape:'ellipse', x:770, y:698, w:EW, h:EH, text:'CU-023\nAbrir un proyecto'},
+  cu003: {shape:'ellipse', x:980, y:698, w:EW, h:EH, text:'CU-003\nCargar señal (con\ngestión de memoria)'},
+  cu021: {shape:'ellipse', x:770, y:811, w:EW, h:EH, text:'CU-021\nCerrar un proyecto'},
+  cu022: {shape:'ellipse', x:980, y:811, w:EW, h:EH, text:'CU-022\nCerrar la aplicación'},
+  cu014: {shape:'ellipse', x:770, y:924, w:EW, h:EH, text:'CU-014\nCancelar procesamiento\npesado'},
+
+  cu004: {shape:'ellipse', x:770, y:125, w:EW, h:EH, text:'CU-004\nGenerar y modificar\ntrials'},
+  cu006: {shape:'ellipse', x:980, y:125, w:EW, h:EH, text:'CU-006\nSeleccionar trials\npara análisis'},
+  cu007: {shape:'ellipse', x:770, y:238, w:EW, h:EH, text:'CU-007\nRemover artefacto\ncon medidas'},
+  cu016: {shape:'ellipse', x:980, y:238, w:EW, h:EH, text:'CU-016\nAplicar filtros\ndigitales'},
+  cu018: {shape:'ellipse', x:770, y:351, w:EW, h:EH, text:'CU-018\nAjustar frecuencia\nde muestreo'},
+
+  cu008: {shape:'ellipse', x:250, y:645, w:EW, h:EH, text:'CU-008\nNavegar y cambiar\nde módulo'},
+  cu012: {shape:'ellipse', x:460, y:645, w:EW, h:EH, text:'CU-012\nInteractuar visualmente\ncon la señal'},
+  cu019: {shape:'ellipse', x:250, y:758, w:EW, h:EH, text:'CU-019\nOptimizar renderizado\n(submuestreo)'},
+  cu009: {shape:'ellipse', x:460, y:758, w:EW, h:EH, text:'CU-009\nLimpiar formulario\n(Clear)'},
+  cu010: {shape:'ellipse', x:250, y:871, w:EW, h:EH, text:'CU-010\nConsultar ayuda\ncontextual'},
+
+  pacAbs: {shape:'ellipse', abstract:true, x:1290, y:635, w:400, h:95, text:'«abstract»\nEjecutar Análisis PAC / PPC\n(acoplamiento fase-amplitud)'},
+  cu001: {shape:'ellipse', x:1290, y:748, w:EW, h:EH, text:'CU-001\nAnálisis PAC\n1 canal'},
+  cu002: {shape:'ellipse', x:1500, y:748, w:EW, h:EH, text:'CU-002\nAnálisis PAC 2 canales\n/ PPC'},
+  cu013: {shape:'ellipse', x:1290, y:861, w:EW, h:EH, text:'CU-013\nCalcular Wavelet\n(normalización/escala)'},
+  cu015: {shape:'ellipse', x:1500, y:861, w:EW, h:EH, text:'CU-015\nCálculo de promedio\nde trials'},
+
+  cu005: {shape:'ellipse', x:770, y:1165, w:EW, h:EH, text:'CU-005\nGuardado y\nexportación de datos'},
+  cu017: {shape:'ellipse', x:980, y:1165, w:EW, h:EH, text:'CU-017\nExportación gráfica\nvectorial (EMF)'},
+};
+
+const defaultRelations = [
+  { id:'cu001__cu020__include', from:'cu001', to:'cu020', type:'include' },
+  { id:'cu002__cu020__include', from:'cu002', to:'cu020', type:'include' },
+  { id:'cu003__cu020__include', from:'cu003', to:'cu020', type:'include' },
+  { id:'cu003__cu021__include', from:'cu003', to:'cu021', type:'include' },
+  { id:'cu004__cu020__include', from:'cu004', to:'cu020', type:'include' },
+  { id:'cu006__cu020__include', from:'cu006', to:'cu020', type:'include' },
+  { id:'cu007__cu020__include', from:'cu007', to:'cu020', type:'include' },
+  { id:'cu008__cu020__include', from:'cu008', to:'cu020', type:'include' },
+  { id:'cu012__cu019__include', from:'cu012', to:'cu019', type:'include' },
+  { id:'cu013__cu020__include', from:'cu013', to:'cu020', type:'include' },
+  { id:'cu015__cu020__include', from:'cu015', to:'cu020', type:'include' },
+  { id:'cu016__cu020__include', from:'cu016', to:'cu020', type:'include' },
+  { id:'cu018__cu004__include', from:'cu018', to:'cu004', type:'include' },
+  { id:'cu021__cu005__include', from:'cu021', to:'cu005', type:'include' },
+  { id:'cu022__cu021__include', from:'cu022', to:'cu021', type:'include' },
+  { id:'cu023__cu011__include', from:'cu023', to:'cu011', type:'include' },
+  { id:'cu023__cu021__include', from:'cu023', to:'cu021', type:'include' },
+  { id:'cu023__cu003__include', from:'cu023', to:'cu003', type:'include' },
+  { id:'cu014__cu020__extend', from:'cu014', to:'cu020', type:'extend' },
+  { id:'cu001__pacAbs__generalize', from:'cu001', to:'pacAbs', type:'generalize' },
+  { id:'cu002__pacAbs__generalize', from:'cu002', to:'pacAbs', type:'generalize' },
+  { id:'actor__nucleo__assoc', from:'actor', to:'nucleo', type:'assoc' },
+  { id:'actor__preproc__assoc', from:'actor', to:'preproc', type:'assoc' },
+  { id:'actor__interfaz__assoc', from:'actor', to:'interfaz', type:'assoc' },
+  { id:'actor__analisis__assoc', from:'actor', to:'analisis', type:'assoc' },
+  { id:'actor__exportPkg__assoc', from:'actor', to:'exportPkg', type:'assoc' },
+];
+
+let state = {};
+let elMap = {};
+let relations = [];
+let relLabelEls = {};
+let connectMode = false, connectFrom = null, selectedRelId = null;
+
+function applyPos(el, s){ el.style.left=s.x+'px'; el.style.top=s.y+'px'; el.style.width=s.w+'px'; el.style.height=s.h+'px'; }
+
+function createNode(key){
+  const s = state[key];
+  const el = document.createElement('div');
+  el.className = 'uc-node';
+
+  if (s.shape === 'ellipse'){
+    el.innerHTML = `<button class="box-delete" title="Eliminar">×</button>
+      <div class="uc-ellipse-wrap">
+        <svg><ellipse fill="#fff" stroke-width="1.6"/></svg>
+        <div class="uc-text${s.abstract?' abstract':''}" contenteditable="true" spellcheck="false" style="${s.abstract?'color:#4a4942;':''}">${s.text}</div>
+      </div>
+      <div class="resize-handle" title="Redimensionar"></div>`;
+  } else if (s.shape === 'actor'){
+    el.innerHTML = `<button class="box-delete" title="Eliminar">×</button>
+      <div class="actor-wrap">
+        <svg viewBox="0 0 70 105">
+          <circle cx="35" cy="16" r="14" fill="#fff" stroke="#1f4e8c" stroke-width="2"/>
+          <line x1="35" y1="30" x2="35" y2="66" stroke="#1f4e8c" stroke-width="2"/>
+          <line x1="10" y1="42" x2="60" y2="42" stroke="#1f4e8c" stroke-width="2"/>
+          <line x1="35" y1="66" x2="10" y2="100" stroke="#1f4e8c" stroke-width="2"/>
+          <line x1="35" y1="66" x2="60" y2="100" stroke="#1f4e8c" stroke-width="2"/>
+        </svg>
+        <div class="actor-label" contenteditable="true" spellcheck="false">${s.text}</div>
+      </div>
+      <div class="resize-handle" title="Redimensionar"></div>`;
+  } else if (s.shape === 'boundary'){
+    el.className += ' uc-boundary-node ' + (s.outer ? 'is-outer' : 'is-pkg');
+    const titleClass = s.outer ? 'boundary-title' : 'pkg-title';
+    el.innerHTML = `<div class="${titleClass}" contenteditable="true" spellcheck="false">${s.text}</div>
+      <div class="resize-handle" title="Redimensionar"></div>`;
+  }
+
+  canvas.appendChild(el);
+  elMap[key] = el;
+  layoutNode(key);
+  attachInteractions(key);
+  return el;
+}
+
+function layoutNode(key){
+  const s = state[key], el = elMap[key];
+  if (!s || !el) return;
+  applyPos(el, s);
+  if (s.shape === 'ellipse'){
+    const svgEl = el.querySelector('svg');
+    const ellipseEl = svgEl.querySelector('ellipse');
+    svgEl.setAttribute('width', s.w); svgEl.setAttribute('height', s.h);
+    ellipseEl.setAttribute('cx', s.w/2); ellipseEl.setAttribute('cy', s.h/2);
+    ellipseEl.setAttribute('rx', Math.max(4, s.w/2-1.5)); ellipseEl.setAttribute('ry', Math.max(4, s.h/2-1.5));
+    ellipseEl.setAttribute('stroke', s.abstract ? '#6b6a63' : '#1f4e8c');
+    if (s.abstract) ellipseEl.setAttribute('stroke-dasharray','6 4'); else ellipseEl.removeAttribute('stroke-dasharray');
+  } else if (s.shape === 'actor'){
+    const svgEl = el.querySelector('.actor-wrap > svg');
+    const scale = Math.max(0.3, Math.min(s.w/70, Math.max(20,s.h-30)/105));
+    svgEl.setAttribute('width', 70*scale); svgEl.setAttribute('height', 105*scale);
+  }
+}
+
+function getContainedKeys(boundaryKey){
+  const b = state[boundaryKey];
+  if (!b) return [];
+  return Object.keys(state).filter(k => {
+    if (k === boundaryKey) return false;
+    const s = state[k];
+    return s.x >= b.x && s.y >= b.y && (s.x + s.w) <= (b.x + b.w) && (s.y + s.h) <= (b.y + b.h);
+  });
+}
+
+function handleConnectClick(key){
+  const el = elMap[key];
+  if (!connectFrom){
+    connectFrom = key;
+    el.classList.add('connect-armed');
+  } else if (connectFrom === key){
+    el.classList.remove('connect-armed');
+    connectFrom = null;
+  } else {
+    const type = document.getElementById('relType').value;
+    const id = 'rel_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+    relations.push({ id, from: connectFrom, to: key, type });
+    const fromEl = elMap[connectFrom];
+    if (fromEl) fromEl.classList.remove('connect-armed');
+    connectFrom = null;
+    redraw();
+    scheduleSave();
+  }
+}
+
+function attachInteractions(key){
+  const el = elMap[key];
+  const s = state[key];
+
+  el.addEventListener('mousedown', (e)=>{
+    if (connectMode){ e.stopPropagation(); handleConnectClick(key); return; }
+    if (e.target.closest('.resize-handle') || e.target.closest('.box-delete')) return;
+    if (document.activeElement === e.target && e.target.isContentEditable){ e.stopPropagation(); return; }
+    const DRAG_THRESHOLD = 4;
+    const startX = e.clientX, startY = e.clientY;
+    const startLeft = s.x, startTop = s.y;
+    let dragging = false;
+    let groupKeys = null, groupStarts = null;
+    function onMove(ev){
+      const dx = ev.clientX - startX, dy = ev.clientY - startY;
+      if (!dragging){
+        if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return;
+        dragging = true; ev.preventDefault();
+        if (window.getSelection) window.getSelection().removeAllRanges();
+        if (s.shape === 'boundary'){
+          groupKeys = getContainedKeys(key);
+          groupStarts = {};
+          groupKeys.forEach(k => { groupStarts[k] = { x: state[k].x, y: state[k].y }; });
+        }
+      }
+      s.x = startLeft + dx; s.y = startTop + dy;
+      layoutNode(key);
+      ensureCanvasFits(s.x, s.y, s.w, s.h);
+      if (groupKeys){
+        groupKeys.forEach(k => {
+          const gs = state[k];
+          gs.x = groupStarts[k].x + dx; gs.y = groupStarts[k].y + dy;
+          layoutNode(k);
+          ensureCanvasFits(gs.x, gs.y, gs.w, gs.h);
+        });
+      }
+      redraw();
+    }
+    function onUp(){
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      if (!dragging){ const editable = e.target.closest('[contenteditable="true"]'); if (editable) editable.focus(); }
+      else scheduleSave();
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+
+  const handle = el.querySelector('.resize-handle');
+  if (handle){
+    handle.addEventListener('mousedown', (e)=>{
+      e.preventDefault(); e.stopPropagation();
+      const startX = e.clientX, startY = e.clientY;
+      const startW = s.w, startH = s.h;
+      const minW = s.shape === 'boundary' ? 220 : (s.shape === 'actor' ? 70 : 110);
+      const minH = s.shape === 'boundary' ? 150 : (s.shape === 'actor' ? 100 : 60);
+      function onMove(ev){
+        s.w = Math.max(minW, startW + (ev.clientX - startX));
+        s.h = Math.max(minH, startH + (ev.clientY - startY));
+        layoutNode(key);
+        ensureCanvasFits(s.x, s.y, s.w, s.h);
+        redraw();
+      }
+      function onUp(){ document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); scheduleSave(); }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  }
+
+  el.querySelectorAll('[contenteditable="true"]').forEach(part=>{
+    part.addEventListener('mousedown', (e)=>{ if (connectMode) return; if (document.activeElement===part) e.stopPropagation(); });
+    part.addEventListener('input', ()=>{ s.text = part.innerHTML; scheduleSave(); });
+  });
+
+  const delBtn = el.querySelector('.box-delete');
+  if (delBtn){
+    delBtn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      delete state[key];
+      el.remove();
+      delete elMap[key];
+      relations = relations.filter(r => r.from !== key && r.to !== key);
+      redraw();
+      scheduleSave();
+    });
+  }
+}
+
+function boxCenter(s){ return {x:s.x+s.w/2, y:s.y+s.h/2, w:s.w, h:s.h}; }
+function edgePoint(cx, cy, w, h, tx, ty){
+  const dx = tx - cx, dy = ty - cy;
+  if (dx === 0 && dy === 0) return {x:cx, y:cy};
+  const halfW = w/2, halfH = h/2;
+  const scaleX = dx !== 0 ? halfW / Math.abs(dx) : Infinity;
+  const scaleY = dy !== 0 ? halfH / Math.abs(dy) : Infinity;
+  const scale = Math.min(scaleX, scaleY);
+  return {x: cx + dx*scale, y: cy + dy*scale};
+}
+
+function createRelLabel(rel){
+  const el = document.createElement('div');
+  el.className = 'rel-label';
+  el.setAttribute('contenteditable', 'true'); el.setAttribute('spellcheck', 'false');
+  el.textContent = rel.labelText || (rel.type === 'include' ? '«include»' : '«extend»');
+  canvas.appendChild(el);
+  el.addEventListener('mousedown', (e)=>{ if (document.activeElement===el) e.stopPropagation(); });
+  el.addEventListener('input', ()=>{ rel.labelText = el.innerHTML; scheduleSave(); });
+  return el;
+}
+
+function syncRelLabels(){
+  const validIds = new Set(relations.filter(r => r.type==='include' || r.type==='extend').map(r=>r.id));
+  Object.keys(relLabelEls).forEach(id => {
+    if (!validIds.has(id)){ relLabelEls[id].remove(); delete relLabelEls[id]; }
+  });
+  relations.forEach(rel => {
+    if ((rel.type === 'include' || rel.type === 'extend') && !relLabelEls[rel.id]){
+      relLabelEls[rel.id] = createRelLabel(rel);
+    }
+  });
+}
+
+function redraw(){
+  syncRelLabels();
+  let out = `<defs>
+    <marker id="depArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M1 1 L9 5 L1 9" fill="none" stroke="#1f4e8c" stroke-width="1.4"/>
+    </marker>
+    <marker id="genArrow" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M1 1 L11 6 L1 11 Z" fill="#fff" stroke="#6b6a63" stroke-width="1.2"/>
+    </marker>
+  </defs>`;
+
+  relations.forEach(rel => {
+    const a = state[rel.from], b = state[rel.to];
+    const label = relLabelEls[rel.id];
+    if (!a || !b){ if (label) label.style.display='none'; return; }
+    const ca = boxCenter(a), cb = boxCenter(b);
+    const p1 = edgePoint(ca.x, ca.y, ca.w, ca.h, cb.x, cb.y);
+    const p2 = edgePoint(cb.x, cb.y, cb.w, cb.h, ca.x, ca.y);
+    let dash = '', marker = '', color = '#1f4e8c', width = 1.3;
+    if (rel.type === 'include' || rel.type === 'extend'){ dash = 'stroke-dasharray="6 4"'; marker = 'marker-end="url(#depArrow)"'; }
+    else if (rel.type === 'generalize'){ marker = 'marker-end="url(#genArrow)"'; color = '#6b6a63'; width = 1.5; }
+    const isSel = rel.id === selectedRelId;
+    const strokeColor = isSel ? '#0f6e56' : color;
+    const strokeWidth = isSel ? (width + 1) : width;
+    out += `<line data-rel-id="${rel.id}" x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="${strokeColor}" stroke-width="${strokeWidth}" ${dash} ${marker} style="pointer-events:stroke;cursor:pointer;"/>`;
+    if (label){
+      label.style.display = '';
+      label.style.left = ((p1.x+p2.x)/2)+'px';
+      label.style.top  = ((p1.y+p2.y)/2)+'px';
+      label.style.transform = 'translate(-50%,-50%)';
+    }
+  });
+
+  svg.innerHTML = out;
+  svg.querySelectorAll('line[data-rel-id]').forEach(lineEl => {
+    lineEl.addEventListener('click', ()=>{ selectedRelId = lineEl.getAttribute('data-rel-id'); redraw(); });
+  });
+}
+
+function rebuildAll(){
+  Object.keys(elMap).forEach(k => elMap[k].remove());
+  elMap = {};
+  Object.values(relLabelEls).forEach(l => { if (l) l.remove(); });
+  relLabelEls = {};
+  Object.keys(state).forEach(createNode);
+  redraw();
+}
+
+function serializeState(){
+  return {
+    version: 2,
+    title: document.querySelector('#toolbar h1').innerHTML,
+    canvasWidth: canvas.style.width || (canvas.offsetWidth + 'px'),
+    canvasHeight: canvas.style.height || (canvas.offsetHeight + 'px'),
+    state: state,
+    relations: relations,
+  };
+}
+
+function restoreState(data){
+  if (data.title) document.querySelector('#toolbar h1').innerHTML = data.title;
+  if (data.canvasWidth) canvas.style.width = data.canvasWidth;
+  if (data.canvasHeight) canvas.style.height = data.canvasHeight;
+  state = data.state || {};
+  relations = data.relations ? JSON.parse(JSON.stringify(data.relations)) : JSON.parse(JSON.stringify(defaultRelations));
+  selectedRelId = null; connectFrom = null;
+  rebuildAll();
+  Object.values(state).forEach(s => ensureCanvasFits(s.x, s.y, s.w, s.h));
+}
+
+let saveTimeout = null;
+function scheduleSave(){
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(()=>{
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(serializeState())); }
+    catch(e){ console.warn('No se pudo autoguardar en este navegador', e); }
+  }, 400);
+}
+
+function showToast(msg){
+  let toast = document.getElementById('toast');
+  if (!toast){
+    toast = document.createElement('div');
+    toast.id = 'toast';
+    toast.style.cssText = 'position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#2b2b2b;color:#fff;padding:10px 18px;border-radius:6px;font-size:13px;z-index:1000;opacity:0;transition:opacity 0.3s;pointer-events:none;';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=>{ toast.style.opacity = '0'; }, 2600);
+}
+
+document.getElementById('btnConnect').addEventListener('click', function(){
+  connectMode = !connectMode;
+  this.classList.toggle('primary', connectMode);
+  if (connectFrom){ const el = elMap[connectFrom]; if (el) el.classList.remove('connect-armed'); connectFrom = null; }
+  document.getElementById('hint').textContent = connectMode
+    ? 'Modo conectar: haz clic en el elemento de origen y luego en el de destino. Tipo seleccionado: ' + document.getElementById('relType').selectedOptions[0].textContent + '.'
+    : 'Arrastra o redimensiona cualquier óvalo, actor o recuadro · Arrastrar un recuadro mueve lo que esté dentro · "Conectar" agrega líneas nuevas · Clic en una línea para seleccionarla y borrarla · Autoguardado en este navegador';
+  canvas.style.cursor = connectMode ? 'crosshair' : 'default';
+});
+
+document.getElementById('btnDeleteRel').addEventListener('click', ()=>{
+  if (!selectedRelId){ alert('Haz clic en una línea de relación para seleccionarla, luego presiona este botón.'); return; }
+  relations = relations.filter(r => r.id !== selectedRelId);
+  selectedRelId = null;
+  redraw();
+  scheduleSave();
+});
+
+document.getElementById('btnSaveFile').addEventListener('click', ()=>{
+  const data = serializeState();
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.download = 'diagrama_casos_de_uso_sistema_completo_estado.json';
+  link.href = url;
+  link.click();
+  URL.revokeObjectURL(url);
+  showToast('Archivo de respaldo descargado.');
+});
+document.getElementById('btnLoadFile').addEventListener('click', ()=>{ document.getElementById('fileLoadInput').click(); });
+document.getElementById('fileLoadInput').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev)=>{
+    try {
+      const data = JSON.parse(ev.target.result);
+      restoreState(data);
+      scheduleSave();
+      showToast('Estado cargado desde el archivo.');
+    } catch(err){
+      alert('No se pudo leer el archivo: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+document.getElementById('btnReset').addEventListener('click', ()=>{
+  if (!confirm('¿Restablecer el diagrama a su diseño original? Se perderán las posiciones, tamaños, textos y líneas que hayas agregado o modificado.')) return;
+  try { localStorage.removeItem(STORAGE_KEY); } catch(e){}
+  state = JSON.parse(JSON.stringify(defaultState));
+  relations = JSON.parse(JSON.stringify(defaultRelations));
+  selectedRelId = null; connectFrom = null; connectMode = false;
+  document.getElementById('btnConnect').classList.remove('primary');
+  canvas.style.cursor = 'default';
+  canvas.style.width = ''; canvas.style.height = '';
+  rebuildAll();
+  showToast('Diagrama restablecido al diseño original.');
+});
+
+document.getElementById('btnExport').addEventListener('click', ()=>{
+  selectedRelId = null; redraw();
+  const scale = parseInt(document.getElementById('exportScale').value, 10) || 2;
+  const btn = document.getElementById('btnExport');
+  const originalText = btn.textContent;
+  btn.textContent = 'Generando…'; btn.disabled = true;
+  let maxX=0, maxY=0;
+  Object.values(state).forEach(s=>{ maxX = Math.max(maxX, s.x + s.w); maxY = Math.max(maxY, s.y + s.h); });
+  html2canvas(canvas, { backgroundColor: '#ffffff', width: maxX + 40, height: maxY + 40, windowWidth: maxX + 40, windowHeight: maxY + 40, scale: scale }).then(c => {
+    const link = document.createElement('a'); link.download = 'diagrama_casos_de_uso_sistema_completo.png'; link.href = c.toDataURL('image/png'); link.click();
+    showToast('PNG exportado a ' + scale + 'x (' + c.width + '×' + c.height + ' px).');
+  }).finally(()=>{ btn.textContent = originalText; btn.disabled = false; });
+});
+
+function loadInitial(){
+  let saved = null;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) saved = JSON.parse(raw);
+  } catch(e){ console.warn('No se pudo leer el estado guardado', e); }
+
+  if (saved && saved.state && Object.keys(saved.state).length){
+    restoreState(saved);
+    showToast('Se restauraron tus cambios guardados en este navegador.');
+  } else {
+    state = JSON.parse(JSON.stringify(defaultState));
+    relations = JSON.parse(JSON.stringify(defaultRelations));
+    rebuildAll();
+  }
+}
+loadInitial();
+canvas.addEventListener('mousedown', (e)=>{ if (e.target === canvas || e.target === svg) document.activeElement && document.activeElement.blur && document.activeElement.blur(); });
+</script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+id: "event_related_potential"
+name: "Event Related Potential"
+category: "Analysis"
+subcategory: "Time"
+version: "1.0"
+icon: "icn_erp.png"
+logic_class: "Erp_plugin"
+ui_class: ""
