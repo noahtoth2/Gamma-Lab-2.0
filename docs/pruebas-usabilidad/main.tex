@@ -1,0 +1,256 @@
+\documentclass[12pt,letterpaper]{article}
+
+% ── Paquetes ──────────────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{colortbl}
+\usepackage{xcolor}
+
+% ── Encabezado y pie de página ────────────────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Encabezado tipo tabla (simulado con fancyhdr)
+\fancyhead[L]{%
+  \begin{tabular}{@{}l@{}}
+    \textbf{PONTIFICIA UNIVERSIDAD JAVERIANA} \\
+    \textbf{Gamma Lab 2.0} \\
+    Documento de Registro de Pruebas de Usabilidad \quad ISSIIS
+  \end{tabular}%
+}
+\fancyhead[R]{%
+  \begin{tabular}{r@{}}
+    Hoja \thepage\ de \pageref{LastPage} \\
+    Versión plantilla 1.0 \\
+    Fecha documento jul 2026
+  \end{tabular}%
+}
+
+\usepackage{lastpage}
+
+% ── Configuración de hyperref ─────────────────────────────────────────────
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  urlcolor=blue,
+  pdfauthor={Sebastián Almanza Galvis y Laura Juliana Garzón Arias},
+  pdftitle={Gamma Lab 2.0 -- Documento de Registro de Pruebas de Usabilidad},
+}
+
+% ══════════════════════════════════════════════════════════════════════════
+\begin{document}
+
+% ── Portada ───────────────────────────────────────────────────────────────
+\thispagestyle{empty}
+\begin{center}
+  \vspace*{4cm}
+  {\Huge \textbf{Gamma Lab 2.0}}\\[1.5cm]
+  {\LARGE Documento de Registro de Pruebas De Usabilidad}\\[2cm]
+  {\Large Versión 1.0}\\[1cm]
+  {\Large 01/07/2026}
+  \vfill
+\end{center}
+\newpage
+
+% ── Histórico de Versiones ────────────────────────────────────────────────
+\section*{Histórico de Versiones}
+
+\begin{tabularx}{\textwidth}{|l|c|X|X|}
+  \hline
+  \textbf{Fecha} & \textbf{Versión} & \textbf{Descripción} & \textbf{Autor} \\
+  \hline
+  07/abril/2026 & 1.0 & Pruebas de la versión uno de Gamma Lab &
+    Sebastián Almanza Galvis y Laura Juliana Garzón Arias \\
+  \hline
+   & & & \\
+  \hline
+\end{tabularx}
+
+\newpage
+
+% ── Tabla de Contenido ────────────────────────────────────────────────────
+\tableofcontents
+\newpage
+
+% ══════════════════════════════════════════════════════════════════════════
+%  CUERPO DEL DOCUMENTO
+% ══════════════════════════════════════════════════════════════════════════
+
+\section{Introducción}
+
+El propósito de este documento, es crear pruebas de usabilidad para la reorganización de la UX y facilitar la experiencia de usuario.
+
+\subsection{Objetivo}
+
+[En este apartado se deberán describir los objetivos de las pruebas, incluir la identificación y nombre de los módulos o componentes a probar.]
+
+``A continuación se listan los elementos (artefactos, entregables, documentos etc.) que serán objeto de prueba dentro del esfuerzo de pruebas:''
+
+\begin{itemize}
+  \item Funcionalidad especificada en el documento de especificación de requisitos.
+  \item Manejo de los datos y transacciones involucradas en las funcionalidades del punto anterior.
+  \item Rendimiento al ejecutar las funcionalidades del primer punto.
+\end{itemize}
+
+\subsection{Definiciones, acrónimos y abreviaturas}
+
+[Si es necesario en esta sección se estipula las definiciones de todos los términos, acrónimos y abreviaturas utilizadas en este documento, requeridas para interpretarlo correctamente.]
+
+\subsection{Referencias}
+
+[Esta sección proporciona una lista completa de todos los documentos referenciados en cualquier punto del documento. Identificar cada documento por título, número de reporte si aplica, fecha y organización que lo publica. Especificar las fuentes de donde pueden obtenerse las referencias. Esta información puede ser proporcionada por referencia a un apéndice o a otro documento.]
+
+``Este documento está basado y/o referencia los siguientes documentos del proyecto:
+
+\begin{itemize}
+  \item Cronograma del Proyecto
+  \item Especificación Requerimientos de Software''
+\end{itemize}
+
+% ──────────────────────────────────────────────────────────────────────────
+\section{Documentación base para la ejecución de las pruebas}
+
+[Integrar en este apartado la documentación correspondiente a los casos de prueba, datos de prueba, y el documento donde habrán de conservarse los resultados y evidencias de las pruebas ejecutadas. Señalar la documentación de referencia del ambiente de pruebas utilizado.]
+
+\subsection{Entorno de la prueba}
+
+\subsubsection{Hardware}
+
+[La siguiente tabla relaciona los recursos de hardware que son necesarios para crear un ambiente inicial de pruebas]
+
+\begin{center}
+\begin{tabularx}{\textwidth}{|l|c|c|c|X|}
+  \hline
+  \textbf{Equipo} & \textbf{Procesador} & \textbf{DD} & \textbf{RAM} & \textbf{Aplicación a instalar} \\
+  \hline
+  PC Windows (XP o superior) & Intel & 10GB & 2GB & Windows -- Herramientas ofimáticas \\
+  \hline
+\end{tabularx}
+\end{center}
+
+\subsubsection{Software}
+
+[Se especifica el software a instalar en el equipo de pruebas]
+
+\textbf{Datos de prueba}
+
+``Se desarrollarán y especificarán conjuntos de datos de prueba, tomando las muestras necesarias para la ejecución de las pruebas, de manera que se verifique que cumple con diversos tipos de datos.''
+
+\subsection{Identificación de la prueba}
+
+\subsubsection{Caso de prueba}
+
+[Cada caso de prueba individual deberá tener un caso que describa los pasos y los resultados esperados de cada prueba individual]
+
+[Se puede tomar como ejemplo la siguiente plantilla para la elaboración de un caso de prueba]
+
+\begin{center}
+\begin{longtable}{|>{\bfseries}p{4.5cm}|p{9.5cm}|}
+  \hline
+  \textbf{Columna} & \textbf{Instrucciones} \\
+  \hline
+  \endfirsthead
+  \hline
+  \textbf{Columna} & \textbf{Instrucciones} \\
+  \hline
+  \endhead
+  Id &
+    [Cada caso de prueba debe tener un identificador (código) único.] \\
+  \hline
+  Caso de Prueba &
+    [Título descriptivo del caso de prueba.] \\
+  \hline
+  Caso de Uso &
+    [Título descriptivo del caso de uso] \\
+  \hline
+  Descripción &
+    [Descripción del caso de prueba, indicando sus elementos, funcionalidades y acciones a ser ejercidas en el caso de prueba.] \\
+  \hline
+  Fecha &
+    [Fecha en que fue creado el caso de prueba.] \\
+  \hline
+  Funcionalidad / Característica &
+    [Describe el título de la característica o funcionalidad que se está probando. Por ej. Suscripción al Servicio, Entrega de Orden, Selección de Producto, Consulta de Ordenes Pendientes.] \\
+  \hline
+  Datos / Acciones de Entrada &
+    [Se especifica cada entrada que se requiere para ejecutar el caso de prueba. Estas entradas pueden ser valores o datos de entrada, y también acciones (por ejemplo presionar un botón). Deben identificarse los archivos o bases de datos involucrados.] \\
+  \hline
+  Resultado Esperado &
+    [Se especifica la salida que se espera de la ejecución de los casos de prueba con las entradas indicadas.] \\
+  \hline
+  Procedimientos especiales requeridos &
+    [Se describen cualquier restricción o condicionamiento en los procedimientos de prueba asociados a cada caso.] \\
+  \hline
+  Dependencias con otros casos de Prueba &
+    [Lista de los identificadores de los casos de prueba que deben ejecutarse antes de este caso. También puede incluir un sumario de la naturaleza de estas dependencias.] \\
+  \hline
+  \multicolumn{2}{|c|}{\textbf{Información para el seguimiento}} \\
+  \hline
+  Resultado Obtenido &
+    [Se describe el resultado real obtenido de la ejecución del caso de prueba (Este es una columna de seguimiento). Si esta difiere del resultado esperado, debería especificarse en un reporte de incidencia.] \\
+  \hline
+  Estado &
+    [Estado actual del caso de prueba.] \\
+  \hline
+  Última Fecha de Estado &
+    [Última fecha en que se ejecutó una acción referente al caso o que este cambio de estado.] \\
+  \hline
+  Observaciones &
+    [Observaciones relacionadas con la ejecución de los casos y de los resultados que se obtuvieron.] \\
+  \hline
+\end{longtable}
+\end{center}
+
+% ──────────────────────────────────────────────────────────────────────────
+\section{Prueba}
+
+[Esta sección integra el resultado de las pruebas unitarias sobre los componentes y productos de la solución tecnológica construidos, se debe especificar si tuvieron éxito o si se encontraron defectos.]
+
+\begin{center}
+\begin{tabularx}{\textwidth}{|X|X|X|X|X|}
+  \hline
+  \multicolumn{5}{|c|}{\textbf{Prueba}} \\
+  \hline
+  \textbf{Componente / Producto} &
+  \textbf{Caso de prueba} &
+  \textbf{Resultado} &
+  \textbf{Seguimiento} &
+  \textbf{Conclusión} \\
+  \hline
+  [Especificar: el componente o producto de la solución tecnológica a probar.] &
+  [Especificar el caso de prueba efectuado.] &
+  [Describir el resultado obtenido exitoso o fallido.] &
+  [Describir el seguimiento que se llevará a cabo en base a la evidencia obtenida.] &
+  [Documentar de ser el caso, cualquier hallazgo.] \\
+  \hline
+\end{tabularx}
+\end{center}
+
+% ──────────────────────────────────────────────────────────────────────────
+\section{Firmas de elaboración, revisión y aprobación}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{|X|X|}
+  \hline
+  \textbf{Elaboró} & \textbf{Revisó} \\
+  \hline
+  & \\[2cm]
+  [Especificar nombre] & [Especificar nombre] \\
+  {[Especificar cargo]} & {[Especificar cargo]} \\
+  \hline
+\end{tabularx}
+\end{center}
+
+\end{document}

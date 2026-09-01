@@ -1,0 +1,630 @@
+\documentclass[12pt,letterpaper]{article}
+
+% ─── Paquetes ───────────────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{makecell}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{parskip}
+\usepackage{enumitem}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{float}
+%--------zotero
+\usepackage[backend=biber]{biblatex}
+\addbibresource{mybib} 
+
+
+% ─── Márgenes ────────────────────────────────────────────────────────────────
+\geometry{
+  letterpaper,
+  top=2.5cm,
+  bottom=2.5cm,
+  left=3cm,
+  right=2.5cm
+}
+
+% ─── Encabezado / pie de página ──────────────────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\small Propuesta de Proyecto de Grado}
+\lhead{\small Pontificia Universidad Javeriana}
+\cfoot{\small Página \thepage\ de \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ─── Hipervínculos ────────────────────────────────────────────────────────────
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  urlcolor=blue,
+  pdfauthor={Leonardo Flórez Valencia, John Alexander Mendoza Garcia},
+  pdftitle={Propuesta de Proyecto de Grado -- Gamalab 2.0}
+}
+
+% ─── Títulos de sección ───────────────────────────────────────────────────────
+\titleformat{\section}{\large\bfseries}{}{0em}{\thesection\quad}
+\titleformat{\subsection}{\normalsize\bfseries}{}{0em}{\thesubsection\quad}
+\titleformat{\subsubsection}{\normalsize\bfseries\itshape}{}{0em}{\thesubsubsection\quad}
+
+% ─── Colores de tabla ─────────────────────────────────────────────────────────
+\definecolor{tableheader}{RGB}{68,114,196}
+\definecolor{tablerow}{RGB}{217,225,242}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\begin{document}
+\pagenumbering{arabic}
+
+% ─── Página de portada ────────────────────────────────────────────────────────
+\thispagestyle{empty}
+
+\begin{table}[H]
+    \centering
+    % El caption se pone al final para que aparezca abajo
+    \noindent
+    \begin{tabular}{|p{\textwidth}|}
+    \hline
+    \textbf{TÍTULO}\\
+    Gamalab 2.0 \\
+    \hline
+    \textbf{OBJETIVO GENERAL}\\
+    Agregar nuevas funciones y corrección de errores de la aplicación GammaLab \\
+    \hline
+    \textbf{ESTUDIANTES} \\ 
+    \\
+        \centering
+        \begin{tabular}{|p{6.5cm}|p{7.5cm}|}
+        \hline
+        \textbf{Nombre} & \textbf{Correo Javeriano} \\
+        \hline
+        Juan Felipe Romero Ortiz & \href{mailto:juanromeroo@javeriana.edu.co}{juanromeroo@javeriana.edu.co} \\
+        Laura Juliana Garzón Arias & \href{mailto:garzonlj@javeriana.edu.co}{garzonlj@javeriana.edu.co} \\
+        Xiomara Herrera Suárez & \href{mailto:x\_herrera@javeriana.edu.co}{x\_herrera@javeriana.edu.co} \\
+        Sebastian Almanza Galvis & \href{mailto:s.almanzag@javeriana.edu.co}{s.almanzag@javeriana.edu.co} \\
+        \hline
+        \end{tabular}
+    \\ \hline
+    \textbf{DIRECTOR} \\ 
+    \\
+        \centering
+        \begin{tabular}{|p{6.5cm}|p{7.5cm}|}
+        \hline
+        \textbf{Nombre} & \textbf{Correo} \\
+        \hline
+        Cecile Eugenie Gloria Gauthier Umaña &
+        \href{mailto:gauthier\_ce01@javeriana.edu.co}{gauthier\_ce01@javeriana.edu.co} \\
+        \hline
+        \end{tabular}
+    \\ \hline
+    \end{tabular}
+    
+    \vspace{0.3cm} % Espacio opcional entre la tabla y el título
+    \caption{Información general del proyecto y equipo de trabajo}
+    \label{tab:informacion_general}
+\end{table}
+
+
+
+
+\newpage
+
+
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Visión global}
+
+\subsection{Antecedentes, problema y solución propuesta}
+
+
+
+\subsubsection{Descripción de la problemática u oportunidad}
+
+Las señales de tipo electroencefalograma (EEG) son registros de las actividades eléctricas del cerebro captados mediante electrodos en el cuero cabelludo, las cuales miden los impulsos eléctricos generados por la comunicación sináptica de las neuronas, representadas gráficamente como ondas cerebrales; las cuales se clasifican según su frecuencia. Esta cambia según el estado cognitivo del individuo. Al ser una técnica no invasiva, el EEG destaca por ser un procedimiento indoloro, inofensivo y libre de descargas eléctricas para el individuo \cite{pira_eeg_2023}.
+
+La importancia de estas señales radica en su alta resolución temporal, lo que permite observar cambios neuronales en cuestión de milisegundos. Esto termina siendo una herramienta crucial para áreas como neurociencia, la ingeniería biomédica y el procesamiento de señales, facilitando el estudio de procesos neurológicos complejos, el diagnóstico clínico de patologías y el desarrollo de interfaces cerebro-computadora (BCI).
+
+Sin embargo, a pesar de su relevancia, muchas herramientas actuales para el análisis de EEG exigen conocimiento avanzado de programación o el manejo de ciertas plataformas. Esto genera una barrera técnica que dificulta el acceso y la experimentación por parte de estudiantes e investigadores que tienen interés en esta área, limitando el potencial de innovación en el procesamiento de datos de bioseñales \cite{chaddad_electroencephalography_2023}. Si bien existe en el mercado una solución denominada Gamma Lab v1, su naturaleza de versión inicial presenta oportunidades de mejora. El presente trabajo busca expandir las capacidades de dicha herramienta, optimizando su funcionamiento y corrigiendo las limitaciones identificadas en su primera iteración.
+
+
+\subsubsection{Formulación del problema}
+
+¿Cómo extender las capacidades de la aplicación GammaLab 1.0 para integrar nuevos métodos de análisis y posprocesamiento de señales EEG en los dominios de tiempo, frecuencia y tiempo-frecuencia mediante una interfaz gráfica para el uso de los investigadores del Laboratorio de Electrofisiología?
+
+\subsubsection{Propuesta de solución}
+
+Actualizar el programa GammaLab mediante el desarrollo de la versión GammaLab 2.0, incorporando nuevas funcionalidades para el análisis de señales EEG en los dominios de tiempo, frecuencia o tiempo-frecuencia, junto con mejoras en la interfaz gráfica que faciliten la visualización, procesamiento e interpretación de las señales.  
+
+\subsubsection{Justificación de la solución}
+
+GammaLab 1.0 representó una solución inicial, al cumplir con los requerimientos planteados para la visualización y el procesamiento de señales EEG mediante una aplicación con interfaz gráfica. Sin embargo, debido a las limitaciones propias de una primera implementación, incorporó un conjunto reducido de técnicas de análisis, lo que restringe su aplicación en estudios que requieren métodos avanzados de procesamiento y caracterización de señales. En este contexto, GammaLab 2.0 se plantea como una evolución de la aplicación inicial, orientada a ampliar las capacidades de la plataforma original mediante la incorporación de nuevas funcionalidades que permitan realizar análisis en los dominios de tiempo, frecuencia o tiempo-frecuencia dentro de un mismo entorno. Además, contempla la mejora de aspectos identificados en la versión anterior.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\subsection{Descripción general del proyecto}
+
+El presente proyecto contempla el desarrollo de GammaLab 2.0, una versión extendida de la aplicación GammaLab 1.0 orientada al análisis y posprocesamiento de señales electroencefalográficas (EEG). Esta nueva propuesta busca ampliar las funcionalidades de la herramienta original mediante la incorporación de métodos adicionales de análisis en los dominios de tiempo, frecuencia o tiempo-frecuencia. Asimismo, contempla la mejora de la interfaz gráfica y la corrección de errores identificados en la versión anterior. 
+
+
+
+\subsubsection{Objetivo general} 
+
+Desarrollar GammaLab 2.0 como una versión extendida de la aplicación original que amplíe las capacidades de análisis de señales EEG e incorpore una arquitectura escalable, con el fin de mejorar el rendimiento del sistema y soportar un mayor número de análisis en los dominios de tiempo, frecuencia y tiempo-frecuencia.
+
+
+\subsubsection{Objetivos Específicos}
+\label{sec:obj-esp}
+\begin{enumerate}
+  \item Identificar brechas de mejora en la versión 1.0 GammaLab.
+  \item Diseñar el planteamiento estructural de la solución para abordar brechas detectadas.
+  \item Implementar la solución a través de software.
+  \item Probar la solución mediante validaciones del usuario.
+\end{enumerate} % <--- AQUÍ FALTABA EL CIERRE
+
+
+\subsection{Entregables, estándares utilizados y justificación}
+
+% Estilo común para todas las tablas: Justificación más ancha
+\newcommand{\estilotabla}{
+  \small
+  \renewcommand{\arraystretch}{1.5}
+  \centering
+}
+
+% --- FASE 1 ---
+\subsubsection{Fase 1}
+\begin{table}[H] % La "H" mayúscula es el "ancla" que las deja fijas
+\small
+\centering
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\textwidth}{|>{\hsize=0.7\hsize}X|>{\hsize=0.8\hsize}X|>{\hsize=1.5\hsize}X|}
+\hline
+\textbf{Entregable} & \textbf{Estándares asociados} & \textbf{Justificación} \\ \hline
+Análisis técnico y funcional de GammaLab 1.0 & ISO/IEC 15504 (SPICE) - ISO/IEC 25010 & 15504 evalúa la madurez de los proyectos de software y 25010 permite calificar la calidad técnica de GammaLab 1.0 para justificar la necesidad de GammaLab 2.0. \\ \hline
+
+Reuniones sobre decisiones de diseño y arquitectura con equipo de GammaLab 1.0 & ISO/IEC/IEEE 42010 - IEEE 1016 & 42010 permite que planteemos la visión arquitectónica del proyecto y 1016 se enfoca en las decisiones de diseño. \\ \hline
+
+Actas de reuniones (equipo 1.0 y directora) & PMI PMBOK 7 & El estándar enfatiza la comunicación y el compromiso de los stakeholders. \\ \hline
+
+Product Backlog inicial (brechas) & ISO/IEC/IEEE 29148 & Da las pautas para que los requerimientos estén bien definidos. \\ \hline
+
+Plan de pruebas & ISO/IEC/IEEE 29119 & 29119 está diseñado para el ciclo de las pruebas, lo cual permite asegurar comparar los resultados de la versión 1.0 con la 2.0. \\ \hline
+
+Memoria GammaLab 2.0 & FAIR Principles - ISO/IEC 25000 (SQuaRE) & Los principios FAIR justifican que los datos puedan ser reutilizables y 25000 sirve de marco general para los requisitos de calidad que planteas en el análisis del problema. \\ \hline
+\end{tabularx}
+\caption{Relación de entregables y estándares de calidad - Fase 1.}
+\end{table}
+
+% --- FASE 2 ---
+\subsubsection{Fase 2}
+\begin{table}[H]
+\small
+\centering
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\textwidth}{|>{\hsize=0.7\hsize}X|>{\hsize=0.8\hsize}X|>{\hsize=1.5\hsize}X|}
+\hline
+\textbf{Entregable} & \textbf{Estándares asociados} & \textbf{Justificación} \\ \hline
+Diagramas de casos de uso y frecuencia & ISO/IEC/IEEE 29148 & Los diagramas de casos de uso son la representación visual de los requisitos funcionales. Evitando ambigüedades en lo que el sistema hace y no hace. \\ \hline
+
+Prototipo de la interfaz de usuario & ISO 9241-11 (Usabilidad) & Importante para asegurar que el stakeholder pueda interactuar de forma eficaz y con rapidez con las señales EEG. \\ \hline
+
+Documento de arquitectura (Componentes y diseño) & ISO/IEC/IEEE 42010 & Justifica el uso de las librerias a usar y/o estructuras para el procesamiento de señales. \\ \hline
+
+Especificaciones técnicas del módulo nuevo & IEEE 1016 & Con este estándar se define la estructura detallada; aquí se define la lógica de funciones de Python, clases y el manejo de datos. \\ \hline
+
+Memoria Sección 5 (Diseño de la Solución) & IEEE 1016 - ISO/IEC 42010 & Aquí se consolida de las fases 1 y 2; con los estándares se les da peso académico a la solución. \\ \hline
+\end{tabularx}
+\caption{Relación de entregables y estándares de calidad - Fase 2.}
+\end{table}
+
+% --- FASE 3 ---
+\subsubsection{Fase 3}
+\begin{table}[H]
+\small
+\centering
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\textwidth}{|>{\hsize=0.7\hsize}X|>{\hsize=0.8\hsize}X|>{\hsize=1.5\hsize}X|}
+\hline
+\textbf{Entregable} & \textbf{Estándares asociados} & \textbf{Justificación} \\ \hline
+Incrementos de software (Sprints y DoD) & PMI PMBOK 7 e ISO/IEC 25000 (SQuaRE) & Aquí se justifica el ciclo de vida de los sprints, y se comparten los estándares mínimos que se deben cumplir. \\ \hline
+
+GammaLab 2.0 (Funcionalidad total) & ISO/IEC 25010 & Se evalúa que el producto final cumpla con las características definidas. \\ \hline
+
+Repositorio de código final y organizado & PEP8 y OSI Guidelines & Los estándares guían la estructura que el repositorio y el README.md deben seguir para que sean proyecto de investigación abierto. \\ \hline
+
+Memoria Sección 6 (Desarrollo) & PEP8 & Documentación donde se muestra como se aplicaron las buenas prácticas de Python en la construcción de la lectura de las señales EEG. \\ \hline
+\end{tabularx}
+\caption{Relación de entregables y estándares de calidad - Fase 3.}
+\end{table}
+
+% --- FASE 4 ---
+\subsubsection{Fase 4}
+\begin{table}[H]
+\small
+\centering
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\textwidth}{|>{\hsize=0.7\hsize}X|>{\hsize=0.8\hsize}X|>{\hsize=1.5\hsize}X|}
+\hline
+\textbf{Entregable} & \textbf{Estándares asociados} & \textbf{Justificación} \\ \hline
+Informe de rendimiento (v1 vs v2) & ISO/IEC 25010 (Eficiencia) & Con la categoría "Performance Efficiency" podemos justificar la comparación de la versión 1.0 y 2.0 para evaluar sus tiempos de respuesta. \\ \hline
+
+Validación de funcionalidades (Amplitude coupling / Paralelización) & ISO/IEC/IEEE 29119 y FAIR Principles & El 29119 valida que los algoritmos funcionen. Los principios FAIR justifican que los resultados puedan ser replicados por otros investigadores. \\ \hline
+
+Memoria Secciones 7, 8 y 9 (Pruebas y Resultados) & ISO/IEC/IEEE 29119 & Provee el marco para documentar el diseño de las pruebas, los casos de prueba ejecutados y el resumen de resultados. \\ \hline
+
+Manual de uso & ISO 9241-11 & El manual es una extensión de la usabilidad, si el usuario no entiende el manual, el sistema no es usable bajo el estándar. \\ \hline
+
+Entrega final a usuario final & PMI PMBOK 7 & Representa el cierre administrativo y la transferencia del producto, asegurando que se cumplieron los objetivos del proyecto. \\ \hline
+\end{tabularx}
+\caption{Relación de entregables y estándares de calidad - Fase 4.}
+\end{table}
+
+\newpage
+
+
+
+
+\section{Análisis de impacto}
+
+\subsection{En caso de ser exitoso a corto plazo:} 
+El impacto inmediato se reflejará en la productividad del laboratorio.
+
+\begin{itemize}
+  \item Aumento de productividad: Gracias a la optimización en Python y la paralelización, los tiempos de procesamiento se reducirán drásticamente. Lo que antes tomaba semanas o horas, ahora tomará minutos, permitiendo a los investigadores realizar más experimentos.
+  \item Estandarización: La implementación de los estándares asegurará que el software sea mantenible. Se eliminarían los caos técnicos, permitiendo que personas sin mucha experiencia puedan integrarse.
+  \item Calidad de datos: Al seguir los Principios FAIR, los datos resultantes serán localizables y reutilizables, elevando el estándar de las entregas académicas inmediatas.
+\end{itemize}
+
+\subsection{En caso de ser exitoso a mediano plazo:} 
+\begin{itemize}
+  \item Apoyo a la Misión Institucional: La Universidad Nacional busca liderar la investigación en el país. Gamma Lab v2 se convierte en la herramienta base para nuevas tesis de pregrado y posgrado, para que estudiantes interesados puedan aumentar las capacidades de esta.
+  \item Liberación de licencias: Al ser un desarrollo propio basado en OSI Guidelines (Open Source), el laboratorio deja de depender de licencias costosas o cajas negras de software comercial.
+  \item Colaboración interdisciplinaria: Una herramienta robusta en Python permite que ingenieros, médicos e investigadores trabajen en conjunto, facilitando publicaciones en revistas de alto impacto. 
+\end{itemize}
+
+\subsection{En caso de ser exitoso a largo plazo:}
+\begin{itemize}
+  \item Impacto social: Aunque es una herramienta plenamente investigativa, el conocimiento que puede llegar a generar sobre las señales EEG contribuye al desarrollo de mejores protocolos de diagnóstico para enfermedades neurológicas en la población colombiana.
+  \item Referencia en salud pública: Gamma Lab v2.0 puede ser un software certificado para que apoye a la toma de decisiones clínicas, reduciendo el acceso a tecnologías en hospitales públicos.
+  \item Sostenibilidad del ecosistema científico: AL dejar el repositorio organizado y estandarizado, se garantiza que el conocimiento no se pierda y así se pueda pasar este proyecto a nuevos estudiantes para que realicen la versión 3.0.
+\end{itemize}
+
+\section{Metodología}
+
+ GammaLab 2.0 se abordara mediante una metodología híbrida que combina dos enfoques complementarios: un modelo de fases secuenciales inspirado en el marco de desarrollo en cascada, y la metodología ágil Scrum para la gestión iterativa del trabajo dentro de cada fase. Esta combinación, conocida en la literatura como Water-Scrum-Fall, permite estructurar el proyecto en grandes etapas con dependencias lineales claras; dado que no es posible implementar sin antes diseñar, ni diseñar sin antes identificar las brechas. Mientras que, al interior de cada etapa, se trabaja mediante ciclos cortos y entregables parciales que permiten incorporar retroalimentación de manera continua.
+
+Las cuatro fases metodológicas del proyecto corresponden directamente a los cuatro objetivos específicos: (1) identificación de brechas, (2) diseño de la solución, (3) implementación de software, y (4) validación con usuarios.
+
+Scrum se adapta en este contexto a un equipo de cuatro personas, todas con rol de Desarrollador, en donde el líder del equipo asume adicionalmente las responsabilidades del Scrum Master (agendar reuniones, dar seguimiento al progreso y mantener el foco del equipo) sin que esto implique una jerarquía en la toma de decisiones: la distribución de tareas se define colectivamente en cada sprint mediante consenso del equipo. La directora del proyecto actúa como Product Owner, cumpliendo la función de puente entre el equipo de desarrollo y los clientes del proyecto, que en este caso es el Laboratorio de Señales de la Universidad Nacional de Colombia.
+
+Los sprints tienen una duración de dos a tres semanas, con revisiones de avance al final de cada uno.
+
+
+
+
+\subsection{Fase 1: Identificación de brechas de mejora en GammaLab 1.0}
+
+Esta primera fase tiene como propósito construir una comprensión profunda de GammaLab 1.0 desde las dimensiones técnica, funcional y estratégica, con el fin de identificar de manera fundamentada las brechas de mejora que orientarán el desarrollo de la versión 2.0. La fase se corresponde a los primeros Sprints en la terminología Scrum, es decir, la etapa de descubrimiento previa a la ejecución iterativa.
+
+\subsubsection{Método}
+Se adopta un enfoque de investigación aplicada de levantamiento de información. En primer lugar, el equipo realiza una exploración técnica autónoma de GammaLab 1.0, revisando el código fuente, la arquitectura del sistema y la documentación existente. A continuación, se llevan a cabo entrevistas semiestructuradas con el equipo original de desarrollo para resolver dudas sobre decisiones de diseño, restricciones técnicas y funcionalidades previstas pero no implementadas. En paralelo, se sostienen reuniones periódicas con la directora del proyecto, quien también lideró GammaLab 1.0, para alinear la visión estratégica de la herramienta con los objetivos académicos del presente trabajo.
+
+Una vez consolidado el conocimiento de la herramienta, se realiza una sesión formal de levantamiento de requerimientos con el cliente, en la que se identifican y priorizan las brechas de mejora en función de los recursos disponibles y el tiempo a disposición. Esta priorización se formaliza en un Product Backlog inicial, siguiendo la práctica Scrum de capturar el trabajo pendiente como historias de usuario o ítems de backlog ordenados por valor e impacto.
+
+Finalmente, se diseña un plan de pruebas de línea base que permita medir el estado actual de GammaLab 1.0 en términos de rendimiento técnico y facilidad de navegación para el usuario. Este plan de pruebas es fundamental para establecer un punto de comparación (benchmark) antes del desarrollo, de modo que los resultados de la Fase 4 puedan evaluarse con respecto a una referencia objetiva.
+
+
+\subsubsection{Actividades}
+
+\begin{itemize}
+  \item Exploración técnica del código fuente, arquitectura y documentación de GammaLab 1.0 por parte de cada integrante del equipo.
+  \item Reuniones con el equipo original de desarrollo de GammaLab 1.0 para resolver inquietudes sobre decisiones de diseño y arquitectura.
+  \item Reuniones con la directora del proyecto para alinear la visión estratégica y el alcance esperado de la herramienta.
+  \item Sesión formal de levantamiento de requerimientos con el cliente para identificar brechas y necesidades de mejora.
+  \item Priorización de brechas y construcción del Product Backlog inicial, considerando el tiempo y los recursos disponibles.
+  \item Diseño del plan de pruebas de línea base para medir el estado actual de GammaLab 1.0 en rendimiento y usabilidad.
+  \item Ejecución del plan de pruebas de línea base sobre GammaLab 1.0.
+\end{itemize}
+
+\subsubsection{Entregables}
+
+\begin{itemize}
+  \item Documento de análisis técnico y funcional de GammaLab 1.0, que sintetice los hallazgos de la exploración del equipo. [Resultado interno].
+  \item Reuniones con el equipo original de desarrollo de GammaLab 1.0 para resolver inquietudes sobre decisiones de diseño y arquitectura.
+  \item Actas de reuniones con el equipo original de desarrollo y con la directora del proyecto. [Resultado interno].
+  \item Product Backlog inicial con brechas identificadas, priorizadas y acordadas con el cliente. [Resultado asociado al cumplimiento del Objetivo Específico 1]
+  \item Plan de pruebas de línea base y resultados de su ejecución sobre GammaLab 1.0, que servirá como referencia para la evaluación posterior. [Resultado interno, insumo para la Fase 4].
+  \item Documentación de Memoria GammaLab 2.0. Secciones 2 (Descripción general del Proyecto), 3 (Contexto del Proyecto) y 4 (Análisis del Problema).
+\end{itemize}
+
+
+% ── Fase 2 ──────────────────────────────────────────────────────────────────
+\subsection{Fase 2: Diseño del planteamiento estructural de la solución}
+
+Con base en los requerimientos levantados en la Fase 1, esta segunda fase tiene como propósito definir el planteamiento arquitectónico, de diseño de interfaz y de experiencia de usuario que guiará el desarrollo de GammaLab 2.0. Asi como las nuevas funcionalidades de procesamiento de señales que incluirá esta versión. 
+
+\subsubsection{Método}
+El equipo elabora propuestas de arquitectura de software y de diseño de interfaz en forma de prototipos, que se validan iterativamente con la directora del proyecto. En términos Scrum, esta fase opera como un sprint de diseño (design sprint), cuyo backlog contiene tareas de modelado, prototipado y revisión. Los artefactos producidos son revisados al final del sprint en una sesión de Sprint Review con la directora.
+
+
+El diseño se organiza en torno a cuatro frentes de trabajo, como a una estrategia de distribución de tareas dentro del equipo. Los frentes son: (1) mejora de la experiencia e interfaz de usuario, (2) paralelización de tareas en el núcleo actual del sistema, (3) implementación del nuevo módulo de análisis de señales basado en amplitude coupling, y (4) paralelización del nuevo módulo de análisis. Este orden refleja una secuencia lógica de dependencias: la paralelización del nuevo análisis solo es viable una vez que el análisis mismo esté diseñado, y ambos se benefician de tener resuelto previamente el esquema general de concurrencia del sistema.
+
+Los artefactos de diseño incluyen diagramas de casos de uso, diagramas de frecuencia, modelos de arquitectura de componentes y especificaciones de interfaz. Estos documentos constituyen el contrato de diseño del proyecto: lo que quede implementado en el código debe estar alineado con lo especificado en esta fase. 
+
+
+\subsubsection{Actividades}
+
+\begin{itemize}
+  \item Elaboración de diagramas de casos de uso para cada uno de los cuatro frentes de trabajo.
+  \item Diseño de la arquitectura de componentes de GammaLab 2.0, con énfasis en la estrategia de distribución del procesamiento dentro de la arquitectura microkernel existente.
+  \item Diseño de la propuesta de mejora de interfaz y experiencia de usuario, incluyendo prototipos.
+  \item Especificación del nuevo modulo de análisis: entradas, salidas, parámetros configurables y dependencias con otros componentes.
+  \item Revisión cruzada entre los integrantes del equipo para verificar coherencia entre los artefactos de los cuatro frentes.
+  \item Sprint Review con la directora del proyecto para validar el diseño completo.
+\end{itemize}
+
+\subsubsection{Entregables}
+
+\begin{itemize}
+  \item Diagramas de casos de uso y de frecuencia para los cuatro frentes de trabajo. [Resultado asociado al cumplimiento del Objetivo Específico 2].
+  \item Prototipo  de la interfaz de usuario. [Resultado asociado al cumplimiento del Objetivo Específico 2].
+  \item Documento de arquitectura de GammaLab 2.0, con diagramas de componentes y justificación de las decisiones de diseño para cada frente. [Resultado asociado al cumplimiento del Objetivo Específico 2].
+  \item Especificaciónes técnicas del módulo nuevo, lista para ser implementada en la Fase 3. [Resultado interno, insumo directo para la Fase 3].
+  \item Documentación de Memoria GammaLab 2.0. Sección 5 (Diseño de la Solución).
+\end{itemize}
+
+% ── Fase 3 ──────────────────────────────────────────────────────────────────
+\subsection{Fase 3: Implementación Técnica}
+
+Esta fase constituye el núcleo del desarrollo y es donde Scrum opera con mayor plenitud. El equipo ejecuta ciclos de desarrollo iterativos de dos semanas (sprints), en los cuales se construyen, integran y prueban de manera incremental las funcionalidades de GammaLab 2.0.
+
+\subsubsection{Método}
+Dado que los artefactos de diseño producidos en la Fase 2 establecen con claridad qué debe construirse, la Fase 3 puede enfocarse directamente en la ejecución. Se aplica Scrum en su forma más ágil: con el diseño ya resuelto, los sprints son más cortos en ceremoniales y más densos en desarrollo efectivo. Al inicio de cada sprint se realiza una Sprint Planning dsitribuir las tareas entre los desarrolladores; al cierre, una Sprint Review con la directora del proyecto para presentar los incrementos construidos, y una Sprint Retrospective interna para ajustar el proceso entre el equipo. 
+
+La sincronización grupal se realiza de forma asíncrona a través de un canal de comunicación interno, en reemplazo del Daily Scrum tradicional. El Definition of Done establece que un ítem se considera completo cuando su código ha sido revisado por al menos otro integrante del equipo, ha pasado las pruebas unitarias definidas y ha sido integrado a la rama principal del repositorio.
+
+\subsubsection{Actividades}
+
+\begin{itemize}
+  \item Sprint Planning al inicio de cada sprint: selección y distribución de ítems del backlog entre los cuatro frentes de trabajo.
+  \item Codificación de las propuestas, según la división de tareas.
+  \item Revisión de código entre integrantes del equipo como requisito de integración de cada ítem.
+  \item Ejecución de pruebas unitarias para cada incremento construido, verificando consistencia con los artefactos de diseño de la Fase 2.
+  \item Sprint Review al cierre de cada sprint con la directora del proyecto para presentar los avances por frente.
+  \item Sprint Retrospective interna para ajustar la distribución de trabajo y el proceso del equipo.
+\end{itemize}
+
+\subsubsection{Entregables}
+
+\begin{itemize}
+  \item Incrementos de software funcionales al cierre de cada sprint, verificados según el Definition of Done. [Resultados internos por sprint].
+  \item GammaLab 2.0 implementado con la totalidad de las funcionalidades. [Resultado asociado al cumplimiento del Objetivo Específico 3].
+  \item Repositorio de código final y organizado. [Resultado asociado al cumplimiento del Objetivo Específico 3].
+  \item Documentación de Memoria GammaLab 2.0. Sección 6 (Desarrollo de la Solución).
+\end{itemize}
+
+% ── Fase 4 ──────────────────────────────────────────────────────────────────
+\subsection{Fase 4: Validación y pruebas con el Usuario}
+
+La fase final del proyecto tiene como propósito verificar que GammaLab 2.0 cumple con los objetivos de mejora identificados en la Fase 1, mediante pruebas de rendimiento técnico y evaluaciones de usabilidad con usuarios reales. Esta fase cierra el ciclo Water-Scrum-Fall.
+
+
+\subsubsection{Método}
+
+Se ejecuta el plan de pruebas diseñado en la Fase 1, adaptado al contexto de GammaLab 2.0 y ampliado para cubrir dos tipos de validación. El primero es una validación comparativa, que contrasta el desempeño de GammaLab 2.0 frente a GammaLab 1.0 en las dimensiones donde ambas versiones son comparables: tiempos de respuesta, estabilidad del sistema y facilidad de navegación. El segundo es una validación de funcionalidades nuevas, orientada a verificar que las capacidades introducidas en GammaLab 2.0, esto con el fin de verificar que operan correctamente y responden a las necesidades del Laboratorio de Señales.
+
+En términos Scrum, esta fase opera como los sprints finales del proyecto, orientado exclusivamente a actividades de prueba, análisis de resultados y documentación. Al cierre se realiza una Sprint Review final en la que se presentan tanto los resultados comparativos entre versiones como la validación de las funcionalidades propias de GammaLab 2.0.
+
+\subsubsection{Actividades}
+
+\begin{itemize}
+  \item Ejecución del plan de pruebas de rendimiento técnico sobre GammaLab 2.0, replicando las condiciones aplicadas sobre GammaLab 1.0 en la Fase 1 para garantizar comparabilidad.
+ \item Ejecución de pruebas funcionales sobre las nuevas capacidades de GammaLab 2.0, verificando el funcionamiento correcto según lo especificado en el diseño de la Fase 2.
+ \item Análisis comparativo de resultados entre GammaLab 1.0 y GammaLab 2.0 en las dimensiones comparables.
+ \item Documentación de hallazgos, conclusiones y recomendaciones para versiones futuras.
+ \item Sprint Review final con la directora del proyecto como instancia de entrega y cierre del proyecto.
+\end{itemize}
+
+\subsubsection{Entregables}
+
+\begin{itemize}
+  \item Informe de pruebas de rendimiento técnico con análisis comparativo entre GammaLab 1.0 y GammaLab 2.0. [Resultado asociado al cumplimiento del Objetivo Específico 4].
+ \item Informe de validación de funcionalidades nuevas, con evidencia de corrección funcional del módulo de amplitude coupling y las mejoras de paralelización. [Resultado asociado al cumplimiento del Objetivo Específico 4].
+  \item Documentación de Memoria GammaLab 2.0. Secciones 7 (Pruebas de Desarrollo), 8 (Resultados) y 9 (Conclusiones).
+  \item Manual de uso GammaLab 2.0. [Resultado asociado al cumplimiento del Objetivo Específico 4].
+  \item Entrega final de GammaLab 2.0 a usuario final, con todos los entregables organizados. [Resultado asociado al cierre del proyecto].
+\end{itemize}
+
+\section{Aspectos generales del proyecto
+}
+
+\subsection{Compromiso de apoyo de la Institución}
+Para la realización del proyecto, se considera necesario contar con el apoyo de la institución mediante el acceso a bases de datos de señales neurofisiológicas. Asimismo, se requiere una comunicación continua con el laboratorio de neurofisiologia para la validación de funcionalidades y la recolección de retroalimentación durante el desarrollo. Finalmente, es necesario contar con el acompañamiento permanente de la directora de trabajo de grado, quien orientará las decisiones técnicas y metodológicas del proyecto, asegurando el cumplimiento de los objetivos planteados.
+\subsection{Derechos patrimoniales}
+GAMMA LAB 2.0 se distribuirá bajo la licencia MIT, reafirmando el compromiso del proyecto con los principios de la ciencia abierta y el software libre. Esta licencia permite a cualquier usuario usar, modificar y redistribuir el software libremente, fomentando su adopción en laboratorios e instituciones de investigación, con la única condición de reconocer la autoría original, además de eximir a los autores de cualquier responsabilidad legal derivada de su uso.
+% ─────────────────────────────────────────────────────────────────────────────
+
+\section{MARCO TEORICO}
+
+El marco teórico describe los principales conceptos y fundamentos científicos que apoyan el desarrollo de GammaLab 2.0, proporcionando la base teórica necesaria para comprender la propuesta planteada.
+
+\subsection{Fundamentos y conceptos relevantes para el proyecto.}
+Los conceptos relevantes para el proyecto son los siguientes:
+
+\subsubsection{Comunicación Neuronal}
+
+La comunicación neuronal es un proceso electro químico fundamental donde las neuronas mediante señales eléctricas y químicas se comunican. Cada neurona posee estructuras especializadas que permiten la transmisión de impulsos nerviosos.
+
+La comunicación neuronal incluye dos componentes básicos que son la transmisión eléctrica a través de la membrana neuronal y la transmisión química en la sinapsis \cite{morris_31_2025}
+
+
+\subsubsection{Sinapsis Neuronal}
+las sinapsis son conexiones entre neuronas donde ocurre el cambio de información entre ellas o en otras palabras \textit{la comunicación} donde se dividen en electricas o quimicas \cite{wu_neuronal_2015}
+
+\begin{itemize}
+    \item \textbf{Sinapsis Quimica:}Es el impulso nervioso que induce una neurona pre-sinaptica donde la fusión de vesículas liberan neurotransmisores en La hendidura sinaptica. Estos mensajeros químicos difunden hasta receptores específicos en la membrana post-sináptica, provocando cambios de conductancia iónica. Dependiendo del neurotransmisor\cite{wu_neuronal_2015}
+    \item \textbf{Sinapsis Electrica:}Este permiten comunicación directa entre neuronas adyacentes a través de un canal iónico continuo ,la señal eléctrica se transmite instantáneamente por corrientes iónicas que fluyen a través de proteínas conexinas que unen ambas membranas.\cite{wu_neuronal_2015}
+\end{itemize}
+
+\subsubsection{Potenciales Postsinápticos}
+Cuando los neurotransmisores se unen a los receptores postsinápticos, se generan potenciales locales llamados potenciales postsinápticos y se dividen en dos.
+\cite{noauthor_synaptic_nodate}
+\begin{itemize}
+    \item \textbf{excitadores(EPSP):}Un EPSP se produce cuando el neurotransmisor despolariza la membrana postsináptica ,incrementando momentáneamente el voltaje hacia el umbral de disparo\cite{noauthor_synaptic_nodate}
+    \item \textbf{inhibidores(IPSP):}En cambio, un IPSP es una hiperpolarización  que aleja el voltaje del umbral. Ambos son
+potenciales graduados de pequeña amplitud , que afectan solo localmente la membrana y se atenúan rápidamente con la distancia.\cite{noauthor_synaptic_nodate}
+\end{itemize}
+
+\subsubsection{Bioseñales}
+
+Las bioseñales son registros de informacion biológicas, por ejemplo eléctricos, químicos o mecánicos, las cuales contienen información sobre los procesos fisiológicos \cite{bayat_comprehensive_2026}
+
+\subsubsection{Tipos de ondas cerebrales}
+
+El electroencefalograma (EEG) muestra oscilaciones cerebrales que se agrupan en distintas bandas de frecuencia, cada una asociada a estados específicos del cerebro. De manera estándar, estas bandas se clasifican según su rango de frecuencia.\cite{nunez_electroencephalography_2017}
+
+\subsubsection{Clasificación de las bandas de frecuencia}
+
+\begin{itemize}
+    \item \textbf{Delta (1)}: aproximadamente entre 0.5 y 4 Hz.
+    \item \textbf{Theta (2)}: entre 4 y 8 Hz.
+    \item \textbf{Alpha (3)}: entre 8 y 13 Hz.
+    \item \textbf{Beta (4)}: entre 13 y 30 Hz.
+    \item \textbf{Gamma (5)}: mayor a 30 Hz.
+\end{itemize}
+
+Estas bandas representan ritmos eléctricos globales del cerebro, los cuales se relacionan con diferentes estados funcionales.\cite{nunez_electroencephalography_2017}
+
+\subsubsection{Ondas Alpha}
+
+\begin{itemize}
+    \item Se presentan en el rango de 8 a 13 Hz (3).
+    \item Aparecen típicamente en estados de relajación con los ojos cerrados y en vigilia.
+    \item Son más notorias en regiones parieto-occipitales en adultos en reposo.
+    \item Tienden a disminuir al abrir los ojos o al realizar actividades de concentración.
+\end{itemize}
+\cite{nunez_electroencephalography_2017}
+\subsubsection{Ondas Beta}
+
+\begin{itemize}
+    \item Se ubican por encima de 13 Hz (4).
+    \item Están asociadas a estados de atención activa, concentración y actividad mental.
+    \item Fueron relacionadas por Hans Berger con procesos de atención focalizada.
+\end{itemize}
+
+\subsubsection{Ondas Theta y Delta}
+
+\begin{itemize}
+    \item \textbf{Theta (2)}: entre 4 y 8 Hz.
+    \item \textbf{Delta (1)}: entre 0.5 y 4 Hz.
+    \item Ambas predominan en estados de sueño profundo o niveles reducidos de conciencia.
+    \item En condiciones de vigilia, incrementos anormales pueden indicar alteraciones, como lesiones cerebrales en el caso de actividad delta focal.
+\end{itemize}
+\cite{kropotov_slow_2009}
+\subsubsection{Ondas Gamma}
+
+\begin{itemize}
+    \item Se encuentran por encima de 30 Hz (5).
+    \item Se asocian con procesos cognitivos complejos.
+    \item Participan en funciones de integración neuronal local, como la percepción de patrones.
+\end{itemize}
+\cite{noauthor_normal_2019}
+
+La adquisición de señales EEG consiste en registrar la actividad eléctrica del cerebro mediante electrodos ubicados sobre el cuero cabelludo. En entornos clínicos se emplean entre 19 y 32 electrodos con gel conductor, usualmente de plata/cloruro de plata, para garantizar una adecuada conductividad. La señal capturada, de muy baja amplitud, requiere amplificación diferencial de alta ganancia y bajo ruido. Además, se aplican filtros analógicos para eliminar interferencias y se digitaliza a frecuencias iguales o superiores a 200 Hz para un análisis adecuado.
+
+\cite{bayat_comprehensive_2026}
+
+\subsubsection{Análisis en dominio del tiempo}
+
+En el dominio del tiempo, la señal EEG se estudia directamente en función del tiempo, observando su forma de onda. Se analizan características como amplitudes, cruces por cero, pendientes y medidas estadísticas como media, varianza y entropía. También se consideran los potenciales relacionados con eventos (ERP), que representan respuestas promedio ante estímulos específicos. Este enfoque permite identificar patrones generales y eventos transitorios, aunque suele complementarse con otros métodos debido a la complejidad del EEG.
+
+\subsubsection{Análisis en dominio de la frecuencia}
+
+El análisis en frecuencia consiste en transformar la señal EEG desde el tiempo hacia la frecuencia mediante técnicas como la transformada de Fourier o el cálculo de la densidad espectral de potencia. Esto permite evaluar cómo se distribuye la energía en las diferentes bandas (delta, theta, etc.). Se emplean métodos como Welch o modelos autoregresivos para obtener estimaciones más estables. Este análisis es clave para detectar variaciones en las bandas y comparar distintos estados o condiciones.
+
+\subsubsection{Análisis tiempo-frecuencia}
+
+El análisis tiempo-frecuencia integra las perspectivas temporal y espectral para observar cómo evolucionan las frecuencias a lo largo del tiempo. Dado el carácter no estacionario del EEG, se utilizan técnicas como STFT o wavelets para obtener representaciones locales. Por ejemplo, un espectrograma permite visualizar cambios transitorios en la potencia de ciertas bandas. Este enfoque es útil para estudiar eventos breves, sincronización neuronal y dinámicas que aparecen y desaparecen rápidamente.
+
+\subsubsection{Arquitectura microKernel}
+El estilo de arquitectura de microkernel es una arquitectura flexible y extensible que permite a un desarrollador o usuario final añadir fácilmente funcionalidades y características adicionales a una aplicación existente en forma de extensiones, o '\textit{plugins}', sin afectar la funcionalidad central del sistema.
+\cite{noauthor_software_nodate}
+
+\begin{itemize}
+    \item \textit{Plugins}: son componentes independientes y autónomos que contienen procesamiento especializado, características adicionales, lógica de adaptación o código personalizado destinado a mejorar o ampliar el sistema central para proporcionar capacidades empresariales adicionales.\cite{noauthor_software_nodate}
+    \item\textit{Core}: El sistema central contiene únicamente la funcionalidad mínima requerida para que el sistema sea operativo, y también necesita saber qué módulos de plug-in están disponibles y cómo acceder a ellos.\cite{noauthor_software_nodate}
+\end{itemize}
+
+\subsubsection{Software de código abierto (\textit{OpenSource)}}
+El software de código abierto es, por definición, software para el cual los usuarios tienen acceso al código fuente. Esto lo distingue de la práctica común reciente de los editores de software comercial de solo publicar las versiones ejecutables binarias del software. La mayoría del software de código abierto también se distribuye sin costo y con restricciones limitadas sobre cómo puede usarse; de ahí que el término libre, cuando se usa para describir el código abierto, tenga dos significados: 1) libre de costo y 2) libre para hacer con el software lo que desees (es decir, lo más importante, libre para leer el código). \cite{noauthor_association_nodate}
+
+\subsubsection{Librerías de Python utilizadas en el procesamiento de señales EEG}
+Python permite procesar señales EEG gracias a su compatibilidad con diversas librerías científicas que facilitan el análisis de datos y el desarrollo de aplicaciones. Entre las principales herramientas utilizadas se encuentran:
+\begin{itemize}
+    \item \textit{NumPy / SciPy:} utilizadas para el procesamiento de datos y el manejo de operaciones matemáticas y científicas necesarias en el análisis de señales.\cite{morris_31_2025}
+    \item \textit{MNE-Python:} biblioteca especializada en el análisis de señales cerebrales, especialmente en el procesamiento y visualización de datos de electroencefalografía (EEG).\cite{noauthor_mne_nodate}
+    \item \textit{PyQt / PySide:} frameworks que permiten el desarrollo de interfaces gráficas de usuario para la interacción con el sistema y la visualización de los resultados del procesamiento.\cite{noauthor_qt_nodate}
+\end{itemize}
+
+\subsection{Análisis de alternativas de solución}
+
+En esta sección se presentan diversas herramientas desarrolladas previamente que abordan problemáticas similares a las que se busca resolver en la presente versión del proyecto. El objetivo es identificar y analizar soluciones adicionales disponibles en el ámbito académico e industrial, expandiendo el análisis comparativo realizado en la versión anterior y evaluando su aplicabilidad y limitaciones frente a los nuevos requerimientos y alcances definidos para GammaLab 2.0.
+
+\subsubsection{Alternativas de solución e impacto}
+
+Hoy en día existen múltiples plataformas que se dedican al análisis y procesamiento de señales \textit{EGG}. A continuación presentaremos algunas:
+
+\begin{itemize}
+    \item \textbf{EEGLAB:}es una caja de herramientas interactiva de Matlab para procesar datos electrofisiológicos continuos y relacionados con eventos (EEG, MEG y otros), que incorpora análisis de componentes independientes (ICA), análisis tiempo/frecuencia, rechazo de artefactos, estadísticas relacionadas con eventos y varios modos útiles de visualización de datos promediados y de ensayos individuales.\cite{noauthor_eeglab_nodate} Al funcionar base MATLAB necesita su licencia para funcionar lo cual limita su uso en laboratorios con un presupuesto limitado aparte de conocimientos avanzados en programación.
+    \item \textbf{FIELDTRIP: } es una caja de herramientas desarrollada en MATLAB que ofrece un conjunto de funciones de alto nivel para el análisis de datos neurofisiológicos. A diferencia de otros entornos, no dispone de una interfaz gráfica de usuario; en su lugar, las funciones se combinan dentro de un flujo de trabajo programado, es decir, un guion en MATLAB que integra todas las etapas del análisis.\cite{noauthor_getting_nodate} Por esta razón, para quienes se inician en la programación en MATLAB o en el análisis de EEG, MEG, iEEG o NIRS, FieldTrip puede resultar menos intuitivo al comienzo, se tiene mismo problema de usar MATLAB, algunos investigadores no tienen la licencia.
+    
+    \item \textbf{Brainstorm: }Brainstorm es una aplicación colaborativa y de código abierto dedicada al análisis de grabaciones cerebrales:
+MEG, EEG, fNIRS, ECoG, electrodos de profundidad y electrofisiología multiunidad. La solicitud es gratuita; No se requiere una licencia Matlab para usarlo. \cite{noauthor_introduccion_nodate} Cubre las necesidades de análisis sin necesidad de programar gracias a su interfaz gráfica pero no es muy intuitiva, y genera rigidez debido a su baja personalización.
+
+\item \textbf{BOARD-FTD-PACC:}  es una interfaz gráfica de usuario, desarrollada en MATLAB diseñada para facilitar la visualización, cuantificación y análisis de registros neurofisiológicos. Proporciona herramientas diferentes y personalizables que facilitan el análisis de la actividad postsináptica y de datos oscilatorios neuronales complejos, principalmente análisis cruzado de frecuencias.\cite{gauthier-umana_board-ftd-pacc_2023} Limitada por necesitar una licencia en MATLAB y restringe su uso en entornos con recursos limitados.   
+\end{itemize}
+
+\subsubsection{Comparación de alternativas}
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+\textbf{Criterio} & \textbf{EEGLAB} & \textbf{FieldTrip} & \textbf{Brainstorm} & \textbf{BOARD-FTD-PACC} & \textbf{GAMMA LAB 2.0} \\
+\hline
+Licencia gratuita & Parcial & Parcial & Parcial & Parcial & Sí \\
+\hline
+Costo anual (COP) & \$3.948.000 & \$3.948.000 & \$0 & \$3.948.000 & \$0 \\
+\hline
+GUI integrada & Parcial & No & Sí & Parcial & Sí \\
+\hline
+Independencia MATLAB & Si & Si & No & Si & No \\
+\hline
+Conocimientos en programación & Alto & Bajo & Alto & Bajo & Bajo \\
+\hline
+\end{tabular}%
+}
+\caption{Comparación de alternativas para análisis de señales neurofisiológicas}
+\label{tab:comparacion_alternativas}
+\end{table}
+
+Como se evidencia en la tabla, GAMMA LAB 2.0 consolida las ventajas de su versión anterior e incorpora mejoras clave frente a las alternativas existentes. A partir del análisis comparativo se destacan los siguientes aspectos: Es la única alternativa completamente gratuita que además no requiere conocimientos avanzados de programación, eliminando así las dos barreras de acceso más comunes en laboratorios con recursos limitados. GAMMA LAB 2.0 combinará accesibilidad económica con una interfaz gráfica intuitiva, reduciendo significativamente la curva de aprendizaje para nuevos investigadores.
+BOARD-FTD-PACC, siendo el predecesor directo de GAMMA LAB, sirvió como base conceptual del proyecto pero requiere licencia de MATLAB, lo que limita su adopción en entornos con presupuestos restringidos, Además de su interfaz poco intuitiva y plana, que dificulta su uso para personas sin conocimientos en programación.
+GAMMA LAB 2.0 aporta al ecosistema de ciencia abierta como una alternativa libre, accesible y personalizable para el análisis de señales neurofisiológicas, eliminando la barrera de los conocimientos en programación sin comprometer la profundidad analítica del software.
+
+
+\section{Referencias}
+\printbibliography[heading=none]
+\end{document}

@@ -1,0 +1,332 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage[spanish]{babel}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{booktabs}
+
+
+\begin{document}
+
+% --- Portada ---
+\begin{titlepage}
+    \centering
+    {\Huge \textbf{GammaLab V2.0}} \\[0.5cm]
+    {\Large Pontificia Universidad Javeriana} \\[2cm]
+    \textbf{TD} \\[3cm]
+    \includegraphics[width=4cm]{logo.png} \\[2cm]
+    \textbf{Autores:} \\ Juan Felipe Romero Ortiz \\ Laura Juliana Garzón Arias \\  Xiomara Herrera Suárez \\ Sebastián Almanza Galvis \\[2cm]
+    \textbf{Fecha:} 14/08/2026 \\
+    \textbf{Versión:} v1.0
+    \vfill
+\end{titlepage}
+
+
+\section{Pruebas de Aceptación del Usuario (UAT)}
+
+% Tabla 1 -----------------------------------------------
+\begin{table}[htbp]
+\centering
+\begin{tabularx}{\textwidth}{|>{\raggedright\arraybackslash}p{2.7cm}|X|>{\raggedright\arraybackslash}p{2.3cm}|}
+\hline
+\textbf{ID del Requerimiento} & \textbf{Descripción Breve} & \textbf{Rol del Usuario} \\
+\hline
+FR-IO-01 & El sistema dede distingir acciones a realizar al usuario, sin usar warnings de error & Investigador \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Descripción}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El sistema actual retroalimenta al usuario por medio de warnings de error, confundiendo al usuario, ya que este piensa que hubo un error.} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Criterios de Aceptación}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{La aplicación debe dar retroalimentaciones al usuario por medio de una notificación que no sea un warning.} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del Usuario}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la Prueba}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El usuario confundía las señales de información con errores dentro del sistema debido a que los pops ups que el sistema mostraba tenían una estructura de error, como el sonido de notificación de error } \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{} \\
+\hline
+\end{tabularx}
+\caption{Tabla de prueba de aceptación del requerimiento R01}
+\label{tab:r01}
+\end{table}
+
+
+% Tabla 2 -----------------------------------------------
+\begin{table}[htbp]
+\centering
+\begin{tabularx}{\textwidth}{|>{\raggedright\arraybackslash}p{2.7cm}|X|>{\raggedright\arraybackslash}p{2.3cm}|}
+\hline
+\textbf{ID del Requerimiento} & \textbf{Descripción Breve} & \textbf{Rol del Usuario} \\
+\hline
+FR-IO-02 & El sistema debe mostrar el resultado de la operación en la misma pantalla en la que se realizo & Investigador \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Descripción}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El sistema actual, obliga a ir a otra pantalla para ver los resultados, resulta confuzo y poco intuitivo.} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Criterios de Aceptación}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{La aplicación debe mostrar los resultados de las operaciones en las pantallas donde se realice.} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del Usuario}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la Prueba}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El usuario, al cambiar entre pantallas mientras realizaba sus respectivos análisis, notificó que el sistema dejaba de mostrar la señal al navegar entre las funciones que el sistema mostraba. } \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{} \\
+\hline
+\end{tabularx}
+\caption{Tabla de prueba de aceptación del requerimiento R02}
+\label{tab:r02}
+\end{table}
+
+
+% Tabla 3 -----------------------------------------------
+\begin{table}[htbp]
+\centering
+\begin{tabularx}{\textwidth}{|>{\raggedright\arraybackslash}p{2.7cm}|X|>{\raggedright\arraybackslash}p{2.3cm}|}
+\hline
+\textbf{ID del Requerimiento} & \textbf{Descripción Breve} & \textbf{Rol del Usuario} \\
+\hline
+FR-IO-03 & El sistema dede mostrar una barra de proceso & Investigador \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Descripción}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Toda operación que tome más de 1 segundo debe mostrar retroalimentación visual de progreso.} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Criterios de Aceptación}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{La aplicación mostrar una pantalla de proceso cuando una operación dure más de 1 segundo en ejecución.} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del Usuario}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la Prueba}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El usuario, al usar una función del sistema, se percató de que el sistema se demoraba más de 5 segundos en mostrar los resultados, incluso provocando que el usuario pensara que algo salió mal en el análisis o el sistema no había comenzado a realizar este.} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{} \\
+\hline
+\end{tabularx}
+\caption{Tabla de prueba de aceptación del requerimiento R03}
+\label{tab:r03}
+\end{table}
+
+
+% Tabla 4 -----------------------------------------------
+\begin{table}[htbp]
+\centering
+\begin{tabularx}{\textwidth}{|>{\raggedright\arraybackslash}p{2.7cm}|X|>{\raggedright\arraybackslash}p{2.3cm}|}
+\hline
+\textbf{ID del Requerimiento} & \textbf{Descripción Breve} & \textbf{Rol del Usuario} \\
+\hline
+FR-IO-04 & El sistema debe contar con iconos para cada funcionalidad importante & Investigador \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Descripción}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El sistema debe contar con iconos para cada funcionalidad importante} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Criterios de Aceptación}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{La aplicación debe mostrar iconos permite al usuario recordar para que sirve cada función y donde se encuentra ubicada.} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del Usuario}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la Prueba}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El usuario, al leer los iconos del sistema, observó que no son del todo legibles para cada función, resultando en que no se comprendía la usabilidad de este.} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{} \\
+\hline
+\end{tabularx}
+\caption{Tabla de prueba de aceptación del requerimiento R04}
+\label{tab:r04}
+\end{table}
+
+
+% Tabla 5 -----------------------------------------------
+\begin{table}[htbp]
+\centering
+\begin{tabularx}{\textwidth}{|>{\raggedright\arraybackslash}p{2.7cm}|X|>{\raggedright\arraybackslash}p{2.3cm}|}
+\hline
+\textbf{ID del Requerimiento} & \textbf{Descripción Breve} & \textbf{Rol del Usuario} \\
+\hline
+FR-IO-05 & El sistema debe comunicar el cierre de un proyecto & Investigador \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Descripción}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El sistema actual no tiene concepto de proyecto ni avisa antes de descartar el trabajo en curso.} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Criterios de Aceptación}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{La aplicación debe comunicar el cierre, evitando que el usuario pierda su avance sin darse cuenta} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del Usuario}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la Prueba}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\textbf{Aceptado Parcialmente}.} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El usuario señaló que el sistema no permite guardar el proceso del análisis, resultando que el usuario perdiera todos sus avances en caso de que el usuario no haya completado el 100\% de su proyecto.} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{} \\
+\hline
+\end{tabularx}
+\caption{Tabla de prueba de aceptación del requerimiento R05}
+\label{tab:r05}
+\end{table}
+
+
+% Tabla 6 -----------------------------------------------
+\begin{table}[htbp]
+\centering
+\begin{tabularx}{\textwidth}{|>{\raggedright\arraybackslash}p{2.7cm}|X|>{\raggedright\arraybackslash}p{2.3cm}|}
+\hline
+\textbf{ID del Requerimiento} & \textbf{Descripción Breve} & \textbf{Rol del Usuario} \\
+\hline
+FR-IO-06 & El sistema debe mostrar descripciones de uso para cada funcionalidad importante & Investigador \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Descripción}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El sistema debe mostrar descripciones de uso para cada funcionalidad importante.} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Criterios de Aceptación}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{La aplicación debe tener un apartado donde muestra una descripción del uso para cada funcionalidad importante del sistema.} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del Usuario}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la Prueba}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{En caso de que un usuario nuevo quisiera probar las funcionalidades de la aplicación, no logra descifrar la funcionalidad de cada función debido a que no tiene una descripción previa.} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{} \\
+\hline
+\end{tabularx}
+\caption{Tabla de prueba de aceptación del requerimiento R06}
+\label{tab:r06}
+\end{table}
+
+
+% Tabla 7 -----------------------------------------------
+\begin{table}[htbp]
+\centering
+\begin{tabularx}{\textwidth}{|>{\raggedright\arraybackslash}p{2.7cm}|X|>{\raggedright\arraybackslash}p{2.3cm}|}
+\hline
+\textbf{ID del Requerimiento} & \textbf{Descripción Breve} & \textbf{Rol del Usuario} \\
+\hline
+FR-IO-07 & El sistema debe mostrar todas las funcionalidades de edición en el home & Investigador \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Descripción}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El sistema debe mostrar todas las funcionalidades de edición en el home después de generados los trials.} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Criterios de Aceptación}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{La aplicación debe mostrar todas las funcionalidades de edición en el home después de generados los trials.} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del Usuario}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la Prueba}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El usuario mostró el interés de que en el "Home" existieran más funcionalidades una vez que se crearan los trials, ya que este campo era exclusivo para la carga de archivos.} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después}} \\
+\hline
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{} \\
+\hline
+\end{tabularx}
+\caption{Tabla de prueba de aceptación del requerimiento R07}
+\label{tab:r07}
+\end{table}
+
+
+\clearpage
+
+\end{document}
