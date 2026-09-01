@@ -19,14 +19,17 @@
 \usepackage{microtype}
 \usepackage{xcolor}
 \usepackage{fancyhdr}
+\usepackage{hyperref}
 \usepackage{lastpage}
 \usepackage{hyperref}
 \usepackage{graphicx}
 \usepackage{float}
 %--------zotero
 \usepackage[backend=biber]{biblatex}
-\addbibresource{mybib} 
+\addbibresource{mybib}
 
+% Corrige caracteres Unicode no reconocidos en la bibliografía o texto
+\DeclareUnicodeCharacter{2606}{\ensuremath{\star}}
 
 % ─── Márgenes ────────────────────────────────────────────────────────────────
 \geometry{
@@ -82,10 +85,8 @@
     \textbf{OBJETIVO GENERAL}\\
     Agregar nuevas funciones y corrección de errores de la aplicación GammaLab \\
     \hline
-    \textbf{ESTUDIANTES} \\ 
-    \\
-        \centering
-        \begin{tabular}{|p{6.5cm}|p{7.5cm}|}
+    \textbf{ESTUDIANTES} \\
+    \begin{tabular}{|p{6.5cm}|p{7.5cm}|}
         \hline
         \textbf{Nombre} & \textbf{Correo Javeriano} \\
         \hline
@@ -94,20 +95,18 @@
         Xiomara Herrera Suárez & \href{mailto:x\_herrera@javeriana.edu.co}{x\_herrera@javeriana.edu.co} \\
         Sebastian Almanza Galvis & \href{mailto:s.almanzag@javeriana.edu.co}{s.almanzag@javeriana.edu.co} \\
         \hline
-        \end{tabular}
-    \\ \hline
-    \textbf{DIRECTOR} \\ 
-    \\
-        \centering
-        \begin{tabular}{|p{6.5cm}|p{7.5cm}|}
+    \end{tabular} \\
+    \hline
+    \textbf{DIRECTOR} \\
+    \begin{tabular}{|p{6.5cm}|p{7.5cm}|}
         \hline
         \textbf{Nombre} & \textbf{Correo} \\
         \hline
         Cecile Eugenie Gloria Gauthier Umaña &
         \href{mailto:gauthier\_ce01@javeriana.edu.co}{gauthier\_ce01@javeriana.edu.co} \\
         \hline
-        \end{tabular}
-    \\ \hline
+    \end{tabular} \\
+    \hline
     \end{tabular}
     
     \vspace{0.3cm} % Espacio opcional entre la tabla y el título

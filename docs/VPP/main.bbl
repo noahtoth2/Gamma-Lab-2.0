@@ -1,0 +1,607 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.3 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{nty/global//global/global/global}
+    \entry{noauthor_association_nodate}{misc}{}{}
+      \field{sortinit}{A}
+      \field{sortinithash}{2f401846e2029bad6b3ecc16d50031e2}
+      \field{labeltitlesource}{title}
+      \field{title}{Association for {Information} {Systems} ({AIS}) {eLibrary}}
+      \field{urlday}{27}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://aisel.aisnet.org/
+      \endverb
+      \verb{url}
+      \verb https://aisel.aisnet.org/
+      \endverb
+    \endentry
+    \entry{bayat_comprehensive_2026}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=03a2f0562eb3d699f0d50113950d9ed7}{%
+           family={Bayat},
+           familyi={B\bibinitperiod},
+           given={Mahnaz},
+           giveni={M\bibinitperiod}}}%
+        {{hash=762ccba3c66af0096f10331ac49a7ee1}{%
+           family={Safaie},
+           familyi={S\bibinitperiod},
+           given={Javad},
+           giveni={J\bibinitperiod}}}%
+        {{hash=8f5e577dc787a92853062fb3b8680b15}{%
+           family={Beidokhti},
+           familyi={B\bibinitperiod},
+           given={Sahar\bibnamedelima Mollazadeh},
+           giveni={S\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+        {{hash=ec1225720f0652b328549c787fe3059f}{%
+           family={Wallois},
+           familyi={W\bibinitperiod},
+           given={Fabrice},
+           giveni={F\bibinitperiod}}}%
+      }
+      \strng{namehash}{cc84bd2ee99f80cf1d6648112b2b1b32}
+      \strng{fullhash}{130bf180b01ba0c14c683678214fa9d4}
+      \strng{fullhashraw}{130bf180b01ba0c14c683678214fa9d4}
+      \strng{bibnamehash}{cc84bd2ee99f80cf1d6648112b2b1b32}
+      \strng{authorbibnamehash}{cc84bd2ee99f80cf1d6648112b2b1b32}
+      \strng{authornamehash}{cc84bd2ee99f80cf1d6648112b2b1b32}
+      \strng{authorfullhash}{130bf180b01ba0c14c683678214fa9d4}
+      \strng{authorfullhashraw}{130bf180b01ba0c14c683678214fa9d4}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{shorttitle}
+      \field{abstract}{Electroencephalography remains a fundamental tool in neurological diagnostics, cognitive research, and emerging consumer applications. This comprehensive review critically examines the technological landscape of non-invasive EEG electrodes through a novel comparative framework rather than a conventional chronological analysis. We systematically evaluate wet, semi-dry, and dry electrode technologies across four key dimensions: material and design innovations, signal quality metrics, clinical and research applications, and implementation challenges. Our analysis reveals that while standard wet electrodes remain the gold standard for signal fidelity, they nevertheless require extensive setup, cause notable discomfort—particularly for children and long-term users, and demand ongoing gel reapplication, all of which limit their practicality in many real-world settings. Significant advancements in semi-dry electrodes now address these shortcomings by offering comparable performance with reduced preparation time and enhanced usability. Dry electrodes, despite inherently higher impedance, demonstrate increasing viability for long-term and ambulatory monitoring when paired with appropriate signal processing techniques. This review provides a decision framework for selecting optimal electrode technologies based on specific application requirements, subject characteristics, and recording environments. We identify critical research gaps, particularly in standardization methods, cross-population validation, and integration with emerging materials. As EEG applications expand beyond traditional clinical settings into consumer markets, this review offers valuable guidance for researchers, clinicians, and technology developers navigating the rapidly evolving landscape of EEG electrode technologies.}
+      \field{issn}{0924-4247}
+      \field{journaltitle}{Sensors and Actuators A: Physical}
+      \field{month}{3}
+      \field{shorttitle}{A comprehensive review of {EEG} electrode technologies}
+      \field{title}{A comprehensive review of {EEG} electrode technologies: {Advancements}, applications, and future directions}
+      \field{urlday}{28}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{volume}{399}
+      \field{year}{2026}
+      \field{urldateera}{ce}
+      \field{pages}{117396}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.1016/j.sna.2025.117396
+      \endverb
+      \verb{urlraw}
+      \verb https://www.sciencedirect.com/science/article/pii/S0924424725012026
+      \endverb
+      \verb{url}
+      \verb https://www.sciencedirect.com/science/article/pii/S0924424725012026
+      \endverb
+      \keyw{Comparative analysis,Dry contact and non-contact electrodes,Electrode-skin interface,Electroencephalography,Long-term recording,Semi-dry electrodes}
+    \endentry
+    \entry{chaddad_electroencephalography_2023}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=81b52282c80cd6962974edc1367a62e0}{%
+           family={Chaddad},
+           familyi={C\bibinitperiod},
+           given={Ahmad},
+           giveni={A\bibinitperiod}}}%
+        {{hash=eccf760cd20215c880a7fbf1ea53af3e}{%
+           family={Wu},
+           familyi={W\bibinitperiod},
+           given={Yihang},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=914c8c96a02752085d3b92f48b5bab02}{%
+           family={Kateb},
+           familyi={K\bibinitperiod},
+           given={Reem},
+           giveni={R\bibinitperiod}}}%
+        {{hash=35a081dd8ab873a7c812f48d6bf776a7}{%
+           family={Bouridane},
+           familyi={B\bibinitperiod},
+           given={Ahmed},
+           giveni={A\bibinitperiod}}}%
+      }
+      \list{language}{1}{%
+        {en}%
+      }
+      \strng{namehash}{125bd0cd6ff6a3fa7caaf1a141f5a341}
+      \strng{fullhash}{8567ff7748b8114adc76a4fbd546fbe7}
+      \strng{fullhashraw}{8567ff7748b8114adc76a4fbd546fbe7}
+      \strng{bibnamehash}{125bd0cd6ff6a3fa7caaf1a141f5a341}
+      \strng{authorbibnamehash}{125bd0cd6ff6a3fa7caaf1a141f5a341}
+      \strng{authornamehash}{125bd0cd6ff6a3fa7caaf1a141f5a341}
+      \strng{authorfullhash}{8567ff7748b8114adc76a4fbd546fbe7}
+      \strng{authorfullhashraw}{8567ff7748b8114adc76a4fbd546fbe7}
+      \field{sortinit}{C}
+      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{shorttitle}
+      \field{abstract}{The electroencephalography (EEG) signal is a noninvasive and complex signal that has numerous applications in biomedical fields, including sleep and the brain–computer interface. Given its complexity, researchers have proposed several advanced preprocessing and feature extraction methods to analyze EEG signals. In this study, we analyze a comprehensive review of numerous articles related to EEG signal processing. We searched the major scientific and engineering databases and summarized the results of our findings. Our survey encompassed the entire process of EEG signal processing, from acquisition and pretreatment (denoising) to feature extraction, classification, and application. We present a detailed discussion and comparison of various methods and techniques used for EEG signal processing. Additionally, we identify the current limitations of these techniques and analyze their future development trends. We conclude by offering some suggestions for future research in the field of EEG signal processing.}
+      \field{issn}{1424-8220}
+      \field{journaltitle}{Sensors}
+      \field{month}{1}
+      \field{number}{14}
+      \field{shorttitle}{Electroencephalography {Signal} {Processing}}
+      \field{title}{Electroencephalography {Signal} {Processing}: {A} {Comprehensive} {Review} and {Analysis} of {Methods} and {Techniques}}
+      \field{urlday}{28}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{volume}{23}
+      \field{year}{2023}
+      \field{urldateera}{ce}
+      \field{pages}{6434}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.3390/s23146434
+      \endverb
+      \verb{urlraw}
+      \verb https://www.mdpi.com/1424-8220/23/14/6434
+      \endverb
+      \verb{url}
+      \verb https://www.mdpi.com/1424-8220/23/14/6434
+      \endverb
+      \keyw{EEG,machine learning,signal processing}
+    \endentry
+    \entry{noauthor_eeglab_nodate}{misc}{}{}
+      \field{sortinit}{E}
+      \field{sortinithash}{8da8a182d344d5b9047633dfc0cc9131}
+      \field{labeltitlesource}{title}
+      \field{title}{{EEGLAB}}
+      \field{urlday}{28}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://sccn.ucsd.edu/eeglab/index.php
+      \endverb
+      \verb{url}
+      \verb https://sccn.ucsd.edu/eeglab/index.php
+      \endverb
+    \endentry
+    \entry{gauthier-umana_board-ftd-pacc_2023}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=305825b9ad50cc29c39ddde27dd63549}{%
+           family={Gauthier-Umaña},
+           familyi={G\bibinithyphendelim U\bibinitperiod},
+           given={Cécile},
+           giveni={C\bibinitperiod}}}%
+        {{hash=2a26fb7996c16df5ded012650d0b615d}{%
+           family={Valderrama},
+           familyi={V\bibinitperiod},
+           given={Mario},
+           giveni={M\bibinitperiod}}}%
+        {{hash=cc713577d9a57fb274f3c72e4faa026f}{%
+           family={Múnera},
+           familyi={M\bibinitperiod},
+           given={Alejandro},
+           giveni={A\bibinitperiod}}}%
+        {{hash=ad92edfcbcd525755d91ebcc200ce1d4}{%
+           family={Nava-Mesa},
+           familyi={N\bibinithyphendelim M\bibinitperiod},
+           given={Mauricio\bibnamedelima O.},
+           giveni={M\bibinitperiod\bibinitdelim O\bibinitperiod}}}%
+      }
+      \list{language}{1}{%
+        {en}%
+      }
+      \strng{namehash}{0c62aed0f7189cef36b8f10e900952d1}
+      \strng{fullhash}{e22c7bb270c15e5adb1809368f540817}
+      \strng{fullhashraw}{e22c7bb270c15e5adb1809368f540817}
+      \strng{bibnamehash}{0c62aed0f7189cef36b8f10e900952d1}
+      \strng{authorbibnamehash}{0c62aed0f7189cef36b8f10e900952d1}
+      \strng{authornamehash}{0c62aed0f7189cef36b8f10e900952d1}
+      \strng{authorfullhash}{e22c7bb270c15e5adb1809368f540817}
+      \strng{authorfullhashraw}{e22c7bb270c15e5adb1809368f540817}
+      \field{sortinit}{G}
+      \field{sortinithash}{32d67eca0634bf53703493fb1090a2e8}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{shorttitle}
+      \field{abstract}{In order to understand the link between brain functional states and behavioral/cognitive processes, the information carried in neural oscillations can be retrieved using different analytic techniques. Processing these different bio-signals is a complex, time-consuming, and often non-automatized process that requires customization, due to the type of signal acquired, acquisition method implemented, and the objectives of each individual research group. To this end, a new graphical user interface (GUI), named BOARD-FTD-PACC, was developed and designed to facilitate the visualization, quantification, and analysis of neurophysiological recordings. BOARD-FTD-PACC provides different and customizable tools that facilitate the task of analyzing post-synaptic activity and complex neural oscillatory data, mainly cross-frequency analysis. It is a flexible and user-friendly software that can be used by a wide range of users to extract valuable information from neurophysiological signals such as phase–amplitude coupling and relative power spectral density, among others. BOARD-FTD-PACC allows researchers to select, in the same open-source GUI, different approaches and techniques that will help promote a better understanding of synaptic and oscillatory activity in specific brain structures with or without stimulation.}
+      \field{issn}{2198-4026}
+      \field{journaltitle}{Brain Informatics}
+      \field{month}{5}
+      \field{number}{1}
+      \field{shorttitle}{{BOARD}-{FTD}-{PACC}}
+      \field{title}{{BOARD}-{FTD}-{PACC}: a graphical user interface for the synaptic and cross-frequency analysis derived from neural signals}
+      \field{urlday}{28}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{volume}{10}
+      \field{year}{2023}
+      \field{urldateera}{ce}
+      \field{pages}{12}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.1186/s40708-023-00191-x
+      \endverb
+      \verb{urlraw}
+      \verb https://doi.org/10.1186/s40708-023-00191-x
+      \endverb
+      \verb{url}
+      \verb https://doi.org/10.1186/s40708-023-00191-x
+      \endverb
+      \keyw{Cross-frequency analysis,Event-related potentials,Phase coherence,Phase–amplitude coupling,Synaptic analysis }
+    \endentry
+    \entry{noauthor_getting_nodate}{misc}{}{}
+      \list{language}{1}{%
+        {en}%
+      }
+      \field{sortinit}{G}
+      \field{sortinithash}{32d67eca0634bf53703493fb1090a2e8}
+      \field{labeltitlesource}{title}
+      \field{abstract}{FieldTrip - the toolbox for MEG, EEG and iEEG}
+      \field{journaltitle}{FieldTrip toolbox}
+      \field{title}{Getting started}
+      \field{urlday}{28}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://www.fieldtriptoolbox.org/getting_started/
+      \endverb
+      \verb{url}
+      \verb https://www.fieldtriptoolbox.org/getting_started/
+      \endverb
+    \endentry
+    \entry{noauthor_introduccion_nodate}{misc}{}{}
+      \field{sortinit}{I}
+      \field{sortinithash}{8d291c51ee89b6cd86bf5379f0b151d8}
+      \field{labeltitlesource}{title}
+      \field{title}{Introducción - {Lluvia} de ideas}
+      \field{urlday}{28}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://neuroimage.usc.edu/brainstorm/Introduction
+      \endverb
+      \verb{url}
+      \verb https://neuroimage.usc.edu/brainstorm/Introduction
+      \endverb
+    \endentry
+    \entry{kropotov_slow_2009}{incollection}{}{}
+      \name{author}{1}{}{%
+        {{hash=0dd2c29a47f678ee100a25c6534832c6}{%
+           family={Kropotov},
+           familyi={K\bibinitperiod},
+           given={Juri\bibnamedelima D.},
+           giveni={J\bibinitperiod\bibinitdelim D\bibinitperiod}}}%
+      }
+      \list{language}{1}{%
+        {en}%
+      }
+      \list{publisher}{1}{%
+        {Elsevier}%
+      }
+      \strng{namehash}{0dd2c29a47f678ee100a25c6534832c6}
+      \strng{fullhash}{0dd2c29a47f678ee100a25c6534832c6}
+      \strng{fullhashraw}{0dd2c29a47f678ee100a25c6534832c6}
+      \strng{bibnamehash}{0dd2c29a47f678ee100a25c6534832c6}
+      \strng{authorbibnamehash}{0dd2c29a47f678ee100a25c6534832c6}
+      \strng{authornamehash}{0dd2c29a47f678ee100a25c6534832c6}
+      \strng{authorfullhash}{0dd2c29a47f678ee100a25c6534832c6}
+      \strng{authorfullhashraw}{0dd2c29a47f678ee100a25c6534832c6}
+      \field{sortinit}{K}
+      \field{sortinithash}{c02bf6bff1c488450c352b40f5d853ab}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Quantitative {EEG}, {Event}-{Related} {Potentials} and {Neurotherapy}}
+      \field{isbn}{9780123745125}
+      \field{title}{Slow, {Infra}-{Slow} {Potentials}, and {Delta} {Rhythms}}
+      \field{urlday}{28}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{year}{2009}
+      \field{urldateera}{ce}
+      \field{pages}{11\bibrangedash 28}
+      \range{pages}{18}
+      \verb{doi}
+      \verb 10.1016/B978-0-12-374512-5.00001-3
+      \endverb
+      \verb{urlraw}
+      \verb https://linkinghub.elsevier.com/retrieve/pii/B9780123745125000013
+      \endverb
+      \verb{url}
+      \verb https://linkinghub.elsevier.com/retrieve/pii/B9780123745125000013
+      \endverb
+    \endentry
+    \entry{noauthor_mne_nodate}{misc}{}{}
+      \field{sortinit}{M}
+      \field{sortinithash}{4625c616857f13d17ce56f7d4f97d451}
+      \field{labeltitlesource}{title}
+      \field{title}{{MNE} — {MNE} 1.12.1 documentation}
+      \field{urlday}{28}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://mne.tools/stable/index.html
+      \endverb
+      \verb{url}
+      \verb https://mne.tools/stable/index.html
+      \endverb
+    \endentry
+    \entry{morris_31_2025}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=86169c71be337cfa5d6dcd0bd804a2e1}{%
+           family={Morris},
+           familyi={M\bibinitperiod},
+           given={Pamela},
+           giveni={P\bibinitperiod}}}%
+        {{hash=9121c3d8d779144dc291e4d400138cdc}{%
+           family={Calaway},
+           familyi={C\bibinitperiod},
+           given={Olimpia},
+           giveni={O\bibinitperiod}}}%
+      }
+      \list{language}{1}{%
+        {en}%
+      }
+      \strng{namehash}{63473a0adb699de8ff1237a47ccff86c}
+      \strng{fullhash}{63473a0adb699de8ff1237a47ccff86c}
+      \strng{fullhashraw}{63473a0adb699de8ff1237a47ccff86c}
+      \strng{bibnamehash}{63473a0adb699de8ff1237a47ccff86c}
+      \strng{authorbibnamehash}{63473a0adb699de8ff1237a47ccff86c}
+      \strng{authornamehash}{63473a0adb699de8ff1237a47ccff86c}
+      \strng{authorfullhash}{63473a0adb699de8ff1237a47ccff86c}
+      \strng{authorfullhashraw}{63473a0adb699de8ff1237a47ccff86c}
+      \field{sortinit}{M}
+      \field{sortinithash}{4625c616857f13d17ce56f7d4f97d451}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{Comprehensive coverage of core concepts grounded in both classic studies and current and emerging research, including coverage of the DSM-5 in discussions of psychological disorders. Incorporates discussions that reflect the diversity within the discipline, as well as the diversity of cultures and communities across the globe.}
+      \field{month}{8}
+      \field{title}{3.1 {Foundations} of {Neural} {Communication}}
+      \field{urlday}{28}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{year}{2025}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://acd.pressbooks.pub/generalpsychology/chapter/2192/
+      \endverb
+      \verb{url}
+      \verb https://acd.pressbooks.pub/generalpsychology/chapter/2192/
+      \endverb
+    \endentry
+    \entry{noauthor_normal_2019}{incollection}{}{}
+      \list{language}{1}{%
+        {en}%
+      }
+      \list{publisher}{1}{%
+        {Elsevier}%
+      }
+      \field{sortinit}{N}
+      \field{sortinithash}{22369a73d5f88983a108b63f07f37084}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Handbook of {Clinical} {Neurology}}
+      \field{isbn}{9780444640321}
+      \field{title}{Normal {EEG} variants}
+      \field{urlday}{28}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{volume}{160}
+      \field{year}{2019}
+      \field{urldateera}{ce}
+      \field{pages}{143\bibrangedash 160}
+      \range{pages}{18}
+      \verb{doi}
+      \verb 10.1016/B978-0-444-64032-1.00009-6
+      \endverb
+      \verb{urlraw}
+      \verb https://linkinghub.elsevier.com/retrieve/pii/B9780444640321000096
+      \endverb
+      \verb{url}
+      \verb https://linkinghub.elsevier.com/retrieve/pii/B9780444640321000096
+      \endverb
+    \endentry
+    \entry{nunez_electroencephalography_2017}{incollection}{}{}
+      \name{author}{1}{}{%
+        {{hash=c4743216a0913ccfd92b8bcf301412ed}{%
+           family={Nunez},
+           familyi={N\bibinitperiod},
+           given={Paul\bibnamedelima L.},
+           giveni={P\bibinitperiod\bibinitdelim L\bibinitperiod}}}%
+      }
+      \list{language}{1}{%
+        {en}%
+      }
+      \list{publisher}{1}{%
+        {Elsevier}%
+      }
+      \strng{namehash}{c4743216a0913ccfd92b8bcf301412ed}
+      \strng{fullhash}{c4743216a0913ccfd92b8bcf301412ed}
+      \strng{fullhashraw}{c4743216a0913ccfd92b8bcf301412ed}
+      \strng{bibnamehash}{c4743216a0913ccfd92b8bcf301412ed}
+      \strng{authorbibnamehash}{c4743216a0913ccfd92b8bcf301412ed}
+      \strng{authornamehash}{c4743216a0913ccfd92b8bcf301412ed}
+      \strng{authorfullhash}{c4743216a0913ccfd92b8bcf301412ed}
+      \strng{authorfullhashraw}{c4743216a0913ccfd92b8bcf301412ed}
+      \field{sortinit}{N}
+      \field{sortinithash}{22369a73d5f88983a108b63f07f37084}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Reference {Module} in {Neuroscience} and {Biobehavioral} {Psychology}}
+      \field{isbn}{9780128093245}
+      \field{title}{Electroencephalography ({EEG}) ☆}
+      \field{urlday}{28}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{year}{2017}
+      \field{urldateera}{ce}
+      \field{pages}{B9780128093245030492}
+      \range{pages}{-1}
+      \verb{doi}
+      \verb 10.1016/B978-0-12-809324-5.03049-2
+      \endverb
+      \verb{urlraw}
+      \verb https://linkinghub.elsevier.com/retrieve/pii/B9780128093245030492
+      \endverb
+      \verb{url}
+      \verb https://linkinghub.elsevier.com/retrieve/pii/B9780128093245030492
+      \endverb
+    \endentry
+    \entry{noauthor_qt_nodate}{misc}{}{}
+      \field{sortinit}{Q}
+      \field{sortinithash}{ce69a400a872ddd02ee7fdb3b38c6abd}
+      \field{labeltitlesource}{title}
+      \field{title}{Qt for {Python}}
+      \field{urlday}{28}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://doc.qt.io/qtforpython-6/
+      \endverb
+      \verb{url}
+      \verb https://doc.qt.io/qtforpython-6/
+      \endverb
+    \endentry
+    \entry{noauthor_software_nodate}{book}{}{}
+      \list{language}{1}{%
+        {en}%
+      }
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{labeltitlesource}{title}
+      \field{abstract}{The success of any software application or system depends on the architecture style you use. This updated report presents several common architecture styles to guide designers and developers on...}
+      \field{isbn}{9781098134280}
+      \field{title}{Software {Architecture} {Patterns}, 2nd {Edition}}
+      \field{urlday}{27}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://learning.oreilly.com/library/view/software-architecture-patterns/9781098134280/
+      \endverb
+      \verb{url}
+      \verb https://learning.oreilly.com/library/view/software-architecture-patterns/9781098134280/
+      \endverb
+    \endentry
+    \entry{noauthor_synaptic_nodate}{misc}{}{}
+      \list{language}{1}{%
+        {en-US}%
+      }
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{labeltitlesource}{title}
+      \field{title}{Synaptic transmission}
+      \field{urlday}{28}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{urldateera}{ce}
+      \verb{doi}
+      \verb 10.1016/B978-0-443-10321-6.00007-2
+      \endverb
+      \verb{urlraw}
+      \verb https://www.sciencedirect.com/science/chapter/monograph/abs/pii/B9780443103216000072
+      \endverb
+      \verb{url}
+      \verb https://www.sciencedirect.com/science/chapter/monograph/abs/pii/B9780443103216000072
+      \endverb
+    \endentry
+    \entry{wu_neuronal_2015}{article}{}{}
+      \name{author}{3}{}{%
+        {{hash=c84333257e5fef7e25ef4f7a4111077c}{%
+           family={Wu},
+           familyi={W\bibinitperiod},
+           given={Y.},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=b6f1bae43698ee554fe46ebae4fa8241}{%
+           family={Liu},
+           familyi={L\bibinitperiod},
+           given={D.},
+           giveni={D\bibinitperiod}}}%
+        {{hash=43ed8005bc3d579e73c7f43cafa90632}{%
+           family={Song},
+           familyi={S\bibinitperiod},
+           given={Z.},
+           giveni={Z\bibinitperiod}}}%
+      }
+      \list{language}{1}{%
+        {English}%
+      }
+      \strng{namehash}{639c5ac3f5c7bf79dbbddda6034a6000}
+      \strng{fullhash}{639c5ac3f5c7bf79dbbddda6034a6000}
+      \strng{fullhashraw}{639c5ac3f5c7bf79dbbddda6034a6000}
+      \strng{bibnamehash}{639c5ac3f5c7bf79dbbddda6034a6000}
+      \strng{authorbibnamehash}{639c5ac3f5c7bf79dbbddda6034a6000}
+      \strng{authornamehash}{639c5ac3f5c7bf79dbbddda6034a6000}
+      \strng{authorfullhash}{639c5ac3f5c7bf79dbbddda6034a6000}
+      \strng{authorfullhashraw}{639c5ac3f5c7bf79dbbddda6034a6000}
+      \field{sortinit}{W}
+      \field{sortinithash}{4315d78024d0cea9b57a0c6f0e35ed0d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{issn}{0306-4522, 1873-7544}
+      \field{journaltitle}{Neuroscience}
+      \field{month}{2}
+      \field{title}{Neuronal networks and energy bursts in epilepsy}
+      \field{urlday}{28}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{volume}{287}
+      \field{year}{2015}
+      \field{urldateera}{ce}
+      \field{pages}{175\bibrangedash 186}
+      \range{pages}{12}
+      \verb{doi}
+      \verb 10.1016/j.neuroscience.2014.06.046
+      \endverb
+      \verb{urlraw}
+      \verb https://www.ibroneuroscience.org/article/S0306-4522(14)00531-4/fulltext
+      \endverb
+      \verb{url}
+      \verb https://www.ibroneuroscience.org/article/S0306-4522(14)00531-4/fulltext
+      \endverb
+      \keyw{AEDs,CT,DBS,DG,EEGs,GABAergic inhibition,HFS,IPSPs,LFP,N-methyl-d-aspartate,NMDA,SE,SLEs,SNpr,TC,VNS,Vagus Nerve Stimulation,anti-epilepsy drugs,antiepileptic,corticothalamic,deep brain stimulation,dentate gyrus,electroencephalograms,energy burst,epilepsy,glutamatergic excitation,high-frequency stimulation,inhibitory post-synaptic potentials,local field potential,mEFP,mean extracellular field potential,nRT,networks,seizure-like events,status epilepticus,substantia nigra pars reticulata,tDCS,thalamic reticular nucleus,thalamocortical,transcranial direct current stimulation}
+    \endentry
+    \entry{pira_eeg_2023}{misc}{}{}
+      \name{author}{2}{}{%
+        {{hash=32e563370422457790db030ab2c13183}{%
+           family={Zhang},
+           familyi={Z\bibinitperiod},
+           given={H.},
+           giveni={H\bibinitperiod}}}%
+        {{hash=3a55b686cea34a8923b6ea395549772e}{%
+           family={otros},
+           familyi={o\bibinitperiod}}}%
+      }
+      \strng{namehash}{d7cc386b4c8a0afb391c37018c5899d3}
+      \strng{fullhash}{d7cc386b4c8a0afb391c37018c5899d3}
+      \strng{fullhashraw}{d7cc386b4c8a0afb391c37018c5899d3}
+      \strng{bibnamehash}{d7cc386b4c8a0afb391c37018c5899d3}
+      \strng{authorbibnamehash}{d7cc386b4c8a0afb391c37018c5899d3}
+      \strng{authornamehash}{d7cc386b4c8a0afb391c37018c5899d3}
+      \strng{authorfullhash}{d7cc386b4c8a0afb391c37018c5899d3}
+      \strng{authorfullhashraw}{d7cc386b4c8a0afb391c37018c5899d3}
+      \field{sortinit}{Z}
+      \field{sortinithash}{96892c0b0a36bb8557c40c49813d48b3}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://ira.lib.polyu.edu.hk/handle/10397/109161}}
+      \field{note}{Accedido: 25-may-2026}
+      \field{title}{The applied principles of EEG analysis methods in neuroscience and clinical neurology - PolyU Institutional Research Archive}
+      \field{year}{2023}
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+
