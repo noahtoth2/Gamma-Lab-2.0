@@ -19,6 +19,7 @@
 \usepackage{caption}
 \usepackage{amsmath}
 \usepackage{float}
+\usepackage{ragged2e}
 \definecolor{titleblue}{RGB}{31,73,125}
 
 \hypersetup{
@@ -198,25 +199,101 @@ La evolución fundamental de esta segunda iteración se muestra una evolución d
 
 \subsection{Requisitos de los Stakeholders}
 
-\begin{longtable}{@{}p{3cm}p{2.2cm}p{9.5cm}@{}}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.2cm}
+                  >{\raggedright\arraybackslash}p{2.5cm}
+                  >{\raggedright\arraybackslash}p{8.8cm}@{}}
+
 \caption{Stakeholders principales y expectativas} \\
 \toprule
-\textbf{Stakeholder} & \textbf{Tipo} & \textbf{Necesidades / Intereses} \\
+
+\textbf{Stakeholder} &
+\textbf{Tipo} &
+\textbf{Necesidades / Intereses} \\
+
 \midrule
 \endfirsthead
+
 \toprule
-\textbf{Stakeholder} & \textbf{Tipo} & \textbf{Necesidades / Intereses} \\
+\textbf{Stakeholder} &
+\textbf{Tipo} &
+\textbf{Necesidades / Intereses} \\
 \midrule
 \endhead
-Laboratorio de Electrofisiología de la Universidad de Colombia & Usuario final &  Su interés principal es contar con una herramienta robusta, intuitiva y libre de licencias que simplifique el análisis  complejo por medio de PAC sin necesitar habilidades de programación.\\
-Equipo de desarrollo & Interno &  Implementar una arquitectura extendible (microkernel + plugins); reestructuración del diseño de pantallas, aplicando estándares de codificación limpia y paralelización asíncrona. \\
-Directora de tesis & Interno & Validar la rigurosidad científica de los algoritmos de frecuencia y supervisar el cumplimiento del alcance metodológico. \\
-Evaluadores académicos & Externo/Validador & Verificar el cumplimiento de requerimientos, funciones y metodología aplicada desde la ingeniería de sistemas e ingeniería electrónica. Demostrando cuantitativamente la mejora de rendimiento con respecto a GammaLab v1.0. \\
-Comunidad cient\'ifica & Externo/Colaborador & Posibilidad de reutilizar y mejorar el c\'odigo abierto; transparencia metodol\'ogica y reproducibilidad de resultados; estandarizaci\'on de flujos de trabajo y formatos de an\'alisis EEG. \\
+
+Laboratorio de Electrofisiología de la Universidad de Colombia
+&
+Usuario final
+&
+Su interés principal es contar con una herramienta robusta, intuitiva y libre de licencias que simplifique el análisis complejo por medio de PAC, sin necesitar habilidades de programación.
+\\[0.3cm]
+
+Equipo de desarrollo
+&
+Interno
+&
+Implementar una arquitectura extensible (microkernel + plugins), reestructurar el diseño de las pantallas aplicando estándares de codificación limpia y utilizar paralelización asíncrona.
+\\[0.3cm]
+
+Directora de tesis
+&
+Interno
+&
+Validar la rigurosidad científica de los algoritmos de frecuencia y supervisar el cumplimiento del alcance metodológico.
+\\[0.3cm]
+
+Evaluadores académicos
+&
+Externo / Validador
+&
+Verificar el cumplimiento de requerimientos, funciones y metodología aplicada desde la ingeniería de sistemas e ingeniería electrónica, demostrando cuantitativamente la mejora de rendimiento con respecto a GammaLab v1.0.
+\\[0.3cm]
+
+Comunidad científica
+&
+Externo / Colaborador
+&
+Posibilidad de reutilizar y mejorar el código abierto; transparencia metodológica y reproducibilidad de resultados; estandarización de flujos de trabajo y formatos de análisis EEG.
+\\
+
 \bottomrule
+
 \end{longtable}
 
 \subsection{Atributos de Calidad}
+
+\label{sec:atributos_calidad}
+
+La arquitectura de \textbf{GammaLab 2.0} fue diseñada pensando principalmente en las necesidades manifestadas en el laboratorio de electrofisiología, entendiendo sus flujos de trabajo y los requerimientos propios de la ejecución de análisis experimentales. Al mismo tiempo, 
+se proyecta como un software adaptable a distintos contextos y paradigmas de investigación, por lo que resulta fundamental considerar el impacto de los siguientes atributos de calidad en esta segunda versión:
+
+\begin{enumerate}
+    \item \textbf{Extensibilidad:} Dado que el sistema debe adaptarse tanto a diferentes tipos de experimentos como a diversos entornos de investigación, la extensibilidad se concibe como una capacidad primordial. El diseño permite agregar nuevos módulos personalizados, 
+    completamente programables por cada laboratorio o usuario, y ofrece una interfaz clara para integrarlos de manera sencilla dentro del sistema. En \textbf{GammaLab 2.0}, esta capacidad se optimiza al desacoplar los plugins del núcleo mediante un contenedor de
+     \textbf{Inversión de Control (IoC)}, registrando servicios comunes (como \texttt{ExportService}, \texttt{MeasurementService} y \texttt{SettingsService}) que evitan importaciones directas o acoplamientos rígidos. Asimismo, la entidad \texttt{SignalDataset} expone una 
+     API pública de comunicación estricta que encapsula la manipulación de trials, garantizando que futuras extensiones no alteren la integridad de los datos en memoria.
+    
+    \item \textbf{Usabilidad:} GammaLab se privilegia de un diseño de interfaz de usuario pensado para ser lo más sencillo y entendible posible en cada funcionalidad implementada. Lo anterior resulta especialmente importante en el caso de los plugins, donde se manejan procesos 
+    conceptualmente complejos. En esta nueva versión, se eliminan las barreras técnicas de uso mediante ayudas contextuales integradas (\textit{tooltips}) para todos los parámetros, menús unificados de edición en la vista principal (\textit{Home}) y la representación 
+    explícita de gráficas complejas como el \textit{Butterfly plot}. Adicionalmente, el sistema asegura la retroalimentación constante del estado del sistema mediante barras de progreso no bloqueantes para operaciones superiores a 1 segundo, garantizando un flujo intuitivo y controlado.
+    
+    \item \textbf{Mantenibilidad:} La arquitectura propuesta favorece la modularidad y el ordenamiento claro del código, buscando que el sistema siga principios como el de Abierto/Cerrado dentro del marco SOLID: abierto a extensiones y cerrado a modificaciones innecesarias. El sistema realiza una separación
+     rigurosa entre la interfaz gráfica (PySide6) y la lógica matemática en hilos de cómputo independientes, facilitando la depuración del código. Además, la mantenibilidad y la robustez técnica se garantizan mediante el apego estricto a las directrices de estilo \textbf{PEP8} y un estándar mínimo del 
+     \textbf{80\% de cobertura de pruebas unitarias automatizadas} utilizando el framework \textbf{Pytest}.
+    
+    \item \textbf{Rendimiento:} El contexto de uso del programa exige un rendimiento estable y un consumo controlado de recursos, especialmente dada la naturaleza de los datos involucrados, que suelen tener alta densidad de información. Para dar soporte estable a señales de hasta 600~MB en memoria, \textbf{GammaLab 2.0} 
+    incorpora una estrategia de paralelización en el Kernel. Las tareas pesadas de procesamiento (PAC, Wavelet, PSD) se distribuyen de forma asíncrona mediante multiprocesamiento (\texttt{multiprocessing}), impidiendo que la interfaz gráfica se bloquee durante los análisis (manteniendo la responsividad $\le$ 0.3~s). Adicionalmente, 
+    se introduce el submuestreo dinámico visual a un límite de 2000 puntos por serie en los widgets de VTK para conservar una navegación fluida ($\ge$ 24~FPS) sin degradar la data cruda, acompañado de rutinas explícitas de liberación de memoria de GPU y RAM en cada plugin al cambiar de módulo.
+    
+    \item \textbf{Portabilidad:} El sistema debe asegurar su correcta ejecución en diversos entornos locales sin requerir la intervención técnica continua del equipo desarrollador. \textbf{GammaLab 2.0} centraliza su portabilidad local en sistemas Windows 10/11 de 64 bits. Este atributo se consolida al empaquetar la aplicación de manera autónoma
+     en un \textbf{ejecutable standalone (.exe)} a través de PyInstaller. Esto permite que el personal clínico e investigadores ejecuten análisis avanzados localmente con un doble clic, omitiendo por completo la configuración o instalación manual de librerías científicas y consolas de Python en sus estaciones de trabajo.
+    
+    \item \textbf{Robustez y Fiabilidad:} El sistema debe mantener la estabilidad operativa en sesiones continuas y tolerar errores imprevistos en tiempo de ejecución. Ante excepciones internas generadas por plugins de terceros o formatos de archivo corruptos, el sistema captura los fallos de manera centralizada sin interrumpir la sesión del usuario ni provocar la
+     caída de la aplicación. Adicionalmente, el sistema implementa exclusiones mutuas para accesos concurrentes al almacén de datos centralizado (\textit{DataStore}), asegura la correcta liberación de observadores y callbacks VTK y proporciona terminaciones controladas (\textit{cleanup}) de hilos de procesamiento de datos ante solicitudes explícitas de cancelación.
+    
+    \item \textbf{Trazabilidad y Persistencia:} El sistema incorpora en cada análisis la información contextual y los metadatos necesarios para asegurar la reproducibilidad y trazabilidad de los resultados. \textbf{GammaLab 2.0} materializa esta capacidad de forma completa mediante el módulo \textbf{PJ (Project Session)}, el cual introduce la persistencia local 
+    del estado completo del espacio de trabajo (rutas de señales, trials configurados y análisis procesados) en archivos con extensión de proyecto \textbf{.glab} o \textbf{.glws}. Asimismo, la trazabilidad científica externa se respalda al exportar resultados consistentes en formatos tabulares (CSV sin redundancia de ejes temporales, Excel, JSON) 
+    y gráficos de alta calidad vectorial en formato \textbf{EMF}.
+\end{enumerate}
 
 
 \begin{enumerate}
