@@ -28,3 +28,25 @@ Thumbs.db
 
 #Configuraciones de gamma lab
 gamma_lab_settings.json
+
+# Archivos auxiliares de LaTeX
+*.aux
+*.log
+*.toc
+*.lof
+*.lot
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bcf
+*.run.xml
+*.blg
+
+# Archivos temporales de LaTeX
+*.nav
+*.snm
+*.vrb
+
+# PDF generado (opcional)
+# *.pdf

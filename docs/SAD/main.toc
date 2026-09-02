@@ -15,42 +15,42 @@
 \contentsline {section}{\numberline {3}Metas y Restricciones de la Arquitectura}{8}{section.3}%
 \contentsline {subsection}{\numberline {3.1}Requisitos de los Stakeholders}{8}{subsection.3.1}%
 \contentsline {subsection}{\numberline {3.2}Atributos de Calidad}{8}{subsection.3.2}%
-\contentsline {subsection}{\numberline {3.3}Supuestos y limitaciones derivadas}{10}{subsection.3.3}%
-\contentsline {subsubsection}{\numberline {3.3.1}Restricciones de arquitectura}{10}{subsubsection.3.3.1}%
-\contentsline {subsubsection}{\numberline {3.3.2}Supuestos de operación (Evolución de v1.0)}{10}{subsubsection.3.3.2}%
-\contentsline {section}{\numberline {4}Principios y decisiones arquitect\'onicas}{10}{section.4}%
-\contentsline {subsection}{\numberline {4.1}Estilo base}{10}{subsection.4.1}%
-\contentsline {subsubsection}{\numberline {4.1.1}Orquestador del sistema}{11}{subsubsection.4.1.1}%
-\contentsline {subsubsection}{\numberline {4.1.2}Componentes del núcleo}{12}{subsubsection.4.1.2}%
-\contentsline {subsubsection}{\numberline {4.1.3}Arquitectura basada en plugins}{12}{subsubsection.4.1.3}%
-\contentsline {subsubsection}{\numberline {4.1.4}Principio de desacoplamiento y extensibilidad}{13}{subsubsection.4.1.4}%
-\contentsline {subsubsection}{\numberline {4.1.5}Justificación}{13}{subsubsection.4.1.5}%
-\contentsline {subsubsection}{\numberline {4.1.6}Decisiones arquitectónicas}{14}{subsubsection.4.1.6}%
-\contentsline {subsubsection}{\numberline {4.1.7}Patrones utilizados}{14}{subsubsection.4.1.7}%
-\contentsline {section}{\numberline {5}Vistas Arquitect\'onicas (4+1)}{15}{section.5}%
-\contentsline {subsection}{\numberline {5.1}Objetivo}{15}{subsection.5.1}%
-\contentsline {subsection}{\numberline {5.2}Vista de Escenarios}{16}{subsection.5.2}%
-\contentsline {subsection}{\numberline {5.3}Vista L\'ogica}{16}{subsection.5.3}%
-\contentsline {subsection}{\numberline {5.4}Vista de Desarrollo}{19}{subsection.5.4}%
-\contentsline {subsection}{\numberline {5.5}Vista de Procesos}{20}{subsection.5.5}%
-\contentsline {subsection}{\numberline {5.6}Vista F\'isica}{20}{subsection.5.6}%
-\contentsline {section}{\numberline {6}Atributos de calidad}{22}{section.6}%
-\contentsline {subsection}{\numberline {6.1}Escenarios de calidad}{22}{subsection.6.1}%
-\contentsline {subsubsection}{\numberline {6.1.1}Escenario de Calidad 1: Integración de un Plugin Externo}{22}{subsubsection.6.1.1}%
-\contentsline {subsubsection}{\numberline {6.1.2}Escenario de Calidad 2: Carga de Señal de Gran Tamaño}{23}{subsubsection.6.1.2}%
-\contentsline {subsubsection}{\numberline {6.1.3}Escenario de Calidad 3: Manejo de Errores en Tiempo de Ejecución}{23}{subsubsection.6.1.3}%
-\contentsline {subsubsection}{\numberline {6.1.4}Escenario de Calidad 4: Exportación de Datos o Gráficas}{24}{subsubsection.6.1.4}%
-\contentsline {subsubsection}{\numberline {6.1.5}Escenario de Calidad 5: Uso del Sistema sin Experiencia Técnica}{24}{subsubsection.6.1.5}%
-\contentsline {subsubsection}{\numberline {6.1.6}Escenario de Calidad 6: Rendimiento con Múltiples Señales Cargadas}{25}{subsubsection.6.1.6}%
-\contentsline {subsubsection}{\numberline {6.1.7}Escenario de Calidad 7: Resiliencia ante Archivos Corruptos o Incompatibles}{25}{subsubsection.6.1.7}%
-\contentsline {subsubsection}{\numberline {6.1.8}Escenario de Calidad 8: Consistencia entre Datos Ingresados y Gráficas Generadas}{26}{subsubsection.6.1.8}%
-\contentsline {subsection}{\numberline {6.2}Reglas de compatibilidad y versionado}{26}{subsection.6.2}%
-\contentsline {subsection}{\numberline {6.3}M\'etricas y plan de verificaci\'on}{26}{subsection.6.3}%
-\contentsline {subsection}{\numberline {6.4}Plan de evidencia}{26}{subsection.6.4}%
-\contentsline {subsection}{\numberline {6.5}Conclusi\'on}{26}{subsection.6.5}%
-\contentsline {section}{\numberline {7}Anexos}{26}{section.7}%
-\contentsline {subsection}{\numberline {7.1}Anexo A --- Relaci\'on con el SRS}{26}{subsection.7.1}%
-\contentsline {subsection}{\numberline {7.2}Anexo B --- Relaci\'on con el SDD}{27}{subsection.7.2}%
-\contentsline {subsection}{\numberline {7.3}Anexo C --- Trazabilidad global de artefactos}{27}{subsection.7.3}%
-\contentsline {subsection}{\numberline {7.4}Anexo D --- Diagramas y tablas de referencia}{27}{subsection.7.4}%
-\contentsline {section}{\numberline {8}Referencias}{27}{section.8}%
+\contentsline {subsection}{\numberline {3.3}Supuestos y limitaciones derivadas}{8}{subsection.3.3}%
+\contentsline {subsubsection}{\numberline {3.3.1}Restricciones de arquitectura}{8}{subsubsection.3.3.1}%
+\contentsline {subsubsection}{\numberline {3.3.2}Supuestos de operación (Evolución de v1.0)}{9}{subsubsection.3.3.2}%
+\contentsline {section}{\numberline {4}Principios y decisiones arquitect\'onicas}{9}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Estilo base}{9}{subsection.4.1}%
+\contentsline {subsubsection}{\numberline {4.1.1}Orquestador del sistema}{10}{subsubsection.4.1.1}%
+\contentsline {subsubsection}{\numberline {4.1.2}Componentes del núcleo}{10}{subsubsection.4.1.2}%
+\contentsline {subsubsection}{\numberline {4.1.3}Arquitectura basada en plugins}{11}{subsubsection.4.1.3}%
+\contentsline {subsubsection}{\numberline {4.1.4}Principio de desacoplamiento y extensibilidad}{11}{subsubsection.4.1.4}%
+\contentsline {subsubsection}{\numberline {4.1.5}Justificación}{12}{subsubsection.4.1.5}%
+\contentsline {subsubsection}{\numberline {4.1.6}Decisiones arquitectónicas}{12}{subsubsection.4.1.6}%
+\contentsline {subsubsection}{\numberline {4.1.7}Patrones utilizados}{13}{subsubsection.4.1.7}%
+\contentsline {section}{\numberline {5}Vistas Arquitect\'onicas (4+1)}{14}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Objetivo}{14}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Vista de Escenarios}{15}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Vista L\'ogica}{15}{subsection.5.3}%
+\contentsline {subsection}{\numberline {5.4}Vista de Desarrollo}{18}{subsection.5.4}%
+\contentsline {subsection}{\numberline {5.5}Vista de Procesos}{19}{subsection.5.5}%
+\contentsline {subsection}{\numberline {5.6}Vista F\'isica}{19}{subsection.5.6}%
+\contentsline {section}{\numberline {6}Atributos de calidad}{21}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Escenarios de calidad}{21}{subsection.6.1}%
+\contentsline {subsubsection}{\numberline {6.1.1}Escenario de Calidad 1: Integración de un Plugin Externo}{21}{subsubsection.6.1.1}%
+\contentsline {subsubsection}{\numberline {6.1.2}Escenario de Calidad 2: Carga de Señal de Gran Tamaño}{22}{subsubsection.6.1.2}%
+\contentsline {subsubsection}{\numberline {6.1.3}Escenario de Calidad 3: Manejo de Errores en Tiempo de Ejecución}{22}{subsubsection.6.1.3}%
+\contentsline {subsubsection}{\numberline {6.1.4}Escenario de Calidad 4: Exportación de Datos o Gráficas}{23}{subsubsection.6.1.4}%
+\contentsline {subsubsection}{\numberline {6.1.5}Escenario de Calidad 5: Uso del Sistema sin Experiencia Técnica}{23}{subsubsection.6.1.5}%
+\contentsline {subsubsection}{\numberline {6.1.6}Escenario de Calidad 6: Rendimiento con Múltiples Señales Cargadas}{24}{subsubsection.6.1.6}%
+\contentsline {subsubsection}{\numberline {6.1.7}Escenario de Calidad 7: Resiliencia ante Archivos Corruptos o Incompatibles}{24}{subsubsection.6.1.7}%
+\contentsline {subsubsection}{\numberline {6.1.8}Escenario de Calidad 8: Consistencia entre Datos Ingresados y Gráficas Generadas}{25}{subsubsection.6.1.8}%
+\contentsline {subsection}{\numberline {6.2}Reglas de compatibilidad y versionado}{25}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}M\'etricas y plan de verificaci\'on}{25}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.4}Plan de evidencia}{25}{subsection.6.4}%
+\contentsline {subsection}{\numberline {6.5}Conclusi\'on}{25}{subsection.6.5}%
+\contentsline {section}{\numberline {7}Anexos}{25}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Anexo A --- Relaci\'on con el SRS}{25}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Anexo B --- Relaci\'on con el SDD}{26}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}Anexo C --- Trazabilidad global de artefactos}{26}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.4}Anexo D --- Diagramas y tablas de referencia}{26}{subsection.7.4}%
+\contentsline {section}{\numberline {8}Referencias}{26}{section.8}%
