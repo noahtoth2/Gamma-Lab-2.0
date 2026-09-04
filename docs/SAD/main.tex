@@ -253,6 +253,12 @@ La separación entre la lógica estable del sistema y la funcionalidad específi
 Esta estructura favorece la extensibilidad del sistema, ya que permite incorporar nuevos módulos funcionales sin modificar la lógica del núcleo. Además, reduce el acoplamiento entre componentes y mejora la mantenibilidad del proyecto a lo largo de su evolución. La relación entre el \textit{core} y los plugins se establece a través de una API de integración basada en la interfaz \textit{IPlugin}, la cual define el contrato que cada módulo debe cumplir para incorporarse al ecosistema de GammaLab 2.0.
 
 En este sentido, la arquitectura del sistema se organiza en tres capas principales: la capa de presentación, donde se encuentra la interfaz gráfica desarrollada con PySide6 y Qt; la capa de coordinación, representada por el Kernel y los servicios compartidos del core; y la capa funcional, conformada por los plugins que implementan los distintos análisis y visualizaciones.
+\begin{figure}
+    \centering
+    \includegraphics[width=0.95\linewidth]{DiagramaEstiloBase.jpg}
+    \caption{Diagrama conceptual de la arquitectura microkernel de GammaLab 2.0, mostrando la relación entre el núcleo central, los servicios compartidos y los plugins especializados.}
+    \label{fig:estilo_base_microkernel}
+\end{figure}
 
 \subsubsection{Orquestador del sistema}
 
@@ -289,7 +295,7 @@ Los principales componentes del core son:
     \item \textbf{MeasurementService}: administra métricas, cálculos y resultados derivados del análisis.
     \item \textbf{SettingsService}: maneja la configuración general del sistema y preferencias del usuario.
     \item \textbf{ExportService}: se encarga de la exportación de resultados en formatos compatibles con análisis e informes.
-    \item \textbf{Alerts y notifications}: permiten comunicar eventos, errores o advertencias al usuario.
+    \item \textbf{ProjectSession}: gestiona la persistencia del espacio de trabajo mediante archivos de proyecto \texttt{.glab}, guardando y restaurando la señal activa, los trials, los análisis y los parámetros de la sesión.
 \end{itemize}
 
 El diseño del núcleo sigue un principio de servicio compartido, donde los plugins no crean instancias aisladas de cada funcionalidad, sino que acceden a los servicios del sistema mediante interfaces controladas por el Kernel. Este enfoque reduce el acoplamiento entre módulos y facilita la evolución del sistema sin afectar la lógica base.
@@ -500,10 +506,10 @@ La vista l\'ogica presenta los componentes fundamentales del sistema Gamma Lab 2
     \centering
     \includegraphics[width=0.95\linewidth]{diagrama_clases_sistema_completo.png}
     \caption{Vista l\'ogica del sistema Gamma Lab 2.0: n\'ucleo, servicios y familias de plugins (verde = ya existe, rojo = nuevo).}
-    \label{fig:vistalogica}
+    \label{fig:vista_logica}
 \end{figure}
 
-En la Figura \ref{fig:vistalogica} se observa:
+En la Figura \ref{fig:vista_logica} se observa:
 \begin{itemize}[nosep]
     \item \textbf{APP}: \texttt{MainWindow}, navegaci\'on por categor\'ias de plugins (ya existe); el panel de bienvenida de Home es est\'atico y \textbf{no} detecta la primera ejecuci\'on del usuario (falta R10).
     \item \textbf{CORE (ya existe)}: \texttt{Kernel} (registro de plugins y servicios), \texttt{PluginManager} + \texttt{loader} (descubrimiento v\'ia YAML \texttt{properties.yml}), \texttt{DataStore}, \texttt{FileIOService} (lee abf/edf/mat), \texttt{ExportService} (exporta raster y tablas), \texttt{SettingsService} (clase completa, pero \textbf{no} registrada en \texttt{main.py} hoy).
