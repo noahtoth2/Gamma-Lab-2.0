@@ -150,17 +150,53 @@ Gamma Lab, en coherencia con el SAD y el SRS previamente definidos.
 
         La pantalla principal se compone de los siguientes elementos, numerados en la Figura \ref{fig:interfaz_principal}:
         \begin{itemize}
-            \item \textbf{1 - Panel de control:} nombre de la señal abierta, junto al nombre editable del proyecto con extensión glb.
-            \item \textbf{2 - Barra de búsqueda:} Ubicada en la parte superior, permite acceder a las diferentes secciones del sistema mediante una búsqueda.
-            \item \textbf{3 - Barra de navegación:} permite acceder a las diferentes secciones del sistema (file, home, preprocessing, analysis).
-            \item \textbf{4 - slope:} botón que permite abrir la sección de slope, donde se puede realizar el análisis de la pendiente de la señal.
-            \item \textbf{5 - amplitude:} botón que permite abrir la sección de amplitude, donde se puede realizar el análisis de la amplitud de la señal.
-            \item \textbf{6 - eliminar medida:} botón que permite eliminar la ultima medida o todas las medidas seleccionadas de la señal .
-            \item \textbf{7 - mostrar/ocultar:} botón que permite mostrar u ocultar las medidas de la señal.
-            \item \textbf{8 - zoom:} botón que permite hacer zoom a la señal, para ver con mayor detalle las medidas.
-            \item \textbf{9 - explorador de archivos:} botón que permite abrir la carpeta donde se encuentra el proyecto y sus exportaciones desde la misma pantalla.
-            \item \textbf{10 - resultados:} permite desplegar desde abajo una ventana con los resultados de las medidas realizadas en la señal.
-            \item \textbf{11 - ayuda:} botón que permite abrir la sección de ayuda, donde se puede encontrar información sobre el uso del sistema.
+            \item \textbf{1 - Panel de control:} muestra el nombre de la señal abierta junto al nombre, editable, del proyecto activo, guardado con extensión \texttt{.glab}.
+            \item \textbf{2 - Barra de búsqueda:} ubicada en la parte superior, permite localizar y acceder rápidamente a una funcionalidad específica del sistema sin tener que recorrer manualmente la barra de navegación.
+            \item \textbf{3 - Barra de navegación:} agrupa las pestañas \textit{File}, \textit{Home}, \textit{Preprocessing} y \textit{Analysis}, permitiendo alternar entre la gestión de archivos, las mediciones sobre la señal, el preprocesamiento y los módulos de análisis.
+            \item \textbf{4 - slope:} opción de la categoría \textit{Measurements} (pestaña \textit{Home}) que permite medir la pendiente de la señal entre dos puntos seleccionados por el usuario, mediante las subopciones \textit{Slope 2 Trials} (calculada sobre dos ensayos) y \textit{Slope All Trials} (calculada sobre la totalidad de los ensayos generados).
+                    \begin{figure}[H]
+                     \centering
+                     \includegraphics[width=0.5\textwidth]{slope.png}
+                        \caption{opciones de slope}
+                        \label{fig:slope}
+                    \end{figure}
+            \item \textbf{5 - amplitude:} opción de la categoría \textit{Measurements} (pestaña \textit{Home}) que permite medir la amplitud de la señal entre dos puntos seleccionados por el usuario sobre la gráfica.
+            \item \textbf{6 - eliminar medida:} permite eliminar la última medición de \textit{slope} o \textit{amplitude} realizada, o bien la totalidad de las mediciones registradas sobre la señal.
+                    \begin{figure}[H]
+                     \centering
+                     \includegraphics[width=0.5\textwidth]{eliminar.png}
+                        \caption{opciones de eliminar medida}
+                        \label{fig:eliminarMedida}
+                    \end{figure}
+            \item \textbf{7 - mostrar/ocultar:} permite mostrar u ocultar en pantalla las mediciones de \textit{slope} y \textit{amplitude} realizadas previamente sobre la señal, sin necesidad de eliminarlas.
+            \item \textbf{8 - zoom:} activa o desactiva la función de acercamiento sobre la gráfica de la señal, permitiendo observar con mayor detalle un segmento de la señal y las mediciones realizadas sobre él.
+                \begin{figure}[H]
+                     \centering
+                     \includegraphics[width=0.5\textwidth]{zoom.png}
+                        \caption{opciones de zoom}
+                        \label{fig:zoom}
+                \end{figure}
+            \item \textbf{9 - explorador de archivos:} despliega, desde la barra lateral izquierda, la carpeta del sistema de archivos en la que se encuentra almacenado el proyecto actual junto con las señales y resultados exportados, sin salir de la aplicación.
+                    \begin{figure}[H]
+                     \centering
+                     \includegraphics[width=0.5\textwidth]{exploradorArchivos.png}
+                        \caption{explorador de archivos desplegado}
+                        \label{fig:explorador}
+                    \end{figure}
+            \item \textbf{10 - resultados:} despliega, desde la barra lateral izquierda, una ventana inferior con los resultados numéricos de las mediciones de \textit{slope} y \textit{amplitude} realizadas sobre la señal, los cuales pueden exportarse en formato \texttt{.csv} para su análisis externo.
+                    \begin{figure}[H]
+                     \centering
+                     \includegraphics[width=0.5\textwidth]{resultados.png}
+                        \caption{resultados desplegados}
+                        \label{fig:resultados}
+                    \end{figure}
+                    \begin{figure}[H]
+                        \centering
+                        \includegraphics[width=0.5\textwidth]{resultados2.png}
+                        \caption{Los resultados pueden ser exportados en formato csv.}
+                        \label{fig:resultados2}
+                    \end{figure}
+            \item \textbf{11 - ayuda:} despliega, desde la barra lateral izquierda, el manual de usuario del sistema, con información de referencia sobre el uso de cada funcionalidad.
         \end{itemize}
 
         \subsubsection{Carga y guardado de archivos (pestaña \textit{File})}
@@ -172,24 +208,142 @@ Gamma Lab, en coherencia con el SAD y el SRS previamente definidos.
             \label{fig:file_tab}
         \end{figure}
 
-        La pestaña \textit{File} permite gestionar la carga y el guardado de señales y proyectos. A continuación se describe el flujo de cada una de sus opciones.
+        La pestaña \textit{File} permite gestionar la carga y el guardado de señales y proyectos. Agrupa las siguientes opciones:
+
+        \begin{itemize}
+            \item \textbf{Open Signal:} permite cargar una señal individual dentro de la aplicación para su preprocesamiento y análisis.
+            \item \textbf{Open Project:} permite abrir un proyecto previamente guardado con extensión \texttt{.glab}, restaurando la señal activa, los trials, los análisis y los parámetros de la sesión.
+            \item \textbf{Save:} guarda los cambios realizados sobre el proyecto actualmente abierto.
+            \item \textbf{Save As:} permite guardar el proyecto actual bajo un nuevo nombre o ubicación, sin sobrescribir el archivo original.
+            \item \textbf{Close Project:} cierra el proyecto que se encuentra abierto, liberando la señal activa de memoria.
+            \item \textbf{Exit:} cierra la aplicación.
+        \end{itemize}
+
+        A continuación se ilustra el flujo de carga de una señal y de un proyecto:
 
        \begin{figure}[H]
             \centering
             \includegraphics[width=0.8\textwidth]{cargarSeñal.png}
-            \caption{Flujo de carga de la señal}
+            \caption{Flujo de carga de la señal (\textit{Open Signal})}
             \label{fig:cargar_senal}
         \end{figure}
 
         \begin{figure}[H]
             \centering
             \includegraphics[width=0.8\textwidth]{cargarproyecto.png}
-            \caption{Flujo de carga de proyecto}
+            \caption{Flujo de carga de proyecto (\textit{Open Project})}
             \label{fig:cargar_proyecto}
         \end{figure}
 
-        ademas existe la posibilidad de \textit{guardar el proyecto, que permite almacenar el estado actual del proyecto, incluyendo las medidas realizadas y los resultados obtenidos. Esto se puede hacer mediante la opción \textit{Save Project} en la pestaña File}.
+        Mediante las opciones \textit{Save} y \textit{Save As} es posible almacenar el estado completo del espacio de trabajo, incluyendo la señal activa, los trials configurados, las medidas realizadas y los resultados de los análisis ejecutados, en un archivo de proyecto con extensión \texttt{.glab}.
 
+        \subsubsection{Preprocesamiento}
 
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.8\textwidth]{preprocessing.png}
+            \caption{Pestaña Preprocessing de Gamma Lab}
+            \label{fig:preprocessing_tab}
+        \end{figure}
+
+        \textbf{Categoria \textit{Trials}}
+        \begin{itemize}
+            \item \textbf{trials:} divide la señal cargada en ensayos (\textit{trials}), permitiendo seleccionar el canal a dividir, el canal de estímulos, el umbral (\textit{threshold}), el número de estímulos y el tamaño de la ventana de segmentación. Una vez generados, el usuario puede navegar entre los trials resultantes e incluirlos o descartarlos individualmente del conjunto que participará en los análisis posteriores.
+            \begin{figure}[H]
+                \centering
+                \includegraphics[width=0.8\textwidth]{trials.png}
+                \caption{opciones de trials}
+                \label{fig:trials}
+            \end{figure}
+        \end{itemize}
+
+        \textbf{Categoria \textit{prepare}}
+        \begin{itemize}
+            \item \textbf{remove artifact:} elimina artefactos presentes en los trials mediante la selección de un rango de tiempo a corregir, ofreciendo dos modos de corrección: interpolación del segmento seleccionado o eliminación de la señal desde el inicio del trial hasta el punto seleccionado.
+            \begin{figure}[H]
+                \centering
+                \includegraphics[width=0.8\textwidth]{removeartifact.png}
+                \caption{opciones de remove artifact}
+                \label{fig:removeartifact}
+            \end{figure}
+            \item \textbf{filter:} aplica un filtro digital Butterworth a la señal, mediante la selección del rango de frecuencias de corte y el orden del filtro, mostrando el resultado tanto sobre la señal completa como sobre el primer trial generado.
+            \begin{figure}[H]
+                \centering
+                \includegraphics[width=0.8\textwidth]{filter.png}
+                \caption{opciones de filter}
+                \label{fig:filter}
+            \end{figure}
+        \end{itemize}
+    
+    \subsubsection{Analysis}
+    En esta sección se pueden realizar diferentes análisis de la señal, a continuación seran listados los análisis disponibles y sus opciones:
+
+    \begin{itemize}
+        \item \textbf{FFT: } calcula la transformada rápida de Fourier de la señal, mediante la configuración de la frecuencia de muestreo y el rango de frecuencias de interés, y muestra el espectro de potencia resultante de forma individual para cada ensayo.
+            \begin{figure}[H]
+                \centering
+                \includegraphics[width=0.8\textwidth]{fft.png}
+                \caption{opciones de FFT}
+                \label{fig:fft}
+            \end{figure}
+        \item \textbf{FFT Average:} calcula la FFT de la señal con la misma configuración de frecuencia de muestreo y rango de frecuencias que la opción anterior, pero adicionalmente promedia los espectros obtenidos de todos los ensayos para reducir el ruido y resaltar los componentes de frecuencia comunes entre ellos.
+            \begin{figure}[H]
+                \centering
+                \includegraphics[width=0.8\textwidth]{fftaverage.png}
+                \caption{opciones de FFT Average}
+                \label{fig:fftaverage}
+            \end{figure}
+        \item \textbf{PSD: } estima la densidad espectral de potencia de la señal mediante el método de Welch, permitiendo configurar el modo de cálculo, el tipo de ventana, el rango de frecuencias y el modo de \textit{detrend}, y muestra el resultado de forma individual para cada ensayo.
+            \begin{figure}[H]
+                \centering
+                \includegraphics[width=0.8\textwidth]{psd.png}
+                \caption{opciones de PSD}
+                \label{fig:psd}
+            \end{figure}
+        \item \textbf{PSD Average:} estima la PSD de la señal mediante el método de Welch, con la misma configuración de frecuencia de muestreo, ventana y rango de frecuencias que la opción anterior, pero promediando de forma agregada los resultados de todos los ensayos.
+            \begin{figure}[H]
+                \centering
+                \includegraphics[width=0.8\textwidth]{psdaverage.png}
+                \caption{opciones de PSD Average}
+                \label{fig:psdaverage}
+            \end{figure}
+        \item \textbf{PSD relative: } calcula la PSD relativa de la señal, entregando tanto la potencia absoluta como la potencia relativa aportada por cada banda de frecuencia del rango seleccionado, mediante la configuración del tipo de ventana, el modo de \textit{detrend} y el modo de cálculo.
+
+        \item \textbf{Average: } calcula y visualiza el promedio temporal de los trials generados, útil para observar patrones comunes y atenuar variaciones aleatorias entre ensayos.
+            \begin{figure}[H]
+                \centering
+                \includegraphics[width=0.8\textwidth]{average.png}
+                \caption{opciones de Average}
+                \label{fig:average}
+            \end{figure}
+        \item \textbf{Event related potential: } calcula el potencial relacionado con eventos (ERP), generando un \textit{Butterfly Plot} con todos los trials alineados y un espectrograma de la dinámica tiempo-frecuencia asociada al evento.
+            \begin{figure}[H]
+                \centering
+                \includegraphics[width=0.8\textwidth]{eventRelated.png}
+                \caption{opciones de Event related potential}
+                \label{fig:erp}
+            \end{figure}
+        \item \textbf{Wavelet: } calcula la transformada wavelet continua de la señal, mediante la configuración de la frecuencia de muestreo, el rango de frecuencias, el número de ciclos, la normalización y la escala de visualización, permitiendo observar cómo varía el contenido espectral de la señal a lo largo del tiempo para cada ensayo.
+            \begin{figure}[H]
+                \centering
+                \includegraphics[width=0.8\textwidth]{wavelet.png}
+                \caption{opciones de Wavelet}
+                \label{fig:wavelet}
+            \end{figure}
+        \item \textbf{Wavelet Average: } calcula la transformada wavelet con la misma configuración que la opción anterior, y promedia los resultados sobre múltiples trials, generando un mapa tiempo-frecuencia agrupado.
+            \begin{figure}[H]
+                \centering
+                \includegraphics[width=0.8\textwidth]{waveletaverage.png}
+                \caption{opciones de Wavelet Average}
+                \label{fig:waveletaverage}
+            \end{figure}
+        \item \textbf{PAC: } calcula el acoplamiento de fase-amplitud (\textit{Phase-Amplitude Coupling}) de un canal, evaluando la relación entre la fase de una banda de baja frecuencia y la amplitud de un rango de frecuencias seleccionado, ya sea sobre un trial individual o sobre el promedio de varios trials. El resultado incluye el mapa de acoplamiento fase-frecuencia, el histograma de distribución de amplitud en función de la fase, y el vector de acoplamiento medio con su magnitud y ángulo.
+            \begin{figure}[H]
+                \centering
+                \includegraphics[width=0.8\textwidth]{pac.png}
+                \caption{opciones de PAC}
+                \label{fig:pac}
+            \end{figure}
+    \end{itemize}
 
 \end{document}
