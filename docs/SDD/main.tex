@@ -20,6 +20,8 @@
 \usepackage{amsmath}
 \usepackage{float}
 \usepackage{ragged2e}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning}
 \definecolor{titleblue}{RGB}{31,73,125}
 
 \hypersetup{
@@ -58,7 +60,7 @@
     {\large Facultad de Ingenier\'ia --- Ingenier\'ia de Sistemas}
 
     \vspace{1.5cm}
-    {\Large\bfseries\color{titleblue} Software Architecture Document}\\
+    {\Large\bfseries\color{titleblue} Software Design Document}\\
     {\large\bfseries SDD}
 
     \vspace{1cm}
@@ -135,7 +137,58 @@ Gamma Lab, en coherencia con el SAD y el SRS previamente definidos.
 
 
     \subsection{Interfaz de Usuario}
+         \subsubsection{Proposito}
+            Esta sección describe la interfaz de usuario de Gamma Lab, incluyendo la organización, navegación, y componentes de las vistas.
 
+        \subsubsection{Organización de la pantalla principal}
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.8\textwidth]{home.png}
+            \caption{Organización de la pantalla principal de Gamma Lab}
+            \label{fig:interfaz_principal}
+        \end{figure}
+
+        La pantalla principal se compone de los siguientes elementos, numerados en la Figura \ref{fig:interfaz_principal}:
+        \begin{itemize}
+            \item \textbf{1 - Panel de control:} nombre de la señal abierta, junto al nombre editable del proyecto con extensión glb.
+            \item \textbf{2 - Barra de búsqueda:} Ubicada en la parte superior, permite acceder a las diferentes secciones del sistema mediante una búsqueda.
+            \item \textbf{3 - Barra de navegación:} permite acceder a las diferentes secciones del sistema (file, home, preprocessing, analysis).
+            \item \textbf{4 - slope:} botón que permite abrir la sección de slope, donde se puede realizar el análisis de la pendiente de la señal.
+            \item \textbf{5 - amplitude:} botón que permite abrir la sección de amplitude, donde se puede realizar el análisis de la amplitud de la señal.
+            \item \textbf{6 - eliminar medida:} botón que permite eliminar la ultima medida o todas las medidas seleccionadas de la señal .
+            \item \textbf{7 - mostrar/ocultar:} botón que permite mostrar u ocultar las medidas de la señal.
+            \item \textbf{8 - zoom:} botón que permite hacer zoom a la señal, para ver con mayor detalle las medidas.
+            \item \textbf{9 - explorador de archivos:} botón que permite abrir la carpeta donde se encuentra el proyecto y sus exportaciones desde la misma pantalla.
+            \item \textbf{10 - resultados:} permite desplegar desde abajo una ventana con los resultados de las medidas realizadas en la señal.
+            \item \textbf{11 - ayuda:} botón que permite abrir la sección de ayuda, donde se puede encontrar información sobre el uso del sistema.
+        \end{itemize}
+
+        \subsubsection{Carga y guardado de archivos (pestaña \textit{File})}
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.8\textwidth]{file.png}
+            \caption{Pestaña File de Gamma Lab}
+            \label{fig:file_tab}
+        \end{figure}
+
+        La pestaña \textit{File} permite gestionar la carga y el guardado de señales y proyectos. A continuación se describe el flujo de cada una de sus opciones.
+
+       \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.8\textwidth]{cargarSeñal.png}
+            \caption{Flujo de carga de la señal}
+            \label{fig:cargar_senal}
+        \end{figure}
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.8\textwidth]{cargarproyecto.png}
+            \caption{Flujo de carga de proyecto}
+            \label{fig:cargar_proyecto}
+        \end{figure}
+
+        ademas existe la posibilidad de \textit{guardar el proyecto, que permite almacenar el estado actual del proyecto, incluyendo las medidas realizadas y los resultados obtenidos. Esto se puede hacer mediante la opción \textit{Save Project} en la pestaña File}.
 
 
 
