@@ -45,12 +45,12 @@
 \contentsline {subsubsection}{\numberline {6.1.7}Escenario de Calidad 7: Resiliencia ante Archivos Corruptos o Incompatibles}{26}{subsubsection.6.1.7}%
 \contentsline {subsubsection}{\numberline {6.1.8}Escenario de Calidad 8: Consistencia entre Datos Ingresados y Gráficas Generadas}{27}{subsubsection.6.1.8}%
 \contentsline {subsection}{\numberline {6.2}Reglas de compatibilidad y versionado}{27}{subsection.6.2}%
-\contentsline {subsection}{\numberline {6.3}M\'etricas y plan de verificaci\'on}{27}{subsection.6.3}%
-\contentsline {subsection}{\numberline {6.4}Plan de evidencia}{27}{subsection.6.4}%
-\contentsline {subsection}{\numberline {6.5}Conclusi\'on}{27}{subsection.6.5}%
-\contentsline {section}{\numberline {7}Anexos}{27}{section.7}%
-\contentsline {subsection}{\numberline {7.1}Anexo A --- Relaci\'on con el SRS}{27}{subsection.7.1}%
-\contentsline {subsection}{\numberline {7.2}Anexo B --- Relaci\'on con el SDD}{28}{subsection.7.2}%
-\contentsline {subsection}{\numberline {7.3}Anexo C --- Trazabilidad global de artefactos}{28}{subsection.7.3}%
-\contentsline {subsection}{\numberline {7.4}Anexo D --- Diagramas y tablas de referencia}{28}{subsection.7.4}%
-\contentsline {section}{\numberline {8}Referencias}{28}{section.8}%
+\contentsline {subsection}{\numberline {6.3}M\'etricas y plan de verificaci\'on}{28}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.4}Plan de evidencia}{29}{subsection.6.4}%
+\contentsline {subsection}{\numberline {6.5}Conclusi\'on}{30}{subsection.6.5}%
+\contentsline {section}{\numberline {7}Anexos}{30}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Anexo A --- Relaci\'on con el SRS}{30}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Anexo B --- Relaci\'on con el SDD}{30}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}Anexo C --- Trazabilidad global de artefactos}{30}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.4}Anexo D --- Diagramas y tablas de referencia}{30}{subsection.7.4}%
+\contentsline {section}{\numberline {8}Referencias}{30}{section.8}%

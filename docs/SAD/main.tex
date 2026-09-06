@@ -546,6 +546,7 @@ La Figura \ref{fig:vistacasosuso} revela que el subsistema \textbf{N\'ucleo y Ci
 \begin{table}[htbp]
 \centering
 \caption{UC-02 --- Cancelar un c\'omputo pesado en curso}
+\label{tab:uc02}
 \begin{tabularx}{\linewidth}{@{}p{2.6cm}X@{}}
 \toprule
 \textbf{Est\'imulo} & El investigador pulsa ``Cancelar'' mientras un an\'alisis PAC o Wavelet est\'a en curso (CU-014). \\
@@ -917,31 +918,167 @@ Trazabilidad & NFR-R-04 (R73), NFR-U-02 (R03) \\
 
 
 \subsection{Reglas de compatibilidad y versionado}
+
 \begin{itemize}
-    \item 
+    \item \textbf{Versionado de la aplicaci\'on.} GammaLab 2.0 adopta versionado sem\'antico \texttt{MAJOR.\allowbreak MINOR.\allowbreak PATCH}: \texttt{MAJOR} rompe \texttt{.glab} o el contrato \texttt{IPlugin}; \texttt{MINOR} agrega capacidades retrocompatibles; \texttt{PATCH} corrige sin alterar contratos p\'ublicos. Hoy no existe una constante \texttt{\_\_version\_\_} ni \textit{tags} de Git; se fija como regla que \texttt{main.py} la exponga y quede embebida en cada \texttt{.glab} generado.
+
+    \item \textbf{Contrato de plugins (\texttt{IPlugin}).} Cambios aditivos (nuevos m\'etodos opcionales, nuevos campos con valor por defecto) no rompen compatibilidad. Cambios que alteren la firma de \texttt{initialize}, \texttt{start}, \texttt{stop}, \texttt{process} o \texttt{get\_widget} elevan la versi\'on \texttt{MAJOR} del contrato.
+
+    \item \textbf{Metadatos \texttt{properties.yml}.} Los campos requeridos (\texttt{id, name, category, subcategory, version, icon, logic\_class, ui\_class}) deben existir siempre -- ya exigido por \texttt{REQUIRED\_\allowbreak KEYS} en \texttt{loader.py} -- y a\~nadir campos opcionales es compatible. Regla nueva: \texttt{version} debe declarar el \texttt{MAJOR} de \texttt{IPlugin} contra el que se escribi\'o el plugin; \texttt{discover()} debe rechazarlo si no coincide con el \texttt{MAJOR} del n\'ucleo -- hoy ese campo existe pero no se valida.
+
+    \item \textbf{Formato de proyecto \texttt{.glab} (nuevo).} \texttt{ProjectService} y \texttt{.glab} a\'un no existen en el c\'odigo (cero referencias en el repositorio). Regla de dise\~no: cada \texttt{.glab} debe embeber un \texttt{schema\_version} propio; un \texttt{MINOR} se mantiene legible por versiones futuras, un \texttt{MAJOR} rechaza la apertura con mensaje expl\'icito en vez de migrar impl\'icitamente.
+
+    \item \textbf{Dependencias externas.} \texttt{requirements.txt} fija cada librer\'ia con versi\'on exacta (\texttt{==}), sin rangos abiertos (Tabla~\ref{tab:deps}). Actualizar VTK, SciPy, PyWavelets o NumPy exige re-ejecutar completas las suites \texttt{plugins\_\allowbreak test} y \texttt{performance\_\allowbreak test} antes de aceptar el cambio.
+
+    \item \textbf{Formatos de se\~nal externos (EDF/ABF/BDF/MAT).} La compatibilidad se ancla a la versi\'on de la librer\'ia lectora (\texttt{pyabf}, \texttt{pyedflib}), no al formato en s\'i. Un archivo no interpretable por esa versi\'on se reporta como incompatible, sin remuestreo ni heur\'isticas de recuperaci\'on impl\'icitas -- caso abierto: un EDF con canales a distinta frecuencia de muestreo debe fallar con mensaje claro, no intentar corregirse solo.
+
+    \item \textbf{Estabilidad de m\'odulos internos.} Todo renombramiento o reubicaci\'on de un m\'odulo p\'ublico de \texttt{core/} debe actualizar en el mismo cambio a todos sus consumidores, tests incluidos, y debe existir un flujo de CI que corra \texttt{pytest} en cada \textit{push}/\textit{pull request}. Motivo: el renombramiento de \texttt{fileio.py} a \texttt{fileio\_\allowbreak service.py} (con \texttt{TrialDataset} movido a \texttt{core/\allowbreak model/}) rompi\'o silenciosamente los 8 archivos de \texttt{plugins\_\allowbreak test}; sin CI, la ruptura sigue sin corregirse a la fecha de este documento.
 \end{itemize}
+
+\begin{center}
+\small
+\begin{longtable}{|p{0.30\textwidth}|p{0.20\textwidth}|p{0.30\textwidth}|}
+\caption{Versiones de dependencias externas ancladas en \texttt{requirements.txt}} \label{tab:deps} \\
+\hline
+\textbf{Librer\'ia} & \textbf{Versi\'on} & \textbf{Rol} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Librer\'ia} & \textbf{Versi\'on} & \textbf{Rol} \\
+\hline
+\endhead
+\texttt{numpy} & 2.3.4 & C\'alculo num\'erico vectorizado \\
+\hline
+\texttt{scipy} & 1.16.2 & Filtros, PSD (Welch) \\
+\hline
+\texttt{PyWavelets} & 1.9.0 & Transformada Wavelet Continua \\
+\hline
+\texttt{vtk} & 9.5.2 & Renderizado cient\'ifico 2D/3D \\
+\hline
+\texttt{PyQt5} / \texttt{PyQt5-Qt5} & 5.15.11 / 5.15.2 & Interfaz gr\'afica \\
+\hline
+\texttt{pyabf} & 2.3.8 & Lectura de archivos \texttt{.abf} \\
+\hline
+\texttt{pyEDFlib} & 0.1.42 & Lectura de archivos \texttt{.edf} \\
+\hline
+\texttt{h5py} & 3.15.1 & Soporte de formatos basados en HDF5 \\
+\hline
+\texttt{pytest} & 8.4.2 & Framework de pruebas \\
+\hline
+\end{longtable}
+\end{center}
 
 \subsection{M\'etricas y plan de verificaci\'on}
 
-\begin{table}[htbp]
-\centering
-\caption{M\'etricas, m\'etodo y aceptaci\'on}
-\begin{tabularx}{\linewidth}{@{}p{2.8cm}p{3cm}p{3.4cm}X@{}}
-\toprule
-\textbf{Atributo} & \textbf{M\'etrica} & \textbf{M\'etodo} & \textbf{Criterio de aceptaci\'on} \\
-\midrule
- &  & &  \\
+La Tabla~\ref{tab:metricas} formaliza la ``Medida de Respuesta'' de cada escenario de calidad (secci\'on~5.1) en una m\'etrica verificable, con su m\'etodo de medici\'on y el criterio de aceptaci\'on correspondiente. Donde ya existe evidencia real (suite \texttt{pytest} o benchmarks de \texttt{test/performance\_test/}), se cita el estado medido a la fecha de este documento en vez de asumir que el criterio se cumple.
 
-\bottomrule
-\end{tabularx}
-\end{table}
+\begin{center}
+\small
+\begin{longtable}{|p{0.16\textwidth}|p{0.19\textwidth}|p{0.21\textwidth}|p{0.28\textwidth}|}
+\caption{M\'etricas, m\'etodo de verificaci\'on y criterio de aceptaci\'on por atributo de calidad} \label{tab:metricas} \\
+\hline
+\textbf{Atributo} & \textbf{M\'etrica} & \textbf{M\'etodo} & \textbf{Criterio de aceptaci\'on} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Atributo} & \textbf{M\'etrica} & \textbf{M\'etodo} & \textbf{Criterio de aceptaci\'on} \\
+\hline
+\endhead
+\hline
+\multicolumn{4}{r}{\textit{Contin\'ua en la siguiente p\'agina}} \\
+\endfoot
+\hline
+\endlastfoot
+
+Extensibilidad (Esc.~1) &
+Tiempo de aparici\'on de un plugin nuevo; plugins existentes que fallan &
+Agregar un plugin v\'alido y correr \texttt{plugins\_\allowbreak test} &
+$<$1\,min; 0 plugins fallan (R77--R78) \\
+\hline
+
+Rendimiento -- carga grande (Esc.~2) &
+Tiempo a primer render; uso de CPU &
+\texttt{performance\_\allowbreak test}; medido hoy: 78.4\,ms (1.8\,M muestras) &
+$\leq$8\,s estr\'es, $\leq$2\,s t\'ipico; CPU $<$80\% (R48/R72/R56) \\
+\hline
+
+Confiabilidad -- errores en ejecuci\'on (Esc.~3) &
+\% p\'erdida de datos; tiempo del mensaje &
+Inyecci\'on de fallos dentro de \texttt{process()} &
+0\% p\'erdida; mensaje $<$2\,s; sistema operativo \\
+\hline
+
+Confiabilidad -- exportaci\'on (Esc.~4) &
+Tiempo de exportaci\'on; error silencioso &
+\texttt{test\_\allowbreak export.py} (8/8 pasan hoy) &
+$<$3\,s; 0\% p\'erdida; notificaci\'on clara (R51/R57/R70) \\
+\hline
+
+Usabilidad (Esc.~5) &
+Tiempo de an\'alisis sin acompa\~namiento &
+Prueba de usabilidad con usuarios reales &
+$<$5\,min; bajas consultas al manual (R42--R44) \\
+\hline
+
+Rendimiento -- m\'ultiples se\~nales (Esc.~6) &
+Tiempo de cambio; \% de memoria &
+Benchmark de \texttt{DataStore} &
+$<$1\,s cambio; memoria 70--75\% (R11, R51, R53) \\
+\hline
+
+Confiabilidad -- archivos corruptos (Esc.~7) &
+Tiempo del error; continuidad de sesi\'on &
+\texttt{test\_\allowbreak fileio\_\allowbreak abf}/\texttt{edf.py} &
+Mensaje $<$2\,s; 0\% p\'erdida previa (FR-IO-04) \\
+\hline
+
+Confiabilidad y\newline Usabilidad (Esc.~8) &
+Tiempo de actualizaci\'on; diferencias &
+Revisi\'on de consistencia entrada-salida &
+$<$3\,s; 0 diferencias (R73, R03) \\
+\hline
+
+Mantenibilidad &
+\% de cobertura autom\'atica &
+\texttt{pytest} sobre \texttt{core}/\texttt{plugins} &
+$\geq$80\%; hoy 60/60 en \texttt{services\_\allowbreak test}, 0/24 en \texttt{plugins\_\allowbreak test} (import roto) \\
+\hline
+
+Rendimiento -- no regresi\'on vs.\ 1.0 &
+Factor vs.\ l\'inea base &
+\texttt{compare\_\allowbreak report.py} &
+Nada empeora; render sin vectorizar mejora $\geq$10$\times$ \\
+\hline
+
+Portabilidad &
+\'Exito de arranque del \texttt{.exe} &
+Instalaci\'on en Windows limpio sin Python &
+Arranque exitoso, sin configuraci\'on manual \\
+\hline
+
+Robustez -- cancelaci\'on (nuevo)\footnotemark &
+Liberaci\'on del hilo tras cancelar &
+Prueba forzada sobre \texttt{TaskOrchestrator} &
+Liberaci\'on garantizada (R46, R70, R74) \\
+\hline
+
+\end{longtable}
+\end{center}
+\footnotetext{El \texttt{TaskOrchestrator} (UC-02, tabla~\ref{tab:uc02}) es un componente nuevo (secci\'on~4.5); esta fila es el criterio de aceptaci\'on para su implementaci\'on, no una medici\'on ya realizada.}
 
 \subsection{Plan de evidencia}
 \begin{enumerate}
-    \item 
+    \item \textbf{Fixture ABF real y referencias MATLAB.} \texttt{test/data/17308005.abf} m\'as los 8 CSV de referencia en \texttt{plugins\_\allowbreak test/} sustentan la correcci\'on num\'erica exigida por Extensibilidad (Esc.~1) y por las m\'etricas de Mantenibilidad.
+    \item \textbf{Suite de benchmarks versionada.} \texttt{performance\_\allowbreak test/}, con resultados persistidos por etiqueta en \texttt{perf\_\allowbreak results.json} (p.\,ej.\ \texttt{gammalab1\_\allowbreak baseline\_\allowbreak 2026-08-16}), es la evidencia reproducible de Rendimiento y de la comparaci\'on de no regresi\'on frente a 1.0.
+    \item \textbf{Auditor\'ias documentales.} Los informes \texttt{reporte\_\allowbreak tests.\allowbreak tex} e \texttt{informe\_\allowbreak rendimiento.\allowbreak tex} (\texttt{docs/\allowbreak tests documents/}) registran el estado real de la suite y los hallazgos de rendimiento a la fecha de este documento.
+    \item \textbf{Pruebas de usabilidad con usuarios reales.} \texttt{docs/pruebas-usabilidad/} sustenta el criterio de aceptaci\'on de Usabilidad (Esc.~5).
+    \item \textbf{Prueba de instalaci\'on limpia.} Arranque del ejecutable generado por PyInstaller en un Windows~10/11 sin Python previamente instalado, como evidencia de Portabilidad.
+    \item \textbf{Registro de cancelaci\'on forzada.} Una vez implementado el \texttt{TaskOrchestrator}, su prueba de cancelaci\'on bajo carga queda como evidencia de Robustez (UC-02).
 \end{enumerate}
 
 \subsection{Conclusi\'on}
+
+Los escenarios de calidad, las reglas de compatibilidad y la tabla de m\'etricas convierten los atributos de calidad de la secci\'on~3.2 en criterios operativos y verificables, no en aspiraciones gen\'ericas. A la fecha de este documento, tres brechas concretas quedan abiertas y deben cerrarse antes de que varios criterios de la Tabla~\ref{tab:metricas} puedan darse por cumplidos: el import roto que impide ejecutar \texttt{plugins\_\allowbreak test} (Mantenibilidad), la ausencia de integraci\'on continua que hubiera detectado esa ruptura antes, y los componentes a\'un no implementados (\texttt{TaskOrchestrator}, \texttt{ProjectService}/\texttt{.glab}) de los que dependen Robustez y Trazabilidad. El plan de evidencia de la secci\'on~6.4 y las reglas de versionado de la secci\'on~6.2 fijan c\'omo y con qu\'e artefactos se demuestra, de forma reproducible, que estas brechas se cerraron.
 
 
 % ======================================================================
