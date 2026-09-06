@@ -36,7 +36,7 @@
 % ======================= ENCABEZADOS =======================
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[R]{\textbf{SAD: GAMMA LAB}}
+\fancyhead[R]{\textbf{SDD: GAMMA LAB}}
 \renewcommand{\headrulewidth}{0.4pt}
 \fancyfoot[C]{\textbf{P\'agina \thepage}}
 \renewcommand{\footrulewidth}{0.4pt}
@@ -117,6 +117,177 @@ Gamma Lab, en coherencia con el SAD y el SRS previamente definidos.
 
 \section{Arquitectura}
 
+Esta secci\'on consolida la arquitectura de GammaLab 2.0 desde la perspectiva del Software Design Document (SDD), alineada con el Software Architecture Document (SAD). Su prop\'osito es ofrecer una visi\'on clara de los componentes, relaciones, flujos y decisiones que soportan el dise\~no e implementaci\'on descritos posteriormente en el Dise\~no Detallado.
+
+A continuaci\'on, se desarrollan las vistas espec\'ificas que articulan la arquitectura hacia el dise\~no e implementaci\'on del sistema.
+
+\subsection{Vista L\'ogica}
+\subsubsection{Prop\'osito}
+
+La vista l\'ogica describe los componentes m\'as importantes del sistema sin detallar a profundidad su instalaci\'on en hardware. Su objetivo es proporcionar una representaci\'on clara de c\'omo se organizan las responsabilidades y c\'omo interact\'uan los m\'odulos fundamentales de GammaLab 2.0.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\linewidth]{diagrama_clases_sistema_completo.png}
+    \caption{Vista l\'ogica del sistema GammaLab 2.0: n\'ucleo, servicios y familias de plugins.}
+    \label{fig:sdd_vista_logica}
+\end{figure}
+
+La Figura~\ref{fig:sdd_vista_logica} ilustra los principales componentes del software y sus interfaces. La Tabla~\ref{tab:sdd_componentes_logica} describe cada uno de ellos.
+
+\begin{center}
+\small
+\begin{longtable}{|p{0.18\textwidth}|p{0.36\textwidth}|p{0.36\textwidth}|}
+\caption{Descripci\'on de componentes de la Vista L\'ogica} \label{tab:sdd_componentes_logica} \\
+\hline
+\textbf{Componente} & \textbf{Descripci\'on} & \textbf{Relaciones / Dependencias} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Componente} & \textbf{Descripci\'on} & \textbf{Relaciones / Dependencias} \\
+\hline
+\endhead
+\hline
+\endfoot
+
+\textbf{Kernel} (n\'ucleo) & Orquestador central de la aplicaci\'on: administra el registro de plugins y servicios, coordina la ejecuci\'on y media la comunicaci\'on entre m\'odulos. & Provee \texttt{register\_\allowbreak service()}/\texttt{get\_\allowbreak service()} y \texttt{register\_\allowbreak plugin()}; es consumido por \texttt{MainWindow} y por todos los plugins. \\
+\hline
+
+\textbf{PluginManager} / \texttt{loader} & Descubre e instancia los plugins disponibles a partir de sus carpetas y archivos \texttt{properties.yml}. & Utiliza \texttt{IPlugin} como contrato; registra cada instancia en el Kernel. \\
+\hline
+
+\textbf{IPlugin} (interfaz) & Contrato que toda extensi\'on del sistema implementa (\texttt{initialize}, \texttt{start}, \texttt{stop}, \texttt{process}, \texttt{get\_\allowbreak widget}). & Es implementada por todos los plugins; el Kernel la consume de forma polim\'orfica. \\
+\hline
+
+\textbf{DataStore} & Almac\'en centralizado en memoria de se\~nales, trials, resultados intermedios y metadatos. & Consumido por el Kernel, los plugins y \texttt{FileIOService} mediante claves can\'onicas. \\
+\hline
+
+\textbf{FileIOService} & Lee archivos de se\~nal en formato ABF, EDF y MAT, y los convierte a la estructura interna \texttt{SignalDataset}. & Utiliza las librer\'ias \texttt{EEGReaders} (\texttt{pyabf}, \texttt{pyedflib}); publica el resultado en \texttt{DataStore}. \\
+\hline
+
+\textbf{ExportService} & Genera archivos de salida (imagen y tabla) a partir de las visualizaciones activas. & Utiliza \texttt{VTK} para capturar el render; es consumido por los plugins desde el men\'u contextual. \\
+\hline
+
+\textbf{Measurement\-Service} & Gestiona las mediciones interactivas de pendiente y amplitud sobre los gr\'aficos. & Utiliza \texttt{VTK} para la interacci\'on; persiste sus resultados en \texttt{DataStore}. \\
+\hline
+
+\textbf{SettingsService} & Administra la configuraci\'on general del sistema y las preferencias del usuario. & Persiste en \texttt{gamma\_\allowbreak lab\_\allowbreak settings.json}; consumido por el Kernel y los plugins. \\
+\hline
+
+\textbf{ProjectService} & Gestiona la persistencia del espacio de trabajo -- se\~nal activa, trials y an\'alisis -- en archivos de proyecto \texttt{.glab}. & Consume \texttt{DataStore} para serializar y restaurar el estado completo de la sesi\'on. \\
+\hline
+
+\textbf{Task\-Orchestrator} & Centraliza la ejecuci\'on de c\'omputo pesado (PAC, Wavelet, PSD) fuera del hilo de interfaz, con soporte de cancelaci\'on. & Es consumido por los plugins de an\'alisis; se apoya en multiprocesamiento y multithreading. \\
+\hline
+
+\textbf{Plugins} (extensible) & Punto de extensi\'on del sistema, organizados por categor\'ia (E/S, Preprocesamiento, An\'alisis, Medici\'on). & Consumen los servicios del Kernel; dependen de \texttt{PyQt5} y \texttt{VTK} para su interfaz. \\
+\hline
+
+\textbf{MainWindow} (APP) & Ventana principal de la aplicaci\'on; gestiona la navegaci\'on entre categor\'ias de plugins y aloja su interfaz. & Consume el Kernel para descubrir y mostrar los plugins registrados. \\
+\hline
+
+\textbf{PyQt5} (framework) & Framework de interfaz gr\'afica que administra ventanas, widgets y eventos del usuario. & Utilizado por el Kernel, \texttt{MainWindow} y los plugins para construir la interfaz. \\
+\hline
+
+\textbf{VTK} (librer\'ia) & Librer\'ia de visualizaci\'on cient\'ifica 2D/3D. & Usada directamente por los plugins de an\'alisis y por \texttt{ExportService}/\allowbreak\texttt{Measurement\-Service}. \\
+\hline
+
+\textbf{EEGReaders} (librer\'ia) & Conjunto de librer\'ias (\texttt{pyabf}, \texttt{pyedflib}) para leer formatos de se\~nal biom\'edica. & Utilizado por \texttt{FileIOService}. \\
+\hline
+
+\textbf{ScientificLibs} (librer\'ia) & Conjunto de librer\'ias cient\'ificas (NumPy, SciPy, PyWavelets) para el c\'omputo num\'erico. & Utilizado por los plugins de an\'alisis y por \texttt{Task\-Orchestrator}. \\
+\hline
+
+\end{longtable}
+\end{center}
+
+El \textit{Kernel} centraliza el registro y consumo de servicios mediante \texttt{register\_\allowbreak service()}/\allowbreak\texttt{get\_\allowbreak service()}; el \textit{DataStore} soporta la comunicaci\'on entre m\'odulos mediante claves can\'onicas. El c\'odigo se organiza en paquetes correspondientes a estas mismas responsabilidades (\texttt{io}, \texttt{pre\-processing}, \texttt{analysis}, \texttt{measure}), lo que mantiene la correspondencia entre el dise\~no l\'ogico y la implementaci\'on.
+
+\subsection{Vista F\'isica}
+\subsubsection{Prop\'osito}
+
+La vista f\'isica representa c\'omo se despliega y ejecuta GammaLab 2.0. Presenta los componentes f\'isicos m\'as importantes del sistema, sobre los cuales se instalan los componentes de software.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\linewidth]{diagrama_despliegue_sistema_completo.png}
+    \caption{Vista f\'isica de GammaLab 2.0: estaci\'on \'unica de escritorio y su superficie de entrada/salida.}
+    \label{fig:sdd_vista_fisica}
+\end{figure}
+
+La Figura~\ref{fig:sdd_vista_fisica} presenta la distribuci\'on f\'isica de los componentes del sistema en el entorno objetivo de ejecuci\'on. A continuaci\'on se describen los elementos principales:
+
+\begin{itemize}
+    \item \textbf{\guillemotleft device\guillemotright\ PC}: estaci\'on de trabajo del investigador donde se despliega y ejecuta el sistema completo; no existe arquitectura cliente-servidor.
+    \item \textbf{\guillemotleft OS\guillemotright\ Windows 10/11}: sistema operativo base; versi\'on m\'inima Windows~10 de 64 bits.
+    \item \textbf{\guillemotleft executionEnvironment\guillemotright\ Python Runtime 3.11}: entorno de ejecuci\'on que sostiene la aplicaci\'on y sus librer\'ias; versi\'on m\'inima 3.11.x.
+    \item \textbf{\guillemotleft artifact\guillemotright\ GammaLab.exe}: ejecutable principal, generado con PyInstaller, que inicia la aplicaci\'on y coordina la carga de todos los componentes.
+    \item \textbf{\guillemotleft artifact\guillemotright\ Plugins (*.py)}: archivos de plugin cargados din\'amicamente por el Kernel durante la ejecuci\'on.
+    \item \textbf{\guillemotleft artifact\guillemotright\ Archivos de se\~nal} (\texttt{.edf}/\texttt{.abf}/\texttt{.mat}): le\'idos por \texttt{FileIOService}.
+    \item \textbf{\guillemotleft artifact\guillemotright\ Archivo de proyecto} (\texttt{.glab}): generado y le\'ido por \texttt{ProjectService}.
+    \item \textbf{\guillemotleft artifact\guillemotright\ gamma\_\allowbreak lab\_\allowbreak settings.\allowbreak json}: persistencia de configuraci\'on gestionada por \texttt{Settings\-Service}.
+    \item \textbf{\guillemotleft artifact\guillemotright\ properties.yml} (por cada plugin): sostiene el descubrimiento autom\'atico de plugins.
+\end{itemize}
+
+\subsubsection{Relaciones}
+
+\begin{itemize}
+    \item La relaci\'on \textit{loads} indica que el ejecutable principal carga y ejecuta los archivos de plugin durante el tiempo de ejecuci\'on.
+    \item La relaci\'on \textit{uses} especifica que el ejecutable principal utiliza los servicios y librer\'ias desplegados dentro del mismo entorno de ejecuci\'on.
+\end{itemize}
+
+\subsubsection{Versiones de las librer\'ias}
+
+Las versiones ancladas para las librer\'ias utilizadas, tal como se fijan en \texttt{requirements.txt}, son las siguientes:
+
+\begin{itemize}
+    \item \textbf{PyQt5} = Versi\'on 5.15.11 (\texttt{PyQt5-Qt5} 5.15.2)
+    \item \textbf{ScientificLibs}
+    \begin{itemize}
+        \item NumPy = Versi\'on 2.3.4
+        \item Pandas = Versi\'on 2.3.3
+        \item SciPy = Versi\'on 1.16.2
+        \item PyWavelets = Versi\'on 1.9.0
+    \end{itemize}
+    \item \textbf{VTK} = Versi\'on 9.5.2
+    \item \textbf{EEGReaders}
+    \begin{itemize}
+        \item pyABF = Versi\'on 2.3.8
+        \item pyEDFlib = Versi\'on 0.1.42
+    \end{itemize}
+    \item \textbf{Otras}
+    \begin{itemize}
+        \item h5py = Versi\'on 3.15.1
+        \item PyYAML = Versi\'on 6.0.3
+        \item PyQtWebEngine = Versi\'on 5.15.7
+    \end{itemize}
+\end{itemize}
+
+\subsection{Vista de Procesos}
+\subsubsection{Prop\'osito}
+
+La vista de procesos describe el comportamiento din\'amico del sistema completo como un \'unico flujo maestro de sesi\'on, construido a partir de las cadenas de precondici\'on entre los casos de uso del sistema (p.\,ej.\ generar trials exige una se\~nal previamente cargada).
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\linewidth]{diagrama_actividad_sistema_completo.png}
+    \caption{Flujo maestro de sesi\'on de GammaLab 2.0, con carriles Investigador/Sistema.}
+    \label{fig:sdd_vista_procesos}
+\end{figure}
+
+El flujo de la Figura~\ref{fig:sdd_vista_procesos} se organiza en las siguientes etapas:
+
+\begin{enumerate}
+    \item \textbf{Inicio.} El sistema registra los servicios del n\'ucleo, incluido el \texttt{Task\-Orchestrator}, y descubre los plugins disponibles a partir de sus archivos \texttt{properties.yml}.
+    \item \textbf{Apertura o carga.} El investigador abre un archivo de proyecto \texttt{.glab} o carga una se\~nal desde la pantalla \textit{Home}; la se\~nal activa se publica en \texttt{DataStore}.
+    \item \textbf{Preprocesamiento.} Generaci\'on y edici\'on de trials, selecci\'on de trials, remoci\'on de artefactos, filtrado y ajuste de la frecuencia de muestreo.
+    \item \textbf{An\'alisis.} C\'alculo de acoplamiento fase-amplitud (PAC) de un canal o cruzado entre canales, transformada Wavelet y promedio de trials.
+    \item \textbf{Orquestaci\'on.} Todo c\'omputo pesado se despacha al \texttt{Task\-Orchestrator} del n\'ucleo, que lo ejecuta fuera del hilo de interfaz y permite su cancelaci\'on en cualquier momento.
+    \item \textbf{Visualizaci\'on.} Interacci\'on visual con el resultado, con submuestreo autom\'atico cuando la se\~nal es de gran tama\~no.
+    \item \textbf{Iteraci\'on o cierre.} El investigador retorna al preprocesamiento para continuar el an\'alisis, o exporta y guarda el proyecto mediante \texttt{ProjectService} antes de cerrar la sesi\'on.
+\end{enumerate}
+
+La navegaci\'on entre secciones, la limpieza de formularios y la ayuda contextual mediante \texttt{Tooltip\-Helper} son transversales a toda la sesi\'on: no ocupan un lugar fijo en la secuencia y se documentan como notas adjuntas al diagrama en vez de forzarse dentro del flujo principal.
 
 \section{Diseño Detallado}
 
