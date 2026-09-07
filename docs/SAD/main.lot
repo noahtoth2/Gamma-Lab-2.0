@@ -14,4 +14,5 @@
 \contentsline {table}{\numberline {13}{\ignorespaces Escenario de calidad 6 --- Rendimiento con múltiples señales cargadas}}{26}{table.caption.17}%
 \contentsline {table}{\numberline {14}{\ignorespaces Escenario de calidad 7 --- Resiliencia ante archivos corruptos o incompatibles}}{26}{table.caption.18}%
 \contentsline {table}{\numberline {15}{\ignorespaces Escenario de calidad 8 --- Consistencia entre datos ingresados y gráficas generadas}}{27}{table.caption.19}%
-\contentsline {table}{\numberline {16}{\ignorespaces M\'etricas, m\'etodo y aceptaci\'on}}{27}{table.caption.20}%
+\contentsline {table}{\numberline {16}{\ignorespaces Versiones de dependencias externas ancladas en \texttt {requirements.txt}}}{28}{table.16}%
+\contentsline {table}{\numberline {17}{\ignorespaces M\'etricas, m\'etodo de verificaci\'on y criterio de aceptaci\'on por atributo de calidad}}{28}{table.17}%
