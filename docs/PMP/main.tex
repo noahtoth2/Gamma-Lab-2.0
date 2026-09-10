@@ -8,6 +8,7 @@
 \usepackage{float}
 \usepackage[spanish]{babel}
 \usepackage{hyperref}
+\usepackage{longtable}
 
 
 \setlength{\parskip}{6pt}        % espacio entre párrafos
@@ -235,6 +236,75 @@ El proyecto opera bajo las siguientes restricciones:
     \label{tab:resumen_proyecto}
 \end{table}
 
+\section{Glosario}
+
+\begin{longtable}{|p{3.5cm}|p{10.5cm}|}
+
+\caption{Acrónimos y términos utilizados en el documento}
+\label{tab:acronimos} \\
+
+\hline
+\textbf{Sigla / Término} & \textbf{Definición} \\
+\hline
+\endfirsthead
+
+\hline
+\textbf{Sigla / Término} & \textbf{Definición} \\
+\hline
+\endhead
+
+SAD & \textit{Software Architecture Document}. Documento de arquitectura del sistema. \\
+\hline
+
+SRS & \textit{Software Requirements Specification}. Documento de especificación de requisitos. \\
+\hline
+
+SDD & \textit{Software Design Document}. Documento de diseño técnico. \\
+\hline
+
+IoC & Inversión de Control. Principio que delega el flujo de ejecución a un contenedor. \\
+\hline
+
+DI & \textit{Dependency Injection}. Técnica para resolver dependencias desde un contenedor externo. \\
+\hline
+
+MVP / MVC & Patrones de separación de interfaz y lógica (\textit{Model--View--Presenter} / \textit{Model--View--Controller}). \\
+\hline
+
+Template Method & Patrón que define un flujo general con pasos sobrescribibles. \\
+\hline
+
+Adapter & Patrón para estandarizar interfaces incompatibles. \\
+\hline
+
+Caching & Estrategia para evitar recalcular o recomponer estructuras de datos. \\
+\hline
+
+Python & Lenguaje de programación principal de \textit{Gamma Lab}. \\
+\hline
+
+PyQt5 & Framework de interfaz gráfica basado en Qt para Python. \\
+\hline
+
+VTK & \textit{Visualization Toolkit}. Biblioteca para visualización científica 2D/3D. \\
+\hline
+
+QVTK & Interfaz \texttt{QVTKRenderWindowInteractor} para incrustar VTK en aplicaciones Qt. \\
+\hline
+
+NumPy & Librería para cálculo numérico vectorizado. \\
+\hline
+
+EDF & \textit{European Data Format}. Formato estándar para señales biomédicas. \\
+\hline
+
+ABF & \textit{Axon Binary File}. Formato de archivo utilizado por Axon Instruments para registros biomédicos. \\
+\hline
+
+GUI Toolkit & Conjunto de herramientas para construir interfaces gráficas (Qt, PyQt, VTK). \\
+\hline
+
+\end{longtable}
 
 
 \section{Contexto del Proyecto}
