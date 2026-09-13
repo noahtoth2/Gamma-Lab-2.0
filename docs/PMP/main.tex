@@ -8,6 +8,7 @@
 \usepackage{float}
 \usepackage[spanish]{babel}
 \usepackage{hyperref}
+\usepackage{longtable}
 
 
 \setlength{\parskip}{6pt}        % espacio entre párrafos
@@ -113,9 +114,14 @@
     
 \end{titlepage}
 
+\newpage
+
 % ============================================================================
 
-
+% ============================================================================
+% ÍNDICE
+% ============================================================================
+\tableofcontents
 
 
 \newpage
@@ -230,6 +236,75 @@ El proyecto opera bajo las siguientes restricciones:
     \label{tab:resumen_proyecto}
 \end{table}
 
+\section{Glosario}
+
+\begin{longtable}{|p{3.5cm}|p{10.5cm}|}
+
+\caption{Acrónimos y términos utilizados en el documento}
+\label{tab:acronimos} \\
+
+\hline
+\textbf{Sigla / Término} & \textbf{Definición} \\
+\hline
+\endfirsthead
+
+\hline
+\textbf{Sigla / Término} & \textbf{Definición} \\
+\hline
+\endhead
+
+SAD & \textit{Software Architecture Document}. Documento de arquitectura del sistema. \\
+\hline
+
+SRS & \textit{Software Requirements Specification}. Documento de especificación de requisitos. \\
+\hline
+
+SDD & \textit{Software Design Document}. Documento de diseño técnico. \\
+\hline
+
+IoC & Inversión de Control. Principio que delega el flujo de ejecución a un contenedor. \\
+\hline
+
+DI & \textit{Dependency Injection}. Técnica para resolver dependencias desde un contenedor externo. \\
+\hline
+
+MVP / MVC & Patrones de separación de interfaz y lógica (\textit{Model--View--Presenter} / \textit{Model--View--Controller}). \\
+\hline
+
+Template Method & Patrón que define un flujo general con pasos sobrescribibles. \\
+\hline
+
+Adapter & Patrón para estandarizar interfaces incompatibles. \\
+\hline
+
+Caching & Estrategia para evitar recalcular o recomponer estructuras de datos. \\
+\hline
+
+Python & Lenguaje de programación principal de \textit{Gamma Lab}. \\
+\hline
+
+PyQt5 & Framework de interfaz gráfica basado en Qt para Python. \\
+\hline
+
+VTK & \textit{Visualization Toolkit}. Biblioteca para visualización científica 2D/3D. \\
+\hline
+
+QVTK & Interfaz \texttt{QVTKRenderWindowInteractor} para incrustar VTK en aplicaciones Qt. \\
+\hline
+
+NumPy & Librería para cálculo numérico vectorizado. \\
+\hline
+
+EDF & \textit{European Data Format}. Formato estándar para señales biomédicas. \\
+\hline
+
+ABF & \textit{Axon Binary File}. Formato de archivo utilizado por Axon Instruments para registros biomédicos. \\
+\hline
+
+GUI Toolkit & Conjunto de herramientas para construir interfaces gráficas (Qt, PyQt, VTK). \\
+\hline
+
+\end{longtable}
 
 
 \section{Contexto del Proyecto}
@@ -346,7 +421,7 @@ Entorno de desarrollo & Visual Studio Code \\
 \hline
 Control de versiones & Git, GitHub \\
 \hline
-Gestión del proyecto & GitHub Projects \\
+Gestión del proyecto & Tablero Kanban (proporcionado por el departamento) \\
 \hline
 Documentación técnica & LaTeX (Overleaf), Microsoft Word \\
 \hline
@@ -367,7 +442,7 @@ Almacenamiento y respaldo & OneDrive, máquina virtual compartida \\
 
 Para la interfaz gráfica se conserva el uso de \textbf{PySide6} y \textbf{Qt Designer}, herramientas que permiten mantener coherencia con la arquitectura visual existente y facilitan la separación entre diseño de interfaz y lógica funcional.
 
-En términos de desarrollo colaborativo, el proyecto utiliza \textbf{Git} y \textbf{GitHub} para control de versiones, gestión de ramas y revisión de cambios, complementados con \textbf{GitHub Projects} como herramienta de seguimiento de tareas acorde con la dinámica iterativa definida en la metodología del proyecto.
+En términos de desarrollo colaborativo, el proyecto utiliza \textbf{Git} y \textbf{GitHub} para control de versiones, gestión de ramas y revisión de cambios, complementados con el \textbf{tablero Kanban proporcionado por el departamento} como herramienta de seguimiento de tareas acorde con la dinámica iterativa definida en la metodología del proyecto.
 
 La documentación técnica y académica se desarrolla principalmente en \textbf{LaTeX mediante Overleaf}, favoreciendo trazabilidad, edición colaborativa y consistencia de formato. Adicionalmente, se emplea Microsoft Word para documentación preliminar y trabajo colaborativo informal.
 
@@ -510,7 +585,7 @@ La estimación se fundamenta en los siguientes supuestos:
     \item La directora del proyecto está disponible para sesiones de revisión semanal y proporciona retroalimentación en plazos acordados.
     \item El cliente (Laboratorio de Electrofisiología) participa activamente en validaciones de línea base (Fase 1) y en pruebas finales (Fase 4).
     \item No existen restricciones significativas de recursos técnicos o de infraestructura que impidan la ejecución del proyecto.
-    \item Las metodologías de desarrollo (Water-Scrum-Fall) y las herramientas (Git, GitHub Projects, Python, PySide6) permanecen estables durante la ejecución.
+    \item Las metodologías de desarrollo (Water-Scrum-Fall) y las herramientas (Git, el Kanban del departamento, Python, PyQt5) permanecen estables durante la ejecución.
 \end{itemize}
 
 \subsubsection{Estimación de Tiempo por Fases del Proyecto}
@@ -575,7 +650,7 @@ El equipo de GAMMA LAB 2.0 está compuesto por cuatro desarrolladores nuevos, po
 
 \begin{itemize}
     \item Comprender la arquitectura y funcionamiento de GAMMA LAB 1.0
-    \item Familiarizarse con las tecnologías base (Python, PySide6, MNE-Python, etc.)
+    \item Familiarizarse con las tecnologías base (Python, PyQt5, VTK, etc.)
     \item Alinearse con los estándares de código y de documentación del proyecto
     \item Entender el dominio técnico (procesamiento de señales EEG, análisis en dominios de tiempo, frecuencia y tiempo-frecuencia)
 \end{itemize}
@@ -610,7 +685,7 @@ Para el desarrollo de GAMMA LAB 2.0, se dispone de la siguiente infraestructura 
     
     \item \textbf{Entorno de desarrollo:} Visual Studio Code, PyCharm o editor de preferencia de cada desarrollador, con extensiones para linting (PEP8), debugging y testing.
     
-    \item \textbf{Gestión del proyecto:} GitHub Projects en formato Kanban, con columnas: ``To Do'', ``In Progress'', ``In Review'', ``Done''. Sincronización asíncrona diaria a través de comentarios en tarjetas de tareas.
+    \item \textbf{Gestión del proyecto:} tablero Kanban proporcionado por el departamento, con columnas: ``To Do'', ``In Progress'', ``In Review'', ``Done''. Sincronización asíncrona diaria a través de comentarios en tarjetas de tareas.
     
     \item \textbf{Comunicación:} Microsoft Teams para reuniones semanales formales con la directora; WhatsApp para coordinación ágil y resolución rápida de dudas.
     
@@ -656,7 +731,7 @@ Sebastian Almanza Galvis & Desarrollador & 100\% & Frente 4 (Paralelización mó
 \textbf{Notas sobre asignación de roles:}
 
 \begin{itemize}
-    \item El rol de Scrum Master es asumido por Juan Felipe Romero Ortiz sin que esto implique jerarquía en la toma de decisiones. Sus responsabilidades incluyen agendar reuniones, dar seguimiento al progreso visible en GitHub Projects, mantener el enfoque del equipo y facilitar la comunicación con la directora.
+    \item El rol de Scrum Master es asumido por Juan Felipe Romero Ortiz sin que esto implique jerarquía en la toma de decisiones. Sus responsabilidades incluyen agendar reuniones, dar seguimiento al progreso visible en el Kanban del departamento, mantener el enfoque del equipo y facilitar la comunicación con la directora.
     
     \item La distribución de tareas en cada sprint se define colectivamente mediante consenso del equipo, considerando las especialidades, la carga actual y las dependencias entre frentes de trabajo.
     
@@ -853,108 +928,6 @@ Tasa de defectos & Minimizar & Por sprint & Testing \\
     \item \textbf{Sesiones técnicas:} Según necesidad (no planificadas regularmente). Para resolver decisiones arquitectónicas, resolver bloqueos o validaciones cruzadas entre frentes.
 \end{itemize}
 
-\section{Monitoreo y Control del Proyecto}
-
-%--------------------------------------------------------------------
-\subsection{Análisis y Administración de Riesgos}
-
-\subsubsection{Proceso de gestión de riesgos}
-Para el proceso de gestión de riesgos durante la realización de la tesis, el grupo seguirá los siguientes pasos:
-\begin{itemize}
-    \item \textbf{Identificación:} Detectar el o los eventos que afecten con el cronograma, la calidad o el alcance del proyecto.
-    \item \textbf{Evaluación:} Clasificar el riesgo por su probabilidad (bajo, medio o alto) e impacto (ninguno, medio o alto).
-    \item \textbf{Plan de respuesta:} Definir acciones de migración (para evitar que ocurra) o de contingencia (qué hacer si ocurre).
-\end{itemize}
-
-\subsubsection{Identificación de riesgos}
-\begin{table}[!ht]
-\begin{tabular}{ | m{3cm} | m{2.5cm} | m{2.5cm} | m{3cm} |}
-\hline Riesgo & Probabilidad & Impacto & Mitigación \\ \hline
- Limitaciones de concurrencia en Python: El Global Interpreter Lock (GIL) podría impedir la mejora de desempeño esperada. & Alto & Alto & Investigar librerías de multiprocesamiento (multiprocessing) en lugar de hilos (threading) desde la Fase 2. \\ \hline
- Complejidad de integración: Dificultad para integrar el nuevo módulo de PAC con el núcleo "Microkernel" heredado de la v1.0. & Medio & Medio & Realizar una exploración técnica profunda en la Fase 1 y aplicar revisiones de código cruzadas.\\ \hline
- Baja disponibilidad horaria: El equipo solo dedica 6 horas semanales por persona, lo que deja poco margen para imprevistos. & Alto & Alto & Mantener conversaciones constantes por el grupo de WhatsApp y usar el "buffer" de los springs. \\ \hline
- Dependencia de stakeholders: Retrasos en la validación o consulta por parte del laboratorio. & Medio & Medio & Agendar sesiones de validación o consulta con 15 días de anticipo. \\ \hline
- Acceso a datos: No contar con señales EEG reales para las pruebas de validación. & Bajo & Alto & Se solicitarán varios datos de pruebas tanto al laboratorio como a la directora. \\ \hline
-\end{tabular}
-\caption{Tabla de riesgos}
-\end{table}
-
-\subsubsection{Matriz de respuesta}
-En caso de que un integrante del grupo identifique un riesgo debera seguir los siguientes pasos:
-\begin{itemize}
-    \item \textbf{Notificar:} Tendrá que avisar lo antes posible al grupo por medio del grupo de WhatsApp o medio verbal.
-    \item \textbf{Evaluación del impacto:} Se revisa si el camino crítico del diagrama de Gantt se ve afectado.
-     \item \textbf{Ajuste de Backlog:} Si el riesgo afecta los tiempos de entrega, se reorganizará la entrega para asegurar cumplir los objetivos mínimos.
-\end{itemize}
-
-
-\subsection{Administración de Configuración y Documentación}
-La administración de documentos y códigos se realizara mediante GitHub. El repositorio contendrá lo siguiente organizado en carpetas:
-\begin{itemize}
-    \item Documentación técnica del proyecto.
-    \item Diagramas, manuales de uso y artefactos generados.
-    \item Historial de versiones.
-    \item Control de cambios.
-\end{itemize}
-
-\subsection{Métricas y Proceso de Medición}
-La medición del avance y calidad del proyecto se realizara con las siguientes métricas:
-
-\begin{table}[!ht]
-\centering
-\small
-\begin{tabular}{|p{3.5cm}|p{5.5cm}|p{2.5cm}|p{2.5cm}|}
-\hline
-\textbf{Métrica} & \textbf{Descripción} & \textbf{Frecuencia} & \textbf{Herramienta} \\ \hline
-IVE (Índice de Velocidad) & Relación entre las horas-persona ejecutadas frente a las 24 horas semanales planeadas por el equipo. & Semanal & GitHub Projects \\ \hline
-Avance de Sprints & Porcentaje de ítems del Backlog completados (según el \textit{Definition of Done}) al cierre de cada ciclo. & Semanal & Burnup Chart (GitHub) \\ \hline
-Cumplimiento de Hitos & Trazabilidad del avance de las 4 fases principales respecto a las fechas del cronograma. & Al cierre de fase & Hoja de control / Gantt \\ \hline
-\end{tabular}
-\caption{Métricas de progreso}
-\label{tab:metricas_progreso}
-\end{table}
-
-\begin{table}[!ht]
-\centering
-\small
-\begin{tabular}{|p{3.5cm}|p{5.5cm}|p{2.5cm}|p{2.5cm}|}
-\hline
-\textbf{Métrica} & \textbf{Descripción} & \textbf{Frecuencia} & \textbf{Herramienta} \\ \hline
-Cobertura de Código & Porcentaje de código nuevo en Python que cuenta con pruebas unitarias asociadas . & Por incremento & Pytest \\ \hline
-Mejora de Eficiencia ($E$) & Comparación porcentual del tiempo de procesamiento entre v1.0 y v2.0 ). & Fase 4 & Scripts de Benchmark \\ \hline
-Trazabilidad de Requisitos & Porcentaje de funcionalidades del nuevo módulo de PAC y arquitectura validadas contra el diseño original. & Quincenal & Matriz de Trazabilidad \\ \hline
-Validación del Cliente & Cantidad de observaciones críticas o sugerencias de mejora recibidas del Laboratorio de Electrofisiología. & Por prototipo & Formatos de revisión / Figma \\ \hline
-\end{tabular}
-\caption{Métricas de calidad}
-\label{tab:metricas_calidad}
-\end{table}
-
-\subsection{Controles de Calidad}
-Para evitar la acumulación de trabajo, se estableció un estándar de "Definition of Done" (DoD). Este conjunto de criterios establece que el producto de software debe pasar ciertos elementos antes de ser presentado en el spring. Un elemento se considera finalizado cuando cumple los siguientes requisitos:
-\begin{itemize}
-    \item El código ha sido sometido a una revisión cruzada (peer review) por un integrante diferente al que realizó la tarea, cumpliendo los estándares PEP8.
-    
-    \item La nueva funcionalidad se integra perfectamente en la rama principal del repositorio GitHub.
-    \item Se actualiza la documentación del proyecto.
-\end{itemize}
-
-\begin{table}[!ht]
-\centering
-\small
-\begin{tabular}{|p{3.5cm}|p{5cm}|p{3cm}|p{2.5cm}|}
-\hline
-\textbf{Actividad de Control} & \textbf{Descripción} & \textbf{Estándar / Herramienta} & \textbf{Responsable} \\ \hline
-Revisión de Código (Peer Review) & Antes de integrar cualquier funcionalidad, otro integrante debe revisar la lógica y el estilo. & PEP8 / GitHub Pull Requests & Equipo de Desarrollo \\ \hline
-Pruebas Unitarias Automatizadas & Verificación de que cada función nueva entregue resultados correctos y reproducibles. & Pytest / ISO/IEC 29119 & Scrum Developer \\ \hline
-Análisis de Atributos de Calidad & Evaluación del rendimiento técnico (eficiencia) y la usabilidad de la nueva interfaz. & ISO/IEC 25010 & Scrum Master / Directora \\ \hline
-Validación con el Cliente & Sesiones de prueba con investigadores del Laboratorio para confirmar utilidad y facilidad de uso. & Protocolo UAT / ISO 9241-11 & Product Owner / Cliente \\ \hline
-\end{tabular}
-\caption{Controles de Calidad de GammaLab 2.0}
-\label{tab:controles_calidad}
-\end{table}
-
-
-
 
 \clearpage
 
@@ -962,13 +935,13 @@ Validación con el Cliente & Sesiones de prueba con investigadores del Laborator
 \section{Monitoreo y Control del Proyecto}
 En esta sección se describen los procesos y mecanismos para administrar
 los requerimientos, monitorear el progreso, gestionar riesgos y realizar el cierre
-formal del proyecto GAMMA LAB 2.0.
+formal del proyecto GammaLab 2.0.
 
 \subsection{Administración de Requerimientos}
 
 \subsubsection*{Descripción del proceso}
 
-La administración de requerimientos en GAMMA LAB 2.0 se concibe como un
+La administración de requerimientos en GammaLab 2.0 se concibe como un
 proceso iterativo y controlado que permite gestionar los cambios de forma
 ordenada y trazable a lo largo del ciclo de vida del proyecto bajo el enfoque
 Water-Scrum-Fall. Este proceso involucra tanto al equipo de desarrollo con responsabilidades claras para la identificación,
@@ -1044,7 +1017,7 @@ Para ello, se implementarán tres estrategias complementarias:
     el avance real frente al avance planificado en horas-persona, útil para
     identificar retrasos o desviaciones respecto a la velocidad objetivo del equipo.
 
-    \item \textbf{Tablero Kanban en GitHub Projects:} muestra el estado del
+    \item \textbf{Tablero Kanban :} Muestra el estado del
     trabajo (\textit{To Do}, \textit{In Progress}, \textit{In Review},
     \textit{Done}), facilitando la identificación de bloqueos y la
     sincronización asíncrona diaria del equipo.
@@ -1057,9 +1030,9 @@ Para ello, se implementarán tres estrategias complementarias:
 \hline
 \textbf{Actividad} & \textbf{Responsable} & \textbf{Frecuencia} & \textbf{Herramienta} \\ \hline
 
-Actualización del tablero Kanban & Todo el equipo & Diaria & GitHub Projects \\ \hline
+Actualización del tablero Kanban & Todo el equipo & Diaria & Kanban del departamento \\ \hline
 
-Verificación de velocidad del sprint &  Scrum Master & Semanal & GitHub Projects \\ \hline
+Verificación de velocidad del sprint &  Scrum Master & Semanal & Kanban del departamento \\ \hline
 
 Registro de desvíos y acciones correctivas & Scrum Master & Semanal & Hoja de seguimiento \\ \hline
 
@@ -1107,7 +1080,7 @@ final. Las actividades clave serán:
 
 \subsection{Entrega del Producto}
 
-La entrega de GAMMALABalcliente se realizará durante la semana 17 del calendario
+La entrega de GammaLab 2.0 alcliente se realizará durante la semana 17 del calendario
 académico Javeriana 2026-30, correspondiente al cierre de la Fase~4 según el
 calendario del proyecto. Se entregará el código fuente, los manuales
 técnicos y las guías de usuario. El equipo de desarrollo será responsable
