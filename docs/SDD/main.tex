@@ -291,23 +291,314 @@ La navegaci\'on entre secciones, la limpieza de formularios y la ayuda contextua
 
 \section{Diseño Detallado}
 
+\subsection{Objetivo de la sección}
 
-    \subsection{Objetivo de la sección}
+Esta sección desarrolla el detalle técnico de GammaLab 2.0: la estructura de clases de cada componente, el comportamiento observable del sistema a nivel de interacción entre objetos, los modelos de datos persistidos en memoria y las relaciones entre entidades. Complementa la Sección 2 (Arquitectura), que describe el sistema a nivel de componentes y procesos, con el nivel de detalle necesario para la implementación.
 
+\subsection{Estructura del Sistema}
 
-    \subsection{Estructura del Sistema}
+\subsubsection{Propósito}
 
+El propósito de esta sección es documentar la estructura de clases de cada componente del sistema, sirviendo como guía para su implementación.
 
-    \subsection{Componentes del Sistema}
+\subsubsection{Organización general}
 
+El código fuente de GammaLab 2.0 sigue la misma organización por responsabilidades presentada en la Vista Lógica (Sección 2.1): cada componente concentra un conjunto cohesivo de clases y se comunica con los demás mediante los servicios registrados en el \texttt{Kernel}. El diagrama de clases completo del sistema se presenta en la Figura~\ref{fig:sdd_vista_logica} (Sección 2.1); a continuación se detalla cada componente por separado.
 
-    \subsection{Persistencia y Modelos de Datos}
+\subsubsection{Descripción de clases por componentes}
 
+\begin{enumerate}
 
-    \subsection{Relaciones}
+\item \textbf{Componente: ApplicationCore}
 
+El componente \textbf{ApplicationCore} concentra el núcleo del sistema: el registro de plugins y servicios, el contrato de extensión (\texttt{IPlugin}) y las utilidades compartidas por el resto de la aplicación.
 
-    \subsection{Interfaz de Usuario}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\linewidth]{diagramas_html/application_core.png}
+    \caption{Diagrama de clases --- componente ApplicationCore}
+    \label{fig:sdd_dc_appcore}
+\end{figure}
+
+Las clases del componente \textit{ApplicationCore} son las siguientes:
+
+\textbf{PluginMeta} Metadatos y configuración de un plugin descubierto por el sistema.
+\begin{itemize}
+    \item \textbf{Atributos principales:} \texttt{id}, \texttt{name}, \texttt{category}, \texttt{subcategory}, \texttt{version}, \texttt{icon}: \texttt{str}; \texttt{logic\_\allowbreak class}, \texttt{ui\_\allowbreak class: Optional[str] = None}; \texttt{root: Optional[Path] = None}.
+    \item \textbf{Métodos principales:} \texttt{icon\_\allowbreak path(): Path}.
+\end{itemize}
+
+\textbf{PluginManager} Gestor central de descubrimiento y registro de plugins a partir de sus archivos \texttt{properties.yml}.
+\begin{itemize}
+    \item \textbf{Atributos principales:} \texttt{plugins\_\allowbreak dir: Path}; \texttt{registry: Dict[str, Tuple[PluginMeta, IPlugin]]}.
+    \item \textbf{Métodos principales:} \texttt{load\_\allowbreak all()}, \texttt{all()}, \texttt{get(plugin\_\allowbreak id)}.
+\end{itemize}
+
+\textbf{IPlugin} («interface») Contrato que toda extensión del sistema implementa.
+\begin{itemize}
+    \item \textbf{Atributos principales:} \texttt{meta: PluginMeta}; \texttt{started: bool}; \texttt{mainwin}; \texttt{widget: QWidget}; \texttt{kernel: Kernel}; \texttt{active\_\allowbreak signal: SignalDataset}; \texttt{active\_\allowbreak chanel}; \texttt{alerts: PluginAlerts}.
+    \item \textbf{Métodos principales:} \texttt{name()}/\allowbreak\texttt{category()}/\allowbreak\texttt{subcategory()}, \texttt{icon()}, \texttt{get\_\allowbreak datastore()}, \texttt{get\_\allowbreak active\_\allowbreak signal()}, \texttt{get\_\allowbreak active\_\allowbreak trials(signal)}, \texttt{on\_\allowbreak kernel\_\allowbreak event(topic, payload)}, \texttt{initialize(kernel)}, \texttt{start(kernel)}, \texttt{stop()} \{abstracto\}, \texttt{get\_\allowbreak widget(parent=None)} \{abstracto\}, \texttt{process(data)} \{abstracto\}.
+\end{itemize}
+
+\textbf{Kernel} Núcleo central de la aplicación; implementa el patrón microkernel con inversión de control sobre servicios y plugins.
+\begin{itemize}
+    \item \textbf{Atributos principales:} \texttt{event: pyqtSignal(str, object)}; \texttt{plugin\_\allowbreak registered: pyqtSignal(str)}; \texttt{\_\allowbreak plugins: dict}; \texttt{\_\allowbreak services: dict}.
+    \item \textbf{Métodos principales:} \texttt{register\_\allowbreak plugin(name, plugin)}, \texttt{get\_\allowbreak plugins()}, \texttt{get\_\allowbreak plugin(name)}, \texttt{get\_\allowbreak plugins\_\allowbreak by\_\allowbreak category(category)}, \texttt{load\_\allowbreak and\_\allowbreak register(name, module\_\allowbreak path, class\_\allowbreak name)}, \texttt{stop\_\allowbreak plugins()}, \texttt{register\_\allowbreak service(key, service)}, \texttt{get\_\allowbreak service(key)}, \texttt{emit\_\allowbreak event(topic, payload=None)}.
+\end{itemize}
+
+\textbf{SettingsService} Servicio de configuración general del sistema y preferencias del usuario.
+\begin{itemize}
+    \item \textbf{Atributos principales:} \texttt{filename: str = "gamma\_\allowbreak lab\_\allowbreak settings.json"}; \texttt{data: dict}.
+    \item \textbf{Métodos principales:} \texttt{load()}, \texttt{save()}, \texttt{get(key, default=None)}, \texttt{set(key, value)}.
+\end{itemize}
+
+\textbf{VTKContextMenu} Menú contextual general para vistas basadas en VTK; delega en \texttt{ExportService} y \texttt{MeasurementService} (ver esos componentes).
+\begin{itemize}
+    \item \textbf{Atributos principales:} \texttt{last\_\allowbreak export\_\allowbreak dir: str}; \texttt{chart: vtkChartXY}; \texttt{vtk\_\allowbreak widget}; \texttt{signal\_\allowbreak name}/\allowbreak\texttt{channel\_\allowbreak name}/\allowbreak\texttt{plugin\_\allowbreak name: str}; \texttt{settings: SettingsService}; \texttt{export\_\allowbreak service: ExportService}; \texttt{measure\_\allowbreak service: MeasurementService}.
+    \item \textbf{Métodos principales:} \texttt{set\_\allowbreak signal\_\allowbreak name(name)}, \texttt{set\_\allowbreak channel\_\allowbreak name(name)}, \texttt{set\_\allowbreak plugin\_\allowbreak name(name)}, \texttt{set\_\allowbreak chart(chart)}, \texttt{set\_\allowbreak datastore(store)}, \texttt{set\_\allowbreak measurements\_\allowbreak enabled(enabled)}, \texttt{set\_\allowbreak measurement\_\allowbreak context(\ldots)}, \texttt{show\_\allowbreak menu(pos)}, \texttt{export\_\allowbreak image(fmt, filename=None)}, \texttt{export\_\allowbreak table(fmt, filename=None)}, \texttt{set\_\allowbreak zoom\_\allowbreak mode(mode)}, \texttt{reset\_\allowbreak zoom()}, \texttt{rebuild\_\allowbreak measurement\_\allowbreak overlays()}, \texttt{clear\_\allowbreak measurement\_\allowbreak overlays()}, \texttt{on\_\allowbreak view\_\allowbreak rebuilt(chart, *, view\_\allowbreak id, trial\_\allowbreak id, channel\_\allowbreak name, \ldots)}.
+\end{itemize}
+
+\textbf{PluginAlerts} Sistema de notificaciones y alertas reutilizado por los servicios y los plugins.
+\begin{itemize}
+    \item \textbf{Atributos principales:} \texttt{parent: QWidget}.
+    \item \textbf{Métodos principales:} \texttt{error(message, title="Error")}, \texttt{warning(message, title="Warning")}, \texttt{info(message, title="Information")}, \texttt{show\_\allowbreak spinner(text="Processing...", gif\_\allowbreak path=None)}, \texttt{hide\_\allowbreak spinner()}.
+\end{itemize}
+
+\textbf{TaskOrchestrator} Centraliza la ejecución de cómputo pesado (PAC, Wavelet, PSD) fuera del hilo de interfaz, con soporte de cancelación.
+\begin{itemize}
+    \item \textbf{Atributos principales:} \texttt{cola: list}; \texttt{tarea\_\allowbreak actual}; \texttt{umbral\_\allowbreak progreso\_\allowbreak s: float = 1.0}.
+    \item \textbf{Métodos principales:} \texttt{solicitar(funcion, params, origen)}, \texttt{encolar(solicitud)}, \texttt{cancelar(id\_\allowbreak tarea)}, \texttt{forzar\_\allowbreak terminacion(tarea)}, \texttt{publicar\_\allowbreak resultado(\ldots)}.
+\end{itemize}
+
+\textbf{TooltipHelper} Ayuda contextual mediante tooltips dinámicos sobre los controles de la interfaz.
+\begin{itemize}
+    \item \textbf{Atributos principales:} \texttt{descripciones: dict[str, str]}.
+    \item \textbf{Métodos principales:} \texttt{aplicar\_\allowbreak tooltips(widget)}, \texttt{al\_\allowbreak cambiar\_\allowbreak habilitado(widget, habilitado)}.
+\end{itemize}
+
+\texttt{TaskOrchestrator} y \texttt{TooltipHelper} son clases nuevas: no existen aún en el código de GammaLab 2.0. Las demás clases del componente sí están implementadas, con una salvedad: \texttt{SettingsService} está completa pero no se registra en \texttt{main.py} hoy, por lo que ningún plugin la consume actualmente a través del Kernel.
+
+\item \textbf{Componente: MainUI}
+
+El componente \textbf{MainUI} provee al núcleo la interfaz principal de la aplicación.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\linewidth]{diagramas_html/main_ui.png}
+    \caption{Diagrama de clases --- componente MainUI}
+    \label{fig:sdd_dc_mainui}
+\end{figure}
+
+\textbf{MainWindow} Ventana principal de la aplicación; se registra a sí misma como servicio del Kernel ("MainWindow") y coordina la interfaz con los plugins.
+\begin{itemize}
+    \item \textbf{Atributos principales:} \texttt{kernel: Kernel}; \texttt{ui: Ui\_\allowbreak MainWindow}; \texttt{alerts: PluginAlerts}; \texttt{current\_\allowbreak section: str = "Home"}; \texttt{active\_\allowbreak plugin}; \texttt{active\_\allowbreak plugin\_\allowbreak widget}; \texttt{plugin\_\allowbreak widgets: dict}.
+    \item \textbf{Métodos principales:} \texttt{on\_\allowbreak plugin\_\allowbreak registered(name)}, \texttt{switch\_\allowbreak section(section)}, \texttt{add\_\allowbreak plugin\_\allowbreak button(name)}, \texttt{show\_\allowbreak plugin\_\allowbreak widget(plugin)}, \texttt{clear\_\allowbreak plugin\_\allowbreak area()}, \texttt{setup\_\allowbreak sidebar\_\allowbreak functionality()}, \texttt{toggle\_\allowbreak sidebar\_\allowbreak collapse(sidebar)}, \texttt{on\_\allowbreak signal\_\allowbreak selected()}, \texttt{update\_\allowbreak signal\_\allowbreak list()}, \texttt{on\_\allowbreak button\_\allowbreak click(name)}, \texttt{on\_\allowbreak kernel\_\allowbreak event(topic, payload)}, \texttt{show\_\allowbreak watermark()}/\allowbreak\texttt{hide\_\allowbreak watermark()}, \texttt{setup\_\allowbreak explorer\_\allowbreak section()}, \texttt{setup\_\allowbreak calculus\_\allowbreak section()}, \texttt{setup\_\allowbreak results\_\allowbreak section()}.
+\end{itemize}
+
+\textbf{MainWindowUI (\texttt{Ui\_\allowbreak MainWindow})} Construcción visual de la ventana principal, sin lógica de negocio propia.
+\begin{itemize}
+    \item \textbf{Métodos principales:} \texttt{setupUi(MainWindow)}.
+\end{itemize}
+
+\texttt{MainWindow} consulta el servicio \texttt{DataStore} (vía \texttt{kernel.get\_\allowbreak service("DataStore")}) para poblar la lista de señales, e invoca \texttt{get\_\allowbreak widget()}, \texttt{start()}, \texttt{process()} y \texttt{stop()} de cada \texttt{IPlugin} registrado.
+
+\item \textbf{Componente: Plugins}
+
+El componente \textbf{Plugins} es el punto de extensión del sistema: toda funcionalidad de entrada/salida, preprocesamiento y análisis se implementa como un plugin que respeta el contrato \texttt{IPlugin}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\linewidth]{diagramas_html/plugins.png}
+    \caption{Diagrama de clases --- componente Plugins}
+    \label{fig:sdd_dc_plugins}
+\end{figure}
+
+\textbf{OpenSignalPlugin}, \textbf{TrialsPlugin}, \textbf{Filter\_\allowbreak plugin} y \textbf{Wavelet\_\allowbreak plugin} son cuatro ejemplos representativos de los plugins ya existentes en el sistema (el repositorio incluye 16 en total: FFT, PSD, Average, ERP, Amplitude, Slope, ArtifactRemove, FAQ, entre otros). Todos implementan \texttt{get\_\allowbreak widget()} y \texttt{process(data)} de \texttt{IPlugin}, y son descubiertos por \texttt{PluginManager} a partir de su \texttt{properties.yml}; el nombre de la clase declarado ahí (\texttt{logic\_\allowbreak class}) no siempre coincide con el nombre de la carpeta del plugin.
+
+\textbf{PACAnalysisPlugin} («abstract», nuevo) Base común de los plugins de acoplamiento fase-amplitud (\textit{Phase-Amplitude Coupling}).
+\begin{itemize}
+    \item \textbf{Atributos principales:} \texttt{banda\_\allowbreak fase: tuple}; \texttt{rango\_\allowbreak amplitud: tuple}.
+    \item \textbf{Métodos principales:} \texttt{calcular\_\allowbreak mapa\_\allowbreak fase\_\allowbreak frecuencia()}.
+\end{itemize}
+
+\textbf{PACSingleChannelPlugin} (nuevo) Hereda de \texttt{PACAnalysisPlugin}; calcula el PAC de un único canal.
+\begin{itemize}
+    \item \textbf{Métodos principales:} \texttt{calcular\_\allowbreak pac\_\allowbreak 1\_\allowbreak canal()}.
+\end{itemize}
+
+\textbf{PACInterChannelPlugin} (nuevo) Hereda de \texttt{PACAnalysisPlugin}; calcula el PAC cruzado entre dos canales.
+\begin{itemize}
+    \item \textbf{Métodos principales:} \texttt{calcular\_\allowbreak pac\_\allowbreak 2\_\allowbreak canales()}, \texttt{calcular\_\allowbreak ppc()}.
+\end{itemize}
+
+El cómputo pesado de los plugins de análisis (Wavelet, familia PAC) se despacharía al \texttt{TaskOrchestrator} (ver componente ApplicationCore) en vez de bloquear el hilo de interfaz.
+
+\item \textbf{Componente: DataStore}
+
+El componente \textbf{DataStore}, encargado de la persistencia en memoria, provee un servicio de almacenamiento de tipo clave-valor y define los modelos de datos centrales del sistema.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\linewidth]{diagramas_html/data_store.png}
+    \caption{Diagrama de clases --- componente DataStore}
+    \label{fig:sdd_dc_datastore}
+\end{figure}
+
+\textbf{DataStore} Almacén centralizado en memoria de señales, trials y cualquier otro estado indexado por clave.
+\begin{itemize}
+    \item \textbf{Atributos principales:} \texttt{\_\allowbreak data: dict}.
+    \item \textbf{Métodos principales:} \texttt{set(key, value)}, \texttt{get(key, default=None)}, \texttt{has(key)}, \texttt{items()}, \texttt{remove(key)}, \texttt{add\_\allowbreak signal(signal, key=None)}, \texttt{get\_\allowbreak signals()}, \texttt{set\_\allowbreak active\_\allowbreak signal(key)}, \texttt{get\_\allowbreak active\_\allowbreak signal()}, \texttt{get\_\allowbreak active\_\allowbreak signal\_\allowbreak key()}, \texttt{clear\_\allowbreak active\_\allowbreak signal()}, \texttt{is\_\allowbreak active\_\allowbreak signal(key)}.
+\end{itemize}
+
+\textbf{SignalDataset} Conjunto completo de datos de una señal cargada, incluyendo sus trials asociados.
+\begin{itemize}
+    \item \textbf{Atributos principales:} \texttt{name: str}; \texttt{format: str}; \texttt{source\_\allowbreak path: str}; \texttt{sampling\_\allowbreak rate: float}; \texttt{time: np.ndarray}; \texttt{signals: np.ndarray}; \texttt{channel\_\allowbreak names: List[str]}; \texttt{units: List[str]}; \texttt{metadata: Dict[str, Any]}; \texttt{vtk\_\allowbreak table = None}; \texttt{\_\allowbreak \_\allowbreak trials\_\allowbreak dataset: List[TrialDataset]}; \texttt{\_\allowbreak \_\allowbreak discarded\_\allowbreak trials: Dict[tuple[str,str], set[int]]}.
+    \item \textbf{Métodos principales:} \texttt{add\_\allowbreak trial\_\allowbreak dataset(trial)}, \texttt{number\_\allowbreak of\_\allowbreak trials\_\allowbreak dataset()}, \texttt{get\_\allowbreak active\_\allowbreak trials(file\_\allowbreak name, channel\_\allowbreak name=None)}, \texttt{discard\_\allowbreak trial(source, channel, index)}, \texttt{include\_\allowbreak trial(source, channel, index)}, \texttt{clear\_\allowbreak discarded\_\allowbreak trials()}, \texttt{is\_\allowbreak trial\_\allowbreak discarded(source, channel, index)}.
+\end{itemize}
+
+\textbf{TrialDataset} Partición (ensayo) de una señal, usada para análisis focalizados.
+\begin{itemize}
+    \item \textbf{Atributos principales:} \texttt{source: str}; \texttt{sampling\_\allowbreak rate: float}; \texttt{channel\_\allowbreak index: int}; \texttt{channel\_\allowbreak name: str}; \texttt{unit: str}; \texttt{t0}/\allowbreak\texttt{t1: float}; \texttt{time\_\allowbreak rel: np.ndarray}; \texttt{trials: np.ndarray (Ns, T)}; \texttt{onsets\_\allowbreak s: List[float]}; \texttt{isi\_\allowbreak s: List[float]}; \texttt{metadata: Dict[str, Any]}.
+    \item \textbf{Métodos principales:} sin métodos propios --- es una estructura de datos consumida por \texttt{SignalDataset}.
+\end{itemize}
+
+\texttt{FileIOService} (ver componente FileIO) construye instancias de \texttt{SignalDataset} a partir de archivos externos; \texttt{TaskOrchestrator} y \texttt{ProjectSession} (ver esos componentes) leerían y escribirían en \texttt{DataStore}.
+
+\item \textbf{Componente: FileIO}
+
+El componente \textbf{FileIO} es responsable de la lectura de archivos de señal EEG en múltiples formatos.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\linewidth]{diagramas_html/file_io.png}
+    \caption{Diagrama de clases --- componente FileIO}
+    \label{fig:sdd_dc_fileio}
+\end{figure}
+
+\textbf{FileIOService} Servicio de lectura de archivos que construye instancias de \texttt{SignalDataset}.
+\begin{itemize}
+    \item \textbf{Métodos principales:} \texttt{load\_\allowbreak abf(file\_\allowbreak path: str): SignalDataset}, \texttt{load\_\allowbreak edf(file\_\allowbreak path: str): SignalDataset}, \texttt{load\_\allowbreak mat(file\_\allowbreak path: str): SignalDataset}.
+\end{itemize}
+
+\texttt{FileIOService} usa las librerías externas \texttt{pyabf}, \texttt{pyedflib}, \texttt{scipy.io.loadmat} y \texttt{h5py}. El Kernel registra el servicio bajo la clave \texttt{"FileIO"} (no \texttt{"FileIOService"}); si \texttt{OpenSignalPlugin} no lo encuentra registrado, crea uno propio y lo registra él mismo. \texttt{load\_\allowbreak mat()} está implementado y funciona correctamente, pero la rama que lo invoca en \texttt{OpenSignalPlugin} está comentada hoy: desde la interfaz solo se pueden cargar archivos \texttt{.abf} y \texttt{.edf}. El SAD (Escenario de Calidad 2) documenta que esta lectura debería despacharse al \texttt{TaskOrchestrator} para no bloquear la interfaz; hoy \texttt{OpenSignalPlugin} llama a \texttt{load\_\allowbreak abf()}/\allowbreak\texttt{load\_\allowbreak edf()} de forma directa y síncrona en el hilo de interfaz, sin que el orquestador intervenga todavía en esta ruta.
+
+\item \textbf{Componente: Export}
+
+El componente \textbf{Export} es responsable de la generación de archivos de salida (imagen y tabla) a partir de las visualizaciones activas.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\linewidth]{diagramas_html/export.png}
+    \caption{Diagrama de clases --- componente Export}
+    \label{fig:sdd_dc_export}
+\end{figure}
+
+\textbf{ExportService} Servicio de exportación de imágenes y tablas a partir de la visualización VTK activa.
+\begin{itemize}
+    \item \textbf{Atributos principales:} \texttt{alerts: PluginAlerts}; \texttt{parent}; \texttt{vtk\_\allowbreak widget}; \texttt{get\_\allowbreak active\_\allowbreak chart}/\allowbreak\texttt{get\_\allowbreak names: callable}; \texttt{\_\allowbreak get\_\allowbreak last\_\allowbreak dir}/\allowbreak\texttt{\_\allowbreak set\_\allowbreak last\_\allowbreak dir: callable}.
+    \item \textbf{Métodos principales:} \texttt{export\_\allowbreak image(format: str, filename=None)}, \texttt{export\_\allowbreak table(fmt: str, filename=None)}, \texttt{export\_\allowbreak vector(fmt = "emf")}.
+\end{itemize}
+
+\texttt{ExportService} no depende directamente de \texttt{VTKContextMenu}: recibe callbacks para desacoplarse de la interfaz que lo construye. Aun así, \texttt{VTKContextMenu} (ver componente ApplicationCore) sí lo instancia en su constructor y expone sus métodos en el menú contextual de cada gráfico; \texttt{ExportService} crea además su propia instancia de \texttt{PluginAlerts}. El SAD (Escenario de Calidad 4) describe a \texttt{ExportService} como registrado en el núcleo por inversión de control, pero \texttt{main.py} solo registra los servicios \texttt{"DataStore"} y \texttt{"FileIO"}: \texttt{ExportService} no está registrado en el Kernel, solo existe la instancia que crea \texttt{VTKContextMenu}. \texttt{export\_\allowbreak vector()} corresponde al caso de uso CU-017; no existe implementación de exportación vectorial (\texttt{.emf}) en el código --- solo están implementados \texttt{export\_\allowbreak image()} (png/jpg/jpeg/bmp/tiff) y \texttt{export\_\allowbreak table()} (csv/xlsx/json).
+
+\item \textbf{Componente: Measurement}
+
+El componente \textbf{Measurement} contiene la lógica para realizar mediciones interactivas de pendiente y amplitud sobre las señales.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\linewidth]{diagramas_html/measurement.png}
+    \caption{Diagrama de clases --- componente Measurement}
+    \label{fig:sdd_dc_measurement}
+\end{figure}
+
+\textbf{MeasurementService} Servicio de medición que gestiona la selección de puntos, el cálculo y la persistencia de los resultados.
+\begin{itemize}
+    \item \textbf{Atributos principales:} \texttt{alerts: PluginAlerts}; \texttt{parent}; \texttt{vtk\_\allowbreak widget}; \texttt{get\_\allowbreak active\_\allowbreak chart: callable}; \texttt{ds\_\allowbreak get}/\allowbreak\texttt{ds\_\allowbreak set: callable}; \texttt{\_\allowbreak state: str = 'idle'}; \texttt{\_\allowbreak current: dict}; \texttt{\_\allowbreak context: dict}; \texttt{\_\allowbreak overlays: list}; \texttt{\_\allowbreak overlay\_\allowbreak enabled: bool = True}.
+    \item \textbf{Métodos principales:} \texttt{state} (propiedad), \texttt{start(measure\_\allowbreak type: str)}, \texttt{cancel()}, \texttt{on\_\allowbreak left\_\allowbreak press(sx, sy)}, \texttt{on\_\allowbreak left\_\allowbreak release(sx, sy, click\_\allowbreak eps=8)}, \texttt{set\_\allowbreak context(\ldots)}, \texttt{set\_\allowbreak overlay\_\allowbreak visible(visible: bool)}, \texttt{toggle\_\allowbreak overlay()}, \texttt{remove\_\allowbreak last\_\allowbreak measurement()}, \texttt{remove\_\allowbreak measurement\_\allowbreak by\_\allowbreak id(meas\_\allowbreak id: str)}, \texttt{clear\_\allowbreak all\_\allowbreak measurements()}, \texttt{on\_\allowbreak chart\_\allowbreak changed()}, \texttt{rebuild\_\allowbreak overlays\_\allowbreak for\_\allowbreak current\_\allowbreak context()}, \texttt{clear\_\allowbreak visual\_\allowbreak overlays()}.
+\end{itemize}
+
+\texttt{VTKContextMenu} (ver componente ApplicationCore) instancia \texttt{MeasurementService} en su constructor y le reenvía los eventos de clic izquierdo del \texttt{vtk\_\allowbreak widget}. Los resultados se persisten en \texttt{DataStore} bajo la clave \texttt{"measurements"} --- la misma instancia que ya almacena señales y trials --- mediante los callbacks \texttt{ds\_\allowbreak get}/\allowbreak\texttt{ds\_\allowbreak set}. \texttt{MeasurementService} crea su propia instancia de \texttt{PluginAlerts} y usa \texttt{two\_\allowbreak point\_\allowbreak metrics()}/\allowbreak\texttt{amplitude\_\allowbreak in\_\allowbreak window()} de \texttt{core/filters/measurements.py} para el cálculo numérico. Al igual que \texttt{ExportService}, no está registrado como servicio del Kernel pese a que el SAD lo describe así: solo existe la instancia que crea \texttt{VTKContextMenu}.
+
+\item \textbf{Componente: ProjectSession} (nuevo, sin equivalente en GammaLab 1.0)
+
+El componente \textbf{ProjectSession} materializa el atributo de calidad "Trazabilidad y Persistencia" que GammaLab 2.0 introduce: la persistencia local del espacio de trabajo completo en archivos de proyecto \texttt{.glab}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\linewidth]{diagramas_html/project_session.png}
+    \caption{Diagrama de clases --- componente ProjectSession}
+    \label{fig:sdd_dc_projectsession}
+\end{figure}
+
+\textbf{ProjectSession} (nuevo) Gestiona la persistencia del espacio de trabajo en archivos \texttt{.glab}.
+\begin{itemize}
+    \item \textbf{Atributos principales:} \texttt{formato = ".glab"}; \texttt{schema\_\allowbreak version: str}.
+    \item \textbf{Métodos principales:} \texttt{guardar(ruta, señal, trials, análisis, parámetros)}, \texttt{abrir(ruta)}, \texttt{cerrar()}, \texttt{validar\_\allowbreak ruta\_\allowbreak señal(ruta): bool}.
+\end{itemize}
+
+Ninguna clase de este componente existe hoy en el código --- hay cero referencias a \texttt{".glab"} en todo el repositorio (SAD, UC-03) --- pero sus relaciones sí se apoyan en clases reales: \texttt{guardar()} persiste señal, trials, análisis y parámetros en el \texttt{.glab} y libera la memoria de la señal activa; \texttt{abrir(ruta)} verifica con \texttt{validar\_\allowbreak ruta\_\allowbreak señal()} que el archivo de señal referenciado siga disponible y despacha su recarga al \texttt{TaskOrchestrator} fuera del hilo de interfaz, que a su vez reutilizaría \texttt{FileIOService} (ver componente FileIO); los trials y análisis se restauran directamente en \texttt{DataStore} mediante escritura sincronizada. Cada \texttt{.glab} embebe su propio \texttt{schema\_\allowbreak version}: un incremento MINOR se mantiene legible por versiones futuras de \texttt{ProjectSession}, y un incremento MAJOR rechaza la apertura con un mensaje explícito en vez de migrar implícitamente.
+
+\end{enumerate}
+
+\subsubsection{Resumen}
+
+\begin{itemize}
+    \item \textbf{Patrón arquitectónico:} inversión de control mediante el \texttt{Kernel}, que expone \texttt{register\_\allowbreak service()}/\allowbreak\texttt{get\_\allowbreak service()} y desacopla a los plugins de la construcción directa de sus dependencias.
+    \item \textbf{Relación central:} todos los plugins concretos implementan \texttt{IPlugin} y son descubiertos y gestionados por \texttt{PluginManager}/\allowbreak\texttt{Kernel} a partir de su \texttt{properties.yml}.
+    \item \textbf{Servicios resueltos vía Kernel:} \texttt{DataStore} y \texttt{FileIOService} (bajo la clave \texttt{"FileIO"}) sí se consumen mediante \texttt{kernel.get\_\allowbreak service()}.
+    \item \textbf{Servicios instanciados directamente:} \texttt{ExportService} y \texttt{MeasurementService} son construidos directamente por \texttt{VTKContextMenu}, y \texttt{SettingsService} no se registra en \texttt{main.py}; los tres aparecen en el SAD como servicios del núcleo, pero ninguno se resuelve hoy mediante \texttt{kernel.get\_\allowbreak service()}.
+    \item \textbf{Piezas prospectivas:} \texttt{TaskOrchestrator}, \texttt{ProjectSession}, \texttt{TooltipHelper} y la familia \texttt{PACAnalysisPlugin} no existen aún en el código; el SAD los presenta como criterios de aceptación directos para la implementación futura, no como documentación de un sistema ya construido.
+    \item \textbf{Flujo de control:} \texttt{MainWindow} actúa como contenedor principal que orquesta la interacción entre plugins a través del \texttt{Kernel}.
+\end{itemize}
+
+\subsection{Comportamiento del Sistema}
+
+\subsubsection{Propósito}
+
+El objetivo de esta sección es documentar los flujos más importantes del sistema a nivel de interacción entre objetos, complementando la Vista de Procesos (Sección 2.3), que describe el mismo comportamiento a nivel de actividades del usuario.
+
+\subsubsection{Principales flujos del sistema}
+
+Los flujos descritos abarcan cuatro funcionalidades: la carga de una señal, la toma de mediciones, la exportación de resultados y --- como flujo prospectivo, aún no implementado --- el guardado y reapertura de un proyecto.
+
+\textbf{1. Cargar una señal.} Desde la pestaña \textit{Home}, el usuario activa \textit{Load Signal}; \texttt{OpenSignalPlugin} obtiene el servicio \texttt{FileIOService} del Kernel (clave \texttt{"FileIO"}) o crea una instancia propia si no lo encuentra registrado. Según la extensión del archivo, invoca \texttt{load\_\allowbreak abf()} o \texttt{load\_\allowbreak edf()} de forma directa y síncrona sobre el hilo de interfaz --- la rama de \texttt{load\_\allowbreak mat()} existe en \texttt{FileIOService} pero está comentada en el plugin. El resultado, una instancia de \texttt{SignalDataset}, se publica en \texttt{DataStore} como señal activa y \texttt{MainWindow} actualiza la lista de señales disponibles.
+
+\textbf{2. Hacer mediciones.} El usuario hace clic derecho sobre un gráfico, lo que activa \texttt{VTKContextMenu.show\_\allowbreak menu()} y despliega el menú contextual con las opciones \textit{Slope}, \textit{Amplitude} y \textit{Slope (all trials)}. Al seleccionar una, se invoca \texttt{MeasurementService.start(measure\_\allowbreak type)}, que usa \texttt{PluginAlerts} para solicitar al usuario los dos puntos requeridos. Cada clic del usuario se recibe mediante \texttt{on\_\allowbreak left\_\allowbreak press()}/\allowbreak\texttt{on\_\allowbreak left\_\allowbreak release()}; una vez capturados ambos puntos, \texttt{\_\allowbreak finalize()} calcula el resultado con \texttt{two\_\allowbreak point\_\allowbreak metrics()} (pendiente) o \texttt{amplitude\_\allowbreak in\_\allowbreak window()} (amplitud) de \texttt{core/filters/measurements.py}, dibuja el overlay correspondiente y persiste el registro en \texttt{DataStore} bajo la clave \texttt{"measurements"} mediante \texttt{\_\allowbreak save\_\allowbreak measurement()}.
+
+\textbf{3. Exportar resultados.} El usuario hace clic derecho sobre un gráfico y selecciona \textit{Export as image} o \textit{Export table} desde el menú de \texttt{VTKContextMenu}. Según la opción, se invoca \texttt{ExportService.export\_\allowbreak image(format)} --- que captura la ventana VTK con \texttt{vtkWindowToImageFilter} y la escribe con el \textit{writer} correspondiente a png/jpg/jpeg/bmp/tiff --- o \texttt{export\_\allowbreak table(fmt)}, que recorre los \textit{plots} del gráfico activo y escribe el resultado en csv, xlsx o json. En ambos casos, \texttt{ExportService} usa \texttt{PluginAlerts} para confirmar el éxito o reportar un error, sin interrumpir el estado del sistema.
+
+\textbf{4. Guardar y reabrir un proyecto (prospectivo).} Al cerrar el proyecto activo, el investigador elige \textit{Guardar}; \texttt{ProjectSession.guardar()} persistiría la señal activa, los trials, los análisis y los parámetros de la sesión en un archivo \texttt{.glab}, liberando a continuación la memoria de la señal activa. Al abrir un \texttt{.glab} existente, \texttt{abrir(ruta)} verificaría con \texttt{validar\_\allowbreak ruta\_\allowbreak señal()} que el archivo de señal referenciado siga disponible, despacharía su recarga al \texttt{TaskOrchestrator} --- que reutilizaría \texttt{FileIOService} fuera del hilo de interfaz --- y restauraría los trials y análisis directamente en \texttt{DataStore} mediante escritura sincronizada. Ninguna clase de este flujo existe hoy en el código: es el criterio de aceptación para la funcionalidad descrita en el SAD (UC-03).
+
+\subsection{Persistencia y Modelos de Datos}
+
+\subsubsection{Propósito}
+
+El objetivo de esta sección es describir las estructuras en las que se almacenan los datos de la aplicación y los mecanismos de persistencia que permiten el funcionamiento de los plugins. El sistema no emplea bases de datos: la persistencia es temporal y está basada en un almacén clave-valor en memoria (\texttt{DataStore}), accedido a través de sus métodos \texttt{get}/\allowbreak\texttt{set}.
+
+\subsubsection{Entidades de datos}
+
+El diagrama de clases del componente DataStore, ya presentado en la Figura~\ref{fig:sdd_dc_datastore} (Sección 3.2.3), ilustra las tres entidades centrales del modelo de datos: \texttt{DataStore}, \texttt{SignalDataset} y \texttt{TrialDataset}.
+
+\textbf{DataStore} Servicio central de almacenamiento; mantiene un diccionario interno (\texttt{\_\allowbreak data}) indexado por clave, sin imponer un esquema fijo. Sus usos principales son:
+\begin{itemize}
+    \item Ciclo de vida de las señales cargadas: \texttt{add\_\allowbreak signal()}, \texttt{get\_\allowbreak signals()}, \texttt{set\_\allowbreak active\_\allowbreak signal()}/\allowbreak\texttt{get\_\allowbreak active\_\allowbreak signal()}.
+    \item Almacenamiento genérico de cualquier otro estado bajo una clave arbitraria mediante \texttt{set(key, value)}/\allowbreak\texttt{get(key, default)}: además de señales, \texttt{MeasurementService} (ver componente Measurement) lo reutiliza para persistir las mediciones bajo la clave \texttt{"measurements"}, sin que \texttt{DataStore} distinga entre ambos tipos de contenido.
+\end{itemize}
+
+\textbf{SignalDataset} Representa una señal completa cargada por \texttt{FileIOService} (ver componente FileIO): incluye los arreglos de tiempo y de señal, los metadatos de canal y muestreo, y la lista de \texttt{TrialDataset} asociados a ella.
+
+\textbf{TrialDataset} Representa un ensayo (segmento) de una señal, con su propia base de tiempo relativa, sus marcadores de \textit{onset} e \textit{ISI}, y sus metadatos de canal y fuente. No tiene métodos propios: es una estructura de datos consumida por \texttt{SignalDataset}.
+
+\subsection{Relaciones}
+
+La relación principal del modelo de datos es la que existe entre \texttt{SignalDataset} y \texttt{TrialDataset}: la multiplicidad 1 a muchos (1..*) indica que una señal puede contener múltiples trials, cada uno representando un segmento de interés para el análisis. Esta relación se mantiene igual que en GammaLab 1.0.
+
+Sobre esa base, GammaLab 2.0 generaliza el uso de \texttt{DataStore} más allá de señales y trials: al ser un almacén clave-valor sin esquema fijo, la misma instancia registrada en el Kernel también persiste las mediciones de \texttt{MeasurementService} (clave \texttt{"measurements"}), y sería el punto de lectura/escritura de \texttt{TaskOrchestrator} y \texttt{ProjectSession} una vez implementados.
+
+Un segundo patrón de relación distingue a los componentes según cómo se resuelven sus dependencias: \texttt{DataStore} y \texttt{FileIOService} se consumen mediante \texttt{kernel.get\_\allowbreak service()}, mientras que \texttt{ExportService} y \texttt{MeasurementService} se obtienen por inyección directa desde \texttt{VTKContextMenu} en su constructor, sin pasar por el Kernel. Ambos patrones conviven hoy en el sistema, aunque el SAD describe a los cinco servicios como igualmente registrados en el núcleo.
+
+\subsection{Interfaz de Usuario}
          \subsubsection{Proposito}
             Esta sección describe la interfaz de usuario de Gamma Lab, incluyendo la organización, navegación, y componentes de las vistas.
 

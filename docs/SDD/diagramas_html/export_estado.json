@@ -1,0 +1,39 @@
+{
+  "boxes": [
+    {
+      "id": "exportservice",
+      "left": "20px",
+      "top": "160px",
+      "nuevo": false,
+      "html": "<div class=\"class-name\" contenteditable=\"true\">ExportService</div><div class=\"section\" contenteditable=\"true\">alerts: PluginAlerts\nparent\nvtk_widget\nget_active_chart: callable\nget_names: callable\n_get_last_dir / _set_last_dir: callable</div><div class=\"section\" contenteditable=\"true\">+ export_image(format: str, filename=None)\n+ export_table(fmt: str, filename=None)\n+ export_vector(fmt = \"emf\")</div>"
+    },
+    {
+      "id": "vtkcontextmenu",
+      "left": "678.6px",
+      "top": "23.6px",
+      "nuevo": false,
+      "html": "<div class=\"stereotype\" contenteditable=\"true\">(ver componente ApplicationCore)</div><div class=\"class-name\" contenteditable=\"true\">VTKContextMenu</div><div class=\"section\" contenteditable=\"true\">export_service: ExportService\nsettings: SettingsService</div><div class=\"section\" contenteditable=\"true\">+ show_menu(pos)\n+ export_image(fmt, filename=None)\n+ export_table(fmt, filename=None)</div>"
+    },
+    {
+      "id": "pluginalerts",
+      "left": "572.8px",
+      "top": "340.8px",
+      "nuevo": false,
+      "html": "<div class=\"stereotype\" contenteditable=\"true\">(ver componente ApplicationCore)</div><div class=\"class-name\" contenteditable=\"true\">PluginAlerts</div><div class=\"section\" contenteditable=\"true\">parent: QWidget</div><div class=\"section\" contenteditable=\"true\">+ error(message, title=\"Error\")\n+ info(message, title=\"Information\")</div>"
+    }
+  ],
+  "connections": [
+    {
+      "from": "vtkcontextmenu",
+      "to": "exportservice",
+      "type": "assoc",
+      "label": "instancia y expone en menú contextual"
+    },
+    {
+      "from": "exportservice",
+      "to": "pluginalerts",
+      "type": "assoc",
+      "label": "usa (alerts)"
+    }
+  ]
+}

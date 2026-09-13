@@ -1,0 +1,52 @@
+{
+  "boxes": [
+    {
+      "id": "projectsession",
+      "left": "20px",
+      "top": "20px",
+      "nuevo": true,
+      "html": "<div class=\"class-name\" contenteditable=\"true\">ProjectSession</div><div class=\"section\" contenteditable=\"true\">formato = \".glab\"\nschema_version: str</div><div class=\"section\" contenteditable=\"true\">+ guardar(ruta, señal, trials, análisis, parámetros)\n+ abrir(ruta)\n+ cerrar()\n+ validar_ruta_señal(ruta) : bool</div>"
+    },
+    {
+      "id": "taskorchestrator",
+      "left": "616.8px",
+      "top": "64.8px",
+      "nuevo": true,
+      "html": "<div class=\"stereotype\" contenteditable=\"true\">(definido en ApplicationCore)</div><div class=\"class-name\" contenteditable=\"true\">TaskOrchestrator</div><div class=\"section\" contenteditable=\"true\">+ solicitar(funcion, params, origen)</div>"
+    },
+    {
+      "id": "fileioservice",
+      "left": "493.8px",
+      "top": "304.8px",
+      "nuevo": false,
+      "html": "<div class=\"stereotype\" contenteditable=\"true\">(ver componente FileIO)</div><div class=\"class-name\" contenteditable=\"true\">FileIOService</div><div class=\"section\" contenteditable=\"true\">+ load_abf / load_edf / load_mat(file_path) : SignalDataset</div>"
+    },
+    {
+      "id": "datastore",
+      "left": "34.8px",
+      "top": "306.8px",
+      "nuevo": false,
+      "html": "<div class=\"stereotype\" contenteditable=\"true\">(ver componente DataStore)</div><div class=\"class-name\" contenteditable=\"true\">DataStore</div><div class=\"section\" contenteditable=\"true\">+ get(key, default=None)\n+ set(key, value)</div>"
+    }
+  ],
+  "connections": [
+    {
+      "from": "projectsession",
+      "to": "datastore",
+      "type": "assoc",
+      "label": "lee/restaura señal activa, trials y análisis"
+    },
+    {
+      "from": "projectsession",
+      "to": "taskorchestrator",
+      "type": "assoc",
+      "label": "abre"
+    },
+    {
+      "from": "taskorchestrator",
+      "to": "fileioservice",
+      "type": "assoc",
+      "label": "recarga"
+    }
+  ]
+}

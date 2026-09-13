@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Measurement — GammaLab 2.0</title>
+<link rel="stylesheet" href="diagram.css">
+</head>
+<body>
+
+<h1>Componente: Measurement</h1>
+<p class="subtitle">Mediciones interactivas de pendiente y amplitud — GammaLab 2.0</p>
+
+<div class="toolbar">
+    <button class="export-btn" id="export-btn">Exportar como imagen (PNG)</button>
+    <button class="connect-btn" id="connect-btn">🔗 Conectar cajas</button>
+    <button class="save-btn" id="save-btn">💾 Guardar estado</button>
+    <button class="load-btn" id="load-btn">📂 Cargar estado</button>
+    <input type="file" id="load-input" accept="application/json" style="display:none;">
+    <span class="hint">Arrastra desde la barra gris. Clic en texto para editarlo. Clic en una línea o su etiqueta para renombrarla o borrarla.</span>
+</div>
+
+<div class="legend">
+    <div class="legend-item"><span class="swatch existente"></span> Ya existe en el código</div>
+    <div class="legend-item"><span class="swatch nuevo"></span> Nuevo — por implementar</div>
+</div>
+
+<div class="board" id="board" style="min-height:640px;">
+<svg id="connector-svg"></svg>
+
+    <div class="uml-class" id="measurementservice" style="left:20px; top:20px; width:380px;">
+        <div class="drag-handle"></div>
+        <div class="class-name" contenteditable="true">MeasurementService</div>
+        <div class="section" contenteditable="true">alerts: PluginAlerts
+parent
+vtk_widget
+get_active_chart: callable
+ds_get / ds_set: callable
+_state: str = 'idle'
+_current: dict
+_context: dict
+_overlays: list
+_overlay_enabled: bool = True</div>
+        <div class="section" contenteditable="true">+ state  (property)
++ start(measure_type: str)
++ cancel()
++ on_left_press(sx, sy)
++ on_left_release(sx, sy, click_eps=8)
++ set_context(*, view_id, graph_id, trial_id, channel_name, plugin, domain)
++ set_overlay_visible(visible: bool)
++ toggle_overlay()
++ remove_last_measurement()
++ remove_measurement_by_id(meas_id: str)
++ clear_all_measurements()
++ on_chart_changed()
++ rebuild_overlays_for_current_context()
++ clear_visual_overlays()
+- _save_measurement(result, p1, p2, override_ctx=None)
+- _finalize()
+- _compute_amplitude_window(x1, x2)
+- _compute_and_save_slopes_each_trial_by_index(i1, i2, make_overlays_for_current=False)
+- _pick_nearest_data_point(sx_click, sy_click)</div>
+    </div>
+
+    <div class="uml-class" id="vtkcontextmenu" style="left:440px; top:20px;">
+        <div class="drag-handle"></div>
+        <div class="stereotype" contenteditable="true">(ver componente ApplicationCore)</div>
+        <div class="class-name" contenteditable="true">VTKContextMenu</div>
+        <div class="section" contenteditable="true">measure_service: MeasurementService</div>
+        <div class="section" contenteditable="true">+ show_menu(pos)
++ on_view_rebuilt(chart, ...)</div>
+    </div>
+
+    <div class="uml-class" id="pluginalerts" style="left:440px; top:240px;">
+        <div class="drag-handle"></div>
+        <div class="stereotype" contenteditable="true">(ver componente ApplicationCore)</div>
+        <div class="class-name" contenteditable="true">PluginAlerts</div>
+        <div class="section" contenteditable="true">parent: QWidget</div>
+        <div class="section" contenteditable="true">+ info(message, title="Information")
++ warning(message, title="Warning")</div>
+    </div>
+
+    <div class="uml-class" id="datastore" style="left:440px; top:440px;">
+        <div class="drag-handle"></div>
+        <div class="stereotype" contenteditable="true">(ver componente DataStore)</div>
+        <div class="class-name" contenteditable="true">DataStore</div>
+        <div class="section empty" contenteditable="true">(sin atributos propios)</div>
+        <div class="section" contenteditable="true">+ get(key, default=None)
++ set(key, value)</div>
+    </div>
+
+</div>
+
+<div class="relaciones">
+    <h2>Relaciones con otros componentes</h2>
+    <ul>
+        <li><strong>VTKContextMenu</strong> (ver componente ApplicationCore) instancia <strong>MeasurementService</strong> en su constructor y le reenvía los eventos de clic izquierdo (<code>on_left_press</code>/<code>on_left_release</code>) capturados del <code>vtk_widget</code>.</li>
+        <li>Persiste sus resultados en <strong>DataStore</strong> (ver ese componente) mediante los callbacks <code>ds_get</code>/<code>ds_set</code> que <strong>VTKContextMenu</strong> inyecta (<code>_ds_get</code>/<code>_ds_set</code> llaman a <code>datastore.get()</code>/<code>set()</code> sobre la instancia real registrada en el Kernel bajo la clave <code>"DataStore"</code>); las mediciones se guardan bajo la clave <code>"measurements"</code>, en el mismo <strong>DataStore</strong> que ya almacena señales y trials.</li>
+        <li><strong>MeasurementService</strong> crea su propia instancia de <strong>PluginAlerts</strong> (<code>self.alerts = PluginAlerts()</code>, ver componente ApplicationCore) para guiar al usuario paso a paso durante la selección de puntos.</li>
+        <li>Usa <code>two_point_metrics()</code> y <code>amplitude_in_window()</code> de <code>core/filters/measurements.py</code> para el cálculo numérico (funciones libres, no clases — sin caja propia en este diagrama).</li>
+        <li><code>measure_type</code> admite "slope", "slope_all_trials" y "amplitude"; "slope_all_trials" solo se habilita si el plugin activo es "trials".</li>
+        <li>El SAD describe a <strong>MeasurementService</strong> como registrado en el núcleo por inversión de control, pero en <code>main.py</code> el Kernel solo registra <code>"DataStore"</code> y <code>"FileIO"</code>; al igual que <strong>ExportService</strong> (ver ese componente), <strong>MeasurementService</strong> no está registrado como servicio del Kernel — solo existe la instancia que crea <strong>VTKContextMenu</strong>.</li>
+    </ul>
+</div>
+
+<script src="diagram.js"></script>
+<script>
+    const diagram = initDiagram('board', 'connector-svg', [
+        { from: 'vtkcontextmenu', to: 'measurementservice', type: 'assoc', label: 'instancia y reenvía eventos de clic' },
+        { from: 'measurementservice', to: 'pluginalerts', type: 'assoc', label: 'usa (alerts)' },
+        { from: 'measurementservice', to: 'datastore', type: 'assoc', label: "persiste 'measurements' vía ds_get/ds_set" },
+    ]);
+    document.getElementById('export-btn').addEventListener('click', function () {
+        exportBoardAsPNG('board', 'connector-svg', 'measurement.png', 3);
+    });
+    const connectBtn = document.getElementById('connect-btn');
+    let connecting = false;
+    connectBtn.addEventListener('click', function () {
+        connecting = !connecting;
+        diagram.setConnectMode(connecting);
+        connectBtn.textContent = connecting ? 'Clic en 2 cajas... (cancelar)' : '🔗 Conectar cajas';
+        connectBtn.classList.toggle('active', connecting);
+    });
+    wireSaveLoadButtons(diagram, 'save-btn', 'load-btn', 'load-input', 'measurement_estado.json');
+</script>
+
+</body>
+</html>

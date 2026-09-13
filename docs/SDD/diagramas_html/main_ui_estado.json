@@ -1,0 +1,26 @@
+{
+  "boxes": [
+    {
+      "id": "mainwindow",
+      "left": "20px",
+      "top": "20px",
+      "nuevo": false,
+      "html": "<div class=\"class-name\" contenteditable=\"true\">MainWindow</div><div class=\"section\" contenteditable=\"true\">kernel: Kernel\nui: Ui_MainWindow\nalerts: PluginAlerts\ncurrent_section: str = \"Home\"\nactive_plugin\nactive_plugin_widget\nplugin_widgets: dict</div><div class=\"section\" contenteditable=\"true\">+ on_plugin_registered(name)\n+ switch_section(section)\n+ add_plugin_button(name)\n+ show_plugin_widget(plugin)\n+ clear_plugin_area()\n+ setup_sidebar_functionality()\n+ toggle_sidebar_collapse(sidebar)\n+ on_signal_selected()\n+ update_signal_list()\n+ on_button_click(name)\n+ on_kernel_event(topic, payload)\n+ show_watermark() / hide_watermark()\n+ setup_explorer_section()\n+ setup_calculus_section()\n+ setup_results_section()</div>"
+    },
+    {
+      "id": "mainwindowui",
+      "left": "529.6px",
+      "top": "194.6px",
+      "nuevo": false,
+      "html": "<div class=\"class-name\" contenteditable=\"true\">MainWindowUI (Ui_MainWindow)</div><div class=\"section empty\" contenteditable=\"true\">(sin atributos de negocio)</div><div class=\"section\" contenteditable=\"true\">+ setupUi(MainWindow)</div>"
+    }
+  ],
+  "connections": [
+    {
+      "from": "mainwindow",
+      "to": "mainwindowui",
+      "type": "assoc",
+      "label": "self.ui = Ui_MainWindow()"
+    }
+  ]
+}
