@@ -338,7 +338,7 @@ La naturaleza secuencial del modelo se refleja en la organización del proyecto 
     Se evalúa el desempeño técnico y funcional de GammaLab 2.0 mediante pruebas comparativas y validación con usuarios.
 \end{itemize}
 
-No obstante, al interior de cada una de estas fases el trabajo se organiza de forma iterativa mediante ciclos cortos de desarrollo (\textit{sprints}), permitiendo distribuir tareas, realizar seguimiento continuo al avance e incorporar retroalimentación de manera progresiva. Esta dinámica favorece la adaptación frente a ajustes funcionales, refinamiento de requerimientos o decisiones de diseño que emerjan durante el proceso.
+Adicionalmente, al interior de cada una de estas fases el trabajo se organiza de forma iterativa mediante ciclos cortos de desarrollo (\textit{sprints}), permitiendo distribuir tareas, realizar seguimiento continuo al avance e incorporar retroalimentación de manera progresiva. Esta dinámica favorece la adaptación frente a ajustes funcionales, refinamiento de requerimientos o decisiones de diseño que emerjan durante el proceso.
 
 Aunque el flujo principal mantiene una dirección secuencial, el modelo contempla retroalimentación entre fases cuando se identifican cambios relevantes. En estos casos, es posible retornar a una etapa previa para realizar ajustes específicos; por ejemplo, desde implementación hacia diseño o desde validación hacia implementación. Sin embargo, dichos retornos no rompen la lógica general del ciclo de vida: una vez realizado el ajuste correspondiente, el proyecto debe continuar nuevamente de manera secuencial a través de las fases subsiguientes. De esta forma, el modelo combina flexibilidad operativa con control estructural sobre el avance global del proyecto.
 
@@ -429,11 +429,11 @@ Desarrollo de interfaz gráfica & PySide6, Qt Designer \\
 \hline
 Entorno de desarrollo & Visual Studio Code \\
 \hline
-Control de versiones & Git, GitHub \\
+Control de versiones & GitHub \\
 \hline
 Gestión del proyecto & Tablero Kanban (proporcionado por el departamento) \\
 \hline
-Documentación técnica & LaTeX (Overleaf), Microsoft Word \\
+Documentación técnica & LaTex, Microsoft Word \\
 \hline
 Pruebas & Pytest \\
 \hline
@@ -452,13 +452,13 @@ Almacenamiento y respaldo & OneDrive, máquina virtual compartida \\
 
 Para la interfaz gráfica se conserva el uso de \textbf{PySide6} y \textbf{Qt Designer}, herramientas que permiten mantener coherencia con la arquitectura visual existente y facilitan la separación entre diseño de interfaz y lógica funcional.
 
-En términos de desarrollo colaborativo, el proyecto utiliza \textbf{Git} y \textbf{GitHub} para control de versiones, gestión de ramas y revisión de cambios, complementados con el \textbf{tablero Kanban proporcionado por el departamento} como herramienta de seguimiento de tareas acorde con la dinámica iterativa definida en la metodología del proyecto.
+En términos de desarrollo colaborativo, el proyecto utiliza \textbf{GitHub} para control de versiones, gestión de ramas y revisión de cambios, complementados con el \textbf{tablero Kanban proporcionado por el departamento} como herramienta de seguimiento de tareas acorde con la dinámica iterativa definida en la metodología del proyecto.
 
-La documentación técnica y académica se desarrolla principalmente en \textbf{LaTeX mediante Overleaf}, favoreciendo trazabilidad, edición colaborativa y consistencia de formato. Adicionalmente, se emplea Microsoft Word para documentación preliminar y trabajo colaborativo informal.
+La documentación técnica y académica se desarrolla principalmente en \textbf{LaTeX}, favoreciendo trazabilidad, edición colaborativa y consistencia de formato. Adicionalmente, se emplea \textbf{Microsoft Word} para documentación preliminar y trabajo colaborativo informal.
 
 Para diseño y modelado visual se utilizan \textbf{Figma} en prototipado de interfaces, \textbf{Draw.io} para diagramas técnicos y \textbf{Canva} para material gráfico de apoyo.
 
-Finalmente, el aseguramiento de calidad incorpora pruebas mediante \textbf{Pytest}, mientras que la coordinación del equipo se apoya en \textbf{Microsoft Teams} y \textbf{WhatsApp}. Como mecanismo de respaldo y pruebas compartidas, el proyecto cuenta adicionalmente con almacenamiento en \textbf{OneDrive} y una máquina virtual compartida.
+Finalmente, las pruebas de calidad se incorporan mediante \textbf{Pytest}, mientras que la coordinación del equipo se apoya en \textbf{Microsoft Teams} y \textbf{WhatsApp}. Como mecanismo de respaldo y pruebas compartidas, el proyecto cuenta adicionalmente con almacenamiento en \textbf{OneDrive} y una máquina virtual compartida.
 
 \subsection{Organización del proyecto y Comunicación}
 
@@ -492,47 +492,38 @@ La estructura organizacional del proyecto se presenta en la Figura \ref{fig:orga
 Como resultado del desarrollo de GammaLab 2.0 bajo el enfoque metodológico definido, el proyecto contempla la generación de entregables técnicos, funcionales y documentales asociados a las distintas fases del ciclo de vida. Estos productos permiten evidenciar el cumplimiento progresivo de los objetivos específicos y consolidan tanto los resultados internos del desarrollo como los artefactos finales del proyecto.
 
 \begin{itemize}[label={}]
-    \item \textbf{Documento de análisis técnico y funcional de GammaLab 1.0.} 
-    Consolida los hallazgos derivados de la exploración del código fuente, arquitectura y funcionalidades existentes, sirviendo como base para la identificación de oportunidades de mejora.
+    \item \textbf{VFP -- Versión Final de Proyecto.}
+    Documento inicial que formaliza el problema, los objetivos, el alcance funcional y los lineamientos estratégicos y metodológicos del proyecto, sirviendo como base de referencia para la construcción del PMP y de los documentos técnicos posteriores.
 
-    \item \textbf{Product Backlog inicial priorizado.} 
-    Contiene las brechas identificadas, organizadas y priorizadas de acuerdo con su impacto, viabilidad y alineación con los objetivos del proyecto.
+    \item \textbf{PMP -- Plan de Administración del Proyecto.}
+    Define los procesos de dirección del proyecto, la planificación y los mecanismos de seguimiento, estableciendo la estructura organizacional, los roles y el cronograma de trabajo.
 
-    \item \textbf{Plan de pruebas de línea base y resultados iniciales.} 
-    Define y documenta las pruebas aplicadas sobre GammaLab 1.0 para establecer métricas de referencia en rendimiento técnico y experiencia de usuario.
+    \item \textbf{ISTAR.}
+    Consolida la matriz original de requerimientos y casos de uso levantados durante la fase inicial del proyecto, registrando los históricos, conceptos, actores, requerimientos y cada caso de uso con su flujo principal y sus flujos alternos.
 
-    \item \textbf{Artefactos de diseño y modelado.} 
-    Incluye diagramas de casos de uso, diagramas de frecuencia, arquitectura de componentes y demás representaciones estructurales de GammaLab 2.0.
+    \item \textbf{SRS -- Especificación de Requerimientos de Software.}
+    Describe formalmente los requerimientos funcionales y no funcionales del sistema, formalizando las entradas, salidas, parámetros configurables y dependencias de cada módulo, incluyendo el nuevo módulo de análisis incorporado en GammaLab 2.0.
 
-    \item \textbf{Prototipo de interfaz gráfica.} 
-    Presenta la propuesta visual y de experiencia de usuario para GammaLab 2.0 antes de su implementación definitiva.
+    \item \textbf{SAD -- Documento de Arquitectura de Software.}
+    Formaliza las decisiones estructurales del sistema, incluyendo la distribución de componentes, las vistas arquitectónicas y la justificación técnica del diseño adoptado para GammaLab 2.0.
 
-    \item \textbf{Documento de arquitectura de GammaLab 2.0.} 
-    Formaliza las decisiones estructurales del sistema, incluyendo distribución de componentes y justificación técnica de diseño.
+    \item \textbf{SDD -- Documento de Diseño de Software.}
+    Presenta el diseño detallado de los componentes del sistema mediante diagramas de secuencia, diagramas de clases y demás representaciones estructurales, describiendo la organización modular y el comportamiento interno de GammaLab 2.0.
 
-    \item \textbf{Especificaciones técnicas del nuevo módulo de análisis.} 
-    Describe entradas, salidas, parámetros configurables y dependencias del nuevo módulo funcional incorporado en GammaLab 2.0.
+    \item \textbf{Mockups.}
+    Incluye las representaciones visuales de alta fidelidad de la interfaz de GammaLab 2.0, en las que se plasman gráficamente las mejoras planteadas en la experiencia de usuario y la navegación intuitiva del sistema, utilizadas para validar la disposición general de los módulos y los flujos de navegación.
 
-    \item \textbf{Incrementos funcionales de software por sprint.} 
-    Corresponden a avances parciales implementados y verificados al cierre de cada ciclo iterativo de desarrollo.
-
-    \item \textbf{GammaLab 2.0 implementado.} 
-    Versión final del sistema con integración de mejoras funcionales, optimizaciones técnicas y nuevos módulos de análisis.
-
-    \item \textbf{Repositorio final organizado.} 
+    \item \textbf{Repositorio Final.}
     Código fuente estructurado, versionado y documentado para facilitar mantenimiento, trazabilidad y futuras extensiones del proyecto.
 
-    \item \textbf{Informes de validación y pruebas.} 
+    \item \textbf{Informe de Pruebas y Validación.}
     Documentan resultados de pruebas técnicas, análisis comparativo entre GammaLab 1.0 y 2.0, y validación funcional de nuevas capacidades.
 
-    \item \textbf{Manual de uso de GammaLab 2.0.} 
+    \item \textbf{Manual de uso de GammaLab 2.0.}
     Guía orientada al usuario final que describe instalación, navegación y uso de funcionalidades principales del sistema.
 
-    \item \textbf{Documento final de memoria del proyecto.} 
+    \item \textbf{Memoria Final del Proyecto.}
     Consolida el proceso completo de desarrollo, incluyendo contexto, metodología, diseño, implementación, pruebas, resultados y conclusiones.
-
-    \item \textbf{Entrega final al cliente.} 
-    Compilación organizada de software, documentación y materiales complementarios entregados al Laboratorio de Señales.
 \end{itemize}
 
 \subsection{Estructura colaborativa y enfoque de trabajo}
