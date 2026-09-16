@@ -59,7 +59,7 @@ class OpenSignalPlugin(IPlugin):
             self.alerts.parent = self.ui
             self._ensure_vtk()
 
-            self.ui.Btn_abrir_senal.clicked.connect(self._on_open_clicked)
+            self.ui.Btn_abrir_senal.clicked.connect(self.open_file_dialog)
             self.ui.listChannels.itemChanged.connect(self._on_channel_item_changed)
 
             if hasattr(self.ui, "splitter"):
@@ -179,7 +179,12 @@ class OpenSignalPlugin(IPlugin):
         self.vtk_interactor.AddObserver(vtk.vtkCommand.MouseMoveEvent, self._sync_callback)
 
     # ---------------- file / data ----------------
-    def _on_open_clicked(self):
+    def open_file_dialog(self):
+        """Public entry point: shows the file picker and loads the selected signal.
+
+        Called both from the plugin's own button and from the File > Open signal
+        menu action in the main window.
+        """
         # Get last opened folder from settings
         last_dir = self.settings.get("last_open_dir", str(Path.cwd()))
 
@@ -239,7 +244,7 @@ class OpenSignalPlugin(IPlugin):
                 return
         except Exception as e:
             QMessageBox.warning(self.ui, "Error", f"Error opening file {fname}\n{e}.")
-            self._log("_on_open_clicked error:", e)
+            self._log("open_file_dialog error:", e)
             traceback.print_exc()
             return
 

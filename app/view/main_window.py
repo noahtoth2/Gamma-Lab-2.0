@@ -10,6 +10,13 @@ from PyQt5.QtWidgets import (
     QLabel,
     QSizePolicy,
     QApplication,
+    QMenu,
+    QAction,
+    QTreeWidget,
+    QTreeWidgetItem,
+    QWidgetAction,
+    QLineEdit,
+    QPushButton,
 )
 from app.view.main_window_ui import Ui_MainWindow 
 from PyQt5.QtGui import QIcon, QFontMetrics, QFont, QPixmap, QPainter
@@ -92,13 +99,13 @@ class MainWindow(QMainWindow):
             "Home": self.ui.bnt_home,
             "Preprocessing": self.ui.btn_preprocessing,
             "Analysis": self.ui.btn_analysis,
-            "Measure": self.ui.btn_measure,
-            "FAQ": self.ui.btn_faq,
         }
 
         for section, btn in self.section_buttons.items():
             btn.setCheckable(True)
             btn.clicked.connect(lambda _, s=section: self.switch_section(s))
+
+        self.setup_file_menu()
 
         # Show Home plugins by default
         self.switch_section(self.current_section)
@@ -147,19 +154,50 @@ class MainWindow(QMainWindow):
             plugin = self.kernel.get_plugin(name)
             subcategories[plugin.subcategory()].append(name)
 
+        # Fixed display order for specific subcategories (registration order isn't reliable)
+        explicit_order = {"Measurements": ["Slope Results", "Amplitude Results"]}
+        for subcat, order in explicit_order.items():
+            if subcat in subcategories:
+                subcategories[subcat].sort(
+                    key=lambda n: order.index(n) if n in order else len(order)
+                )
+
         # Build each subcategory and put a divider between them
         subcats = list(subcategories.items())
+        measurements_row = None
         for idx, (subcat, plugins) in enumerate(subcats):
             group_box = QGroupBox(subcat, self.ui.buttonContainer)
             group_box.setAlignment(Qt.AlignHCenter | Qt.AlignBottom)
             row = QHBoxLayout(group_box)
-            row.setContentsMargins(0, 6, 0, 22)
-            row.setSpacing(34)
+            row.setContentsMargins(0, 6, 0, 25)
+            row.setSpacing(20)
 
             for name in plugins:
-                row.addWidget(self.add_plugin_button(name))
+                if section == "Home" and name == "Slope Results":
+                    row.addWidget(self._build_slope_button(name), 0, Qt.AlignBottom)
+                    continue
+                if section == "Home" and name == "Amplitude Results":
+                    row.addWidget(self._build_amplitude_button(name), 0, Qt.AlignBottom)
+                    continue
+                btn = self.add_plugin_button(name)
+                row.addWidget(btn, 0, Qt.AlignBottom)
 
             contenedor.addWidget(group_box, 0, Qt.AlignVCenter)
+            if subcat == "Measurements":
+                measurements_row = row
+
+        # Home-only ribbon extras: delete dropdown, show/hide dropdown, zoom popup
+        if section == "Home":
+            if measurements_row is not None:
+                measurements_row.addWidget(self._build_delete_toggle_stack(), 0, Qt.AlignTop)
+
+            zoom_group = QGroupBox("Zoom", self.ui.buttonContainer)
+            zoom_group.setAlignment(Qt.AlignHCenter | Qt.AlignBottom)
+            zoom_row = QHBoxLayout(zoom_group)
+            zoom_row.setContentsMargins(0, 6, 0, 80)
+            zoom_row.setSpacing(20)
+            zoom_row.addWidget(self._build_zoom_button(), 0, Qt.AlignBottom)
+            contenedor.addWidget(zoom_group, 0, Qt.AlignVCenter)
 
         # Push everything to the left
         contenedor.addStretch(1)
@@ -174,26 +212,178 @@ class MainWindow(QMainWindow):
         btn.setCheckable(False)
         btn.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
 
-        # Fixed size (consistent with QSS)
-        btn.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        btn.setMinimumWidth(96); btn.setMaximumWidth(96)
-        btn.setMinimumHeight(76)
+        # Size follows content (icon + text): no forced fixed box
+        btn.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
 
         # Icon
         try:
             icon_path = plugin.icon()
             if icon_path:
                 btn.setIcon(QIcon(icon_path))
-                btn.setIconSize(QSize(26, 26))
+                btn.setIconSize(QSize(30, 30))
         except Exception as e:
             print("Icon not available for plugin", name, "->", e)
 
         label = plugin.name()
-        fm_width = 96 - 8
+        fm_width = 88
         btn.setText(self._wrap_button_text(label, btn.font(), fm_width))
 
         btn.clicked.connect(lambda _, n=name: self.on_button_click(n))
         return btn
+
+    def _build_icon_arrow_pair(self, icon_btn: QToolButton, menu: QMenu, gap: int = 8,
+                                left_margin: int = 0) -> QWidget:
+        """
+        Icon button + a separate small arrow button that opens `menu`, with a real
+        layout gap between them. Native QToolButton::menu-button spacing is not
+        reliably controllable via QSS across styles, so we build it by hand.
+        """
+        row = QWidget(self.ui.buttonContainer)
+        row_layout = QHBoxLayout(row)
+        row_layout.setContentsMargins(left_margin, 0, 0, 0)
+        row_layout.setSpacing(gap)
+        row_layout.addWidget(icon_btn)
+
+        arrow_btn = QToolButton(row)
+        arrow_btn.setObjectName(f"{icon_btn.objectName()}_arrow")
+        arrow_btn.setText("▾")
+        arrow_btn.setAutoRaise(True)
+        arrow_btn.setCursor(Qt.PointingHandCursor)
+        arrow_btn.setPopupMode(QToolButton.InstantPopup)
+        arrow_btn.setMenu(menu)
+        arrow_btn.setStyleSheet(
+            "QToolButton { border: none; background: transparent; padding: 2px; color: #2E60A9; }"
+            "QToolButton:hover { background: #EEF3FA; border-radius: 4px; }"
+            "QToolButton::menu-indicator { image: none; width: 0; height: 0; }"
+        )
+        row_layout.addWidget(arrow_btn, 0, Qt.AlignVCenter)
+
+        return row
+
+    def _build_measurement_button(self, name: str, label_text: str, icon_size: int = 60,
+                                   menu_items: list | None = None, icon_left_margin: int = 0) -> QWidget:
+      
+        plugin = self.kernel.get_plugin(name)
+        icon_btn = QToolButton(self.ui.buttonContainer)
+        icon_btn.setObjectName(f"btn_{name}")
+        icon_btn.setToolButtonStyle(Qt.ToolButtonIconOnly)
+        icon_btn.setAutoRaise(True)
+        icon_btn.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        icon_btn.setStyleSheet(
+            "QToolButton { padding: 0px; border: none; background: transparent; }"
+            "QToolButton:hover { background: #EEF3FA; border-radius: 10px; }"
+        )
+        try:
+            icon_path = plugin.icon()
+            if icon_path:
+                icon_btn.setIcon(QIcon(icon_path))
+                icon_btn.setIconSize(QSize(icon_size, icon_size))
+                icon_btn.setFixedSize(icon_size, icon_size)
+        except Exception as e:
+            print("Icon not available for plugin", name, "->", e)
+        icon_btn.clicked.connect(lambda _, n=name: self.on_button_click(n))
+
+        if menu_items:
+            menu = QMenu(icon_btn)
+            for item in menu_items:
+                menu.addAction(item)
+            top_row = self._build_icon_arrow_pair(icon_btn, menu, left_margin=icon_left_margin)
+        else:
+            top_row = icon_btn
+
+        container = QWidget(self.ui.buttonContainer)
+        v = QVBoxLayout(container)
+        v.setContentsMargins(0, 0, 0, 0)
+        v.setSpacing(2)
+        v.addWidget(top_row, 0, Qt.AlignHCenter)
+        label = QLabel(label_text, container)
+        label.setAlignment(Qt.AlignCenter)
+        label.setStyleSheet("color: #2E60A9; font-size: 9pt; background: transparent;")
+        v.addWidget(label)
+        return container
+
+    def _build_slope_button(self, name: str) -> QWidget:
+        """Slope icon (click = show results) + separated arrow (2 trials / all trials)."""
+        return self._build_measurement_button(
+            name, "slope", icon_size=52,
+            menu_items=["Slope (2 trials)", "slope (all trials)"],
+            icon_left_margin=6,
+        )
+
+    def _build_amplitude_button(self, name: str) -> QWidget:
+        """Amplitude icon, built the same way as slope (icon + label as separate widgets)."""
+        return self._build_measurement_button(name, "amplitude", icon_size=74)
+
+    def _build_static_tool_button(self, icon_path: str, object_name: str, small: bool = False) -> QToolButton:
+        """Build a ribbon button not backed by a plugin (e.g. delete, zoom)."""
+        btn = QToolButton(self.ui.buttonContainer)
+        btn.setObjectName(object_name)
+        btn.setCheckable(False)
+        btn.setAutoRaise(True)
+        btn.setToolButtonStyle(Qt.ToolButtonIconOnly)
+        btn.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        btn.setIconSize(QSize(20, 20) if small else QSize(24, 24))
+        btn.setIcon(QIcon(icon_path))
+        return btn
+
+    def _build_delete_button(self) -> QWidget:
+        """'delete last / delete all' dropdown for the Measurements group."""
+        btn = self._build_static_tool_button("assets/iconos/delete.png", "btn_delete_measurements", small=True)
+        menu = QMenu(btn)
+        menu.addAction("delete last")
+        menu.addAction("delete all")
+        return self._build_icon_arrow_pair(btn, menu, gap=4)
+
+    def _build_toggle_overlay_button(self) -> QWidget:
+        """Show/hide measurement overlays."""
+        btn = self._build_static_tool_button("assets/iconos/ocultar.png", "btn_toggle_measurements", small=True)
+        btn.setToolTip("Show/hide measurements")
+        menu = QMenu(btn)
+        menu.addAction("Show all")
+        menu.addAction("Hide all")
+        return self._build_icon_arrow_pair(btn, menu, gap=4)
+
+    def _build_delete_toggle_stack(self) -> QWidget:
+        """Stack 'delete' above 'show/hide', vertically, as a compact pair."""
+        container = QWidget(self.ui.buttonContainer)
+        layout = QVBoxLayout(container)
+        layout.setContentsMargins(0, 10, 0, 0)
+        layout.setSpacing(2)
+        layout.addWidget(self._build_delete_button())
+        layout.addWidget(self._build_toggle_overlay_button())
+        return container
+
+    def _build_zoom_button(self) -> QWidget:
+        """Zoom popup: '100%' field + '+' / '-' / 'restore' controls."""
+        btn = self._build_static_tool_button("assets/iconos/zoom.png", "btn_zoom")
+
+        popup = QWidget()
+        popup_layout = QHBoxLayout(popup)
+        popup_layout.setContentsMargins(10, 8, 10, 8)
+        popup_layout.setSpacing(6)
+
+        zoom_field = QLineEdit("100%")
+        zoom_field.setFixedWidth(56)
+        zoom_field.setAlignment(Qt.AlignCenter)
+        popup_layout.addWidget(zoom_field)
+
+        btn_plus = QPushButton("+")
+        btn_plus.setFixedWidth(28)
+        popup_layout.addWidget(btn_plus)
+
+        btn_minus = QPushButton("-")
+        btn_minus.setFixedWidth(28)
+        popup_layout.addWidget(btn_minus)
+
+        btn_restore = QPushButton("restore")
+        popup_layout.addWidget(btn_restore)
+
+        widget_action = QWidgetAction(btn)
+        widget_action.setDefaultWidget(popup)
+
+        menu = QMenu(btn)
+        menu.addAction(widget_action)
+        return self._build_icon_arrow_pair(btn, menu, gap=6)
 
     def _wrap_button_text(self, text: str, font: QFont, max_width: int) -> str:
         """
@@ -495,7 +685,41 @@ class MainWindow(QMainWindow):
         else:
             print("Plugin not found:", name)
 
+    '''File menu'''
 
+    def setup_file_menu(self):
+        """Build the dropdown menu shown when clicking the 'File' tab."""
+        file_menu = QMenu(self.ui.btn_file)
+
+        act_open_signal = QAction("Open signal", self)
+        act_open_project = QAction("Open proyect", self)
+        act_save = QAction("Save", self)
+        act_save_as = QAction("Save as", self)
+        act_close_project = QAction("Close proyect", self)
+        act_exit = QAction("Exit", self)
+
+        act_open_signal.triggered.connect(self.on_open_signal_clicked)
+        act_exit.triggered.connect(QApplication.instance().quit)
+
+        file_menu.addAction(act_open_signal)
+        file_menu.addAction(act_open_project)
+        file_menu.addAction(act_save)
+        file_menu.addAction(act_save_as)
+        file_menu.addAction(act_close_project)
+        file_menu.addAction(act_exit)
+
+        self.ui.btn_file.setMenu(file_menu)
+
+    def on_open_signal_clicked(self):
+        """File > Open signal: show the channel/signal preview and pop the file picker."""
+        plugin = self.kernel.get_plugin("Open Signal")
+        if not plugin:
+            print("Plugin not found: Open Signal")
+            return
+
+        self.show_plugin_widget(plugin)
+        if hasattr(plugin, "open_file_dialog"):
+            plugin.open_file_dialog()
 
     '''Sidebar'''
 
@@ -513,20 +737,16 @@ class MainWindow(QMainWindow):
 
     def setup_sidebar_functionality(self):
         sidebar = self.ui.widget_3
-        sidebar.setMaximumWidth(250)
+        sidebar.setMaximumWidth(600)
+        self.ui.splitter_3.setSizes([320, 9999])
         """Initialize and connect all sidebar functions."""
-        # Sidebar collapse
-        self.ui.collapse_explorer_btn.clicked.connect(lambda: self.toggle_sidebar_collapse(sidebar))
-        self.ui.collapse_explorer_btn.setIcon(QIcon("assets/icons/home/icn_collapse.png"))
+        # Sidebar collapse / navigation icons
+        self.ui.nav_explorer_btn.clicked.connect(lambda: self.toggle_sidebar_collapse(sidebar))
+        self.ui.help_nav_btn.clicked.connect(lambda: self.on_button_click("Help"))
 
         self.update_signal_list()
-        # Signal selection
-        self.ui.selected_signal_comboBox.currentIndexChanged.connect(self.on_signal_selected)
 
-        # Future sections
         self.setup_explorer_section()
-        self.setup_calculus_section()
-        self.setup_results_section()
 
     # Collapse and expand the sidebar
     def toggle_sidebar_collapse(self, sidebar):
@@ -547,10 +767,8 @@ class MainWindow(QMainWindow):
             self._sidebar_animation.setEasingCurve(QEasingCurve.InOutCubic)
             self._sidebar_animation.start()
 
-            self.ui.collapse_explorer_btn.setIcon(QIcon("assets/icons/home/icn_expand.png"))
-
         else:
-            width = getattr(self, "_last_sidebar_width", 250)
+            width = getattr(self, "_last_sidebar_width", 420)
 
             # Restore width and minimum limit
             sidebar.setMinimumWidth(100)
@@ -563,89 +781,46 @@ class MainWindow(QMainWindow):
             self._sidebar_animation.setEasingCurve(QEasingCurve.InOutCubic)
             self._sidebar_animation.start()
 
-            self.ui.collapse_explorer_btn.setIcon(QIcon("assets/icons/home/icn_collapse.png"))
-
-
-    def on_signal_selected(self):
-        """
-        Runs when the user changes the selected signal in the combo box.
-        Updates the active signal in the DataStore.
-        """
-        datastore = self.kernel.get_service("DataStore")
-        if not datastore:
-            print("⚠️ DataStore service not found.")
-            return
-
-        selected_key = self.ui.selected_signal_comboBox.currentText()
-        if not selected_key:
-            print("No signal selected.")
-            return
-
-        try:
-            datastore.set_active_signal(selected_key)
-            self.kernel.emit_event("signal_active_changed", {"key": selected_key})
-
-            print(f"[Main Window] Active signal changed to: {selected_key}")
-        except ValueError as e:
-            print(f"[Main Window] Error changing active signal: {e}")
-        finally:
-            # Hide watermark if a signal is active; otherwise show it
-            self._update_background_logo_visibility()
-
 
     def update_signal_list(self):
-        """Handle the selection of a signal from the combo box."""
-
-        datastore = self.kernel.get_service("DataStore")
-        if not datastore:
-            print("DataStore service not found.")
-            return
-        
-        signals = datastore.get_signals()
-        active_signal_key = datastore.get_active_signal_key()
-
-        # Clear combo
-        self.ui.selected_signal_comboBox.blockSignals(True)
-        self.ui.selected_signal_comboBox.clear()
-
-        for key in signals.keys():
-            self.ui.selected_signal_comboBox.addItem(key)
-
-        # Select the active signal if present
-        if active_signal_key and active_signal_key in signals:
-            index = self.ui.selected_signal_comboBox.findText(active_signal_key)
-            if index >= 0:
-                self.ui.selected_signal_comboBox.setCurrentIndex(index)
-
-        self.ui.selected_signal_comboBox.blockSignals(False)
-
-        # Update logo visibility depending on loaded signals
+        """Update logo/watermark visibility depending on loaded signals."""
         self._update_background_logo_visibility()
-
-
-
-        # selected_signal = self.ui.selected_signal_comboBox.currentText()
-        # if selected_signal:
-        #     print(f"Selected signal: {selected_signal}")
-        #     # Here you could notify the kernel or load the selected signal
-        # else:
-        #     print("No signal selected.")
-        pass
-
 
     # === FUTURE FUNCTIONS (placeholder with pass) ===
     def setup_explorer_section(self):
-        """Initialize the explorer section (currently empty)."""
-        pass
+        """Build the Explorer tree (visual only, sample data)."""
+        container = self.ui.explorer_QWidget
+        layout = container.layout()
+        if layout is None:
+            layout = QVBoxLayout(container)
+            layout.setContentsMargins(0, 0, 0, 0)
 
-    def setup_calculus_section(self):
-        """Initialize the calculations section (currently empty)."""
-        pass
+        tree = QTreeWidget(container)
+        tree.setObjectName("explorerTreeWidget")
+        tree.setHeaderHidden(True)
+        tree.setIndentation(14)
+        tree.setIconSize(QSize(16, 16))
+        tree.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
-    def setup_results_section(self):
-        """Initialize the results section (currently empty)."""
-        pass
-    
+        root = QTreeWidgetItem(["nombre del proyecto"])
+        root_font = QFont(tree.font())
+        root_font.setBold(True)
+        root.setFont(0, root_font)
+
+        results_folder = QTreeWidgetItem(root, ["archivos de resultado"])
+
+        xlsx_item = QTreeWidgetItem(results_folder, ["signal_trials_23n09000.xlsx"])
+        xlsx_item.setIcon(0, QIcon("assets/iconos/excel-icon.png"))
+
+        abf_item = QTreeWidgetItem(root, ["23n09000.abf"])
+        abf_item.setIcon(0, QIcon("assets/iconos/abf-icon.png"))
+
+        tree.addTopLevelItem(root)
+        tree.expandAll()
+
+        layout.addWidget(tree)
+        self.explorer_tree = tree
+
     def _on_app_about_to_quit(self):
         """Shut down plugins and their UI safely. Idempotent."""
         if self._app_quitting:

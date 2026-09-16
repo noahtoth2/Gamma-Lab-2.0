@@ -11,74 +11,129 @@ QMainWindow {
     padding: 0px;
 }
 
-/* Main button bar (navigation row) */
+/* Title bar */
+#titleBar {
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #E3E7EC;
+}
+
+#titleLabTextLabel {
+    color: #2E60A9;
+    font-size: 13pt;
+    font-weight: 700;
+}
+
+#titleFileNameLabel {
+    color: #33475b;
+    font-size: 10pt;
+}
+
+#searchBar {
+    background-color: #F0F2F5;
+    border: 1px solid #E3E7EC;
+    border-radius: 16px;
+}
+
+#searchLineEdit {
+    background: transparent;
+    border: none;
+    color: #33475b;
+    font-size: 9.5pt;
+}
+
+#searchIconLabel {
+    color: #6f7a86;
+    font-size: 10pt;
+}
+
+/* Main button bar (navigation row / tabs) */
 QPushButton {
     background-color: transparent;
-    color: #2E60A9;
+    color: #33475b;
     border: none;
-    font-size: 10pt;
+    border-bottom: 2px solid transparent;
+    font-size: 11pt;
     font-weight: 400;
-    padding: 6px 0px;
+    padding: 6px 4px 8px;
 }
 
 /* Hover */
 QPushButton:hover {
-    /* text-decoration: underline; */
-    font-weight: bold;
+    color: #2E60A9;
 }
 
 /* Pressed */
 QPushButton:pressed {
-    font-weight: bold;
+    color: #2E60A9;
 }
 
-/* Checked */
+/* Checked (active tab): blue bold text + underline, no filled background */
 QPushButton:checked {
-    background-color: #2E60A9;
-    color: #FFFFFF;
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
-    border-bottom-left-radius: 0px;
-    border-bottom-right-radius: 0px;
+    background-color: transparent;
+    color: #2E60A9;
+    font-weight: 600;
+    border-bottom: 2px solid #2E60A9;
+    border-radius: 0px;
 }
 
 #buttonContainer {
-    background-color: #2E60A9;
-    border: none;
-    margin: 0;
-    padding: 6px 16px 10px;
-    min-height: 120px;
-    max-height: 120px;
+    background-color: #FFFFFF;
+    border: 1px solid #E3E7EC;
+    border-radius: 10px;
+    margin: 8px;
+    padding: 6px 16px 2px;
+    min-height: 122px;
+    max-height: 122px;
 }
 
 
 #buttonContainer QToolButton {
     background-color: transparent;
-    color: white;
+    color: #2E60A9;
     border: none;
     font-size: 9pt;
-    padding: 4px 6px 2px;
-    min-width: 96px;
-    max-width: 96px;
-    min-height: 76px;
+    padding: 6px 10px 4px;
 }
 
 #buttonContainer QToolButton:hover {
-    background-color: #2a59a0;
+    background-color: #EEF3FA;
     border-radius: 10px;
 }
 
 #buttonContainer QToolButton:checked {
     background: transparent;
-    color: white;
+    color: #2E60A9;
     border-radius: 0;
+}
+
+/* Dropdown arrow: no highlight, separated from the icon with left margin */
+#buttonContainer QToolButton::menu-button {
+    border: none;
+    background: transparent;
+    width: 16px;
+    margin-left: 8px;
+}
+
+#buttonContainer QToolButton::menu-button:hover,
+#buttonContainer QToolButton::menu-button:pressed,
+#buttonContainer QToolButton::menu-button:open {
+    border: none;
+    background: transparent;
+}
+
+#buttonContainer QToolButton::menu-indicator {
+    subcontrol-origin: padding;
+    subcontrol-position: center;
+    width: 10px;
+    height: 10px;
 }
 
 /* Subcategory styles */
 
 #buttonContainer QGroupBox {
     border: none;
-    color: white;
+    border-left: 1px solid #E3E7EC;
+    color: #6f7a86;
     font-size: 9.5pt;
     padding: 0 4px;
     margin: 0;
@@ -87,7 +142,59 @@ QPushButton:checked {
 #buttonContainer QGroupBox::title {
     subcontrol-origin: margin;
     subcontrol-position: bottom center;
-    padding: 6px 8px 0 8px;
+    padding: 0 8px;
+}
+
+/* File menu dropdown */
+QMenu {
+    background-color: #FFFFFF;
+    border: 1px solid #E3E7EC;
+    padding: 4px 0px;
+}
+
+QMenu::item {
+    padding: 8px 24px;
+    color: #33475b;
+    border-bottom: 1px solid #E3E7EC;
+}
+
+QMenu::item:selected {
+    background-color: #EEF3FA;
+    color: #2E60A9;
+}
+
+/* Explorer tree */
+#explorerTreeWidget {
+    background-color: transparent;
+    border: none;
+    color: #33475b;
+    font-size: 9.5pt;
+}
+
+#explorerTreeWidget::item {
+    padding: 3px 2px;
+}
+
+#explorerTreeWidget::item:selected {
+    background-color: #EEF3FA;
+    color: #2E60A9;
+}
+
+/* Fixed left navigation column */
+#static_sideBar {
+    background-color: #FFFFFF;
+    border-right: 1px solid #E3E7EC;
+}
+
+#static_sideBar QToolButton {
+    background-color: transparent;
+    border: none;
+    padding: 8px;
+    border-radius: 6px;
+}
+
+#static_sideBar QToolButton:hover {
+    background-color: #EEF3FA;
 }
 
 QScrollArea { 
