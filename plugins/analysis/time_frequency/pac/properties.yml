@@ -1,0 +1,8 @@
+id: "pac"
+name: "PAC"
+category: "Analysis"
+subcategory: "Time-Frequency"
+version: "1.0"
+icon: "icn_pac.png"
+logic_class: "Pac_plugin"
+ui_class: ""
