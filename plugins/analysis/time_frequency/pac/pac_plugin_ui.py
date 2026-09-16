@@ -1,5 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-
+import os
 
 class Ui_Pac(object):
 
@@ -50,13 +50,14 @@ class Ui_Pac(object):
 
         self.parametersHeader.addStretch()
 
-        # --- Clear/ broom button ---
+        # --- Clear/ broom button --- 
         self.clearButton = QtWidgets.QToolButton(self.layoutWidget)
         self.clearButton.setObjectName("clearButton")
-        self.clearButton.setText("🧹")
-        self.parametersHeader.addWidget(self.clearButton)
+        icon_path = os.path.join(os.path.dirname(__file__),"..","..","..","..","assets","iconos","clear.png")
+        self.clearButton.setIcon(QtGui.QIcon(icon_path))
+        self.clearButton.setIconSize(QtCore.QSize(20, 20))
 
-        self.paramsLayout.addLayout(self.parametersHeader)
+        self.parametersHeader.addWidget(self.clearButton)
 
         # --- Driver below parameters ---
         self.paramsLine = QtWidgets.QFrame(self.layoutWidget)
