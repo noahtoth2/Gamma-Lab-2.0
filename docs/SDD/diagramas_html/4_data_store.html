@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>DataStore — GammaLab 2.0</title>
+<link rel="stylesheet" href="diagram.css">
+</head>
+<body>
+
+<h1>Componente: DataStore</h1>
+<p class="subtitle">Persistencia en memoria de señales y trials — GammaLab 2.0</p>
+
+<div class="toolbar">
+    <button class="export-btn" id="export-btn">Exportar como imagen (PNG)</button>
+    <button class="connect-btn" id="connect-btn">🔗 Conectar cajas</button>
+    <button class="save-btn" id="save-btn">💾 Guardar estado</button>
+    <button class="load-btn" id="load-btn">📂 Cargar estado</button>
+    <input type="file" id="load-input" accept="application/json" style="display:none;">
+    <span class="hint">Arrastra desde la barra gris. Clic en texto para editarlo. Clic en una línea o su etiqueta para renombrarla o borrarla.</span>
+</div>
+
+<div class="legend">
+    <div class="legend-item"><span class="swatch existente"></span> Ya existe en el código</div>
+    <div class="legend-item"><span class="swatch nuevo"></span> Nuevo — por implementar</div>
+</div>
+
+<div class="board" id="board" style="min-height:520px;">
+<svg id="connector-svg"></svg>
+
+    <div class="uml-class" id="datastore" style="left:20px; top:20px;">
+        <div class="drag-handle"></div>
+        <div class="class-name" contenteditable="true">DataStore</div>
+        <div class="section" contenteditable="true">_data: dict</div>
+        <div class="section" contenteditable="true">+ set(key, value)
++ get(key, default=None)
++ has(key)
++ items()
++ remove(key)
++ add_signal(signal, key=None)
++ get_signals()
++ set_active_signal(key)
++ get_active_signal()
++ get_active_signal_key()
++ clear_active_signal()
++ is_active_signal(key)</div>
+    </div>
+
+    <div class="uml-class" id="signaldataset" style="left:380px; top:20px;">
+        <div class="drag-handle"></div>
+        <div class="class-name" contenteditable="true">SignalDataset</div>
+        <div class="section" contenteditable="true">name: str
+format: str
+source_path: str
+sampling_rate: float
+time: np.ndarray
+signals: np.ndarray
+channel_names: List[str]
+units: List[str]
+metadata: Dict[str, Any]
+vtk_table = None
+__trials_dataset: List[TrialDataset]
+__discarded_trials: Dict[tuple[str,str], set[int]]</div>
+        <div class="section" contenteditable="true">+ add_trial_dataset(trial)
++ number_of_trials_dataset()
++ get_active_trials(file_name, channel_name=None)
++ discard_trial(source, channel, index)
++ include_trial(source, channel, index)
++ clear_discarded_trials()
++ is_trial_discarded(source, channel, index)</div>
+    </div>
+
+    <div class="uml-class" id="trialdataset" style="left:740px; top:20px;">
+        <div class="drag-handle"></div>
+        <div class="class-name" contenteditable="true">TrialDataset</div>
+        <div class="section" contenteditable="true">source: str
+sampling_rate: float
+channel_index: int
+channel_name: str
+unit: str
+t0: float
+t1: float
+time_rel: np.ndarray
+trials: np.ndarray  (Ns, T)
+onsets_s: List[float]
+isi_s: List[float]
+metadata: Dict[str, Any]</div>
+        <div class="section empty" contenteditable="true">(sin métodos propios — dataclass de datos)</div>
+    </div>
+
+</div>
+
+<div class="relaciones">
+    <h2>Relaciones con otros componentes</h2>
+    <ul>
+        <li><strong>FileIOService</strong> (ver componente FileIO) construye instancias de <strong>SignalDataset</strong> a partir de archivos externos.</li>
+        <li><strong>Kernel</strong> registra <strong>DataStore</strong> como servicio ("DataStore") consumido por <strong>MainWindow</strong> y por los plugins.</li>
+        <li><strong>TaskOrchestrator</strong> y <strong>ProjectSession</strong> (ver esos componentes) leerían/escribirían en <strong>DataStore</strong>.</li>
+    </ul>
+</div>
+
+<script src="diagram.js"></script>
+<script>
+    const diagram = initDiagram('board', 'connector-svg', [
+        { from: 'datastore', to: 'signaldataset', type: 'assoc', label: 'almacena 0..*' },
+        { from: 'signaldataset', to: 'trialdataset', type: 'assoc', label: 'contiene 0..*' },
+    ]);
+    document.getElementById('export-btn').addEventListener('click', function () {
+        exportBoardAsPNG('board', 'connector-svg', 'data_store.png', 3);
+    });
+    const connectBtn = document.getElementById('connect-btn');
+    let connecting = false;
+    connectBtn.addEventListener('click', function () {
+        connecting = !connecting;
+        diagram.setConnectMode(connecting);
+        connectBtn.textContent = connecting ? 'Clic en 2 cajas... (cancelar)' : '🔗 Conectar cajas';
+        connectBtn.classList.toggle('active', connecting);
+    });
+    wireSaveLoadButtons(diagram, 'save-btn', 'load-btn', 'load-input', 'data_store_estado.json');
+</script>
+
+</body>
+</html>

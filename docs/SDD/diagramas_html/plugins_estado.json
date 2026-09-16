@@ -1,0 +1,104 @@
+{
+  "boxes": [
+    {
+      "id": "iplugin",
+      "left": "20px",
+      "top": "20px",
+      "nuevo": false,
+      "html": "<div class=\"stereotype\" contenteditable=\"true\">«interface» (definida en ApplicationCore)</div><div class=\"class-name\" contenteditable=\"true\">IPlugin</div><div class=\"section\" contenteditable=\"true\">+ get_widget(parent=None)\n+ process(data)\n+ stop()</div>"
+    },
+    {
+      "id": "opensignalplugin",
+      "left": "520.8px",
+      "top": "181.8px",
+      "nuevo": false,
+      "html": "<div class=\"class-name\" contenteditable=\"true\">OpenSignalPlugin</div><div class=\"section\" contenteditable=\"true\">+ get_widget()\n+ process(data)</div>"
+    },
+    {
+      "id": "trialsplugin",
+      "left": "852.8px",
+      "top": "130.8px",
+      "nuevo": false,
+      "html": "<div class=\"class-name\" contenteditable=\"true\">TrialsPlugin</div><div class=\"section\" contenteditable=\"true\">+ get_widget()\n+ process(data)</div>"
+    },
+    {
+      "id": "filterplugin",
+      "left": "1100px",
+      "top": "20px",
+      "nuevo": false,
+      "html": "<div class=\"class-name\" contenteditable=\"true\">Filter_plugin</div><div class=\"section\" contenteditable=\"true\">+ get_widget()\n+ process(data)</div>"
+    },
+    {
+      "id": "waveletplugin",
+      "left": "20px",
+      "top": "340px",
+      "nuevo": false,
+      "html": "<div class=\"class-name\" contenteditable=\"true\">Wavelet_plugin</div><div class=\"section\" contenteditable=\"true\">+ get_widget()\n+ process(data)</div>"
+    },
+    {
+      "id": "pacanalysisplugin",
+      "left": "380px",
+      "top": "340px",
+      "nuevo": true,
+      "html": "<div class=\"stereotype\" contenteditable=\"true\">«abstract»</div><div class=\"class-name\" contenteditable=\"true\">PACAnalysisPlugin</div><div class=\"section\" contenteditable=\"true\">banda_fase: tuple\nrango_amplitud: tuple</div><div class=\"section\" contenteditable=\"true\">+ calcular_mapa_fase_frecuencia()</div>"
+    },
+    {
+      "id": "pacsinglechannelplugin",
+      "left": "827.6px",
+      "top": "465.6px",
+      "nuevo": true,
+      "html": "<div class=\"class-name\" contenteditable=\"true\">PACSingleChannelPlugin</div><div class=\"section\" contenteditable=\"true\">+ calcular_pac_1_canal()</div>"
+    },
+    {
+      "id": "pacinterchannelplugin",
+      "left": "963.8px",
+      "top": "290.8px",
+      "nuevo": true,
+      "html": "<div class=\"class-name\" contenteditable=\"true\">PACInterChannelPlugin</div><div class=\"section\" contenteditable=\"true\">+ calcular_pac_2_canales()\n+ calcular_ppc()</div>"
+    }
+  ],
+  "connections": [
+    {
+      "from": "opensignalplugin",
+      "to": "iplugin",
+      "type": "inherit",
+      "label": "hereda / implementa"
+    },
+    {
+      "from": "trialsplugin",
+      "to": "iplugin",
+      "type": "inherit",
+      "label": "hereda / implementa"
+    },
+    {
+      "from": "filterplugin",
+      "to": "iplugin",
+      "type": "inherit",
+      "label": "hereda / implementa"
+    },
+    {
+      "from": "waveletplugin",
+      "to": "iplugin",
+      "type": "inherit",
+      "label": "hereda / implementa"
+    },
+    {
+      "from": "pacanalysisplugin",
+      "to": "iplugin",
+      "type": "inherit",
+      "label": "hereda / implementa"
+    },
+    {
+      "from": "pacsinglechannelplugin",
+      "to": "pacanalysisplugin",
+      "type": "inherit",
+      "label": "hereda / implementa"
+    },
+    {
+      "from": "pacinterchannelplugin",
+      "to": "pacanalysisplugin",
+      "type": "inherit",
+      "label": "hereda / implementa"
+    }
+  ]
+}

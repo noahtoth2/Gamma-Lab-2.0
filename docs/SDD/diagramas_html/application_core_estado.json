@@ -1,0 +1,123 @@
+{
+  "boxes": [
+    {
+      "id": "pluginmeta",
+      "left": "20px",
+      "top": "20px",
+      "nuevo": false,
+      "html": "<div class=\"class-name\" contenteditable=\"true\">PluginMeta</div><div class=\"section\" contenteditable=\"true\">id: str\nname: str\ncategory: str\nsubcategory: str\nversion: str\nicon: str\nlogic_class: str\nui_class: Optional[str] = None\nroot: Optional[Path] = None</div><div class=\"section\" contenteditable=\"true\">+ icon_path() : Path</div>"
+    },
+    {
+      "id": "pluginmanager",
+      "left": "380px",
+      "top": "20px",
+      "nuevo": false,
+      "html": "<div class=\"class-name\" contenteditable=\"true\">PluginManager</div><div class=\"section\" contenteditable=\"true\">plugins_dir: Path\nregistry: Dict[str, Tuple[PluginMeta, IPlugin]]</div><div class=\"section\" contenteditable=\"true\">+ load_all()\n+ all()\n+ get(plugin_id)</div>"
+    },
+    {
+      "id": "kernel",
+      "left": "1172.6px",
+      "top": "40.8px",
+      "nuevo": false,
+      "html": "<div class=\"class-name\" contenteditable=\"true\">Kernel</div><div class=\"section\" contenteditable=\"true\">event: pyqtSignal(str, object)\nplugin_registered: pyqtSignal(str)\n_plugins: dict\n_services: dict</div><div class=\"section\" contenteditable=\"true\">+ register_plugin(name, plugin)\n+ get_plugins()\n+ get_plugin(name)\n+ get_plugins_by_category(category)\n+ load_and_register(name, module_path, class_name)\n+ stop_plugins()\n+ register_service(key, service)\n+ get_service(key)\n+ emit_event(topic, payload=None)</div>"
+    },
+    {
+      "id": "settingsservice",
+      "left": "766.8px",
+      "top": "485.8px",
+      "nuevo": false,
+      "html": "<div class=\"class-name\" contenteditable=\"true\">SettingsService</div><div class=\"section\" contenteditable=\"true\">filename: str = \"gamma_lab_settings.json\"\ndata: dict</div><div class=\"section\" contenteditable=\"true\">+ load()\n+ save()\n+ get(key, default=None)\n+ set(key, value)</div>"
+    },
+    {
+      "id": "iplugin",
+      "left": "742.6px",
+      "top": "0px",
+      "nuevo": false,
+      "html": "<div class=\"stereotype\" contenteditable=\"true\">«interface»</div><div class=\"class-name\" contenteditable=\"true\">IPlugin</div><div class=\"section\" contenteditable=\"true\">meta: PluginMeta\nstarted: bool\nmainwin\nwidget: QWidget\nkernel: Kernel\nactive_signal: SignalDataset\nactive_chanel\nalerts: PluginAlerts</div><div class=\"section\" contenteditable=\"true\">+ name() / category() / subcategory()\n+ icon()\n+ get_datastore()\n+ get_active_signal()\n+ get_active_trials(signal)\n+ on_kernel_event(topic, payload)\n+ initialize(kernel)\n+ start(kernel)\n+ stop()  {abstract}\n+ get_widget(parent=None)  {abstract}\n+ process(data)  {abstract}</div>"
+    },
+    {
+      "id": "vtkcontextmenu",
+      "left": "361.188px",
+      "top": "501.2px",
+      "nuevo": false,
+      "html": "<div class=\"class-name\" contenteditable=\"true\">VTKContextMenu</div><div class=\"section\" contenteditable=\"true\">last_export_dir: str\nchart: vtkChartXY\nvtk_widget\nsignal_name / channel_name / plugin_name: str\nsettings: SettingsService\nexport_service: ExportService\nmeasure_service: MeasurementService</div><div class=\"section\" contenteditable=\"true\">+ set_signal_name(name)\n+ set_channel_name(name)\n+ set_plugin_name(name)\n+ set_chart(chart)\n+ set_datastore(store)\n+ set_measurements_enabled(enabled)\n+ set_measurement_context(...)\n+ show_menu(pos)\n+ export_image(fmt, filename=None)\n+ export_table(fmt, filename=None)\n+ set_zoom_mode(mode)\n+ reset_zoom()\n+ rebuild_measurement_overlays()\n+ clear_measurement_overlays()\n+ on_view_rebuilt(chart, *, view_id, trial_id, channel_name, ...)</div>"
+    },
+    {
+      "id": "pluginalerts",
+      "left": "12.4px",
+      "top": "338.2px",
+      "nuevo": false,
+      "html": "<div class=\"class-name\" contenteditable=\"true\">PluginAlerts</div><div class=\"section\" contenteditable=\"true\">parent: QWidget</div><div class=\"section\" contenteditable=\"true\">+ error(message, title=\"Error\")\n+ warning(message, title=\"Warning\")\n+ info(message, title=\"Information\")\n+ show_spinner(text=\"Processing...\", gif_path=None)\n+ hide_spinner()</div>"
+    },
+    {
+      "id": "taskorchestrator",
+      "left": "1163.8px",
+      "top": "473.8px",
+      "nuevo": true,
+      "html": "<div class=\"class-name\" contenteditable=\"true\">TaskOrchestrator</div><div class=\"section\" contenteditable=\"true\">cola: list\ntarea_actual\numbral_progreso_s: float = 1.0</div><div class=\"section\" contenteditable=\"true\">+ solicitar(funcion, params, origen)\n+ encolar(solicitud)\n+ cancelar(id_tarea)\n+ forzar_terminacion(tarea)\n+ publicar_resultado(...)</div>"
+    },
+    {
+      "id": "tooltiphelper",
+      "left": "363px",
+      "top": "330px",
+      "nuevo": true,
+      "html": "<div class=\"class-name\" contenteditable=\"true\">TooltipHelper</div><div class=\"section\" contenteditable=\"true\">descripciones: dict[str, str]</div><div class=\"section\" contenteditable=\"true\">+ aplicar_tooltips(widget)\n+ al_cambiar_habilitado(widget, habilitado)</div>"
+    }
+  ],
+  "connections": [
+    {
+      "from": "pluginmanager",
+      "to": "pluginmeta",
+      "type": "assoc",
+      "label": "construye"
+    },
+    {
+      "from": "pluginmanager",
+      "to": "iplugin",
+      "type": "assoc",
+      "label": "instancia"
+    },
+    {
+      "from": "kernel",
+      "to": "iplugin",
+      "type": "assoc",
+      "label": "initialize() / stop()"
+    },
+    {
+      "from": "iplugin",
+      "to": "kernel",
+      "type": "assoc",
+      "label": "self.kernel"
+    },
+    {
+      "from": "kernel",
+      "to": "taskorchestrator",
+      "type": "assoc",
+      "label": "orquesta"
+    },
+    {
+      "from": "vtkcontextmenu",
+      "to": "settingsservice",
+      "type": "assoc",
+      "label": "usa"
+    },
+    {
+      "from": "settingsservice",
+      "to": "taskorchestrator",
+      "type": "assoc",
+      "label": "usa"
+    },
+    {
+      "from": "pluginalerts",
+      "to": "pluginmanager",
+      "type": "assoc",
+      "label": "usa"
+    },
+    {
+      "from": "iplugin",
+      "to": "tooltiphelper",
+      "type": "assoc",
+      "label": "construye"
+    }
+  ]
+}

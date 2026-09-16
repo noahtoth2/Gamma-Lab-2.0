@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Export — GammaLab 2.0</title>
+<link rel="stylesheet" href="diagram.css">
+</head>
+<body>
+
+<h1>Componente: Export</h1>
+<p class="subtitle">Exportación de imágenes y tablas — GammaLab 2.0</p>
+
+<div class="toolbar">
+    <button class="export-btn" id="export-btn">Exportar como imagen (PNG)</button>
+    <button class="connect-btn" id="connect-btn">🔗 Conectar cajas</button>
+    <button class="save-btn" id="save-btn">💾 Guardar estado</button>
+    <button class="load-btn" id="load-btn">📂 Cargar estado</button>
+    <input type="file" id="load-input" accept="application/json" style="display:none;">
+    <span class="hint">Arrastra desde la barra gris. Clic en texto para editarlo. Clic en una línea o su etiqueta para renombrarla o borrarla.</span>
+</div>
+
+<div class="legend">
+    <div class="legend-item"><span class="swatch existente"></span> Ya existe en el código</div>
+    <div class="legend-item"><span class="swatch nuevo"></span> Nuevo — por implementar</div>
+</div>
+
+<div class="board" id="board" style="min-height:500px;">
+<svg id="connector-svg"></svg>
+
+    <div class="uml-class" id="exportservice" style="left:20px; top:160px; width:340px;">
+        <div class="drag-handle"></div>
+        <div class="class-name" contenteditable="true">ExportService</div>
+        <div class="section" contenteditable="true">alerts: PluginAlerts
+parent
+vtk_widget
+get_active_chart: callable
+get_names: callable
+_get_last_dir / _set_last_dir: callable</div>
+        <div class="section" contenteditable="true">+ export_image(format: str, filename=None)
++ export_table(fmt: str, filename=None)
++ export_vector(fmt = "emf")</div>
+    </div>
+
+    <div class="uml-class" id="vtkcontextmenu" style="left:440px; top:20px;">
+        <div class="drag-handle"></div>
+        <div class="stereotype" contenteditable="true">(ver componente ApplicationCore)</div>
+        <div class="class-name" contenteditable="true">VTKContextMenu</div>
+        <div class="section" contenteditable="true">export_service: ExportService
+settings: SettingsService</div>
+        <div class="section" contenteditable="true">+ show_menu(pos)
++ export_image(fmt, filename=None)
++ export_table(fmt, filename=None)</div>
+    </div>
+
+    <div class="uml-class" id="pluginalerts" style="left:440px; top:320px;">
+        <div class="drag-handle"></div>
+        <div class="stereotype" contenteditable="true">(ver componente ApplicationCore)</div>
+        <div class="class-name" contenteditable="true">PluginAlerts</div>
+        <div class="section" contenteditable="true">parent: QWidget</div>
+        <div class="section" contenteditable="true">+ error(message, title="Error")
++ info(message, title="Information")</div>
+    </div>
+
+</div>
+
+<div class="relaciones">
+    <h2>Relaciones con otros componentes</h2>
+    <ul>
+        <li><strong>ExportService</strong> no depende directamente de <strong>VTKContextMenu</strong> (no lo importa); recibe callbacks (<code>get_active_chart</code>, <code>get_names</code>, <code>last_dir_getter</code>/<code>setter</code>) para desacoplarse de la UI que lo construye.</li>
+        <li><strong>VTKContextMenu</strong> (ver componente ApplicationCore) sí instancia <strong>ExportService</strong> en su constructor y expone <code>export_image</code>/<code>export_table</code> en el menú contextual de cada gráfico VTK.</li>
+        <li><strong>ExportService</strong> crea su propia instancia de <strong>PluginAlerts</strong> (<code>self.alerts = PluginAlerts()</code>, ver componente ApplicationCore) para notificar éxito/error de cada exportación.</li>
+        <li>La persistencia de la última carpeta usada (<code>last_export_dir</code>) pasa por <strong>SettingsService</strong>, pero indirectamente: es <strong>VTKContextMenu</strong> quien posee la instancia de <strong>SettingsService</strong> y se la inyecta a <strong>ExportService</strong> mediante los callbacks <code>_get_last_dir</code>/<code>_set_last_dir</code>; <strong>ExportService</strong> nunca importa <strong>SettingsService</strong> directamente.</li>
+        <li>El SAD (Escenario de Calidad 4) describe a <strong>ExportService</strong> como "registrado en el núcleo por inversión de control", pero en <code>main.py</code> el Kernel solo registra <code>"DataStore"</code> y <code>"FileIO"</code>; <strong>ExportService</strong> no está registrado como servicio del Kernel — solo existe la instancia que crea <strong>VTKContextMenu</strong>.</li>
+        <li><code>export_vector()</code> corresponde al caso de uso CU-017; no existe implementación de exportación vectorial (<code>.emf</code>) en el código — solo están implementados <code>export_image()</code> (png/jpg/jpeg/bmp/tiff) y <code>export_table()</code> (csv/xlsx/json).</li>
+    </ul>
+</div>
+
+<script src="diagram.js"></script>
+<script>
+    const diagram = initDiagram('board', 'connector-svg', [
+        { from: 'vtkcontextmenu', to: 'exportservice', type: 'assoc', label: 'instancia y expone en menú contextual' },
+        { from: 'exportservice', to: 'pluginalerts', type: 'assoc', label: 'usa (alerts)' },
+    ]);
+    document.getElementById('export-btn').addEventListener('click', function () {
+        exportBoardAsPNG('board', 'connector-svg', 'export.png', 3);
+    });
+    const connectBtn = document.getElementById('connect-btn');
+    let connecting = false;
+    connectBtn.addEventListener('click', function () {
+        connecting = !connecting;
+        diagram.setConnectMode(connecting);
+        connectBtn.textContent = connecting ? 'Clic en 2 cajas... (cancelar)' : '🔗 Conectar cajas';
+        connectBtn.classList.toggle('active', connecting);
+    });
+    wireSaveLoadButtons(diagram, 'save-btn', 'load-btn', 'load-input', 'export_estado.json');
+</script>
+
+</body>
+</html>

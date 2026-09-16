@@ -1,0 +1,233 @@
+/* Estilo compartido para los diagramas de clases editables de GammaLab 2.0.
+   Basado en la paleta del diagrama de arquitectura ya existente (docs/SAD/diagrama_clases_sistema_completo.png):
+   verde = ya existe en el código, rojo/rosa = nuevo, por implementar. */
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    padding: 32px;
+    background: #faf9f6;
+    font-family: "Segoe UI", Arial, sans-serif;
+    color: #222;
+}
+
+h1 {
+    font-size: 20px;
+    margin: 0 0 4px 0;
+}
+
+.subtitle {
+    color: #666;
+    font-size: 13px;
+    margin: 0 0 16px 0;
+}
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+}
+
+.export-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    background: #3a7bd5;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.export-btn:hover { background: #2f66b3; }
+
+.connect-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #3a6b3a;
+    background: #eaf3e6;
+    border: 1.5px solid #7fae72;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.connect-btn:hover { background: #d9ecd2; }
+
+.connect-btn.active {
+    color: #fff;
+    background: #4a8a4a;
+    border-color: #3a6b3a;
+}
+
+.connect-source {
+    box-shadow: 0 0 0 3px #3a7bd5 !important;
+}
+
+.save-btn, .load-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.save-btn {
+    color: #fff;
+    background: #b8860b;
+    border: none;
+}
+.save-btn:hover { background: #9c7009; }
+
+.load-btn {
+    color: #444;
+    background: #fff;
+    border: 1.5px solid #bbb;
+}
+.load-btn:hover { background: #f0f0f0; }
+
+.hint {
+    font-size: 12px;
+    color: #777;
+}
+
+.legend {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    margin-bottom: 20px;
+    font-size: 13px;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    display: inline-block;
+    border: 1px solid rgba(0,0,0,0.2);
+}
+
+.swatch.existente { background: #eaf3e6; border-color: #7fae72; }
+.swatch.nuevo { background: #fbe9e9; border-color: #c98a8a; }
+
+.board {
+    position: relative;
+    width: 100%;
+    border: 1px dashed #ddd6c8;
+    border-radius: 8px;
+    background: #fdfcf9;
+}
+
+#connector-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    overflow: visible;
+    z-index: 1;
+}
+
+.uml-class {
+    position: absolute;
+    z-index: 2;
+    width: 300px;
+    border-radius: 6px;
+    border: 1.5px solid #7fae72;
+    background: #eaf3e6;
+    box-shadow: 1px 2px 5px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+
+.uml-class.nuevo {
+    border-color: #c98a8a;
+    background: #fbe9e9;
+}
+
+.drag-handle {
+    height: 12px;
+    background: rgba(0,0,0,0.10);
+    cursor: move;
+    border-bottom: 1px solid rgba(0,0,0,0.15);
+}
+
+.drag-handle:hover { background: rgba(0,0,0,0.20); }
+
+.uml-class .stereotype {
+    text-align: center;
+    font-style: italic;
+    font-size: 11px;
+    padding-top: 6px;
+    color: #444;
+}
+
+.uml-class .class-name {
+    text-align: center;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 2px 10px 8px 10px;
+    border-bottom: 1px solid rgba(0,0,0,0.25);
+}
+
+.uml-class .section {
+    padding: 6px 10px;
+    border-bottom: 1px solid rgba(0,0,0,0.15);
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 11.5px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+}
+
+.uml-class .section:last-child {
+    border-bottom: none;
+}
+
+.uml-class .section.empty {
+    color: #888;
+    font-style: italic;
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.new-badge {
+    display: inline-block;
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-size: 9.5px;
+    font-style: normal;
+    font-weight: 700;
+    color: #a23b3b;
+    background: #fbe4e4;
+    border: 1px solid #c98a8a;
+    border-radius: 3px;
+    padding: 0 4px;
+    margin-left: 4px;
+    vertical-align: middle;
+}
+
+[contenteditable="true"] { outline: none; cursor: text; }
+[contenteditable="true"]:hover { background: rgba(255,255,255,0.45); }
+[contenteditable="true"]:focus { background: #ffffff; box-shadow: inset 0 0 0 1.5px #6b9c6b; }
+
+.relaciones {
+    margin-top: 28px;
+    max-width: 900px;
+}
+
+.relaciones h2 {
+    font-size: 15px;
+    margin-bottom: 8px;
+}
+
+.relaciones ul {
+    font-size: 13px;
+    line-height: 1.6;
+    padding-left: 20px;
+}
