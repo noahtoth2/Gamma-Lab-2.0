@@ -1,7 +1,7 @@
 # ui/vtk_context_menu.py
 from PyQt5.QtWidgets import QMenu, QApplication
 from PyQt5.QtCore import Qt
-from vtk import vtkChartXY, vtkChart
+from vtk import vtkChartXY, vtkChart, vtkAxis
 import os
 
 from core.services.export_service import ExportService
@@ -301,6 +301,34 @@ class VTKContextMenu:
                 ch.RecalculateBounds()
             except AttributeError:
                 pass
+        try:
+            self.vtk_widget.GetRenderWindow().Render()
+        except Exception:
+            pass
+
+    def zoom_by_factor(self, factor: float):
+        """Scale the visible X/Y range of every chart around its own center."""
+        for ch in self._get_charts():
+            if not ch:
+                continue
+            try:
+                for axis_id in (vtkAxis.BOTTOM, vtkAxis.LEFT):
+                    axis = ch.GetAxis(axis_id)
+                    rng = [0.0, 0.0]
+                    axis.GetRange(rng)
+                    lo, hi = rng
+                    if hi <= lo:
+                        continue
+                    center = (lo + hi) / 2.0
+                    half = (hi - lo) / 2.0 * factor
+                    axis.SetRange(center - half, center + half)
+                    axis.SetBehavior(vtkAxis.FIXED)
+            except Exception:
+                pass
+        try:
+            self.vtk_widget.GetRenderWindow().Render()
+        except Exception:
+            pass
 
     # ---------- eventos mouse ----------
     def _install_mouse_observers(self):

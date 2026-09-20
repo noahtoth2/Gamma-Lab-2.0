@@ -20,7 +20,7 @@ from PyQt5.QtWidgets import (
 )
 from app.view.main_window_ui import Ui_MainWindow 
 from PyQt5.QtGui import QIcon, QFontMetrics, QFont, QPixmap, QPainter
-from PyQt5.QtCore import QSize, Qt, QPropertyAnimation, QEasingCurve, QEvent
+from PyQt5.QtCore import QSize, Qt, QEvent
 from PyQt5.QtWidgets import QFrame
 
 from core.plugins.interfaces import IPlugin
@@ -51,6 +51,7 @@ class MainWindow(QMainWindow):
         self.active_plugin = None  # Currently active plugin
         self.active_plugin_widget = None  # Widget of the active plugin
         self.plugin_widgets = {}  # Store plugin widgets to preserve work/state
+        self._active_vtk_menu = None  # Last VTKContextMenu visited (used by Home ribbon zoom/show-hide)
 
         # Workspace area where plugins render
         self.plugin_area = self.ui.workspace
@@ -180,6 +181,8 @@ class MainWindow(QMainWindow):
                     row.addWidget(self._build_amplitude_button(name), 0, Qt.AlignBottom)
                     continue
                 btn = self.add_plugin_button(name)
+                if section == "Preprocessing":
+                    btn.setText(self._wrap_button_text(name.lower(), btn.font(), 88))
                 row.addWidget(btn, 0, Qt.AlignBottom)
 
             contenedor.addWidget(group_box, 0, Qt.AlignVCenter)
@@ -260,9 +263,24 @@ class MainWindow(QMainWindow):
 
         return row
 
-    def _build_measurement_button(self, name: str, label_text: str, icon_size: int = 60,
-                                   menu_items: list | None = None, icon_left_margin: int = 0) -> QWidget:
-      
+    def _start_measurement(self, measure_type: str):
+        """Arm interactive 2-point picking on the last chart view visited."""
+        svc = self._get_active_measure_service()
+        if not svc:
+            self.alerts.info("Open a chart view (Trials, FFT, etc.) first.")
+            return
+        svc.on_change = self._refresh_measurement_tables
+        svc.start(measure_type)
+
+    def _build_measurement_button(self, name: str, label_text: str, measure_type: str, icon_size: int = 60,
+                                   menu_items: list[tuple[str, str]] | None = None,
+                                   icon_left_margin: int = 0) -> QWidget:
+        """
+        Icon-only button that arms an interactive measurement (click = start
+        `measure_type` on the active chart) with the label in its own QLabel
+        below. If `menu_items` is given (label, measure_type pairs), a
+        separated arrow button offers the alternative measurement types.
+        """
         plugin = self.kernel.get_plugin(name)
         icon_btn = QToolButton(self.ui.buttonContainer)
         icon_btn.setObjectName(f"btn_{name}")
@@ -281,12 +299,12 @@ class MainWindow(QMainWindow):
                 icon_btn.setFixedSize(icon_size, icon_size)
         except Exception as e:
             print("Icon not available for plugin", name, "->", e)
-        icon_btn.clicked.connect(lambda _, n=name: self.on_button_click(n))
+        icon_btn.clicked.connect(lambda _, mt=measure_type: self._start_measurement(mt))
 
         if menu_items:
             menu = QMenu(icon_btn)
-            for item in menu_items:
-                menu.addAction(item)
+            for label, mt in menu_items:
+                menu.addAction(label, lambda mt=mt: self._start_measurement(mt))
             top_row = self._build_icon_arrow_pair(icon_btn, menu, left_margin=icon_left_margin)
         else:
             top_row = icon_btn
@@ -303,16 +321,16 @@ class MainWindow(QMainWindow):
         return container
 
     def _build_slope_button(self, name: str) -> QWidget:
-        """Slope icon (click = show results) + separated arrow (2 trials / all trials)."""
+        """Slope icon (click = start a 2-point slope) + arrow (2 trials / all trials)."""
         return self._build_measurement_button(
-            name, "slope", icon_size=52,
-            menu_items=["Slope (2 trials)", "slope (all trials)"],
+            name, "slope", measure_type="slope", icon_size=52,
+            menu_items=[("Slope (2 trials)", "slope"), ("slope (all trials)", "slope_all_trials")],
             icon_left_margin=6,
         )
 
     def _build_amplitude_button(self, name: str) -> QWidget:
-        """Amplitude icon, built the same way as slope (icon + label as separate widgets)."""
-        return self._build_measurement_button(name, "amplitude", icon_size=74)
+        """Amplitude icon (click = start an amplitude measurement), built like slope."""
+        return self._build_measurement_button(name, "amplitude", measure_type="amplitude", icon_size=74)
 
     def _build_static_tool_button(self, icon_path: str, object_name: str, small: bool = False) -> QToolButton:
         """Build a ribbon button not backed by a plugin (e.g. delete, zoom)."""
@@ -326,12 +344,66 @@ class MainWindow(QMainWindow):
         btn.setIcon(QIcon(icon_path))
         return btn
 
+    def _get_active_measure_service(self):
+        """MeasurementService of the last chart-bearing view the user visited."""
+        menu = self._active_vtk_menu
+        return getattr(menu, "measure_service", None) if menu else None
+
+    def _refresh_measurement_tables(self):
+        """Reload the Slope/Amplitude results tables if they're already built."""
+        for name in ("Slope Results", "Amplitude Results"):
+            plugin = self.kernel.get_plugin(name)
+            if plugin and name in self.plugin_widgets:
+                try:
+                    plugin.process(None)
+                except Exception as e:
+                    print(f"refresh {name} error:", e)
+        if self.ui.resultsPanel.isVisible():
+            self.refresh_results_panel()
+
+    def _on_delete_last_measurement(self):
+        svc = self._get_active_measure_service()
+        removed = svc.remove_last_measurement() if svc else False
+        if not removed:
+            store = self.kernel.get_service("DataStore")
+            lst = (store.get("measurements", []) or []) if store else []
+            if not lst:
+                self.alerts.info("There are no measurements to delete.")
+                return
+            lst.pop()
+            store.set("measurements", lst)
+        self._refresh_measurement_tables()
+
+    def _on_delete_all_measurements(self):
+        svc = self._get_active_measure_service()
+        if svc:
+            svc.clear_all_measurements()
+        else:
+            store = self.kernel.get_service("DataStore")
+            if store:
+                store.set("measurements", [])
+        self._refresh_measurement_tables()
+
+    def _on_show_all_measurements(self):
+        svc = self._get_active_measure_service()
+        if svc:
+            svc.set_overlay_visible(True)
+        else:
+            self.alerts.info("Open a chart view (Trials, FFT, etc.) first.")
+
+    def _on_hide_all_measurements(self):
+        svc = self._get_active_measure_service()
+        if svc:
+            svc.set_overlay_visible(False)
+        else:
+            self.alerts.info("Open a chart view (Trials, FFT, etc.) first.")
+
     def _build_delete_button(self) -> QWidget:
         """'delete last / delete all' dropdown for the Measurements group."""
         btn = self._build_static_tool_button("assets/iconos/delete.png", "btn_delete_measurements", small=True)
         menu = QMenu(btn)
-        menu.addAction("delete last")
-        menu.addAction("delete all")
+        menu.addAction("delete last", self._on_delete_last_measurement)
+        menu.addAction("delete all", self._on_delete_all_measurements)
         return self._build_icon_arrow_pair(btn, menu, gap=4)
 
     def _build_toggle_overlay_button(self) -> QWidget:
@@ -339,8 +411,8 @@ class MainWindow(QMainWindow):
         btn = self._build_static_tool_button("assets/iconos/ocultar.png", "btn_toggle_measurements", small=True)
         btn.setToolTip("Show/hide measurements")
         menu = QMenu(btn)
-        menu.addAction("Show all")
-        menu.addAction("Hide all")
+        menu.addAction("Show all", self._on_show_all_measurements)
+        menu.addAction("Hide all", self._on_hide_all_measurements)
         return self._build_icon_arrow_pair(btn, menu, gap=4)
 
     def _build_delete_toggle_stack(self) -> QWidget:
@@ -365,17 +437,41 @@ class MainWindow(QMainWindow):
         zoom_field = QLineEdit("100%")
         zoom_field.setFixedWidth(56)
         zoom_field.setAlignment(Qt.AlignCenter)
+        zoom_field.setReadOnly(True)
         popup_layout.addWidget(zoom_field)
+
+        zoom_state = {"pct": 100}
+
+        def apply_zoom(factor):
+            menu = self._active_vtk_menu
+            if not menu or not hasattr(menu, "zoom_by_factor"):
+                self.alerts.info("Open a chart view (Trials, FFT, etc.) first.")
+                return
+            menu.zoom_by_factor(factor)
+            zoom_state["pct"] = max(10, round(zoom_state["pct"] / factor))
+            zoom_field.setText(f"{zoom_state['pct']}%")
+
+        def restore_zoom():
+            menu = self._active_vtk_menu
+            if not menu or not hasattr(menu, "reset_zoom"):
+                self.alerts.info("Open a chart view (Trials, FFT, etc.) first.")
+                return
+            menu.reset_zoom()
+            zoom_state["pct"] = 100
+            zoom_field.setText("100%")
 
         btn_plus = QPushButton("+")
         btn_plus.setFixedWidth(28)
+        btn_plus.clicked.connect(lambda: apply_zoom(0.8))
         popup_layout.addWidget(btn_plus)
 
         btn_minus = QPushButton("-")
         btn_minus.setFixedWidth(28)
+        btn_minus.clicked.connect(lambda: apply_zoom(1.25))
         popup_layout.addWidget(btn_minus)
 
         btn_restore = QPushButton("restore")
+        btn_restore.clicked.connect(restore_zoom)
         popup_layout.addWidget(btn_restore)
 
         widget_action = QWidgetAction(btn)
@@ -482,6 +578,13 @@ class MainWindow(QMainWindow):
         widget.setVisible(True)
         self.active_plugin_widget = widget
         self.active_plugin = plugin
+        # Remember the last chart view visited so Home's zoom/show-hide have a target
+        vtk_menu = getattr(plugin, "vtk_menu", None)
+        if vtk_menu is not None:
+            self._active_vtk_menu = vtk_menu
+            svc = getattr(vtk_menu, "measure_service", None)
+            if svc is not None:
+                svc.on_change = self._refresh_measurement_tables
         # Update background/placeholder visibility
         self._update_background_logo_visibility()
         self._update_home_welcome_visibility()
@@ -737,12 +840,22 @@ class MainWindow(QMainWindow):
 
     def setup_sidebar_functionality(self):
         sidebar = self.ui.widget_3
-        sidebar.setMaximumWidth(600)
-        self.ui.splitter_3.setSizes([320, 9999])
+        # No practical cap: the user can drag the Explorer as wide as they want
+        sidebar.setMaximumWidth(16777215)
+        sidebar.setMinimumWidth(0)
+        # Start collapsed; the user opens it via the sidebar icon
+        self.ui.splitter_3.setSizes([0, 9999])
+        self._sidebar_collapsed = True
         """Initialize and connect all sidebar functions."""
         # Sidebar collapse / navigation icons
         self.ui.nav_explorer_btn.clicked.connect(lambda: self.toggle_sidebar_collapse(sidebar))
         self.ui.help_nav_btn.clicked.connect(lambda: self.on_button_click("Help"))
+        self.ui.nav_results_btn.clicked.connect(self.toggle_results_panel)
+        self.ui.resultsCloseBtn.clicked.connect(lambda: self.ui.resultsPanel.setVisible(False))
+        results_menu = QMenu(self.ui.resultsMenuBtn)
+        results_menu.addAction("Export CSV", self._on_export_results_csv)
+        self.ui.resultsMenuBtn.setMenu(results_menu)
+        self.ui.resultsMenuBtn.setPopupMode(QToolButton.InstantPopup)
 
         self.update_signal_list()
 
@@ -750,36 +863,33 @@ class MainWindow(QMainWindow):
 
     # Collapse and expand the sidebar
     def toggle_sidebar_collapse(self, sidebar):
-        
-        current_width = sidebar.width()
+        # Track collapsed state explicitly: the sidebar's minimum content
+        # (labels, tree padding, etc.) can keep its rendered width above 0
+        # even when "collapsed", so measuring sidebar.width() is unreliable.
+        is_collapsed = getattr(self, "_sidebar_collapsed", False)
+        splitter = self.ui.splitter_3
 
-        if current_width > 0:
-            self._last_sidebar_width = current_width
+        if not is_collapsed:
+            current_width = sidebar.width()
+            if current_width > 0:
+                self._last_sidebar_width = current_width
 
-            # Allow full collapse
             sidebar.setMinimumWidth(0)
-
-            # Collapse animation
-            self._sidebar_animation = QPropertyAnimation(sidebar, b"maximumWidth")
-            self._sidebar_animation.setDuration(250)
-            self._sidebar_animation.setStartValue(current_width)
-            self._sidebar_animation.setEndValue(0)
-            self._sidebar_animation.setEasingCurve(QEasingCurve.InOutCubic)
-            self._sidebar_animation.start()
+            # Animating maximumWidth doesn't reliably reclaim space from a
+            # QSplitter sibling; setSizes() is the call the splitter always
+            # honors, so drive the resize through it directly.
+            splitter.setSizes([0, 9999])
+            self._sidebar_collapsed = True
 
         else:
-            width = getattr(self, "_last_sidebar_width", 420)
+            # First-ever open (no manual resize yet): a compact width where
+            # file names are at least partially readable.
+            width = getattr(self, "_last_sidebar_width", 560)
 
-            # Restore width and minimum limit
             sidebar.setMinimumWidth(100)
-
-            # Expansion animation
-            self._sidebar_animation = QPropertyAnimation(sidebar, b"maximumWidth")
-            self._sidebar_animation.setDuration(250)
-            self._sidebar_animation.setStartValue(0)
-            self._sidebar_animation.setEndValue(width)
-            self._sidebar_animation.setEasingCurve(QEasingCurve.InOutCubic)
-            self._sidebar_animation.start()
+            sidebar.setMaximumWidth(16777215)
+            splitter.setSizes([width, 9999])
+            self._sidebar_collapsed = False
 
 
     def update_signal_list(self):
@@ -787,6 +897,57 @@ class MainWindow(QMainWindow):
         self._update_background_logo_visibility()
 
     # === FUTURE FUNCTIONS (placeholder with pass) ===
+    def toggle_results_panel(self):
+        """Show/hide the bottom Results panel, refreshing its data on open."""
+        panel = self.ui.resultsPanel
+        showing = not panel.isVisible()
+        panel.setVisible(showing)
+        if showing:
+            self._ensure_results_tabs()
+            self.refresh_results_panel()
+
+    def _ensure_results_tabs(self):
+        """Embed the real Slope/Amplitude plugin widgets (full table + CSV export) as tabs."""
+        if self.ui.resultsTabs.count() > 0:
+            return
+        for tab_label, plugin_name in (("Slope", "Slope Results"), ("Amplitude", "Amplitude Results")):
+            plugin = self.kernel.get_plugin(plugin_name)
+            if not plugin:
+                continue
+            if not getattr(plugin, "started", False):
+                try:
+                    plugin.start(self.kernel)
+                    plugin.started = True
+                except Exception as e:
+                    print(f"Error starting {plugin_name}:", e)
+            try:
+                widget = plugin.get_widget(parent=self.ui.resultsTabs)
+            except Exception as e:
+                print(f"Error building {plugin_name} widget:", e)
+                continue
+            self.ui.resultsTabs.addTab(widget, tab_label)
+
+    def refresh_results_panel(self):
+        """Reload both results tables from DataStore['measurements']."""
+        for plugin_name in ("Slope Results", "Amplitude Results"):
+            plugin = self.kernel.get_plugin(plugin_name)
+            if plugin:
+                try:
+                    plugin.process(None)
+                except Exception as e:
+                    print(f"refresh {plugin_name} error:", e)
+
+    def _on_export_results_csv(self):
+        """'...' menu: export whichever results tab (Slope/Amplitude) is active."""
+        widget = self.ui.resultsTabs.currentWidget()
+        if widget is None:
+            return
+        for plugin_name in ("Slope Results", "Amplitude Results"):
+            plugin = self.kernel.get_plugin(plugin_name)
+            if plugin and getattr(plugin, "widget", None) is widget:
+                plugin.export_csv()
+                return
+
     def setup_explorer_section(self):
         """Build the Explorer tree (visual only, sample data)."""
         container = self.ui.explorer_QWidget

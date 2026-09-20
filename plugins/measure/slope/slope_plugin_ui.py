@@ -38,11 +38,6 @@ class Ui_Slope(object):
         self.rightLayout.setContentsMargins(0, 0, 0, 0)
         self.rightLayout.setSpacing(8)
 
-        # Button
-        self.pushButton = QtWidgets.QPushButton(self.rightPanel)
-        self.pushButton.setObjectName("mainActionButton")
-        self.rightLayout.addWidget(self.pushButton)
-
         # Spacer (to push buttons up)
         self.verticalSpacer = QtWidgets.QSpacerItem(
             20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
@@ -62,4 +57,3 @@ class Ui_Slope(object):
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Slope Measurements"))
-        self.pushButton.setText(_translate("Form", "Import As CSV"))

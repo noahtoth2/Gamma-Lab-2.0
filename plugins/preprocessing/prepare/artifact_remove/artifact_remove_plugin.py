@@ -245,7 +245,7 @@ class ArtifactRemovePlugin(IPlugin):
 
         # Update label A text
         if hasattr(self.ui, 'label_a'):
-            if mode_text == "Cut From Start":
+            if mode_text == "Cut From The Start":
                 self.ui.label_a.setText("Cut until (s):")
             else:
                 self.ui.label_a.setText("Point A (s):")
@@ -264,7 +264,7 @@ class ArtifactRemovePlugin(IPlugin):
         try:
             mode_text = self.ui.mode_combo.currentText()
             # Adjust mode based on modification logic
-            mode = 'blank' if mode_text in ("Cut From Start", "Blank Interval") else 'interpolate'
+            mode = 'blank' if mode_text in ("Cut From The Start", "Blank Interval") else 'interpolate'
 
             point_a_str = self.ui.point_a.text().strip()
             if not point_a_str:
@@ -275,12 +275,12 @@ class ArtifactRemovePlugin(IPlugin):
             if mode == 'interpolate' or mode_text == "Blank Interval":  # interval operations require B
                 point_b_str = self.ui.point_b.text().strip()
                 if not point_b_str:
-                    # In "Cut From Start" B is optional; do not raise here
-                    if mode_text != "Cut From Start":
+                    # In "Cut From The Start" B is optional; do not raise here
+                    if mode_text != "Cut From The Start":
                          raise ValueError("Point B cannot be empty for interval modification.")
                 else:
                     point_b = float(point_b_str)
-                    if point_a == point_b and mode_text != "Cut From Start":
+                    if point_a == point_b and mode_text != "Cut From The Start":
                         raise ValueError("Points A and B cannot be the same.")
 
             # --- Feedback and reentrancy guard
@@ -472,6 +472,10 @@ class ArtifactRemovePlugin(IPlugin):
             # Clear message when there are no trials yet (show hint in status label instead of overlay)
             if "unsupported format" in msg or "get_active_trials" in msg:
                 msg = "Generate Trials first"
+            if "No active signal" in msg:
+                if self.ui and hasattr(self.ui, "trial_status_label"):
+                    self.ui.trial_status_label.setText("Status: No signal loaded.")
+                return self._clear_render("", show_message=False)
             if "No channel selected" in msg or "Generate Trials" in msg or "not available" in msg:
                 if self.ui and hasattr(self.ui, "trial_status_label"):
                     self.ui.trial_status_label.setText("Status: No trial data. Generate Trials first.")
@@ -505,15 +509,19 @@ class ArtifactRemovePlugin(IPlugin):
             y = np.nanmean(trials, axis=1)
             title = f"Average ({Tact} Valid) - {channel_name}"
             status = f"Viewing Average / {Tact} Valid ({total_trials} Total)"
+            current_trial_text = "Average"
         else:
             idx = self.current_display_index
             y = trials[:, idx]
             orig_idx = orig_indices[idx] if idx < len(orig_indices) else idx
             title = f"Trial {orig_idx + 1} - {channel_name}"
             status = f"Viewing Valid {idx + 1}/{Tact} (Orig. {orig_idx + 1}) / {total_trials} Total"
+            current_trial_text = str(orig_idx + 1)
 
         if self.ui:
             self.ui.trial_status_label.setText(status)
+            self.ui.totalTrialsValueBox.setText(str(total_trials))
+            self.ui.currentTrialValueBox.setText(current_trial_text)
 
         if t.ndim != 1 or y.ndim != 1:
             return self._clear_render(f"Invalid shapes: time={t.shape}, data={y.shape}")
@@ -703,6 +711,8 @@ class ArtifactRemovePlugin(IPlugin):
         if self.ui:
             try:
                 self.ui.trial_status_label.setText("Status: N/A")
+                self.ui.totalTrialsValueBox.setText("0")
+                self.ui.currentTrialValueBox.setText("-")
                 self.ui.point_a.setText("0.0")
                 self.ui.point_b.setText("0.0")
                 self.ui.apply_button.setEnabled(False)

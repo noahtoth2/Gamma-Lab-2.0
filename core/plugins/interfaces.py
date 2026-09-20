@@ -78,15 +78,21 @@ class IPlugin(ABC):
             self.alerts.error(f"Error accessing DataStore: {e}")
             return None
 
-    def get_active_signal(self) -> SignalDataset | None:
-        """Return the active signal or None if not available."""
+    def get_active_signal(self, silent: bool = False) -> SignalDataset | None:
+        """Return the active signal or None if not available.
+
+        `silent=True` skips the "No signal has been loaded" popup — for calls
+        made automatically (e.g. populating a panel on open) rather than in
+        direct response to a user action like clicking a button.
+        """
         try:
             store = self.get_datastore()
             if not store:
                 return None
             ds = store.get_active_signal()
             if not ds:
-                self.alerts.warning("No signal has been loaded.")
+                if not silent:
+                    self.alerts.warning("No signal has been loaded.")
                 return None
             self.active_signal = ds
             return ds

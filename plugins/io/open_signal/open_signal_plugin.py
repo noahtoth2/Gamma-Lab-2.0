@@ -59,7 +59,6 @@ class OpenSignalPlugin(IPlugin):
             self.alerts.parent = self.ui
             self._ensure_vtk()
 
-            self.ui.Btn_abrir_senal.clicked.connect(self.open_file_dialog)
             self.ui.listChannels.itemChanged.connect(self._on_channel_item_changed)
 
             if hasattr(self.ui, "splitter"):
