@@ -1,4 +1,5 @@
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
+import os
 
 class Ui_Fft(object):
     def setupUi(self, Fft):
@@ -19,33 +20,66 @@ class Ui_Fft(object):
         self.plotArea.setFrameShadow(QtWidgets.QFrame.Raised)
         self.plotArea.setObjectName("plotArea")
 
-        # --- Right Area: Panel ---
-        self.scrollArea = QtWidgets.QScrollArea(self.splitter)
+        # --- Right Area: Panel (fixed header + scrollable body) ---
+        self.rightContainer = QtWidgets.QWidget(self.splitter)
+        self.rightContainer.setObjectName("rightContainer")
+
+        self.rightLayoutOuter = QtWidgets.QVBoxLayout(self.rightContainer)
+        self.rightLayoutOuter.setContentsMargins(8, 0, 8, 0)
+        self.rightLayoutOuter.setSpacing(0)
+
+        # ===== Header: Parameters + clear + Calculate FFT (always visible) =====
+        self.headerLayout = QtWidgets.QHBoxLayout()
+        self.headerLayout.setContentsMargins(0, 0, 0, 5)
+
+        self.parametersLabel = QtWidgets.QLabel(self.rightContainer)
+        self.parametersLabel.setObjectName("parametersLabel")
+        self.parametersLabel.setProperty("variant", "title")
+        self.headerLayout.addWidget(self.parametersLabel)
+
+        self.headerLayout.addStretch(1)
+
+        self.clearButton = QtWidgets.QToolButton(self.rightContainer)
+        self.clearButton.setObjectName("clearButton")
+        icon_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "assets", "iconos", "clear.png")
+        self.clearButton.setIcon(QtGui.QIcon(icon_path))
+        self.clearButton.setIconSize(QtCore.QSize(20, 20))
+        self.clearButton.setAutoRaise(True)
+        self.clearButton.setToolTip("Clear parameters")
+        self.headerLayout.addWidget(self.clearButton)
+        self.headerLayout.addSpacing(10)
+
+        self.calculateFftButton = QtWidgets.QPushButton(self.rightContainer)
+        self.calculateFftButton.setObjectName("headerGenerateButton")
+        self.headerLayout.addWidget(self.calculateFftButton)
+
+        self.rightLayoutOuter.addLayout(self.headerLayout)
+
+        self.paramsLine = QtWidgets.QFrame(self.rightContainer)
+        self.paramsLine.setFrameShape(QtWidgets.QFrame.HLine)
+        self.paramsLine.setObjectName("paramsLine")
+        self.paramsLine.setProperty("role", "section-divider")
+        self.rightLayoutOuter.addWidget(self.paramsLine)
+
+        # ===== Scrollable body =====
+        self.scrollArea = QtWidgets.QScrollArea(self.rightContainer)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.scrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        self.scrollArea.setFrameShape(QtWidgets.QFrame.NoFrame)
 
-        self.layoutWidget = QtWidgets.QWidget(self.splitter)
+        self.layoutWidget = QtWidgets.QWidget()
         self.layoutWidget.setObjectName("layoutWidget")
 
         self.paramsLayout = QtWidgets.QVBoxLayout(self.layoutWidget)
         self.paramsLayout.setObjectName("paramsLayout")
+        self.paramsLayout.setContentsMargins(0, 10, 0, 0)
         self.paramsLayout.setSpacing(12)
 
         self.scrollArea.setWidget(self.layoutWidget)
+        self.rightLayoutOuter.addWidget(self.scrollArea)
+
         self.splitter.widget(1).setMaximumWidth(300)
-
-        # === Parameters Header ===
-        self.parametersLabel = QtWidgets.QLabel(self.layoutWidget)
-        self.parametersLabel.setObjectName("parametersLabel")
-        self.parametersLabel.setProperty("variant", "title")
-        self.paramsLayout.addWidget(self.parametersLabel)
-
-        self.paramsLine = QtWidgets.QFrame(self.layoutWidget)
-        self.paramsLine.setFrameShape(QtWidgets.QFrame.HLine)
-        self.paramsLine.setObjectName("paramsLine")
-        self.paramsLine.setProperty("role", "section-divider") 
-        self.paramsLayout.addWidget(self.paramsLine)
 
         # --- Sample density ---
         self.sampleDensity = QtWidgets.QVBoxLayout()
@@ -146,12 +180,8 @@ class Ui_Fft(object):
         self.rangeLayout.addLayout(self.frequencyLayout)
         self.paramsLayout.addLayout(self.rangeLayout)
 
-        # --- Button Calculate FFT ---
+        # --- Spacer ---
         self.paramsLayout.addStretch(1)
-
-        self.calculateFftButton = QtWidgets.QPushButton(self.layoutWidget)
-        self.calculateFftButton.setObjectName("mainActionButton")
-        self.paramsLayout.addWidget(self.calculateFftButton)
 
         # Size splitter
         self.splitter.setStretchFactor(0, 1)
@@ -172,4 +202,4 @@ class Ui_Fft(object):
         self.hzHighFreqLabel.setText(_translate("Fft", "Hz"))
         self.lowLabel.setText(_translate("Fft", "Low"))
         self.hzLowFreqLabel.setText(_translate("Fft", "Hz"))
-        self.calculateFftButton.setText(_translate("Fft", "Calculate FFT"))
+        self.calculateFftButton.setText(_translate("Fft", "Generate"))

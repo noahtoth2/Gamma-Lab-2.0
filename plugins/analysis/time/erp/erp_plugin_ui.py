@@ -1,4 +1,5 @@
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
+import os
 
 class Ui_ErpPlot(QtWidgets.QWidget):
     """
@@ -40,33 +41,64 @@ class Ui_ErpPlot(QtWidgets.QWidget):
 
         self.main_splitter.addWidget(self.splitter)
 
-        # ====== Right: Parameters panel ======
-        self.scrollArea = QtWidgets.QScrollArea(self.main_splitter)
-        self.scrollArea.setWidgetResizable(True)
-        self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        self.scrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        # ====== Right: Parameters panel (fixed header + scrollable body) ======
+        self.rightContainer = QtWidgets.QWidget(self.main_splitter)
+        self.rightContainer.setObjectName("rightContainer")
+        self.rightContainer.setMaximumWidth(360)
 
-        self.panel = QtWidgets.QWidget(self.main_splitter)
-        self.panel.setObjectName("panel_param")
-        self.panel.setMaximumWidth(360)
+        self.rightLayoutOuter = QtWidgets.QVBoxLayout(self.rightContainer)
+        self.rightLayoutOuter.setContentsMargins(8, 0, 8, 0)
+        self.rightLayoutOuter.setSpacing(0)
 
-        self.panelLay = QtWidgets.QVBoxLayout(self.panel)
-        self.panelLay.setContentsMargins(8, 8, 8, 8)
-        self.panelLay.setSpacing(12)
+        # ===== Header: Parameters + clear + Plot ERP (always visible) =====
+        self.headerLayout = QtWidgets.QHBoxLayout()
+        self.headerLayout.setContentsMargins(0, 0, 0, 5)
 
-        self.scrollArea.setWidget(self.panel)
-
-        # === Parameters Header ===
-        self.parametersLabel = QtWidgets.QLabel(self.panel)
+        self.parametersLabel = QtWidgets.QLabel(self.rightContainer)
         self.parametersLabel.setObjectName("parametersLabel")
         self.parametersLabel.setProperty("variant", "title")
-        self.panelLay.addWidget(self.parametersLabel)
+        self.headerLayout.addWidget(self.parametersLabel)
 
-        self.paramsLine = QtWidgets.QFrame(self.panel)
+        self.headerLayout.addStretch(1)
+
+        self.clearButton = QtWidgets.QToolButton(self.rightContainer)
+        self.clearButton.setObjectName("clearButton")
+        icon_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "assets", "iconos", "clear.png")
+        self.clearButton.setIcon(QtGui.QIcon(icon_path))
+        self.clearButton.setIconSize(QtCore.QSize(20, 20))
+        self.clearButton.setAutoRaise(True)
+        self.clearButton.setToolTip("Clear parameters")
+        self.headerLayout.addWidget(self.clearButton)
+        self.headerLayout.addSpacing(10)
+
+        self.plotErpButton = QtWidgets.QPushButton(self.rightContainer)
+        self.plotErpButton.setObjectName("headerGenerateButton")
+        self.headerLayout.addWidget(self.plotErpButton)
+
+        self.rightLayoutOuter.addLayout(self.headerLayout)
+
+        self.paramsLine = QtWidgets.QFrame(self.rightContainer)
         self.paramsLine.setFrameShape(QtWidgets.QFrame.HLine)
         self.paramsLine.setObjectName("paramsLine")
         self.paramsLine.setProperty("role", "section-divider")
-        self.panelLay.addWidget(self.paramsLine)
+        self.rightLayoutOuter.addWidget(self.paramsLine)
+
+        # ===== Scrollable body =====
+        self.scrollArea = QtWidgets.QScrollArea(self.rightContainer)
+        self.scrollArea.setWidgetResizable(True)
+        self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.scrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        self.scrollArea.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.rightLayoutOuter.addWidget(self.scrollArea)
+
+        self.panel = QtWidgets.QWidget()
+        self.panel.setObjectName("panel_param")
+
+        self.panelLay = QtWidgets.QVBoxLayout(self.panel)
+        self.panelLay.setContentsMargins(0, 10, 0, 0)
+        self.panelLay.setSpacing(12)
+
+        self.scrollArea.setWidget(self.panel)
 
         # --- Parameters: Trials Selection ---
         self.trialsSelection = QtWidgets.QVBoxLayout()
@@ -195,12 +227,8 @@ class Ui_ErpPlot(QtWidgets.QWidget):
 
         self.panelLay.addLayout(self.trialsSection)
 
-        # --- Button Plot ERP ---
+        # --- Spacer ---
         self.panelLay.addStretch(1)
-
-        self.plotErpButton = QtWidgets.QPushButton(self.panel)
-        self.plotErpButton.setObjectName("mainActionButton")
-        self.panelLay.addWidget(self.plotErpButton)
 
         # Size splitter
         self.main_splitter.setStretchFactor(0, 1)
@@ -261,4 +289,4 @@ class Ui_ErpPlot(QtWidgets.QWidget):
         self.rangeLabel.setText(_translate("ERP", "Range"))
         self.toLabel.setText(_translate("ERP", "To"))
         self.trialsLabel.setText(_translate("ERP", "List"))
-        self.plotErpButton.setText(_translate("ERP", "Plot ERP"))
+        self.plotErpButton.setText(_translate("ERP", "Generate"))

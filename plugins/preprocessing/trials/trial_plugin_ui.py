@@ -1,5 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+from core.utils.results_tables_widget import ResultsTablesWidget
+
 class Ui_Trials(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -18,12 +20,22 @@ class Ui_Trials(QtWidgets.QWidget):
         self.splitter.setOrientation(QtCore.Qt.Horizontal)
         self._root.addWidget(self.splitter)
 
-        # ----- Left: VTK viewer frame (keep name) -----
-        self.plotArea = QtWidgets.QFrame(self.splitter)
+        # ----- Left: VTK viewer (top) + Results panel (bottom) -----
+        self.plotSplitter = QtWidgets.QSplitter(self.splitter)
+        self.plotSplitter.setOrientation(QtCore.Qt.Vertical)
+        self.plotSplitter.setObjectName("plotSplitter")
+        self.plotSplitter.setMinimumWidth(520)
+
+        self.plotArea = QtWidgets.QFrame(self.plotSplitter)
         self.plotArea.setObjectName("plotArea")
         self.plotArea.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.plotArea.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.plotArea.setMinimumWidth(520)
+
+        self.resultsPanel = ResultsTablesWidget(self.plotSplitter)
+        self.resultsPanel.setObjectName("resultsPanel")
+
+        self.plotSplitter.setStretchFactor(0, 1)
+        self.plotSplitter.setStretchFactor(1, 0)
 
         # ----- Right: Parameters panel (fixed header + scrollable body) -----
         self.rightContainer = QtWidgets.QWidget(self.splitter)
@@ -36,7 +48,7 @@ class Ui_Trials(QtWidgets.QWidget):
 
         self.lblParameters = QtWidgets.QLabel(self.rightContainer)
         self.lblParameters.setText("Parameters")
-        self.lblParameters.setProperty("variant", "title")     # 👈
+        self.lblParameters.setProperty("variant", "title")     
         self.headerLayout.addWidget(self.lblParameters)
 
         self.headerLayout.addStretch(1)
@@ -59,7 +71,7 @@ class Ui_Trials(QtWidgets.QWidget):
 
         self.sep0 = QtWidgets.QFrame(self.rightContainer)
         self.sep0.setFrameShape(QtWidgets.QFrame.HLine)
-        self.sep0.setProperty("role", "section-divider")       # 👈
+        self.sep0.setProperty("role", "section-divider")       
         self.rightLayoutOuter.addWidget(self.sep0)
 
         # ===== Scrollable body (only scrolls if the panel is squeezed, e.g. by Results) =====
@@ -111,12 +123,12 @@ class Ui_Trials(QtWidgets.QWidget):
 
         self.lblChannelTitle = QtWidgets.QLabel(self.panel)
         self.lblChannelTitle.setText("Channel")
-        self.lblChannelTitle.setProperty("variant", "subtitle")  # 👈
+        self.lblChannelTitle.setProperty("variant", "subtitle")  
         self.channelHeaderRow.addWidget(self.lblChannelTitle, 1)
 
         self.lblStimChanTitle = QtWidgets.QLabel(self.panel)
         self.lblStimChanTitle.setText("Stim Channel")
-        self.lblStimChanTitle.setProperty("variant", "subtitle")  # 👈
+        self.lblStimChanTitle.setProperty("variant", "subtitle")  
         self.channelHeaderRow.addWidget(self.lblStimChanTitle, 1)
 
         self.vbox.addLayout(self.channelHeaderRow)
@@ -124,7 +136,7 @@ class Ui_Trials(QtWidgets.QWidget):
         self.sep1 = QtWidgets.QFrame(self.panel)
         self.sep1.setFrameShape(QtWidgets.QFrame.HLine)
         self.sep1.setFrameShadow(QtWidgets.QFrame.Plain)
-        self.sep1.setProperty("role", "divider")                 # 👈
+        self.sep1.setProperty("role", "divider")                 
         self.vbox.addWidget(self.sep1)
 
         self.channelBodyRow = QtWidgets.QHBoxLayout()
@@ -132,7 +144,7 @@ class Ui_Trials(QtWidgets.QWidget):
         self.channelCol = QtWidgets.QVBoxLayout()
         self.channelLabel = QtWidgets.QLabel(self.panel)
         self.channelLabel.setText("Name")
-        self.channelLabel.setProperty("variant", "input")        # 👈
+        self.channelLabel.setProperty("variant", "input")        
         self.channelCol.addWidget(self.channelLabel)
         self.channelComboBox = QtWidgets.QComboBox(self.panel)
         self.channelComboBox.setObjectName("channelComboBox")
@@ -142,7 +154,7 @@ class Ui_Trials(QtWidgets.QWidget):
         self.stimChannelCol = QtWidgets.QVBoxLayout()
         self.stimChannelLabel = QtWidgets.QLabel(self.panel)
         self.stimChannelLabel.setText("Name")
-        self.stimChannelLabel.setProperty("variant", "input")     # 👈
+        self.stimChannelLabel.setProperty("variant", "input")     
         self.stimChannelCol.addWidget(self.stimChannelLabel)
         self.stimChannelComboBox = QtWidgets.QComboBox(self.panel)
         self.stimChannelComboBox.setObjectName("stimChannelComboBox")
@@ -157,12 +169,12 @@ class Ui_Trials(QtWidgets.QWidget):
 
         self.lblThTitle = QtWidgets.QLabel(self.panel)
         self.lblThTitle.setText("Treshold")
-        self.lblThTitle.setProperty("variant", "subtitle")        # 👈
+        self.lblThTitle.setProperty("variant", "subtitle")        
         self.thresholdHeaderRow.addWidget(self.lblThTitle, 1)
 
         self.lblStimTitle = QtWidgets.QLabel(self.panel)
         self.lblStimTitle.setText("Stim Number")
-        self.lblStimTitle.setProperty("variant", "subtitle")       # 👈
+        self.lblStimTitle.setProperty("variant", "subtitle")       
         self.thresholdHeaderRow.addWidget(self.lblStimTitle, 1)
 
         self.vbox.addLayout(self.thresholdHeaderRow)
@@ -170,7 +182,7 @@ class Ui_Trials(QtWidgets.QWidget):
         self.sep2 = QtWidgets.QFrame(self.panel)
         self.sep2.setFrameShape(QtWidgets.QFrame.HLine)
         self.sep2.setFrameShadow(QtWidgets.QFrame.Plain)
-        self.sep2.setProperty("role", "divider")                  # 👈
+        self.sep2.setProperty("role", "divider")                  
         self.vbox.addWidget(self.sep2)
 
         self.thresholdBodyRow = QtWidgets.QHBoxLayout()
@@ -193,13 +205,13 @@ class Ui_Trials(QtWidgets.QWidget):
         # ===== Time (one title, 2x2 grid of label-above-field cells) =====
         self.lblTimeTitle = QtWidgets.QLabel(self.panel)
         self.lblTimeTitle.setText("Time")
-        self.lblTimeTitle.setProperty("variant", "subtitle")        # 👈
+        self.lblTimeTitle.setProperty("variant", "subtitle")        
         self.vbox.addWidget(self.lblTimeTitle)
 
         self.sep4 = QtWidgets.QFrame(self.panel)
         self.sep4.setFrameShape(QtWidgets.QFrame.HLine)
         self.sep4.setFrameShadow(QtWidgets.QFrame.Plain)
-        self.sep4.setProperty("role", "divider")                    # 👈
+        self.sep4.setProperty("role", "divider")                    
         self.vbox.addWidget(self.sep4)
 
         def _time_cell(label_text, spinbox):
@@ -254,13 +266,13 @@ class Ui_Trials(QtWidgets.QWidget):
         # ===== Subtitle: Trials =====
         self.lblTrialsTitle = QtWidgets.QLabel(self.panel)
         self.lblTrialsTitle.setText("Trials")
-        self.lblTrialsTitle.setProperty("variant", "subtitle")      # 👈
+        self.lblTrialsTitle.setProperty("variant", "subtitle")      
         self.vbox.addWidget(self.lblTrialsTitle)
 
         self.sep5 = QtWidgets.QFrame(self.panel)
         self.sep5.setFrameShape(QtWidgets.QFrame.HLine)
         self.sep5.setFrameShadow(QtWidgets.QFrame.Plain)
-        self.sep5.setProperty("role", "divider")                    # 👈
+        self.sep5.setProperty("role", "divider")                    
         self.vbox.addWidget(self.sep5)
 
         # ==== Trials navigation buttons ====
@@ -290,7 +302,7 @@ class Ui_Trials(QtWidgets.QWidget):
         self.currentTrialLabel = QtWidgets.QLabel(self.panel)
         self.currentTrialLabel.setText("Current Trial : -")
         self.currentTrialLabel.setAlignment(QtCore.Qt.AlignCenter)
-        self.currentTrialLabel.setProperty("variant", "subtitle")    # 👈
+        self.currentTrialLabel.setProperty("variant", "subtitle")    
         self.vbox.addWidget(self.currentTrialLabel)
 
         # ===== Spacer =====

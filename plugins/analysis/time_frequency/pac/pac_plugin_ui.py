@@ -22,49 +22,67 @@ class Ui_Pac(object):
         self.plotArea.setFrameShadow(QtWidgets.QFrame.Raised)
         self.plotArea.setObjectName("plotArea")
 
-        # Right Area: Panel
-        self.scrollArea = QtWidgets.QScrollArea(self.splitter)
+        # --- Right Area: Panel (fixed header + scrollable body) ---
+        self.rightContainer = QtWidgets.QWidget(self.splitter)
+        self.rightContainer.setObjectName("rightContainer")
+
+        self.rightLayoutOuter = QtWidgets.QVBoxLayout(self.rightContainer)
+        self.rightLayoutOuter.setContentsMargins(8, 0, 8, 0)
+        self.rightLayoutOuter.setSpacing(0)
+
+        # ===== Header: Parameters + clear + Create PAC (always visible) =====
+        self.headerLayout = QtWidgets.QHBoxLayout()
+        self.headerLayout.setContentsMargins(0, 0, 0, 5)
+
+        self.parametersLabel = QtWidgets.QLabel(self.rightContainer)
+        self.parametersLabel.setObjectName("parametersLabel")
+        self.parametersLabel.setProperty("variant", "title")
+        self.headerLayout.addWidget(self.parametersLabel)
+
+        self.headerLayout.addStretch(1)
+
+        # --- Clear/ broom button ---
+        self.clearButton = QtWidgets.QToolButton(self.rightContainer)
+        self.clearButton.setObjectName("clearButton")
+        icon_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "assets", "iconos", "clear.png")
+        self.clearButton.setIcon(QtGui.QIcon(icon_path))
+        self.clearButton.setIconSize(QtCore.QSize(20, 20))
+        self.clearButton.setAutoRaise(True)
+        self.clearButton.setToolTip("Clear parameters")
+        self.headerLayout.addWidget(self.clearButton)
+        self.headerLayout.addSpacing(10)
+
+        self.createPacButton = QtWidgets.QPushButton(self.rightContainer)
+        self.createPacButton.setObjectName("headerGenerateButton")
+        self.headerLayout.addWidget(self.createPacButton)
+
+        self.rightLayoutOuter.addLayout(self.headerLayout)
+
+        self.paramsLine = QtWidgets.QFrame(self.rightContainer)
+        self.paramsLine.setFrameShape(QtWidgets.QFrame.HLine)
+        self.paramsLine.setObjectName("paramsLine")
+        self.paramsLine.setProperty("role", "section-divider")
+        self.rightLayoutOuter.addWidget(self.paramsLine)
+
+        # ===== Scrollable body =====
+        self.scrollArea = QtWidgets.QScrollArea(self.rightContainer)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.scrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        self.scrollArea.setFrameShape(QtWidgets.QFrame.NoFrame)
 
-        self.layoutWidget = QtWidgets.QWidget(self.splitter)
+        self.layoutWidget = QtWidgets.QWidget()
         self.layoutWidget.setObjectName("layoutWidget")
 
         self.paramsLayout = QtWidgets.QVBoxLayout(self.layoutWidget)
         self.paramsLayout.setObjectName("paramsLayout")
-        self.paramsLayout.setContentsMargins(8, 0, 8, 0)
+        self.paramsLayout.setContentsMargins(0, 10, 0, 0)
         self.paramsLayout.setSpacing(12)
 
         self.scrollArea.setWidget(self.layoutWidget)
+        self.rightLayoutOuter.addWidget(self.scrollArea)
+
         self.splitter.widget(1).setMaximumWidth(300)
-
-        # === Parameters Header ===
-        self.parametersHeader = QtWidgets.QHBoxLayout()
-        self.parametersHeader.setObjectName("parametersHeader")
-
-        self.parametersLabel = QtWidgets.QLabel(self.layoutWidget)
-        self.parametersLabel.setObjectName("parametersLabel")
-        self.parametersLabel.setProperty("variant", "title")
-        self.parametersHeader.addWidget(self.parametersLabel)
-
-        self.parametersHeader.addStretch()
-
-        # --- Clear/ broom button --- 
-        self.clearButton = QtWidgets.QToolButton(self.layoutWidget)
-        self.clearButton.setObjectName("clearButton")
-        icon_path = os.path.join(os.path.dirname(__file__),"..","..","..","..","assets","iconos","clear.png")
-        self.clearButton.setIcon(QtGui.QIcon(icon_path))
-        self.clearButton.setIconSize(QtCore.QSize(20, 20))
-
-        self.parametersHeader.addWidget(self.clearButton)
-
-        # --- Driver below parameters ---
-        self.paramsLine = QtWidgets.QFrame(self.layoutWidget)
-        self.paramsLine.setFrameShape(QtWidgets.QFrame.HLine)
-        self.paramsLine.setObjectName("paramsLine")
-        self.paramsLine.setProperty("role", "section-divider")
-        self.paramsLayout.addWidget(self.paramsLine)
 
         # --- Sample density ---
         self.sampleDensity = QtWidgets.QVBoxLayout()
@@ -193,12 +211,8 @@ class Ui_Pac(object):
 
 
 
-        # --- Button Create PAC ---
+        # --- Spacer ---
         self.paramsLayout.addStretch(1)
-
-        self.createPacButton = QtWidgets.QPushButton(self.layoutWidget)
-        self.createPacButton.setObjectName("mainActionButton")
-        self.paramsLayout.addWidget(self.createPacButton)
 
         # Size splitter
         self.splitter.setStretchFactor(0, 1)
@@ -221,4 +235,4 @@ class Ui_Pac(object):
         self.lowLabel.setText(_translate("PAC", "F1"))
         self.hzLowFreqLabel.setText(_translate("PAC", "Hz"))
         self.trialModeLabel.setText(_translate("PAC", "Trial Mode"))
-        self.createPacButton.setText(_translate("PAC", "Create PAC"))
+        self.createPacButton.setText(_translate("PAC", "Generate"))

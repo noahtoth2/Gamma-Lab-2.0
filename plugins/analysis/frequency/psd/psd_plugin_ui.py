@@ -1,4 +1,5 @@
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
+import os
 
 class Ui_Psd(object):
 
@@ -22,33 +23,66 @@ class Ui_Psd(object):
         self.plotArea.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.plotArea.setFrameShadow(QtWidgets.QFrame.Raised)
 
-        # --- Right Area: Panel ---
-        self.scrollArea = QtWidgets.QScrollArea(self.splitter)
+        # --- Right Area: Panel (fixed header + scrollable body) ---
+        self.rightContainer = QtWidgets.QWidget(self.splitter)
+        self.rightContainer.setObjectName("rightContainer")
+
+        self.rightLayoutOuter = QtWidgets.QVBoxLayout(self.rightContainer)
+        self.rightLayoutOuter.setContentsMargins(8, 0, 8, 0)
+        self.rightLayoutOuter.setSpacing(0)
+
+        # ===== Header: Parameters + clear + Calculate PSD (always visible) =====
+        self.headerLayout = QtWidgets.QHBoxLayout()
+        self.headerLayout.setContentsMargins(0, 0, 0, 5)
+
+        self.parametersLabel = QtWidgets.QLabel(self.rightContainer)
+        self.parametersLabel.setObjectName("parametersLabel")
+        self.parametersLabel.setProperty("variant", "title")
+        self.headerLayout.addWidget(self.parametersLabel)
+
+        self.headerLayout.addStretch(1)
+
+        self.clearButton = QtWidgets.QToolButton(self.rightContainer)
+        self.clearButton.setObjectName("clearButton")
+        icon_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "assets", "iconos", "clear.png")
+        self.clearButton.setIcon(QtGui.QIcon(icon_path))
+        self.clearButton.setIconSize(QtCore.QSize(20, 20))
+        self.clearButton.setAutoRaise(True)
+        self.clearButton.setToolTip("Clear parameters")
+        self.headerLayout.addWidget(self.clearButton)
+        self.headerLayout.addSpacing(10)
+
+        self.calculatePsdButton = QtWidgets.QPushButton(self.rightContainer)
+        self.calculatePsdButton.setObjectName("headerGenerateButton")
+        self.headerLayout.addWidget(self.calculatePsdButton)
+
+        self.rightLayoutOuter.addLayout(self.headerLayout)
+
+        self.paramsLine = QtWidgets.QFrame(self.rightContainer)
+        self.paramsLine.setFrameShape(QtWidgets.QFrame.HLine)
+        self.paramsLine.setObjectName("paramsLine")
+        self.paramsLine.setProperty("role", "section-divider")
+        self.rightLayoutOuter.addWidget(self.paramsLine)
+
+        # ===== Scrollable body =====
+        self.scrollArea = QtWidgets.QScrollArea(self.rightContainer)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.scrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        self.scrollArea.setFrameShape(QtWidgets.QFrame.NoFrame)
 
-        self.layoutWidget = QtWidgets.QWidget(self.splitter)
-        self.layoutWidget.setObjectName("panel")
+        self.layoutWidget = QtWidgets.QWidget()
+        self.layoutWidget.setObjectName("layoutWidget")
 
         self.paramsLayout = QtWidgets.QVBoxLayout(self.layoutWidget)
+        self.paramsLayout.setContentsMargins(0, 10, 0, 0)
         self.paramsLayout.setSpacing(12)
 
         self.scrollArea.setWidget(self.layoutWidget)
+        self.rightLayoutOuter.addWidget(self.scrollArea)
+
         self.splitter.widget(1).setMaximumWidth(300)
 
-        # === Parameters Header ===
-        self.parametersLabel = QtWidgets.QLabel(self.layoutWidget)
-        self.parametersLabel.setObjectName("parametersLabel")
-        self.parametersLabel.setProperty("variant", "title")
-        self.paramsLayout.addWidget(self.parametersLabel)
-
-        self.paramsLine = QtWidgets.QFrame(self.layoutWidget)
-        self.paramsLine.setFrameShape(QtWidgets.QFrame.HLine)
-        self.paramsLine.setObjectName("paramsLine")
-        self.paramsLine.setProperty("role", "section-divider") 
-        self.paramsLayout.addWidget(self.paramsLine)
-        
         # --- Calculation Mode
         self.calculationMode = QtWidgets.QVBoxLayout()
         self.calculationMode.setObjectName("calculationMode")
@@ -307,12 +341,8 @@ class Ui_Psd(object):
         self.detrendSection.addLayout(self.detrendRow)
         self.paramsLayout.addLayout(self.detrendSection)
 
-        # --- Button Calculate PSD ---
+        # --- Spacer ---
         self.paramsLayout.addStretch(1)
-
-        self.calculatePsdButton = QtWidgets.QPushButton(self.layoutWidget)
-        self.calculatePsdButton.setObjectName("mainActionButton")
-        self.paramsLayout.addWidget(self.calculatePsdButton)
 
         # Size splitter
         self.splitter.setStretchFactor(0, 1)
@@ -342,4 +372,4 @@ class Ui_Psd(object):
         self.lowLabel.setText(_translate("PSD", "Low"))
         self.hzLowFreqLabel.setText(_translate("PSD", "Hz"))
         self.detrendLabel.setText(_translate("PSD", "Detrend"))
-        self.calculatePsdButton.setText(_translate("PSD", "Calculate PSD"))
+        self.calculatePsdButton.setText(_translate("PSD", "Generate"))
