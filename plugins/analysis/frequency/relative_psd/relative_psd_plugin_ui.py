@@ -1,4 +1,5 @@
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
+import os
 
 class Ui_Relative_psd(object):
 
@@ -9,29 +10,65 @@ class Ui_Relative_psd(object):
         self.vbox = QtWidgets.QVBoxLayout(Form)
         self.vbox.setSpacing(0)
 
-        self.scrollArea = QtWidgets.QScrollArea(Form)
+        # --- Right Area: Panel (fixed header + scrollable body) ---
+        # Note: relative_psd_plugin.py inserts a plotArea at index 0 of this
+        # same layout at runtime (self.widget.layout().insertWidget(0, ...)),
+        # so this container must stay as the single widget added to self.vbox.
+        self.rightContainer = QtWidgets.QWidget(Form)
+        self.rightContainer.setObjectName("rightContainer")
+        self.vbox.addWidget(self.rightContainer)
+
+        self.rightLayoutOuter = QtWidgets.QVBoxLayout(self.rightContainer)
+        self.rightLayoutOuter.setContentsMargins(8, 0, 8, 0)
+        self.rightLayoutOuter.setSpacing(0)
+
+        # ===== Header: Parameters + clear + Calculate Relative PSD (always visible) =====
+        self.headerLayout = QtWidgets.QHBoxLayout()
+        self.headerLayout.setContentsMargins(0, 0, 0, 5)
+
+        self.parametersLabel = QtWidgets.QLabel(self.rightContainer)
+        self.parametersLabel.setObjectName("parametersLabel")
+        self.parametersLabel.setProperty("variant", "title")
+        self.headerLayout.addWidget(self.parametersLabel)
+
+        self.headerLayout.addStretch(1)
+
+        self.clearButton = QtWidgets.QToolButton(self.rightContainer)
+        self.clearButton.setObjectName("clearButton")
+        icon_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "assets", "iconos", "clear.png")
+        self.clearButton.setIcon(QtGui.QIcon(icon_path))
+        self.clearButton.setIconSize(QtCore.QSize(20, 20))
+        self.clearButton.setAutoRaise(True)
+        self.clearButton.setToolTip("Clear parameters")
+        self.headerLayout.addWidget(self.clearButton)
+        self.headerLayout.addSpacing(10)
+
+        self.calculateRelativePsd = QtWidgets.QPushButton(self.rightContainer)
+        self.calculateRelativePsd.setObjectName("headerGenerateButton")
+        self.headerLayout.addWidget(self.calculateRelativePsd)
+
+        self.rightLayoutOuter.addLayout(self.headerLayout)
+
+        self.paramsLine = QtWidgets.QFrame(self.rightContainer)
+        self.paramsLine.setFrameShape(QtWidgets.QFrame.HLine)
+        self.paramsLine.setObjectName("paramsLine")
+        self.paramsLine.setProperty("role", "section-divider")
+        self.rightLayoutOuter.addWidget(self.paramsLine)
+
+        # ===== Scrollable body =====
+        self.scrollArea = QtWidgets.QScrollArea(self.rightContainer)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.scrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
-        self.vbox.addWidget(self.scrollArea)
+        self.scrollArea.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.rightLayoutOuter.addWidget(self.scrollArea)
 
         self.layoutWidget = QtWidgets.QWidget()
         self.scrollArea.setWidget(self.layoutWidget)
 
         self.paramsLayout = QtWidgets.QVBoxLayout(self.layoutWidget)
+        self.paramsLayout.setContentsMargins(0, 10, 0, 0)
         self.paramsLayout.setSpacing(12)
-
-        # === Parameters Header ===
-        self.parametersLabel = QtWidgets.QLabel(self.layoutWidget)
-        self.parametersLabel.setObjectName("parametersLabel")
-        self.parametersLabel.setProperty("variant", "title")
-        self.paramsLayout.addWidget(self.parametersLabel)
-
-        self.paramsLine = QtWidgets.QFrame(self.layoutWidget)
-        self.paramsLine.setFrameShape(QtWidgets.QFrame.HLine)
-        self.paramsLine.setObjectName("paramsLine")
-        self.paramsLine.setProperty("role", "section-divider") 
-        self.paramsLayout.addWidget(self.paramsLine)
 
         # --- Sample density ---
         self.sampleDensity = QtWidgets.QVBoxLayout()
@@ -264,12 +301,8 @@ class Ui_Relative_psd(object):
         self.vbox.addLayout(self.resultsSection)
 
 
-        # --- Button Calculate Relative PSD ---
+        # --- Spacer ---
         self.paramsLayout.addStretch(1)
-
-        self.calculateRelativePsd = QtWidgets.QPushButton(self.layoutWidget)
-        self.calculateRelativePsd.setObjectName("mainActionButton")
-        self.paramsLayout.addWidget(self.calculateRelativePsd)
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
@@ -294,4 +327,4 @@ class Ui_Relative_psd(object):
         self.resultsLabel.setText(_translate("Relative_PSD", "Results"))
         self.absPowerLabel.setText(_translate("Relative_PSD", "Absolute Power (Pow)"))
         self.relPowerLabel.setText(_translate("Relative_PSD", "Relative Power (Powr)"))
-        self.calculateRelativePsd.setText(_translate("Relative_PSD", "Calculate Relative PSD"))
+        self.calculateRelativePsd.setText(_translate("Relative_PSD", "Generate"))

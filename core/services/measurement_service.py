@@ -27,6 +27,10 @@ class MeasurementService:
         self._debug = False
         self._PICK_RADIUS_PX = pick_radius_px
 
+        # Optional callback invoked whenever the measurement list changes
+        # (save/delete/clear), so the UI (e.g. the Results panel) can refresh live.
+        self.on_change = None
+
         # ---- interaction state ----
         self._state = 'idle'
         self._current = None        # {'type','p1','p2'}
@@ -122,6 +126,13 @@ class MeasurementService:
         if self._debug:
             try:
                 print("[MEAS]", *a)
+            except Exception:
+                pass
+
+    def _notify_change(self):
+        if self.on_change:
+            try:
+                self.on_change()
             except Exception:
                 pass
         
@@ -622,6 +633,7 @@ class MeasurementService:
             
             self._state = 'idle'
             self._current = None
+            self._notify_change()
 
         elif kind == 'amplitude':
             result = self._compute_amplitude_window(x1, x2)
@@ -655,7 +667,8 @@ class MeasurementService:
                 pass
             self._state = 'idle'
             self._current = None
-        
+            self._notify_change()
+
         elif kind == 'slope_all_trials':
             if not self._ref_data or not self._ref_data.get('xs'):
                 ch = self.get_active_chart()
@@ -698,6 +711,7 @@ class MeasurementService:
 
             self._state = 'idle'
             self._current = None
+            self._notify_change()
 
         else:
             # unsupported type (in case of leftover 'derivative')
@@ -857,6 +871,7 @@ class MeasurementService:
         lst = self.ds_get("measurements", None) or []
         lst = [m for m in lst if str(m.get("id")) != str(meas_id)]
         self.ds_set("measurements", lst)
+        self._notify_change()
         return ok
 
     def remove_measurement_by_id(self, meas_id: str):
@@ -864,6 +879,7 @@ class MeasurementService:
         lst = self.ds_get("measurements", None) or []
         lst = [m for m in lst if str(m.get("id")) != str(meas_id)]
         self.ds_set("measurements", lst)
+        self._notify_change()
         return ok
 
     def clear_all_measurements(self):
@@ -871,6 +887,7 @@ class MeasurementService:
         self.clear_visual_overlays()
         # limpia datastore
         self.ds_set("measurements", [])
+        self._notify_change()
         return True
 
     def on_chart_changed(self):

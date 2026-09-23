@@ -74,12 +74,6 @@ class Ui_OpenSignal(QtWidgets.QWidget):
         self.listChannels.setAlternatingRowColors(True)
         sideLayout.addWidget(self.listChannels, 1)
 
-        # ====== Action button ======
-        self.Btn_abrir_senal = QtWidgets.QPushButton("Open Signal", self.sidebar)
-        self.Btn_abrir_senal.setObjectName("mainActionButton")
-        self.Btn_abrir_senal.setMinimumHeight(34)
-        sideLayout.addWidget(self.Btn_abrir_senal)
-
         sideLayout.addStretch(0)
 
         # ---------- Splitter sizes / stretch ----------

@@ -257,7 +257,7 @@ class TrialsPlugin(IPlugin):
 
     def _populate_channels_once(self):
         """Try to load the active signal and populate the combo (silent if none)."""
-        ds = self.get_active_signal()
+        ds = self.get_active_signal(silent=True)
         if ds:
             self._populate_channel_combos(ds)
         else:
@@ -430,6 +430,10 @@ class TrialsPlugin(IPlugin):
             self.ui.currentTrialLabel.setText(f"Current trial: {index + 1}{total_text}")
             self.ui.currentTrialLabel.setStyleSheet("color: black; font-weight: bold;")
             self.ui.Btn_discard_trial.setText("Discard")
+
+        if total is not None:
+            self.ui.totalTrialsValueBox.setText(str(total))
+        self.ui.currentTrialValueBox.setText(str(index + 1))
 
     # -------------- Render ----------------------
     def _render_trials(self, td: TrialDataset):

@@ -2,7 +2,8 @@ from core import kernel
 from core.plugins.interfaces import IPlugin
 from core.plugins.meta import PluginMeta
 from core.utils.vtk_context_menu import VTKContextMenu
-
+from PyQt5 import QtCore
+from PyQt5.QtWidgets import QListWidgetItem
 
 from plugins.analysis.time.average.average_plugin_ui import Ui_Average
 from PyQt5.QtWidgets import QWidget, QVBoxLayout
@@ -50,6 +51,23 @@ class Average_plugin(IPlugin):
 
         return self.widget
 
+    def _ensure_trials_list(self, n_trials: int):
+        """Rebuild the list if empty or out-of-date."""
+        if self.ui.lstTrials.count() == n_trials and n_trials > 0:
+            return
+        self.ui.lstTrials.clear()
+        self.ui.spnSingleTrial.setMaximum(max(1, n_trials))
+        self.ui.spnFrom.setMaximum(max(1, n_trials))
+        self.ui.spnTo.setMaximum(max(1, n_trials))
+        if self.ui.spnTo.value() == 0:
+            self.ui.spnTo.setValue(n_trials)
+
+        for i in range(1, n_trials + 1):
+            it = QListWidgetItem(f"Trial-{i}")
+            it.setFlags(it.flags() | QtCore.Qt.ItemIsUserCheckable)
+            it.setCheckState(QtCore.Qt.Checked)
+            it.setData(QtCore.Qt.UserRole, f"trial-{i}".lower())
+            self.ui.lstTrials.addItem(it)
 
     def _on_calculate_average(self):
         """Load the active SignalDataset from the DataStore and use its associated TrialDataset."""

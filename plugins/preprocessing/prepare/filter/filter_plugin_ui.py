@@ -8,6 +8,7 @@ class Ui_Filter(object):
 
         self.mainWindow = QtWidgets.QHBoxLayout(Filter)
         self.mainWindow.setObjectName("mainWindow")
+        self.mainWindow.setSpacing(0)
 
         self.main_splitter = QtWidgets.QSplitter(Filter)
         self.main_splitter.setOrientation(QtCore.Qt.Horizontal)
@@ -30,160 +31,140 @@ class Ui_Filter(object):
         self.filteredTrial.setObjectName("filteredTrial")
         self.filteredTrial.setFrameShape(QtWidgets.QFrame.StyledPanel)
 
-        # --- Right Area: Panel
-        self.scrollArea = QtWidgets.QScrollArea(self.main_splitter)
+        # === Right: Parameters panel (fixed header + scrollable body) ===
+        self.rightContainer = QtWidgets.QWidget(self.main_splitter)
+        self.rightLayoutOuter = QtWidgets.QVBoxLayout(self.rightContainer)
+        self.rightLayoutOuter.setContentsMargins(8, 0, 8, 0)
+        self.rightLayoutOuter.setSpacing(0)
+
+        # --- Header: Parameters + clear + Filter (always visible, not scrollable) ---
+        self.headerLayout = QtWidgets.QHBoxLayout()
+
+        self.parametersLabel = QtWidgets.QLabel(self.rightContainer)
+        self.parametersLabel.setObjectName("parametersLabel")
+        self.parametersLabel.setProperty("variant", "title")
+        self.headerLayout.addWidget(self.parametersLabel)
+
+        self.headerLayout.addStretch(1)
+
+        self.Btn_clear_params = QtWidgets.QToolButton(self.rightContainer)
+        self.Btn_clear_params.setObjectName("clearParamsButton")
+        self.Btn_clear_params.setIcon(QtGui.QIcon("assets/iconos/clear.png"))
+        self.Btn_clear_params.setIconSize(QtCore.QSize(28, 28))
+        self.Btn_clear_params.setAutoRaise(True)
+        self.Btn_clear_params.setToolTip("Clear parameters")
+        self.headerLayout.addWidget(self.Btn_clear_params)
+        self.headerLayout.addSpacing(10)
+
+        self.applyFilterButton = QtWidgets.QPushButton(self.rightContainer)
+        self.applyFilterButton.setObjectName("headerGenerateButton")
+        self.headerLayout.addWidget(self.applyFilterButton)
+
+        self.rightLayoutOuter.addLayout(self.headerLayout)
+
+        self.paramsLine = QtWidgets.QFrame(self.rightContainer)
+        self.paramsLine.setFrameShape(QtWidgets.QFrame.HLine)
+        self.paramsLine.setObjectName("paramsLine")
+        self.paramsLine.setProperty("role", "section-divider")
+        self.rightLayoutOuter.addWidget(self.paramsLine)
+
+        # --- Scrollable body (only scrolls if the panel is squeezed, e.g. by Results) ---
+        self.scrollArea = QtWidgets.QScrollArea(self.rightContainer)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.scrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        self.scrollArea.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.scrollArea.setObjectName("scrollArea")
 
-        self.layoutWidget = QtWidgets.QWidget(self.main_splitter)
+        self.layoutWidget = QtWidgets.QWidget()
         self.layoutWidget.setObjectName("layoutWidget")
-
         self.paramsLayout = QtWidgets.QVBoxLayout(self.layoutWidget)
         self.paramsLayout.setObjectName("paramsLayout")
-        self.paramsLayout.setContentsMargins(8, 0, 8, 0)
-        self.paramsLayout.setSpacing(12)
+        self.paramsLayout.setContentsMargins(0, 10, 0, 0)
+        self.paramsLayout.setSpacing(6)
 
         self.scrollArea.setWidget(self.layoutWidget)
-        self.main_splitter.widget(1).setMaximumWidth(300)
+        self.rightLayoutOuter.addWidget(self.scrollArea)
 
-        # === Parameters Header ===
-        self.parametersLabel = QtWidgets.QLabel(self.layoutWidget)
-        self.parametersLabel.setObjectName("parametersLabel")
-        self.parametersLabel.setProperty("variant", "title")
-        self.paramsLayout.addWidget(self.parametersLabel)
-
-        self.paramsLine = QtWidgets.QFrame(self.layoutWidget)
-        self.paramsLine.setFrameShape(QtWidgets.QFrame.HLine)
-        self.paramsLine.setObjectName("paramsLine")
-        self.paramsLine.setProperty("role", "section-divider") 
-        self.paramsLayout.addWidget(self.paramsLine)
-
-        # --- Filters ---
-        self.filterLayout = QtWidgets.QVBoxLayout()
-        self.filterLayout.setObjectName("filterLayout")
-
+        # === Filters ===
         self.filtersLabel = QtWidgets.QLabel(self.layoutWidget)
         self.filtersLabel.setObjectName("filtersLabel")
         self.filtersLabel.setProperty("variant", "subtitle")
-        self.filterLayout.addWidget(self.filtersLabel)
+        self.paramsLayout.addWidget(self.filtersLabel)
 
         self.filtersLine = QtWidgets.QFrame(self.layoutWidget)
         self.filtersLine.setFrameShape(QtWidgets.QFrame.HLine)
         self.filtersLine.setObjectName("filtersLine")
         self.filtersLine.setProperty("role", "divider")
-        self.filterLayout.addWidget(self.filtersLine)
-
-        self.filterType = QtWidgets.QHBoxLayout()
-        self.filterType.setObjectName("filterType")
+        self.paramsLayout.addWidget(self.filtersLine)
 
         self.typeLabel = QtWidgets.QLabel(self.layoutWidget)
         self.typeLabel.setObjectName("typeLabel")
         self.typeLabel.setProperty("variant", "input")
-        self.filterType.addWidget(self.typeLabel)
+        self.paramsLayout.addWidget(self.typeLabel)
 
         self.typeSelectComboBox = QtWidgets.QComboBox(self.layoutWidget)
         self.typeSelectComboBox.setObjectName("typeSelectComboBox")
-        self.filterType.addWidget(self.typeSelectComboBox)
-        self.filterLayout.addLayout(self.filterType)
-        self.paramsLayout.addLayout(self.filterLayout)
+        self.paramsLayout.addWidget(self.typeSelectComboBox)
 
-        # --- Range ---
-        self.rangeLayout = QtWidgets.QVBoxLayout()
-        self.rangeLayout.setObjectName("rangeLayout")
-
-        self.rangeLabel = QtWidgets.QLabel(self.layoutWidget)
-        self.rangeLabel.setObjectName("rangeLabel")
-        self.rangeLabel.setProperty("variant", "subtitle")
-        self.rangeLayout.addWidget(self.rangeLabel)
-
-        self.rangeLine = QtWidgets.QFrame(self.layoutWidget)
-        self.rangeLine.setFrameShape(QtWidgets.QFrame.HLine)
-        self.rangeLine.setObjectName("rangeLine")
-        self.rangeLine.setProperty("role", "divider")
-        self.rangeLayout.addWidget(self.rangeLine)
-
-        self.frequencyLayout = QtWidgets.QVBoxLayout()
-        self.frequencyLayout.setObjectName("frequencyLayout")
-
+        # === Frecuency (Hz) (two columns, side by side) ===
         self.frequencyLabel = QtWidgets.QLabel(self.layoutWidget)
         self.frequencyLabel.setObjectName("frequencyLabel")
-        self.frequencyLabel.setProperty("variant", "input")
-        self.frequencyLayout.addWidget(self.frequencyLabel)
+        self.frequencyLabel.setProperty("variant", "subtitle")
+        self.paramsLayout.addWidget(self.frequencyLabel)
 
-        # Low Frequency
-        self.lowFqLayout = QtWidgets.QHBoxLayout()
-        self.lowFqLayout.setObjectName("lowFqLayout")
+        self.frequencyLine = QtWidgets.QFrame(self.layoutWidget)
+        self.frequencyLine.setFrameShape(QtWidgets.QFrame.HLine)
+        self.frequencyLine.setObjectName("frequencyLine")
+        self.frequencyLine.setProperty("role", "divider")
+        self.paramsLayout.addWidget(self.frequencyLine)
 
+        self.frequencyBodyRow = QtWidgets.QHBoxLayout()
+
+        self.lowCol = QtWidgets.QVBoxLayout()
         self.lowLabel = QtWidgets.QLabel(self.layoutWidget)
         self.lowLabel.setObjectName("lowLabel")
         self.lowLabel.setProperty("variant", "input")
-        self.lowFqLayout.addWidget(self.lowLabel)
-
+        self.lowCol.addWidget(self.lowLabel)
         self.lowFrequencySpinBox = QtWidgets.QDoubleSpinBox(self.layoutWidget)
-        self.lowFrequencySpinBox.setAlignment(QtCore.Qt.AlignCenter)
         self.lowFrequencySpinBox.setObjectName("lowFrequencySpinBox")
-        self.lowFqLayout.addWidget(self.lowFrequencySpinBox)
+        self.lowFrequencySpinBox.setAlignment(QtCore.Qt.AlignCenter)
+        self.lowCol.addWidget(self.lowFrequencySpinBox)
+        self.frequencyBodyRow.addLayout(self.lowCol, 1)
 
-        self.hzLowFreqLabel = QtWidgets.QLabel(self.layoutWidget)
-        self.hzLowFreqLabel.setObjectName("hzLowFreqLabel")
-        self.hzLowFreqLabel.setProperty("variant", "input")
-        self.lowFqLayout.addWidget(self.hzLowFreqLabel)
-
-        self.frequencyLayout.addLayout(self.lowFqLayout)
-    
-        # High Frequency
-        self.highFqLayout = QtWidgets.QHBoxLayout()
-        self.highFqLayout.setObjectName("highFqLayout")
-
+        self.highCol = QtWidgets.QVBoxLayout()
         self.highLabel = QtWidgets.QLabel(self.layoutWidget)
         self.highLabel.setObjectName("highLabel")
         self.highLabel.setProperty("variant", "input")
-        self.highFqLayout.addWidget(self.highLabel)
-
+        self.highCol.addWidget(self.highLabel)
         self.highFrequencySpinBox = QtWidgets.QDoubleSpinBox(self.layoutWidget)
-        self.highFrequencySpinBox.setAlignment(QtCore.Qt.AlignCenter)
         self.highFrequencySpinBox.setObjectName("highFrequencySpinBox")
-        self.highFqLayout.addWidget(self.highFrequencySpinBox)
+        self.highFrequencySpinBox.setAlignment(QtCore.Qt.AlignCenter)
+        self.highCol.addWidget(self.highFrequencySpinBox)
+        self.frequencyBodyRow.addLayout(self.highCol, 1)
 
-        self.hzHighFreqLabel = QtWidgets.QLabel(self.layoutWidget)
-        self.hzHighFreqLabel.setObjectName("hzHighFreqLabel")
-        self.hzHighFreqLabel.setProperty("variant", "input")
-        self.highFqLayout.addWidget(self.hzHighFreqLabel)
+        self.paramsLayout.addLayout(self.frequencyBodyRow)
 
-        self.frequencyLayout.addLayout(self.highFqLayout)
-        
-        self.rangeLayout.addLayout(self.frequencyLayout)
-        self.paramsLayout.addLayout(self.rangeLayout)
-
-        # --- Order ---
-        self.orderLayout = QtWidgets.QVBoxLayout()
-        self.orderLayout.setObjectName("orderLayout")
-
+        # === Order ===
         self.orderLabel = QtWidgets.QLabel(self.layoutWidget)
         self.orderLabel.setObjectName("orderLabel")
         self.orderLabel.setProperty("variant", "subtitle")
-        self.orderLayout.addWidget(self.orderLabel)
+        self.paramsLayout.addWidget(self.orderLabel)
 
         self.orderLine = QtWidgets.QFrame(self.layoutWidget)
         self.orderLine.setFrameShape(QtWidgets.QFrame.HLine)
         self.orderLine.setObjectName("orderLine")
-        self.rangeLine.setProperty("role", "divider")
-        self.orderLayout.addWidget(self.orderLine)
+        self.orderLine.setProperty("role", "divider")
+        self.paramsLayout.addWidget(self.orderLine)
 
         self.orderSpinBox = QtWidgets.QSpinBox(self.layoutWidget)
-        self.orderSpinBox.setAlignment(QtCore.Qt.AlignCenter)
         self.orderSpinBox.setObjectName("orderSpinBox")
-        self.orderLayout.addWidget(self.orderSpinBox)
+        self.orderSpinBox.setAlignment(QtCore.Qt.AlignCenter)
+        self.paramsLayout.addWidget(self.orderSpinBox)
 
-        self.paramsLayout.addLayout(self.orderLayout)
-
-        # --- Button Create Wavelet ---
         self.paramsLayout.addStretch(1)
 
-        self.applyFilterButton = QtWidgets.QPushButton(self.layoutWidget)
-        self.applyFilterButton.setObjectName("mainActionButton")
-        self.paramsLayout.addWidget(self.applyFilterButton)
+        self.main_splitter.widget(1).setMaximumWidth(300)
 
         # Size splitter
         self.main_splitter.setStretchFactor(0, 1)
@@ -196,11 +177,10 @@ class Ui_Filter(object):
         _translate = QtCore.QCoreApplication.translate
         Filter.setWindowTitle(_translate("Filter", "Form"))
         self.parametersLabel.setText(_translate("Filter", "Parameters"))
-        self.filtersLabel.setText(_translate("Filter", "Filters"))
-        self.typeLabel.setText(_translate("Filter", "Type"))
-        self.rangeLabel.setText(_translate("Filter", "Range"))
-        self.frequencyLabel.setText(_translate("Filter", "Frequency (Hz)"))
-        self.highLabel.setText(_translate("Filter", "High"))
-        self.lowLabel.setText(_translate("Filter", "Low"))
-        self.orderLabel.setText(_translate("Filter", "Order"))
         self.applyFilterButton.setText(_translate("Filter", "Filter"))
+        self.filtersLabel.setText(_translate("Filter", "Filters"))
+        self.typeLabel.setText(_translate("Filter", "type"))
+        self.frequencyLabel.setText(_translate("Filter", "Frecuency (Hz)"))
+        self.lowLabel.setText(_translate("Filter", "Low"))
+        self.highLabel.setText(_translate("Filter", "High"))
+        self.orderLabel.setText(_translate("Filter", "Order"))

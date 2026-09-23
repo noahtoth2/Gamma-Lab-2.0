@@ -5,7 +5,7 @@
 
 /* General background */
 QMainWindow {
-    background-color: #f5f5f5;
+    background-color: #E8E5ED;
     border: none;
     margin: 0px;
     padding: 0px;
@@ -163,6 +163,47 @@ QMenu::item:selected {
     color: #2E60A9;
 }
 
+/* Results panel */
+#resultsPanel {
+    background-color: #FFFFFF;
+    border-top: 1px solid #E3E7EC;
+}
+
+#resultsHeader {
+    background-color: #EEF0F4;
+}
+
+#resultsTitleLabel {
+    color: #33475b;
+    font-weight: 600;
+    font-size: 9pt;
+}
+
+#resultsMenuBtn, #resultsCloseBtn {
+    border: none;
+    background: transparent;
+    color: #6f7a86;
+    padding: 2px 6px;
+}
+
+#resultsMenuBtn:hover, #resultsCloseBtn:hover {
+    background: #E3E7EC;
+    border-radius: 4px;
+}
+
+#resultsDivider {
+    background-color: #2E60A9;
+    max-height: 1px;
+    border: none;
+}
+
+#resultsTable {
+    background-color: #FFFFFF;
+    border: none;
+    gridline-color: #E3E7EC;
+    color: #33475b;
+}
+
 /* Explorer tree */
 #explorerTreeWidget {
     background-color: transparent;
@@ -197,9 +238,9 @@ QMenu::item:selected {
     background-color: #EEF3FA;
 }
 
-QScrollArea { 
+QScrollArea {
     border: none;
-    background: #E8E8E8;
+    background: #E8E5ED;
     padding-left: 4px;
 }
 
@@ -283,6 +324,35 @@ QScrollBar::sub-line:horizontal {
     color: white;
 }
 
+/* Header action button (Parameters row, e.g. "Generate") */
+#headerGenerateButton {
+    background-color: #2E60A9;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 6px 16px;
+}
+
+#headerGenerateButton:hover {
+    background-color: #244c8b;
+}
+
+#headerGenerateButton:pressed {
+    background-color: #1c3d6f;
+}
+
+#clearParamsButton {
+    border: none;
+    background: transparent;
+}
+
+#clearParamsButton:hover {
+    background-color: #EEF3FA;
+    border-radius: 4px;
+}
+
 /* Primary button (Generate Trials) */
 #mainActionButton {
     background-color: transparent;
@@ -315,7 +385,13 @@ QDoubleSpinBox {
     border: 1px solid transparent;   /* no border when not focused */
     border-radius: 8px;
     padding-right: 26px;             /* space for arrows */
-    padding-left: 12px;
+    padding-left: 10px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    min-height: 16px;
+    max-height: 21px;
+    max-width: 73px;
+    font-size: 9pt;
 }
 
 
@@ -377,8 +453,12 @@ QComboBox {
     color: #2E60A9;
     border: 1px solid transparent;       /* no border by default */
     border-radius: 8px;
-    min-width: 120px;
-    padding: 4px 28px 4px 8px;           /* space for text and arrow */
+    min-width: 90px;
+    max-width: 92px;
+    min-height: 16px;
+    max-height: 21px;
+    font-size: 9pt;
+    padding: 2px 28px 2px 8px;           /* space for text and arrow */
 }
 
 /* Focus */
@@ -607,10 +687,11 @@ QLineEdit {
     color: #2E60A9;
     border: 1px solid transparent;
     border-radius: 6px;
-    font-size: 12px;
-    min-height: 22px;
-    max-height: 26px;
-    padding: 4px 6px;
+    font-size: 9pt;
+    min-height: 18px;
+    max-height: 21px;
+    max-width: 73px;
+    padding: 3px 6px;
     selection-background-color: #2E60A9;
     selection-color: #FFFFFF;
 }
@@ -643,22 +724,22 @@ QLineEdit:disabled {
 
 /* Title */
 QLabel[variant="title"] {
-    font-size: 11pt;
+    font-size: 10pt;
     font-weight: 600;
-    color: #2E60A9;              
-    padding-top: 4px;
+    color: #2E60A9;
+    padding-top: 2px;
 }
 
 /* Subtitles */
 QLabel[variant="subtitle"] {
-    font-size: 10pt;
-    font-weight: 500;
+    font-size: 8.5pt;
+    font-weight: 600;
     color: #2E60A9;
-    padding-top: 10px;
+    padding-top: 2px;
 }
 
 QLabel[variant="input"] {
-    font-size: 9pt;
+    font-size: 8pt;
     color: #2E60A9;
     letter-spacing: 0.2px;
 }

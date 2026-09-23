@@ -153,10 +153,6 @@ class SlopePlugin(IPlugin):
             tv.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
             tv.verticalHeader().setVisible(False)
 
-            # Export CSV button
-            self.ui.pushButton.setText("Export CSV")
-            self.ui.pushButton.clicked.connect(self._on_export_csv)
-
             # Initial load
             self._reload_from_store()
         else:
@@ -260,7 +256,7 @@ class SlopePlugin(IPlugin):
         return rows
 
     # ---------- Export ----------
-    def _on_export_csv(self):
+    def export_csv(self):
         if not self.model:
             return
         rows = self.model.get_all_rows()

@@ -177,10 +177,64 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         contentColumnLayout.addWidget(self.buttonContainer)
 
-        self.workspace = QtWidgets.QWidget(self.contentColumn)
+        # Workspace and Results panel share a vertical splitter so Results
+        # can be freely resized (or hidden) by dragging its handle.
+        self.workspaceSplitter = QtWidgets.QSplitter(QtCore.Qt.Vertical, self.contentColumn)
+        self.workspaceSplitter.setObjectName("workspaceSplitter")
+        contentColumnLayout.addWidget(self.workspaceSplitter, 1)
+
+        self.workspace = QtWidgets.QWidget(self.workspaceSplitter)
         self.workspace.setMinimumSize(QtCore.QSize(200, 0))
         self.workspace.setObjectName("workspace")
-        contentColumnLayout.addWidget(self.workspace)
+
+        # ===== Results panel (docked at the bottom, hidden by default) =====
+        self.resultsPanel = QtWidgets.QWidget(self.workspaceSplitter)
+        self.resultsPanel.setObjectName("resultsPanel")
+        self.resultsPanel.setVisible(False)
+        self.resultsPanel.setMinimumHeight(60)
+        resultsPanelLayout = QtWidgets.QVBoxLayout(self.resultsPanel)
+        resultsPanelLayout.setContentsMargins(0, 0, 0, 0)
+        resultsPanelLayout.setSpacing(0)
+
+        self.resultsHeader = QtWidgets.QWidget(self.resultsPanel)
+        self.resultsHeader.setObjectName("resultsHeader")
+        resultsHeaderLayout = QtWidgets.QHBoxLayout(self.resultsHeader)
+        resultsHeaderLayout.setContentsMargins(10, 4, 6, 4)
+        resultsHeaderLayout.setSpacing(6)
+
+        self.resultsTitleLabel = QtWidgets.QLabel("RESULTS", self.resultsHeader)
+        self.resultsTitleLabel.setObjectName("resultsTitleLabel")
+        resultsHeaderLayout.addWidget(self.resultsTitleLabel)
+        resultsHeaderLayout.addStretch(1)
+
+        self.resultsMenuBtn = QtWidgets.QToolButton(self.resultsHeader)
+        self.resultsMenuBtn.setObjectName("resultsMenuBtn")
+        self.resultsMenuBtn.setText("•••")
+        self.resultsMenuBtn.setAutoRaise(True)
+        resultsHeaderLayout.addWidget(self.resultsMenuBtn)
+
+        self.resultsCloseBtn = QtWidgets.QToolButton(self.resultsHeader)
+        self.resultsCloseBtn.setObjectName("resultsCloseBtn")
+        self.resultsCloseBtn.setText("✕")
+        self.resultsCloseBtn.setAutoRaise(True)
+        resultsHeaderLayout.addWidget(self.resultsCloseBtn)
+
+        resultsPanelLayout.addWidget(self.resultsHeader)
+
+        self.resultsDivider = QtWidgets.QFrame(self.resultsPanel)
+        self.resultsDivider.setFrameShape(QtWidgets.QFrame.HLine)
+        self.resultsDivider.setObjectName("resultsDivider")
+        resultsPanelLayout.addWidget(self.resultsDivider)
+
+        self.resultsTabs = QtWidgets.QTabWidget(self.resultsPanel)
+        self.resultsTabs.setObjectName("resultsTabs")
+        self.resultsTabs.setTabPosition(QtWidgets.QTabWidget.North)
+        resultsPanelLayout.addWidget(self.resultsTabs)
+
+        self.workspaceSplitter.setStretchFactor(0, 1)
+        self.workspaceSplitter.setStretchFactor(1, 0)
+        self.workspaceSplitter.setSizes([600, 220])
+
         self.gridLayout.addWidget(self.splitter_3, 0, 1, 1, 1)
         self.verticalLayout_6.addLayout(self.gridLayout)
         self.verticalLayout_8.addLayout(self.verticalLayout_6)
