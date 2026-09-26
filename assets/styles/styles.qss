@@ -39,6 +39,12 @@ QMainWindow {
     border: none;
     color: #33475b;
     font-size: 9.5pt;
+    padding: 0px;
+    margin: 0px;
+    min-width: 0px;
+    max-width: 16777215px;
+    min-height: 0px;
+    max-height: 16777215px;
 }
 
 #searchIconLabel {

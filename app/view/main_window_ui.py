@@ -62,19 +62,44 @@ class Ui_MainWindow(object):
         self.searchBar.setObjectName("searchBar")
         self.searchBar.setMinimumWidth(340)
         self.searchBar.setMaximumWidth(420)
+
         searchBarLayout = QtWidgets.QHBoxLayout(self.searchBar)
-        searchBarLayout.setContentsMargins(14, 0, 10, 0)
-        searchBarLayout.setSpacing(6)
-
-        self.searchLineEdit = QtWidgets.QLineEdit(self.searchBar)
-        self.searchLineEdit.setObjectName("searchLineEdit")
-        self.searchLineEdit.setFrame(False)
-        searchBarLayout.addWidget(self.searchLineEdit)
-
+        searchBarLayout.setContentsMargins(8, 0, 10, 0)
+        searchBarLayout.setSpacing(0)
+        
+        # ===== Search icon + line edit =====
         self.searchIconLabel = QtWidgets.QLabel(self.searchBar)
         self.searchIconLabel.setObjectName("searchIconLabel")
         self.searchIconLabel.setText("\U0001F50D")
+        self.searchIconLabel.setSizePolicy(
+            QtWidgets.QSizePolicy.Fixed,
+            QtWidgets.QSizePolicy.Preferred
+        )
         searchBarLayout.addWidget(self.searchIconLabel)
+
+        #==== Search line edit =====
+        self.searchLineEdit = QtWidgets.QLineEdit(self.searchBar)
+        self.searchLineEdit.setObjectName("searchLineEdit")
+
+        self.searchLineEdit.setLayoutDirection(QtCore.Qt.LeftToRight)
+
+        self.searchLineEdit.setAlignment(QtCore.Qt.AlignLeft)
+
+        self.searchLineEdit.setTextMargins(0, 0, 0, 0)
+
+        self.searchLineEdit.setFrame(False)
+        self.searchLineEdit.setMinimumWidth(0)
+
+        self.searchLineEdit.setAlignment(
+        QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
+        )
+
+        self.searchLineEdit.setSizePolicy(
+        QtWidgets.QSizePolicy.Expanding,
+        QtWidgets.QSizePolicy.Fixed
+        )
+
+        searchBarLayout.addWidget(self.searchLineEdit, 1)
 
         titleBarLayout.addWidget(self.searchBar)
         titleBarLayout.addStretch(1)
