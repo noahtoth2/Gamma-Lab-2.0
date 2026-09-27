@@ -89,6 +89,16 @@ class Average_plugin(IPlugin):
         
         # Render in VTK
         self.render_average(t, av_data, trials.channel_name, trials.unit)
+        self.mark_project_dirty()
+
+    # ====== Project save/restore ======
+    def get_analysis_params(self) -> dict:
+        # No configurable parameters - always averages all active trials. The
+        # entry's mere presence in the manifest means "re-run this on open".
+        return {"used": True}
+
+    def apply_analysis_params(self, params: dict):
+        self._on_calculate_average()
 
     def render_average(self, t, av_data, channel_name=None, unit=None):
         """

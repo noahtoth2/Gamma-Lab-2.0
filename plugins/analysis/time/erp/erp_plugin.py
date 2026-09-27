@@ -214,6 +214,52 @@ class Erp_plugin(IPlugin):
 
         self.ch_name = getattr(td, "channel_name", "")
         self._notify(f"ERP: {len(idx)} trials plotted. Channel: {self.ch_name}")
+        self.mark_project_dirty()
+
+    # ====== Project save/restore ======
+    def get_analysis_params(self) -> dict:
+        if self.ui.chkSelectAll.isChecked():
+            mode = "all"
+        elif self.ui.chkSingleTrial.isChecked():
+            mode = "single"
+        elif self.ui.chkUseRange.isChecked():
+            mode = "range"
+        else:
+            mode = "manual"
+
+        checked_indices = []
+        if mode == "manual":
+            for i in range(self.ui.lstTrials.count()):
+                if self.ui.lstTrials.item(i).checkState() == QtCore.Qt.Checked:
+                    checked_indices.append(i + 1)
+
+        return {
+            "mode": mode,
+            "single_trial": self.ui.spnSingleTrial.value(),
+            "range_from": self.ui.spnFrom.value(),
+            "range_to": self.ui.spnTo.value(),
+            "manual_checked_indices": checked_indices,
+        }
+
+    def apply_analysis_params(self, params: dict):
+        mode = params.get("mode", "all")
+        self.ui.chkSelectAll.setChecked(mode == "all")
+        self.ui.chkSingleTrial.setChecked(mode == "single")
+        self.ui.chkUseRange.setChecked(mode == "range")
+        self.ui.spnSingleTrial.setValue(params.get("single_trial", self.ui.spnSingleTrial.value()))
+        self.ui.spnFrom.setValue(params.get("range_from", self.ui.spnFrom.value()))
+        self.ui.spnTo.setValue(params.get("range_to", self.ui.spnTo.value()))
+
+        if mode == "manual":
+            # Plot once first so lstTrials gets (re)built at the right size,
+            # then apply the exact saved checkmarks and plot again for real.
+            self._on_plot_clicked()
+            checked = set(params.get("manual_checked_indices", []))
+            for i in range(self.ui.lstTrials.count()):
+                it = self.ui.lstTrials.item(i)
+                it.setCheckState(QtCore.Qt.Checked if (i + 1) in checked else QtCore.Qt.Unchecked)
+
+        self._on_plot_clicked()
 
     def _ensure_trials_list(self, n_trials: int):
         """Rebuild the list if empty or out-of-date."""

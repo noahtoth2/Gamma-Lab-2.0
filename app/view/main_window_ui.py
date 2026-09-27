@@ -10,6 +10,8 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+from app.view.widgets.editable_label import EditableLabel
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -55,6 +57,19 @@ class Ui_MainWindow(object):
         self.titleFileNameLabel = QtWidgets.QLabel(self.titleBar)
         self.titleFileNameLabel.setObjectName("titleFileNameLabel")
         titleBarLayout.addWidget(self.titleFileNameLabel)
+
+        self.titleSeparatorLabel = QtWidgets.QLabel(self.titleBar)
+        self.titleSeparatorLabel.setObjectName("titleSeparatorLabel")
+        self.titleSeparatorLabel.setText("-")
+        self.titleSeparatorLabel.setVisible(False)
+        titleBarLayout.addWidget(self.titleSeparatorLabel)
+
+        self.titleProjectNameLabel = EditableLabel(self.titleBar)
+        self.titleProjectNameLabel.setObjectName("titleProjectNameLabel")
+        self.titleProjectNameLabel.label.setObjectName("titleProjectNameLabelText")
+        self.titleProjectNameLabel.edit.setObjectName("titleProjectNameLabelEdit")
+        self.titleProjectNameLabel.setVisible(False)
+        titleBarLayout.addWidget(self.titleProjectNameLabel)
 
         titleBarLayout.addStretch(1)
 
@@ -247,7 +262,7 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.titleLabTextLabel.setText(_translate("MainWindow", "LAB"))
-        self.titleFileNameLabel.setText(_translate("MainWindow", "23n09000.abf   -   23n09000_gammalab.glb"))
+        self.titleFileNameLabel.setText(_translate("MainWindow", "No signal loaded"))
         self.searchLineEdit.setPlaceholderText(_translate("MainWindow", "search function by name"))
         self.btn_file.setText(_translate("MainWindow", "File"))
         self.bnt_home.setText(_translate("MainWindow", "Home"))

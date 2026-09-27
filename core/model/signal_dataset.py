@@ -42,6 +42,14 @@ class SignalDataset:
     def number_of_trials_dataset(self):
         return len(self.__trials_dataset)
 
+    def get_all_trials_datasets(self) -> List["TrialDataset"]:
+        """All generated TrialDatasets, in generation order (for project save/restore)."""
+        return list(self.__trials_dataset)
+
+    def get_discarded_trials_map(self) -> Dict[tuple[str, str], set[int]]:
+        """Discarded-trial indices per (source, channel) key (for project save/restore)."""
+        return {k: set(v) for k, v in self.__discarded_trials.items()}
+
     def get_active_trials(self, file_name: str, channel_name: str = None):
         """
         Return the active TrialDataset for a specific file and channel,

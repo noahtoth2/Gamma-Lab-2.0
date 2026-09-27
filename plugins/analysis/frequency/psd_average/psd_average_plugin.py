@@ -186,6 +186,36 @@ class Psd_average_plugin(IPlugin):
         # 4) Plot
         self._plot_psd(freq, power_to_plot, plot_title, lo, hi, ch_name)
         self._notify(f"PSD (Average) ready: fs_eff={fs_eff:.2f} Hz, {freq.size} bins")
+        self.mark_project_dirty()
+
+    # ====== Project save/restore ======
+    def get_analysis_params(self) -> dict:
+        return {
+            "sample_density": self.ui.sampleDensitySpinBox.value(),
+            "low_freq": self.ui.lowFrequencySpinBox.value(),
+            "high_freq": self.ui.highFrequencySpinBox.value(),
+            "window": self.ui.windowComboBox.currentText(),
+            "nperseg": self.ui.npersegSpinBox.value(),
+            "noverlap": self.ui.noverlapSpinBox.value(),
+            "nfft": self.ui.nfftSpinBox.value(),
+        }
+
+    def apply_analysis_params(self, params: dict):
+        self.ui.sampleDensitySpinBox.setValue(params.get("sample_density", self.ui.sampleDensitySpinBox.value()))
+        self.ui.lowFrequencySpinBox.setValue(params.get("low_freq", self.ui.lowFrequencySpinBox.value()))
+        self.ui.highFrequencySpinBox.setValue(params.get("high_freq", self.ui.highFrequencySpinBox.value()))
+
+        idx = self.ui.windowComboBox.findText(params.get("window", ""))
+        if idx >= 0:
+            self.ui.windowComboBox.setCurrentIndex(idx)
+
+        # nperseg first: its valueChanged auto-syncs noverlap/nfft, so set the
+        # saved noverlap/nfft AFTER it to override that auto-sync if they differ.
+        self.ui.npersegSpinBox.setValue(params.get("nperseg", self.ui.npersegSpinBox.value()))
+        self.ui.noverlapSpinBox.setValue(params.get("noverlap", self.ui.noverlapSpinBox.value()))
+        self.ui.nfftSpinBox.setValue(params.get("nfft", self.ui.nfftSpinBox.value()))
+
+        self._on_calculate_clicked()
 
 
     def _sync_range(self):

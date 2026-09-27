@@ -28,6 +28,25 @@ QMainWindow {
     font-size: 10pt;
 }
 
+#titleSeparatorLabel {
+    color: #a7b0ba;
+    font-size: 10pt;
+}
+
+#titleProjectNameLabelText {
+    color: #33475b;
+    font-size: 10pt;
+}
+
+#titleProjectNameLabelEdit {
+    color: #33475b;
+    font-size: 10pt;
+    background: #F0F2F5;
+    border: 1px solid #2E60A9;
+    border-radius: 4px;
+    padding: 1px 4px;
+}
+
 #searchBar {
     background-color: #F0F2F5;
     border: 1px solid #E3E7EC;
@@ -205,6 +224,12 @@ QMenu::item:selected {
 }
 
 /* Explorer tree */
+#explorerPlaceholder {
+    color: #8a97a6;
+    font-size: 9pt;
+    padding: 16px;
+}
+
 #explorerTreeWidget {
     background-color: transparent;
     border: none;

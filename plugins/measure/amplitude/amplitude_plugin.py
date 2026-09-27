@@ -1,5 +1,6 @@
 # plugins/measure/amplitude/amplitude_plugin.py
 import sys
+import os
 import csv
 from datetime import datetime
 from typing import Any, Dict, List
@@ -9,6 +10,7 @@ from PyQt5.QtWidgets import QFileDialog, QHeaderView
 
 from core.plugins.interfaces import IPlugin
 from core.plugins.meta import PluginMeta
+from core.services.settings_service import SettingsService
 from plugins.measure.amplitude.amplitude_plugin_ui import Ui_Amplitude
 
 
@@ -130,6 +132,8 @@ class AmplitudePlugin(IPlugin):
 
         # Model
         self.model: AmplitudeTableModel | None = None
+
+        self.settings = SettingsService()
 
 
     # ---------- Lifecycle ----------
@@ -286,6 +290,17 @@ class AmplitudePlugin(IPlugin):
         return rows
 
     # ---------- Export ----------
+    def _export_dir(self) -> str:
+        """Default export folder: the open project's 'archivos' folder, else last used dir."""
+        try:
+            store = self.kernel.get_service("DataStore") if self.kernel else None
+            project = store.get("_project_service") if store else None
+            if project is not None and project.is_open:
+                return project.archivos_dir()
+        except Exception:
+            pass
+        return self.settings.get("last_export_dir", os.getcwd())
+
     def export_csv(self):
         if not self.model:
             return
@@ -294,10 +309,12 @@ class AmplitudePlugin(IPlugin):
             self.alerts.error("No measurements to export.")
             return
 
+        default_path = os.path.join(self._export_dir(), "amplitude_measurements.csv")
+
         path, _ = QFileDialog.getSaveFileName(
             self.widget,
             "Export amplitude measurements to CSV",
-            "amplitude_measurements.csv",
+            default_path,
             "CSV (*.csv)"
         )
         if not path:

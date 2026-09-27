@@ -11,10 +11,7 @@ from core.model.trial_dataset import TrialDataset
 from PyQt5.QtWidgets import QWidget
 
 
-'''
-Interfaces for plugins and services — the contract and communication system
-between plugins and the kernel.
-'''
+
 
 class IPlugin(ABC):
     
@@ -78,13 +75,20 @@ class IPlugin(ABC):
             self.alerts.error(f"Error accessing DataStore: {e}")
             return None
 
-    def get_active_signal(self, silent: bool = False) -> SignalDataset | None:
-        """Return the active signal or None if not available.
+    def mark_project_dirty(self):
 
-        `silent=True` skips the "No signal has been loaded" popup — for calls
-        made automatically (e.g. populating a panel on open) rather than in
-        direct response to a user action like clicking a button.
-        """
+        try:
+            store = self.kernel.get_service("DataStore") if self.kernel else None
+            project = store.get("_project_service") if store else None
+            if project is not None:
+                project.mark_dirty()
+            if self.mainwin and hasattr(self.mainwin, "_update_title_bar_project_name"):
+                self.mainwin._update_title_bar_project_name()
+        except Exception:
+            pass
+
+    def get_active_signal(self, silent: bool = False) -> SignalDataset | None:
+
         try:
             store = self.get_datastore()
             if not store:
@@ -121,28 +125,13 @@ class IPlugin(ABC):
         
     def on_kernel_event(self, topic: str, payload: object):
 
-        """
-        Listen to events emitted by the Kernel.
-
-        Invoked when a kernel event occurs; receives the topic and payload.
-
-        Used for events relevant to the plugin, e.g., active signal changes or new data added.
-
-        :param topic: Event topic
-        :param payload: Event payload
-        :return: None
-        """
+    
         if topic == "signal_active_changed" or topic =="signal_added":
             print(f"Signal changed/added: {payload}")
             self.active_signal = self.get_active_signal() 
 
     def initialize(self, kernel):
-        """
-        Initialize the plugin with the kernel.
 
-        :param kernel: The kernel the plugin depends on.
-        :return: None
-        """
         self.kernel = kernel
         self._log("Initializing")
 

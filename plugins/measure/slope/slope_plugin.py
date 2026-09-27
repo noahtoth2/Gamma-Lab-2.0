@@ -256,6 +256,17 @@ class SlopePlugin(IPlugin):
         return rows
 
     # ---------- Export ----------
+    def _export_dir(self) -> str:
+        """Default export folder: the open project's 'archivos' folder, else last used dir."""
+        try:
+            store = self.kernel.get_service("DataStore") if self.kernel else None
+            project = store.get("_project_service") if store else None
+            if project is not None and project.is_open:
+                return project.archivos_dir()
+        except Exception:
+            pass
+        return self.settings.get("last_export_dir", os.getcwd())
+
     def export_csv(self):
         if not self.model:
             return
@@ -264,12 +275,12 @@ class SlopePlugin(IPlugin):
             self.alerts.warning("No measurements to export.")
             return
 
-        path_initial = self.settings.get("last_export_dir", os.getcwd())
+        default_path = os.path.join(self._export_dir(), "slope_measurements.csv")
 
         path, _ = QFileDialog.getSaveFileName(
             self.widget,
             "Export slope measurements to CSV",
-            path_initial + "slope_measurements.csv",
+            default_path,
             "CSV (*.csv)"
         )
         if not path:

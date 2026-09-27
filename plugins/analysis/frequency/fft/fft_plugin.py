@@ -121,6 +121,21 @@ class Fft_plugin(IPlugin):
             # 4) Plot
             self._plot_fft(freq, mag, ch_name, lo, hi)
             self._notify(f"FFT ready: fs_eff={fs_eff:.2f} Hz, {freq.size} bins, trials={mag.shape[1]}")
+            self.mark_project_dirty()
+
+    # ====== Project save/restore ======
+    def get_analysis_params(self) -> dict:
+        return {
+            "sample_density": self.ui.sampleDensitySpinBox.value(),
+            "low_freq": self.ui.lowFrequencySpinBox.value(),
+            "high_freq": self.ui.highFrequencySpinBox.value(),
+        }
+
+    def apply_analysis_params(self, params: dict):
+        self.ui.sampleDensitySpinBox.setValue(params.get("sample_density", self.ui.sampleDensitySpinBox.value()))
+        self.ui.lowFrequencySpinBox.setValue(params.get("low_freq", self.ui.lowFrequencySpinBox.value()))
+        self.ui.highFrequencySpinBox.setValue(params.get("high_freq", self.ui.highFrequencySpinBox.value()))
+        self._on_calculate_clicked()
 
     def _sync_range(self):
         lo = float(self.ui.lowFrequencySpinBox.value())

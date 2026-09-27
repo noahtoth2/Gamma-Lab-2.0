@@ -68,6 +68,7 @@ class TrialsPlugin(IPlugin):
             self._init_controls()
 
             self._populate_channels_once()
+            self._restore_existing_trials_if_any()
 
             # Buttons to navigate between trials
             self.ui.Btn_prev_trial.clicked.connect(lambda: self.navigate_trial(-1))
@@ -262,7 +263,22 @@ class TrialsPlugin(IPlugin):
             self._populate_channel_combos(ds)
         else:
             self._log("_populate_channels_once: no active signal (yet)")
-    
+
+    def _restore_existing_trials_if_any(self):
+        """Show the active signal's most recent TrialDataset, if it already has
+        one (e.g. just restored from an opened project), instead of a blank view."""
+        ds = self.get_active_signal(silent=True)
+        if not ds or ds.number_of_trials_dataset() == 0:
+            return
+        td = ds.get_all_trials_datasets()[-1]
+        idx = self.ui.channelComboBox.findText(td.channel_name)
+        if idx >= 0:
+            self.ui.channelComboBox.setCurrentIndex(idx)
+        self.last_td = td
+        self.visible_trials = [0]
+        self._render_trials(td)
+        self._update_trial_ui(ds, 0, td.trials.shape[1], None)
+
     # -------------- Acciones UI -----------------
     def _on_generate_clicked(self):
         #self._log("_on_generate_clicked")
@@ -326,10 +342,21 @@ class TrialsPlugin(IPlugin):
 
         #self._log("TD listo:", td.trials.shape, td.time_rel.shape, "onsets:", len(td.onsets_s))
 
+        td.metadata["generation_params"] = {
+            "channel": int(ch),
+            "stim_channel": None if stim_ch is None else int(stim_ch),
+            "threshold": th,
+            "t0": t0, "t1": t1,
+            "end_mode": mode,
+            "stim_expected": stim,
+            "inter_stim_time": inter_stim_time,
+        }
+
         try:
             ds.add_trial_dataset(td)
             ds.clear_discarded_trials()
-            
+            self.mark_project_dirty()
+
         except Exception as e:
             self._log("add_trial_dataset warning:", e)
 
@@ -413,6 +440,7 @@ class TrialsPlugin(IPlugin):
             ds.discard_trial(ds.name, ch, index)
             self._update_trial_ui(ds, index, T, True)
             self.alerts.info(f"Trial {index + 1} discarded.", "Discard trial")
+        self.mark_project_dirty()
 
     def _update_trial_ui(self, ds: SignalDataset, index: int, total: int = None, estado_descartado: bool = None):
         """Update current trial label/button depending on discard state."""

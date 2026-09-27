@@ -250,6 +250,46 @@ class Relative_psd_plugin(IPlugin):
             except Exception as e:
                 self._log(f"Plot error: {e}")
 
+        self.mark_project_dirty()
+
+    # ====== Project save/restore ======
+    def get_analysis_params(self) -> dict:
+        return {
+            "sample_density": self.ui.sampleDensitySpinBox.value(),
+            "low_freq": self.ui.lowFrequencySpinBox.value(),
+            "high_freq": self.ui.highFrequencySpinBox.value(),
+            "window": self.ui.windowComboBox.currentText(),
+            "nperseg": self.ui.npersegSpinBox.value(),
+            "noverlap": self.ui.noverlapSpinBox.value(),
+            "nfft": self.ui.nfftSpinBox.value(),
+            "detrend": self.ui.detrendComboBox.currentText() if hasattr(self.ui, "detrendComboBox") else "none",
+            "gain_factor_index": self.ui.gainFactorComboBox.currentIndex() if hasattr(self.ui, "gainFactorComboBox") else 1,
+        }
+
+    def apply_analysis_params(self, params: dict):
+        self.ui.sampleDensitySpinBox.setValue(params.get("sample_density", self.ui.sampleDensitySpinBox.value()))
+        self.ui.lowFrequencySpinBox.setValue(params.get("low_freq", self.ui.lowFrequencySpinBox.value()))
+        self.ui.highFrequencySpinBox.setValue(params.get("high_freq", self.ui.highFrequencySpinBox.value()))
+
+        idx = self.ui.windowComboBox.findText(params.get("window", ""))
+        if idx >= 0:
+            self.ui.windowComboBox.setCurrentIndex(idx)
+
+        # nperseg first: its valueChanged auto-syncs noverlap/nfft, so set the
+        # saved noverlap/nfft AFTER it to override that auto-sync if they differ.
+        self.ui.npersegSpinBox.setValue(params.get("nperseg", self.ui.npersegSpinBox.value()))
+        self.ui.noverlapSpinBox.setValue(params.get("noverlap", self.ui.noverlapSpinBox.value()))
+        self.ui.nfftSpinBox.setValue(params.get("nfft", self.ui.nfftSpinBox.value()))
+
+        if hasattr(self.ui, "detrendComboBox"):
+            didx = self.ui.detrendComboBox.findText(params.get("detrend", "none"))
+            if didx >= 0:
+                self.ui.detrendComboBox.setCurrentIndex(didx)
+        if hasattr(self.ui, "gainFactorComboBox"):
+            self.ui.gainFactorComboBox.setCurrentIndex(params.get("gain_factor_index", 1))
+
+        self._on_calculate_clicked()
+
     # ---------- Relative PSD ----------
 
     # 1) Replace _band_sum(...) with edge handling
@@ -337,7 +377,7 @@ class Relative_psd_plugin(IPlugin):
             self._log(f"Band {name:6s} [{lo:>5.1f}-{hi:>6.1f}] -> {val:.4f}")
 
         total_parts = sum(parts)
-        self._log(f"Sum of bands (δ+θ+α+β+γ1+γ2+HFO1+HFO2) = {total_parts:.4f}")
+        self._log(f"Sum of bands (delta+theta+alpha+beta+gamma1+gamma2+HFO1+HFO2) = {total_parts:.4f}")
         self._log("-" * 40)
 
 

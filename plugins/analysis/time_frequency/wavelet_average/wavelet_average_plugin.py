@@ -251,6 +251,7 @@ class Wavelet_average_plugin(IPlugin):
 
             self.render_scalogram(times, freqs, avg_scalogram, "Wavelet Average (Morlet)", scaled)
             self._log("Rendering complete.")
+            self.mark_project_dirty()
         except Exception as e:
             self._log("Render failed:", e)
             self.alerts.error(f"Rendering failed: {e}")
@@ -258,6 +259,39 @@ class Wavelet_average_plugin(IPlugin):
             self._cleanup_worker()
             self.process("Done")
             self.alerts.hide_spinner()
+
+    # =====================================================
+    # === Project save/restore
+    # =====================================================
+    def get_analysis_params(self) -> dict:
+        return {
+            "sample_density": self.ui.sampleDensitySpinBox.value(),
+            "low_freq": self.ui.lowFrequencySpinBox.value(),
+            "high_freq": self.ui.highFrequencySpinBox.value(),
+            "cycles": self.ui.cyclesSpinBox.value(),
+            "normalize_enabled": self.ui.normalizeCheckBox.isChecked(),
+            "normalize_mode": self.ui.normalizeComboBox.currentText(),
+            "scale_enabled": self.ui.scaleCheckBox.isChecked(),
+            "scale_mode": self.ui.scaleComboBox.currentText(),
+        }
+
+    def apply_analysis_params(self, params: dict):
+        self.ui.sampleDensitySpinBox.setValue(params.get("sample_density", self.ui.sampleDensitySpinBox.value()))
+        self.ui.lowFrequencySpinBox.setValue(params.get("low_freq", self.ui.lowFrequencySpinBox.value()))
+        self.ui.highFrequencySpinBox.setValue(params.get("high_freq", self.ui.highFrequencySpinBox.value()))
+        self.ui.cyclesSpinBox.setValue(params.get("cycles", self.ui.cyclesSpinBox.value()))
+
+        self.ui.normalizeCheckBox.setChecked(params.get("normalize_enabled", False))
+        idx = self.ui.normalizeComboBox.findText(params.get("normalize_mode", ""))
+        if idx >= 0:
+            self.ui.normalizeComboBox.setCurrentIndex(idx)
+
+        self.ui.scaleCheckBox.setChecked(params.get("scale_enabled", False))
+        idx = self.ui.scaleComboBox.findText(params.get("scale_mode", ""))
+        if idx >= 0:
+            self.ui.scaleComboBox.setCurrentIndex(idx)
+
+        self.on_create_wavelet()
 
 
     # =====================================================
