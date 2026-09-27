@@ -24,6 +24,10 @@ from PyQt5.QtWidgets import (
     QPushButton,
     QMessageBox,
 )
+from app.view.main_window_ui import Ui_MainWindow 
+from PyQt5.QtGui import QIcon, QFontMetrics, QFont, QPixmap, QPainter
+from PyQt5.QtCore import QSize, Qt, QEvent
+from PyQt5.QtWidgets import QFrame, QCompleter
 from app.view.main_window_ui import Ui_MainWindow
 from PyQt5.QtGui import QIcon, QFontMetrics, QFont, QPixmap, QPainter, QDesktopServices
 from PyQt5.QtCore import QSize, Qt, QEvent, QUrl, QMimeData
@@ -48,6 +52,7 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(icon)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        self.setup_plugin_search()
         
         self.alerts = PluginAlerts()
         self.alerts.parent = self
@@ -143,6 +148,13 @@ class MainWindow(QMainWindow):
         if plugin and plugin.category() == self.current_section:
             
             self.add_plugin_button(name)
+            self.refresh_plugin_search()
+
+    def refresh_plugin_search(self):
+        names = self._get_registered_plugin_names()
+
+        model = self._search_completer.model()
+        model.setStringList(names)
 
     # Switch section
     def switch_section(self, section):
@@ -1347,3 +1359,55 @@ class MainWindow(QMainWindow):
             return
         self._on_app_about_to_quit()
         super().closeEvent(event)
+
+    #seacrh bar
+    def _get_registered_plugin_names(self):
+        """Obtiene los nombres de todos los plugins registrados (cualquier categoría)."""
+        return sorted(self.kernel.get_plugins())
+
+
+    def setup_plugin_search(self):
+        """Configura el autocompletado y la navegación."""
+        self._search_completer = QCompleter(
+            self._get_registered_plugin_names(), self
+        )
+        self._search_completer.setCaseSensitivity(
+            Qt.CaseInsensitive
+        )
+        self._search_completer.setFilterMode(
+            Qt.MatchContains
+        )
+        self._search_completer.setCompletionMode(
+            QCompleter.PopupCompletion
+        )
+
+        self.ui.searchLineEdit.setCompleter(
+            self._search_completer
+        )
+
+        self._search_completer.activated[str].connect(
+            self._open_plugin_from_search
+        )
+
+        self.ui.searchLineEdit.returnPressed.connect(
+            self._search_exact_plugin
+        )
+
+
+    def _open_plugin_from_search(self, name):
+        """Abre el plugin seleccionado en las sugerencias."""
+        self.ui.searchLineEdit.clear()
+        self.on_button_click(name)
+
+
+    def _search_exact_plugin(self):
+        """Abre el plugin si el texto coincide con su nombre."""
+        query = self.ui.searchLineEdit.text().strip().casefold()
+
+        if not query:
+            return
+
+        for name in self._get_registered_plugin_names():
+            if name.casefold() == query:
+                self._open_plugin_from_search(name)
+                return
