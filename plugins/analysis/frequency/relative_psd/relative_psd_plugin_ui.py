@@ -117,7 +117,7 @@ class Ui_Relative_psd(object):
         self.welchParameters.addWidget(self.welchLine)
 
         # Window
-        self.windowLayout = QtWidgets.QHBoxLayout(self.layoutWidget)
+        self.windowLayout = QtWidgets.QHBoxLayout()
         self.windowLayout.setObjectName("windowLayout")
 
         self.windowLabel = QtWidgets.QLabel(self.layoutWidget)
@@ -131,7 +131,7 @@ class Ui_Relative_psd(object):
         self.windowLayout.addWidget(self.windowComboBox)
 
         # N-per-seg
-        self.npersegLayout = QtWidgets.QHBoxLayout(self.layoutWidget)
+        self.npersegLayout = QtWidgets.QHBoxLayout()
         self.npersegLayout.setObjectName("npersegLayout")
 
         self.npersegLabel = QtWidgets.QLabel(self.layoutWidget)
@@ -145,7 +145,7 @@ class Ui_Relative_psd(object):
         self.npersegLayout.addWidget(self.npersegSpinBox)
         
         # N-overlap
-        self.noverlapLayout = QtWidgets.QHBoxLayout(self.layoutWidget)
+        self.noverlapLayout = QtWidgets.QHBoxLayout()
         self.noverlapLayout.setObjectName("noverlapLayout")
 
         self.noverlapLabel = QtWidgets.QLabel(self.layoutWidget)
@@ -159,7 +159,7 @@ class Ui_Relative_psd(object):
         self.noverlapLayout.addWidget(self.noverlapSpinBox)
 
         # N-FFT
-        self.nfftLayout = QtWidgets.QHBoxLayout(self.layoutWidget)
+        self.nfftLayout = QtWidgets.QHBoxLayout()
         self.nfftLayout.setObjectName("nfftLayout")
 
         self.nfftLabel = QtWidgets.QLabel(self.layoutWidget)

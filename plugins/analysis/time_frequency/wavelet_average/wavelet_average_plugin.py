@@ -175,6 +175,10 @@ class Wavelet_average_plugin(IPlugin):
     # =====================================================
     def on_create_wavelet(self):
 
+        if self.worker is not None and self.worker.isRunning():
+            self.alerts.info("A wavelet computation is already running.")
+            return
+
         self._cleanup_worker()
         self.stop()
 
@@ -218,7 +222,8 @@ class Wavelet_average_plugin(IPlugin):
             self.alerts.error("Low frequency cannot be zero or negative.")
             return
 
-        self.alerts.show_spinner("Computing wavelet")
+        self.ui.createWaveletButton.setEnabled(False)
+        self.ui.createWaveletButton.setText("Computing...")
 
         # Create and execute thread
         self.worker = self.WaveletWorker(
@@ -244,6 +249,8 @@ class Wavelet_average_plugin(IPlugin):
         if error:
             self.alerts.error(f"Failed to compute wavelet: {error}")
             self._cleanup_worker()
+            self.ui.createWaveletButton.setEnabled(True)
+            self.ui.createWaveletButton.setText("Generate")
             return
 
         try:
@@ -258,7 +265,8 @@ class Wavelet_average_plugin(IPlugin):
         finally:
             self._cleanup_worker()
             self.process("Done")
-            self.alerts.hide_spinner()
+            self.ui.createWaveletButton.setEnabled(True)
+            self.ui.createWaveletButton.setText("Generate")
 
     # =====================================================
     # === Project save/restore
