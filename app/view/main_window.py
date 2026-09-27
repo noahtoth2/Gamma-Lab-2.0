@@ -41,6 +41,7 @@ class MainWindow(QMainWindow):
     def __init__(self, kernel):
         super().__init__()
         self.kernel = kernel
+        self._project_busy = False
 
         # Register the main window as a service in the kernel so plugins can access it.
         self.kernel.register_service("MainWindow", self)
@@ -886,11 +887,14 @@ class MainWindow(QMainWindow):
             return
         settings.set("last_project_dir", str(Path(path_str).parent))
 
+        self._project_busy = True
         try:
             self.project_service.open(path_str, self)
             self.statusBar().showMessage(f"Project opened: {path_str}", 4000)
         except Exception as e:
             self.alerts.error(str(e), "Open Project")
+        finally:
+            self._project_busy = False
 
     def on_close_project_clicked(self):
         """File > Close project: forget the project location and free the active signal."""
@@ -910,8 +914,39 @@ class MainWindow(QMainWindow):
             return
         QApplication.instance().quit()
 
+    def _any_background_worker_running(self) -> bool:
+        for name in self.kernel.get_plugins():
+            plugin = self.kernel.get_plugin(name)
+            worker = getattr(plugin, "worker", None)
+            if worker is not None and hasattr(worker, "isRunning") and worker.isRunning():
+                return True
+        return False
+
+    def _stop_all_background_workers(self):
+        for name in self.kernel.get_plugins():
+            plugin = self.kernel.get_plugin(name)
+            cleanup = getattr(plugin, "_cleanup_worker", None)
+            if callable(cleanup):
+                try:
+                    cleanup()
+                except Exception:
+                    pass
+
     def _confirm_discard_unsaved_changes(self) -> bool:
         """Ask Save/Don't Save/Cancel if dirty; True means OK to proceed."""
+        if self._project_busy or self._any_background_worker_running():
+            box = QMessageBox(self)
+            box.setIcon(QMessageBox.Warning)
+            box.setWindowTitle("Project Still Loading")
+            box.setText("The project is still opening. Are you sure you want to close anyway?")
+            close_btn = box.addButton("Close Anyway", QMessageBox.DestructiveRole)
+            stay_btn = box.addButton("Stay", QMessageBox.RejectRole)
+            box.setDefaultButton(stay_btn)
+            box.exec_()
+            if box.clickedButton() is not close_btn:
+                return False
+            self._stop_all_background_workers()
+            return True
         if not self.project_service.dirty:
             return True
 
@@ -1340,9 +1375,9 @@ class MainWindow(QMainWindow):
     def _finalize_all_vtk_render_windows(self):
         from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
-        for name in list(self.plugin_widgets.keys()):
+        for name in self.kernel.get_plugins():
             plugin = self.kernel.get_plugin(name)
-            if plugin is None:
+            if plugin is None or getattr(plugin, "widget", None) is None:
                 continue
             for attr_value in list(vars(plugin).values()):
                 if isinstance(attr_value, QVTKRenderWindowInteractor):
