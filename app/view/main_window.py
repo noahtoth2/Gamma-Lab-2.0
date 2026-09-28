@@ -202,7 +202,8 @@ class MainWindow(QMainWindow):
             group_box = QGroupBox(subcat, self.ui.buttonContainer)
             group_box.setAlignment(Qt.AlignHCenter | Qt.AlignBottom)
             row = QHBoxLayout(group_box)
-            row.setContentsMargins(0, 6, 0, 25)
+            # Side margins keep the selected outline off the group dividers
+            row.setContentsMargins(10, 6, 10, 25)
             row.setSpacing(20)
 
             for name in plugins:
@@ -214,7 +215,7 @@ class MainWindow(QMainWindow):
                     continue
                 btn = self.add_plugin_button(name)
                 if section == "Preprocessing":
-                    btn.setText(self._wrap_button_text(name.lower(), btn.font(), 88))
+                    btn.setText(name.lower())
                 row.addWidget(btn, 0, Qt.AlignBottom)
 
             contenedor.addWidget(group_box, 0, Qt.AlignVCenter)
@@ -236,6 +237,7 @@ class MainWindow(QMainWindow):
 
         # Push everything to the left
         contenedor.addStretch(1)
+        self._update_plugin_button_selection()
         # Update section-dependent visuals
         self._update_background_logo_visibility()
         self._update_home_welcome_visibility()
@@ -244,11 +246,15 @@ class MainWindow(QMainWindow):
         plugin = self.kernel.get_plugin(name)
         btn = QToolButton(self.ui.buttonContainer)
         btn.setObjectName(f"btn_{name}")
-        btn.setCheckable(False)
+        btn.setProperty("pluginName", name)
+        # Checkable so the active plugin keeps a highlighted outline (see QSS :checked)
+        btn.setCheckable(True)
         btn.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
 
-        # Size follows content (icon + text): no forced fixed box
-        btn.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        # Same height and minimum width for every plugin button; text on a single line
+        btn.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+        btn.setFixedHeight(64)
+        btn.setMinimumWidth(72)
 
         # Icon
         try:
@@ -259,13 +265,21 @@ class MainWindow(QMainWindow):
         except Exception as e:
             print("Icon not available for plugin", name, "->", e)
 
-        label = plugin.name()
-        fm_width = 88
-        btn.setText(self._wrap_button_text(label, btn.font(), fm_width))
+        btn.setText(plugin.name())
         btn.setToolTip(plugin.description() or plugin.name())
 
         btn.clicked.connect(lambda _, n=name: self.on_button_click(n))
         return btn
+
+    def _update_plugin_button_selection(self):
+        """Check only the ribbon button of the active plugin (outlined via QSS)."""
+        for btn in self.ui.buttonContainer.findChildren(QToolButton):
+            name = btn.property("pluginName")
+            if name is None:
+                continue
+            active = (self.active_plugin is not None
+                      and self.kernel.get_plugin(name) is self.active_plugin)
+            btn.setChecked(active)
 
     def _build_icon_arrow_pair(self, icon_btn: QToolButton, menu: QMenu, gap: int = 8,
                                 left_margin: int = 0) -> QWidget:
@@ -517,38 +531,6 @@ class MainWindow(QMainWindow):
         menu.addAction(widget_action)
         return self._build_icon_arrow_pair(btn, menu, gap=6)
 
-    def _wrap_button_text(self, text: str, font: QFont, max_width: int) -> str:
-        """
-        Insert an optimal line break so the text fits in 1–2 lines
-        within 'max_width'. If it already fits on one line, leave it as is.
-        """
-        fm = QFontMetrics(font)
-        if fm.horizontalAdvance(text) <= max_width:
-            return text
-
-        # Try to break at the last space so the first line fits <= max_width
-        words = text.split()
-        if len(words) == 1:
-            # No spaces; hard-cut at the largest substring that fits
-            for i in range(len(text)-1, 0, -1):
-                if fm.horizontalAdvance(text[:i]) <= max_width:
-                    return text[:i] + "\n" + text[i:]
-            return text  # fallback
-        else:
-            # Build line 1 with the maximum number of words that fit
-            line1 = words[0]
-            for w in words[1:]:
-                candidate = f"{line1} {w}"
-                if fm.horizontalAdvance(candidate) <= max_width:
-                    line1 = candidate
-                else:
-                    # The rest goes to the second line
-                    line2 = " ".join(words[len(line1.split()):])
-                    # If the second line is still too long, it's fine: button height supports it
-                    return line1 + "\n" + line2
-            # If everything fit, no second line needed
-            return line1
-
     # Clean workspace
     def clear_plugin_area(self):
         if self.active_plugin_widget and self.active_plugin:
@@ -563,6 +545,7 @@ class MainWindow(QMainWindow):
         # Update background/placeholder visibility
         self._update_background_logo_visibility()
         self._update_home_welcome_visibility()
+        self._update_plugin_button_selection()
 
 
     # Insert the active plugin's widget into the workspace
@@ -624,6 +607,7 @@ class MainWindow(QMainWindow):
         # Update background/placeholder visibility
         self._update_background_logo_visibility()
         self._update_home_welcome_visibility()
+        self._update_plugin_button_selection()
 
         # Notify it is shown
         if hasattr(plugin, "on_show"):
@@ -823,6 +807,8 @@ class MainWindow(QMainWindow):
                     print("Error in plugin process:", e)
         else:
             print("Plugin not found:", name)
+        # Clicking toggles the checkable button; re-sync so only the active one stays outlined
+        self._update_plugin_button_selection()
 
     '''File menu'''
 

@@ -68,7 +68,7 @@ QMainWindow {
 
 #searchIconLabel {
     color: #6f7a86;
-    font-size: 10pt;
+    font-size: 20pt;
 }
 
 /* Main button bar (navigation row / tabs) */
@@ -120,15 +120,24 @@ QPushButton:checked {
     padding: 6px 10px 4px;
 }
 
+/* Checkable plugin buttons: transparent border reserves space so the
+   outline of the selected state does not shift the layout */
+#buttonContainer QToolButton:checkable {
+    border: 2px solid transparent;
+    border-radius: 10px;
+}
+
 #buttonContainer QToolButton:hover {
     background-color: #EEF3FA;
     border-radius: 10px;
 }
 
+/* Active plugin: outlined so the user sees which view is open */
 #buttonContainer QToolButton:checked {
-    background: transparent;
+    background-color: #EEF3FA;
     color: #2E60A9;
-    border-radius: 0;
+    border: 2px solid #2E60A9;
+    border-radius: 10px;
 }
 
 /* Dropdown arrow: no highlight, separated from the icon with left margin */
