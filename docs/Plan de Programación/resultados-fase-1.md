@@ -3,6 +3,8 @@
 *Las tres optimizaciones que no son concurrencia*
 
 > **Estado: fase completa.** Los tres pasos están hechos, medidos y verificados. El resumen de punta a punta está al final.
+>
+> **Actualización (26 de septiembre de 2026):** el paso 1.1 se revirtió. La wavelet volvió a usar **convolución directa** (`method='conv'`, el valor por defecto de PyWavelets). Los pasos 1.2 y 1.3 se mantienen.
 
 ---
 
@@ -13,16 +15,28 @@ El documento de diseño lo dice en su propia conclusión: *"el orquestador **org
 El plan de implementación las puso primero por tres razones, y las dos primeras ya se confirmaron con datos:
 
 1. **Cambian los números sobre los que se diseña el orquestador.** Hacerlas después es diseñar sobre cifras que van a moverse.
-2. **Son baratas.** Las dos aplicadas hasta ahora suman **11 líneas de código**.
+2. **Son baratas.** Las tres juntas tocan solo dos archivos (detalle en el apéndice).
 3. **Son medibles.** Cada una tiene su antes y su después.
 
-**Fecha:** 18 de septiembre de 2026. Mismo equipo y mismas versiones que la Fase 0 (Intel 16 núcleos lógicos, Windows 10, Python 3.11.9, numpy 2.3.4, PyWavelets 1.8.0, VTK 9.5.2).
+**Fecha:** 18 de septiembre de 2026. Mismo equipo y mismas versiones que la Fase 0 (Intel 16 núcleos lógicos, Windows 11, Python 3.11.9, numpy 2.3.4, PyWavelets 1.8.0, VTK 9.5.2).
 
 ---
 
-## 1.1 — `method='fft'` en la transformada wavelet
+## 1.1 — `method='fft'` en la transformada wavelet (revertido)
 
-### Qué se cambió
+> **Revertido el 26 de septiembre de 2026.** La wavelet volvió a la convolución directa. Esta sección queda como registro de lo que se probó y midió con FFT.
+
+Código actual, sin `method` (PyWavelets usa `method='conv'` por defecto):
+
+```python
+# plugins/analysis/time_frequency/wavelet/wavelet_plugin.py:210
+coef, _ = pywt.cwt(sig, scales, wavelet, sampling_period=1/fs)
+
+# plugins/analysis/time_frequency/wavelet_average/compute.py:32
+coef, _ = pywt.cwt(sig, scales, wavelet, sampling_period=1/fs if fs > 0 else 1.0)
+```
+
+### Qué se probó
 
 Un argumento, en dos archivos:
 
@@ -135,7 +149,9 @@ acumulador: variacion entre 10 y 60 trials =    +0 MB   (plano)
 lista     : variacion entre 10 y 60 trials = +2324 MB   (crece)
 ```
 
-**El pico del acumulador es exactamente el mismo con 10, 30 o 60 trials: 414 MB.** No "parecido" — idéntico. Eso es lo que significa que la memoria dejó de depender del número de trials: siempre hay un escalograma vivo más el acumulador, sin importar cuántos queden por procesar.
+**El pico del acumulador fue el mismo con 10, 30 o 60 trials: 414 MB.** La memoria prácticamente dejó de depender del número de trials: siempre hay un escalograma vivo más el acumulador, sin importar cuántos queden por procesar.
+
+> **Nueva medición (26 de septiembre de 2026)**, con el código actual (`wavelet_average/compute.py`) y sin cargar VTK ni la interfaz. Lo que consume el promediado en sí: 31 MB con 10 trials, 35 MB con 30, 42 MB con 60 y 57 MB con 120. Crece unos 0,2 MB por trial: casi constante, no idéntico. La versión con lista crecía unos 46 MB por trial (402 MB con 10 trials, 2.724 MB con 60).
 
 La variante anterior, en cambio, crece de forma lineal: cada trial suma su escalograma a la lista, y el `np.stack` final duplica el conjunto entero.
 
@@ -255,6 +271,8 @@ Los ~90 ms que quedan son el resto del trabajo de renderizado —entre otras cos
 
 Comparación completa: `v2_fase0_baseline` contra `v2_fase1_completa`.
 
+> **Con la convolución de vuelta**, las filas de `compute_wavelet` ya no aplican: ese cálculo volvió a ser el de la Fase 0 (~202 ms por trial, ~4,2 s con 20 trials). Las mejoras de render (1.3) y de memoria (1.2) no dependen del 1.1 y se mantienen.
+
 | Operación | Fase 0 | Fase 1 | Mejora |
 |---|---:|---:|---:|
 | `wavelet.compute_wavelet` (1 trial) | 202,0 ms | **103,1 ms** | **1,96×** |
@@ -273,12 +291,14 @@ Sumando cálculo más dibujo, que es lo que transcurre entre pulsar el botón y 
 | Pico de memoria (30 trials) | 1.715 MB | **414 MB** | **4,1× menos** |
 | Pico de memoria (60 trials, el archivo real) | 3.107 MB | **414 MB** | **7,5× menos** |
 
+> **Con convolución** (estimado sumando mediciones ya hechas: cálculo de la Fase 0 + render de la Fase 1; la suite no se volvió a correr): un wavelet individual queda en ~300 ms (202,0 + 97,7), unas **3,1×** más rápido que antes. El promedio de 20 trials queda en ~4,29 s (4.213,6 + 80,4), unas **1,15×**. La memoria no cambia.
+
 ### El costo de todo esto
 
 | | |
 |---|---|
 | Archivos tocados | 2 |
-| Líneas modificadas | 19 insertadas, 7 borradas |
+| Líneas modificadas | 37 insertadas, 17 borradas (según `git diff --stat`, contando comentarios) |
 | Dependencias nuevas | **ninguna** |
 | Cambios en el resultado numérico | **ninguno** (verificado en los tres pasos) |
 | Concurrencia introducida | **ninguna** |
@@ -289,13 +309,13 @@ Ese último punto es el que conviene subrayar: **todo lo anterior se consiguió 
 
 De haber construido primero el orquestador, habría movido los ~200 ms de cómputo a un hilo trabajador y dejado **716 ms de renderizado congelando la ventana**, en `wavelet_average` justo *después* de que el hilo terminara — es decir, en el momento en que el usuario cree que ya acabó. La conclusión razonable habría sido "el orquestador no sirvió".
 
-Ahora el reparto es otro: el render está en ~80-98 ms, por debajo del umbral de percepción, y lo que queda por sacar del hilo de interfaz son los ~2 s del cómputo promedio. Eso sí es trabajo para el orquestador.
+Ahora el reparto es otro: el render está en ~80-98 ms, por debajo del umbral de percepción, y lo que queda por sacar del hilo de interfaz son los ~4,2 s del cómputo promedio con convolución (~2 s cuando se usaba FFT). Eso sí es trabajo para el orquestador.
 
 ---
 
 ## Apéndice: todo el código que cambió
 
-Dos archivos, cinco puntos de cambio. Nada más se tocó en el repositorio.
+Dos archivos, siete puntos de cambio. Nada más se tocó en el repositorio.
 
 ```
 plugins/analysis/time_frequency/wavelet/wavelet_plugin.py                 | 18 +++++++----
@@ -308,10 +328,10 @@ plugins/analysis/time_frequency/wavelet_average/wavelet_average_plugin.py | 36 +
 | # | Archivo | Línea | Paso | Qué |
 |---|---|---:|---|---|
 | 1 | `wavelet_plugin.py` | 4 | 1.3 | `import numpy_support` |
-| 2 | `wavelet_plugin.py` | 211 | 1.1 | `method="fft"` en `pywt.cwt` |
+| 2 | `wavelet_plugin.py` | 211 | 1.1 | `method="fft"` en `pywt.cwt` (revertido) |
 | 3 | `wavelet_plugin.py` | 334-341 | 1.3 | Llenado de VTK vectorizado |
 | 4 | `wavelet_average_plugin.py` | 4 | 1.3 | `import numpy_support` |
-| 5 | `wavelet_average_plugin.py` | 292 | 1.1 | `method="fft"` en `pywt.cwt` |
+| 5 | `wavelet_average_plugin.py` | 292 | 1.1 | `method="fft"` en `pywt.cwt` (revertido) |
 | 6 | `wavelet_average_plugin.py` | 445-452 | 1.3 | Llenado de VTK vectorizado |
 | 7 | `wavelet_average_plugin.py` | 582-624 | 1.2 | Acumulador incremental |
 
@@ -324,7 +344,9 @@ plugins/analysis/time_frequency/wavelet_average/wavelet_average_plugin.py | 36 +
  import numpy as np
 ```
 
-### 2. `wavelet_plugin.py:211` — `method="fft"` (paso 1.1)
+### 2. `wavelet_plugin.py:211` — `method="fft"` (paso 1.1, revertido)
+
+Revertido: la línea volvió a su versión original, la que aparece con `-` en este diff.
 
 ```diff
 -        coef, _ = pywt.cwt(sig, scales, wavelet, sampling_period=1/fs)
@@ -371,6 +393,8 @@ plugins/analysis/time_frequency/wavelet_average/wavelet_average_plugin.py | 36 +
 ```
 
 Es el mismo cambio que en el plugin individual; la única diferencia es que aquí `sampling_period` lleva su guarda contra `fs = 0`, que ya estaba.
+
+El `method="fft"` también se revirtió aquí; el import de `numpy_support` se mantiene porque lo usa el paso 1.3.
 
 ### 6. `wavelet_average_plugin.py:445-452` — llenado de VTK (paso 1.3)
 
@@ -433,7 +457,7 @@ Este es el único cambio que toca la lógica del bucle, y va en tres puntos dent
 - `scalogram.astype(np.float64)` **copia**, que es lo que se quiere: el acumulador no debe quedar apuntando al arreglo que devolvió el plugin, porque después se le suma encima.
 - El acumulador es `float64` aunque los escalogramas vengan en la precisión que vengan. Sumar 200 matrices en `float32` acumularía error de redondeo; en `float64` no es un problema.
 - La condición de error cambió de `if not scalograms` a `if n_validos == 0`: es la misma condición (ningún trial válido), expresada sobre el contador.
-- Un trial con forma distinta a los demás antes reventaba al final, en el `np.stack`, después de haber calculado todo. Ahora falla en el `+=` de ese trial, lo atrapa el `except` que ya existía, se registra como *"Trial N failed"* y el promedio sigue con los válidos. Es un cambio de comportamiento pequeño y a mejor.
+- **Trials que fallan.** En la versión de este paso, un trial que fallaba podía alterar el promedio sin avisar: `compute_wavelet` devolvía un arreglo de 1×1 con un 0, y NumPy lo sumaba al acumulador sin dar error. **Se corrigió el 26 de septiembre de 2026:** si un trial falla, el cálculo se detiene y la aplicación muestra un error con el número del trial, por ejemplo *"Falló el trial 7 de 10 trials activos: …"*. El número es la posición entre los trials activos.
 
 ### Lo que NO se cambió
 
@@ -449,7 +473,7 @@ Este es el único cambio que toca la lógica del bucle, y va en tres puntos dent
 
 | Paso | Estado |
 |---|---|
-| 1.1 `method='fft'` | ✅ Hecho, medido, verificado |
+| 1.1 `method='fft'` | Medido y verificado; **revertido**, se usa convolución |
 | 1.2 Acumulador incremental | ✅ Hecho, medido, verificado |
 | 1.3 Vectorizar VTK | ✅ Hecho, medido, verificado |
 

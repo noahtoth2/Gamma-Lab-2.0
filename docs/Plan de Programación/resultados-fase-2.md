@@ -60,6 +60,8 @@ Más un `cancel()`. Se emite **exactamente una** de las tres señales terminales
 
 Una función que declare un parámetro `ctx` lo recibe; una que no, se llama tal cual. Así una función pura **no necesita saber que el orquestador existe**, que es justo lo que pedía el documento de diseño al definir la Tarea como agnóstica.
 
+Después de cancelar, `ctx.progress` ya no envía nada, para que el plugin no muestre avances de una tarea que ya se canceló.
+
 ```python
 def calculo_largo(ctx, datos):
     for i, x in enumerate(datos):
@@ -94,7 +96,7 @@ El R46 pide liberar el hilo *"incluso si el cómputo no termina por sí solo"*. 
 Lo que hace el servicio:
 
 1. Marca la cancelación y **devuelve el control de inmediato** (no bloquea la interfaz esperando).
-2. Programa una revisión a los 3 segundos.
+2. Programa una revisión a los 2 segundos (eran 3 hasta el 27 de septiembre de 2026; ver el criterio 3).
 3. Si para entonces la tarea no se enteró, **se desliga**: emite `cancelled`, libera la cola y arranca la siguiente. El hilo puede seguir vivo un rato, pero lo que devuelva se descarta.
 
 Desde el punto de vista del usuario la interfaz se rehabilita, que es lo que el requisito busca. Conviene ajustar el texto del R46 en el SAD para que describa esto en vez de prometer una terminación forzada que la tecnología no da.
@@ -165,11 +167,17 @@ La prueba usa una tarea que **ni siquiera acepta `ctx`**, o sea que no tiene for
 | ¿Emitió `finished`? | No. El resultado de la tarea desligada se descarta |
 | ¿La cola siguió? | Sí: la siguiente tarea corrió sin esperar a la terca |
 
+> **Corrección (27 de septiembre de 2026).** Ese "< 1 s" es de la prueba, que usa un umbral de 200 ms. En la aplicación el umbral era de 3.000 ms, y con ese valor una tarea terca liberaba la interfaz a los **3,000 s**: justo en el límite, no por debajo. Se bajó a **2.000 ms** (`DEFAULT_CANCEL_TIMEOUT_MS`), y ahora la libera a los **2,000 s**.
+>
+> Wavelet Average sí revisa la cancelación en cada trial, así que se detiene sola al terminar el trial en curso. En este equipo un trial tardó entre 0,27 s y 2,1 s según el estado de la CPU (la misma variación aparece sin hilos), y la cancelación midió entre 0,20 s y 2,0 s. Si un trial tarda más de 2 s, la tarea se desliga a los 2,0 s y termina sola al acabar ese trial; su resultado se descarta. En todos los casos la interfaz vuelve en unos 2 s como máximo.
+
 ### Criterio 4 — una excepción no tumba nada
 
 ```
-ValueError: fallo a proposito   ->   failed("ValueError: fallo a proposito")
+ValueError: fallo a proposito   ->   failed("fallo a proposito")
 ```
+
+Desde el 27 de septiembre de 2026, `failed` lleva solo el mensaje, sin el nombre de la excepción en inglés, porque ese texto llega tal cual al aviso que ve el usuario. Si la excepción no trae mensaje, lleva su tipo (por ejemplo `"ValueError"`).
 
 Y justo después, otra tarea en el mismo servicio se ejecuta con normalidad.
 
@@ -195,11 +203,11 @@ Los 5 fallos son exactamente los mismos de validación contra MATLAB que ya esta
 
 ### Archivos nuevos
 
-| Archivo | Líneas | Qué es |
+| Archivo | Líneas (al 27 de septiembre de 2026) | Qué es |
 |---|---:|---|
-| `core/services/task_service.py` | 290 | El servicio |
-| `test/services_test/test_task_service.py` | 250 | 12 pruebas unitarias |
-| `test/services_test/test_task_service_integracion.py` | 150 | 2 pruebas de punta a punta |
+| `core/services/task_service.py` | 207 | El servicio |
+| `test/services_test/test_task_service.py` | 235 | 12 pruebas unitarias |
+| `test/services_test/test_task_service_integracion.py` | 129 | 2 pruebas de punta a punta |
 
 ### Archivo modificado: `main.py`
 
@@ -213,8 +221,9 @@ Dos líneas, más un comentario que explica el orden:
 
 ```diff
      # 1) Core services
-+    # Registered before discovering plugins: register_plugin() calls
-+    # initialize(kernel), and from that point a plugin may ask for any service.
++    # Van antes del descubrimiento de plugins: register_plugin() llama a
++    # initialize(kernel), y desde ahi un plugin ya puede pedir cualquier
++    # servicio. Si estas lineas se mueven despues, recibiria None.
      kernel.register_service("DataStore", DataStore())
      kernel.register_service("FileIO", FileIOService())
 +    kernel.register_service("TaskService", TaskService())

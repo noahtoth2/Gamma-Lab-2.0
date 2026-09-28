@@ -107,6 +107,8 @@ Fallan **todas** las filas del escalograma, y la correlación por fila también.
 
 **Verificado que NO lo causó la Fase 1.** Tras aplicar `method='fft'`, las cifras del fallo son idénticas dígito por dígito: mismo `passed=6917`, mismo peor punto en `(row=177, col=2379)`, mismo `APP=0.447459`. Si el cambio hubiera alterado algo, esos números se habrían movido.
 
+> **Actualización (26 de septiembre de 2026):** `method='fft'` se revirtió y la wavelet volvió a usar convolución. El fallo sigue igual: `test_wavelet_average_plugin` da de nuevo `passed=6917`.
+
 **Qué hacer.** Abrirlo como frente de trabajo aparte y levantarlo con la directora. No bloquea al orquestador, pero en una herramienta de análisis científico una discrepancia de este tamaño con la referencia pesa más que cualquier mejora de rendimiento.
 
 ---

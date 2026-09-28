@@ -142,7 +142,7 @@ Lo que hay que saber para seguir con el plan:
 
 | Pregunta | Respuesta medida | Decisión |
 |---|---|---|
-| ¿`method='fft'`? | 1,89× más rápido, diferencia numérica de 4,3e-14 | **Adoptar** en la Fase 1.1 |
+| ¿`method='fft'`? | 1,89× más rápido, diferencia numérica de 4,3e-14 | **Adoptar** en la Fase 1.1. *Revertido después: se usa convolución* |
 | ¿Los hilos sirven, o el GIL estorba? | Se suelta: 1,82× (`conv`), 1,32× (`fft`) | **Hilos confirmados**; el diseño se sostiene |
 | ¿Entra la Fase 6 (paralelismo interno)? | Viable, pero el techo con 2 hilos es 1,3-1,8× | **Sigue fuera de la v1** |
 | ¿Qué migrar al orquestador? | Solo 4 operaciones pasan de 100 ms | Wavelet, wavelet promedio y los dos renders. **FFT y PSD no** |
@@ -161,6 +161,8 @@ Ninguna de las tres es concurrencia. Las tres son medibles con la suite que ya e
 ### 1.1 — Fijar `method='fft'`
 
 Si la Fase 0 lo respalda, se fija en los dos plugins (`wavelet_plugin.py:209`, `wavelet_average_plugin.py:290`). Un argumento.
+
+> **Actualización (26 de septiembre de 2026):** se aplicó y después se revirtió. La wavelet usa convolución directa (`method='conv'`). Detalle en [`resultados-fase-1.md`](resultados-fase-1.md).
 
 ### 1.2 — Acumulador incremental en `wavelet_average`
 
@@ -313,7 +315,7 @@ Va **antes** del descubrimiento de plugins, porque `register_plugin()` llama a `
 
 - [x] `TaskService` registrado y arrancando sin efecto sobre el tiempo de inicio → **+2,6 µs** y **cero hilos** al arrancar (los crea por tarea, bajo demanda).
 - [x] Un plugin de prueba manda una función, recibe `finished` y dibuja → prueba de integración con el wavelet real: resultado **idéntico** al síncrono y entregado en el hilo de interfaz.
-- [x] Cancelar durante la ejecución devuelve la interfaz en menos de 3 s → medido **< 1 s** incluso con una tarea que ignora la cancelación.
+- [x] Cancelar durante la ejecución devuelve la interfaz en menos de 3 s → en la aplicación, una tarea que ignora la cancelación la libera a los **2,0 s** (umbral de desligue de 2.000 ms desde el 27 de septiembre de 2026; la prueba, con 200 ms, da < 1 s).
 - [x] Una excepción dentro de la tarea emite `failed` y **no** tumba la aplicación → verificado, y el servicio queda usable después.
 
 Resultados completos en [`resultados-fase-2.md`](resultados-fase-2.md).
@@ -442,7 +444,7 @@ Nada de esto entra al alcance inicial. Cada punto tiene una condición de entrad
 
 | Riesgo | Señal temprana | Qué hacer |
 |---|---|---|
-| El GIL no se suelta con `conv` | Fase 0.3 da ganancia ≈1× | Fijar `method='fft'` es obligatorio, no opcional |
+| El GIL no se suelta con `conv` | Fase 0.3 da ganancia ≈1× | Fijar `method='fft'` es obligatorio, no opcional. *No ocurrió: la Fase 0.3 midió 1,82× con `conv`, así que volver a convolución no afecta a los hilos* |
 | `fft` cambia los resultados numéricos | `test/plugins_test/` falla | Ajustar tolerancia conscientemente y documentarlo; si no, quedarse en `conv` y replantear |
 | La imagen de VTK sale transpuesta al vectorizar | Se ve al primer render | Es el orden de memoria (VTK espera x-rápido) |
 | El orquestador se come el tiempo de la Fase 3 | Fin de la semana 2 sin un caso funcionando | Recortar más: sin reemplazo, sin progreso; solo submit/finished/cancel |

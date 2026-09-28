@@ -296,6 +296,8 @@ Antes de cerrar la decisión conviene tener números reales, porque hay dos inc�
 
 **Dos.** Con el modo actual no sabemos si `np.convolve` libera el GIL, y de eso depende que partir el wavelet en hilos sirva de algo o no sirva absolutamente de nada. Con `method='fft'` la duda desaparece, porque `np.fft` sí lo libera. Las dos cosas convergen: cambiar el modo acelera el cálculo **y** hace que los hilos funcionen.
 
+> **Actualización (26 de septiembre de 2026):** las dos se midieron en la Fase 0. `np.convolve` sí libera el GIL (1,82× con 2 hilos). `method='fft'` se adoptó en la Fase 1.1 y después se revirtió: la wavelet usa convolución.
+
 Ambas mediciones son de una tarde.
 
 ---
