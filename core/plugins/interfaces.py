@@ -40,6 +40,10 @@ class IPlugin(ABC):
         """Plugin subcategory (from properties.yml)."""
         return self.meta.subcategory
 
+    def description(self) -> str:
+        """Short help text shown as tooltip (from properties.yml)."""
+        return self.meta.description or ""
+
     def icon(self) -> str:
         """
         Absolute path to the icon (inside the plugin folder).

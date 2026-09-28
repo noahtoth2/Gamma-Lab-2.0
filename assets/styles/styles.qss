@@ -188,6 +188,14 @@ QMenu::item:selected {
     color: #2E60A9;
 }
 
+/* Plugin button tooltips */
+QToolTip {
+    background-color: #FFFFFF;
+    color: #33475b;
+    border: 1px solid #2E60A9;
+    padding: 4px 6px;
+}
+
 /* Results panel */
 #resultsPanel {
     background-color: #FFFFFF;

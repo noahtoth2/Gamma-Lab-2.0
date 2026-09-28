@@ -262,6 +262,7 @@ class MainWindow(QMainWindow):
         label = plugin.name()
         fm_width = 88
         btn.setText(self._wrap_button_text(label, btn.font(), fm_width))
+        btn.setToolTip(plugin.description() or plugin.name())
 
         btn.clicked.connect(lambda _, n=name: self.on_button_click(n))
         return btn
@@ -331,6 +332,7 @@ class MainWindow(QMainWindow):
                 icon_btn.setFixedSize(icon_size, icon_size)
         except Exception as e:
             print("Icon not available for plugin", name, "->", e)
+        icon_btn.setToolTip(plugin.description() or plugin.name())
         icon_btn.clicked.connect(lambda _, mt=measure_type: self._start_measurement(mt))
 
         if menu_items:

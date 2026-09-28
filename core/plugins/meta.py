@@ -12,6 +12,7 @@ class PluginMeta:
     icon: str 
     logic_class: str
     ui_class: Optional[str] = None
+    description: str = ""
     root: Optional[Path] = None
 
     def icon_path(self) -> Path:
