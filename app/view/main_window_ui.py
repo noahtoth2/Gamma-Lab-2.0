@@ -85,7 +85,12 @@ class Ui_MainWindow(object):
         # ===== Search icon + line edit =====
         self.searchIconLabel = QtWidgets.QLabel(self.searchBar)
         self.searchIconLabel.setObjectName("searchIconLabel")
-        self.searchIconLabel.setText("\U0001F50D")
+        self.searchIconLabel.setPixmap(
+            QtGui.QPixmap("assets/icons/home/icon_search.png").scaled(
+                16, 16, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation
+            )
+        )
+
         self.searchIconLabel.setSizePolicy(
             QtWidgets.QSizePolicy.Fixed,
             QtWidgets.QSizePolicy.Preferred
