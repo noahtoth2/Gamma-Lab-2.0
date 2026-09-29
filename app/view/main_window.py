@@ -1206,6 +1206,9 @@ class MainWindow(QMainWindow):
         self.explorer_model = QFileSystemModel(self)
         # Allow rename/move/delete through the model (defaults to read-only).
         self.explorer_model.setReadOnly(False)
+        self.explorer_project_dir = None
+        self.explorer_model.directoryLoaded.connect(self._on_explorer_directory_loaded)
+        self.explorer_model.rowsInserted.connect(self._on_explorer_rows_inserted)
 
         self.explorer_tree = QTreeView(container)
         self.explorer_tree.setObjectName("explorerTreeWidget")
@@ -1280,9 +1283,8 @@ class MainWindow(QMainWindow):
             if chosen == new_folder_action:
                 self._explorer_create_new_folder()
             elif chosen == paste_action:
-                root_path = self.explorer_model.rootPath()
-                if root_path:
-                    self._explorer_paste_into(Path(root_path))
+                if self.explorer_project_dir:
+                    self._explorer_paste_into(self.explorer_project_dir)
 
     def _explorer_copy_path(self, index):
         """Put the file/folder's path on the system clipboard as a file URL."""
@@ -1331,11 +1333,11 @@ class MainWindow(QMainWindow):
 
     def _explorer_create_new_folder(self):
         """New Folder in the currently browsed project folder, ready to rename."""
-        root_path = self.explorer_model.rootPath()
+        root_path = self.explorer_project_dir
         if not root_path:
             return
         dest = self._explorer_unique_path(Path(root_path) / "New Folder")
-        parent_index = self.explorer_model.index(root_path)
+        parent_index = self.explorer_model.index(str(root_path))
         new_index = self.explorer_model.mkdir(parent_index, dest.name)
         if new_index.isValid():
             self.explorer_tree.setCurrentIndex(new_index)
@@ -1355,13 +1357,44 @@ class MainWindow(QMainWindow):
                 return candidate
 
     def set_explorer_root(self, folder_path):
-        """Point the Explorer at a real folder (the open project's), or show the placeholder."""
+
         if not folder_path:
+            self.explorer_project_dir = None
             self.explorer_stack.setCurrentWidget(self.explorer_placeholder)
             return
-        root_index = self.explorer_model.setRootPath(str(folder_path))
-        self.explorer_tree.setRootIndex(root_index)
+        folder_path = Path(folder_path)
+        self.explorer_project_dir = folder_path
+        self.explorer_model.setRootPath(str(folder_path.parent))
+        folder_index = self.explorer_model.index(str(folder_path))
+        parent_index = self.explorer_model.parent(folder_index)
+        self.explorer_tree.setRootIndex(parent_index)
+        self._explorer_hide_siblings(parent_index)
+        self.explorer_tree.expand(folder_index)
+        self.explorer_tree.setCurrentIndex(folder_index)
         self.explorer_stack.setCurrentWidget(self.explorer_tree)
+
+    def _explorer_hide_siblings(self, parent_index):
+       
+        if not self.explorer_project_dir:
+            return
+        for row in range(self.explorer_model.rowCount(parent_index)):
+            sibling = self.explorer_model.index(row, 0, parent_index)
+            is_project_dir = Path(self.explorer_model.filePath(sibling)) == self.explorer_project_dir
+            self.explorer_tree.setRowHidden(row, parent_index, not is_project_dir)
+
+    def _on_explorer_directory_loaded(self, path_str):
+        
+        if not self.explorer_project_dir or Path(path_str) != self.explorer_project_dir.parent:
+            return
+        self._explorer_hide_siblings(self.explorer_model.index(path_str))
+
+    def _on_explorer_rows_inserted(self, parent_index, first, last):
+       
+        if not self.explorer_project_dir:
+            return
+        if self.explorer_model.filePath(parent_index) != str(self.explorer_project_dir.parent):
+            return
+        self._explorer_hide_siblings(parent_index)
 
     def _on_app_about_to_quit(self):
         """Shut down plugins and their UI safely. Idempotent."""

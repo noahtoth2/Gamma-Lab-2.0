@@ -4,7 +4,8 @@ import shutil
 from datetime import datetime
 from pathlib import Path
 
-from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtWidgets import QFileDialog, QMessageBox
+from PyQt5.QtCore import QStandardPaths
 
 from core.filters.trials import cut_trials_single_channel
 
@@ -15,6 +16,38 @@ ANALYSIS_PLUGIN_NAMES = [
     "FFT", "FFT Average", "PSD", "PSD Average", "Relative PSD",
     "Average", "Event Related Potential", "Wavelet", "Wavelet Average",
 ]
+
+
+_BLOCKED_STANDARD_LOCATIONS = [
+    QStandardPaths.DesktopLocation,
+    QStandardPaths.DocumentsLocation,
+    QStandardPaths.DownloadLocation,
+    QStandardPaths.PicturesLocation,
+    QStandardPaths.MusicLocation,
+    QStandardPaths.MoviesLocation,
+    QStandardPaths.HomeLocation,
+]
+
+
+def _is_system_folder(folder_str: str) -> bool:
+    """True if `folder_str` is a filesystem root or an OS-provided special
+    folder (Desktop, Documents, Downloads, ...), not a folder the user made."""
+    try:
+        target = Path(folder_str).resolve()
+    except Exception:
+        return False
+
+    if target.parent == target: 
+        return True
+
+    for location in _BLOCKED_STANDARD_LOCATIONS:
+        for candidate in QStandardPaths.standardLocations(location):
+            try:
+                if target == Path(candidate).resolve():
+                    return True
+            except Exception:
+                continue
+    return False
 
 
 class ProjectService:
@@ -104,11 +137,23 @@ class ProjectService:
         src = Path(getattr(ds, "source_path", "") or "")
         start_dir = str(self.project_dir or (src.parent if src.exists() else Path.cwd()))
 
-        folder_str = QFileDialog.getExistingDirectory(
-            parent_widget, "Select Project Folder", start_dir, QFileDialog.ShowDirsOnly
-        )
-        if not folder_str:
-            return None
+        while True:
+            folder_str = QFileDialog.getExistingDirectory(
+                parent_widget, "Select Project Folder", start_dir, QFileDialog.ShowDirsOnly
+            )
+            if not folder_str:
+                return None
+            if _is_system_folder(folder_str):
+                QMessageBox.warning(
+                    parent_widget,
+                    "Invalid Project Folder",
+                    "You can't save a project directly inside a system folder "
+                    "(Desktop, Documents, Downloads, Pictures, Music, Videos, or "
+                    "your user folder). Please create or choose a folder of your own.",
+                )
+                start_dir = folder_str
+                continue
+            break
 
         self.project_dir = Path(folder_str)
         self.glab_path = self.project_dir / f"{default_name}.glab"
