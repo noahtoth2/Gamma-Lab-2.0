@@ -8,15 +8,14 @@
 \contentsline {table}{\numberline {7}{\ignorespaces UC-03 --- Guardar y reabrir un proyecto (.glab)}}{19}{table.caption.7}%
 \contentsline {table}{\numberline {8}{\ignorespaces Extensiones representadas en la vista lógica.}}{24}{table.caption.21}%
 \contentsline {table}{\numberline {9}{\ignorespaces Relaciones estructurales de la vista lógica.}}{25}{table.caption.25}%
-\contentsline {table}{\numberline {10}{\ignorespaces Patrones de diseño presentes en la vista lógica.}}{26}{table.caption.26}%
-\contentsline {table}{\numberline {11}{\ignorespaces Trazabilidad entre elementos de la vista lógica y requerimientos.}}{27}{table.caption.27}%
-\contentsline {table}{\numberline {12}{\ignorespaces Escenario de calidad 1 --- Integración de un plugin externo}}{30}{table.caption.30}%
-\contentsline {table}{\numberline {13}{\ignorespaces Escenario de calidad 2 --- Carga de señal de gran tamaño}}{30}{table.caption.31}%
-\contentsline {table}{\numberline {14}{\ignorespaces Escenario de calidad 3 --- Manejo de errores en tiempo de ejecución}}{31}{table.caption.32}%
-\contentsline {table}{\numberline {15}{\ignorespaces Escenario de calidad 4 --- Exportación de datos o gráficas}}{31}{table.caption.33}%
-\contentsline {table}{\numberline {16}{\ignorespaces Escenario de calidad 5 --- Operación por un usuario sin experiencia técnica}}{32}{table.caption.34}%
-\contentsline {table}{\numberline {17}{\ignorespaces Escenario de calidad 6 --- Rendimiento con múltiples señales cargadas}}{32}{table.caption.35}%
-\contentsline {table}{\numberline {18}{\ignorespaces Escenario de calidad 7 --- Resiliencia ante archivos corruptos o incompatibles}}{33}{table.caption.36}%
-\contentsline {table}{\numberline {19}{\ignorespaces Escenario de calidad 8 --- Consistencia entre datos ingresados y gráficas generadas}}{33}{table.caption.37}%
-\contentsline {table}{\numberline {20}{\ignorespaces Versiones de dependencias externas ancladas en \texttt {requirements.txt}}}{34}{table.20}%
-\contentsline {table}{\numberline {21}{\ignorespaces M\'etricas, m\'etodo de verificaci\'on y criterio de aceptaci\'on por atributo de calidad}}{35}{table.21}%
+\contentsline {table}{\numberline {10}{\ignorespaces Trazabilidad entre elementos de la vista lógica y requerimientos.}}{26}{table.caption.26}%
+\contentsline {table}{\numberline {11}{\ignorespaces Escenario de calidad 1 --- Integración de un plugin externo}}{29}{table.caption.29}%
+\contentsline {table}{\numberline {12}{\ignorespaces Escenario de calidad 2 --- Carga de señal de gran tamaño}}{30}{table.caption.30}%
+\contentsline {table}{\numberline {13}{\ignorespaces Escenario de calidad 3 --- Manejo de errores en tiempo de ejecución}}{30}{table.caption.31}%
+\contentsline {table}{\numberline {14}{\ignorespaces Escenario de calidad 4 --- Exportación de datos o gráficas}}{31}{table.caption.32}%
+\contentsline {table}{\numberline {15}{\ignorespaces Escenario de calidad 5 --- Operación por un usuario sin experiencia técnica}}{31}{table.caption.33}%
+\contentsline {table}{\numberline {16}{\ignorespaces Escenario de calidad 6 --- Rendimiento con múltiples señales cargadas}}{32}{table.caption.34}%
+\contentsline {table}{\numberline {17}{\ignorespaces Escenario de calidad 7 --- Resiliencia ante archivos corruptos o incompatibles}}{32}{table.caption.35}%
+\contentsline {table}{\numberline {18}{\ignorespaces Escenario de calidad 8 --- Consistencia entre datos ingresados y gráficas generadas}}{33}{table.caption.36}%
+\contentsline {table}{\numberline {19}{\ignorespaces Versiones de dependencias externas ancladas en \texttt {requirements.txt}}}{34}{table.19}%
+\contentsline {table}{\numberline {20}{\ignorespaces M\'etricas, m\'etodo de verificaci\'on y criterio de aceptaci\'on por atributo de calidad}}{34}{table.20}%

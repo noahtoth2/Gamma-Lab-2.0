@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.9.1)  29 SEP 2026 17:20
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.9.1)  29 SEP 2026 17:57
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -528,7 +528,11 @@ pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has b
 <to be read again> 
                    \relax 
 l.34 ...5.3.1}PropÃ³sito}{20}{subsubsection.5.3.1}
-                                                  % [1]
+                                                  % [1])
+\tf@toc=\write4
+\openout4 = `main.toc'.
+
+
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -536,11 +540,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[2])
-\tf@toc=\write4
-\openout4 = `main.toc'.
-
-
+[2]
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -636,7 +636,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [11]
-<DiagramaEstiloBase.jpg, id=463, 844.15375pt x 523.9575pt>
+<DiagramaEstiloBase.jpg, id=456, 844.15375pt x 523.9575pt>
 File: DiagramaEstiloBase.jpg Graphic file (type jpg)
 <use DiagramaEstiloBase.jpg>
 Package pdftex.def Info: DiagramaEstiloBase.jpg  used on input line 335.
@@ -795,7 +795,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [16]
-<diagrama_casos_de_uso_sistema_completo.png, id=485, 10169.995pt x 6275.445pt>
+<diagrama_casos_de_uso_sistema_completo.png, id=478, 10169.995pt x 6275.445pt>
 File: diagrama_casos_de_uso_sistema_completo.png Graphic file (type png)
 <use diagrama_casos_de_uso_sistema_completo.png>
 Package pdftex.def Info: diagrama_casos_de_uso_sistema_completo.png  used on input line 524.
@@ -825,7 +825,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [19]
-<diagrama_clases_sistema_completo.png, id=503, 12639.22pt x 6520.36pt>
+<diagrama_clases_sistema_completo.png, id=496, 12639.22pt x 6520.36pt>
 File: diagrama_clases_sistema_completo.png Graphic file (type png)
 <use diagrama_clases_sistema_completo.png>
 Package pdftex.def Info: diagrama_clases_sistema_completo.png  used on input line 620.
@@ -871,58 +871,43 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [24]
-Underfull \hbox (badness 10000) in paragraph at lines 737--737
+Underfull \hbox (badness 10000) in paragraph at lines 787--787
 []|\T1/cmr/m/n/10.95 SettingsService, Fi-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 737--737
+Underfull \hbox (badness 10000) in paragraph at lines 787--787
 []|\T1/cmr/m/n/10.95 FileIOService, Da-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 737--737
+Underfull \hbox (badness 10000) in paragraph at lines 787--787
 []|\T1/cmr/m/n/10.95 VTKContextMenu,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 737--737
+Underfull \hbox (badness 10000) in paragraph at lines 787--787
 []|\T1/cmr/m/n/10.95 Extensiones con-cre-
  []
 
 
-Underfull \hbox (badness 1824) in paragraph at lines 737--737
+Underfull \hbox (badness 1824) in paragraph at lines 787--787
 \T1/cmr/m/n/10.95 tas y PA-CA-naly-sis-
  []
 
 
-Overfull \hbox (21.56555pt too wide) in paragraph at lines 737--737
+Overfull \hbox (21.56555pt too wide) in paragraph at lines 787--787
 []|\T1/cmr/m/n/10.95 PACSingleChannelPlugin,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 737--737
+Underfull \hbox (badness 10000) in paragraph at lines 787--787
 \T1/cmr/m/n/10.95 PA-CIn-ter-Chan-nel-
  []
 
 
-Overfull \hbox (1.3544pt too wide) in paragraph at lines 737--737
+Overfull \hbox (1.3544pt too wide) in paragraph at lines 787--787
 []|\T1/cmr/m/n/10.95 Generalización| 
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 762--762
-[]|\T1/cmr/m/n/10.95 Kernel, Plu-gin-Ma-na-ger,
- []
-
-
-Underfull \hbox (badness 5607) in paragraph at lines 762--762
-[]|\T1/cmr/m/n/10.95 Publicador y sus-
- []
-
-
-Underfull \hbox (badness 2073) in paragraph at lines 762--762
-[]|\T1/cmr/m/n/10.95 PACAnalysisPlugin y sus
  []
 
 
@@ -933,10 +918,15 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [25]
-Underfull \hbox (badness 1242) in paragraph at lines 802--802
+Underfull \hbox (badness 1242) in paragraph at lines 828--828
 []|\T1/cmr/bx/n/10.95 Caso de uso o re-que-ri-
  []
 
+<diagrama_actividad_sistema_completo.png, id=541, 6905.8pt x 8736.64pt>
+File: diagrama_actividad_sistema_completo.png Graphic file (type png)
+<use diagrama_actividad_sistema_completo.png>
+Package pdftex.def Info: diagrama_actividad_sistema_completo.png  used on input line 836.
+(pdftex.def)             Requested size: 432.48051pt x 547.10515pt.
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -945,12 +935,6 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [26]
-<diagrama_actividad_sistema_completo.png, id=553, 6905.8pt x 8736.64pt>
-File: diagrama_actividad_sistema_completo.png Graphic file (type png)
-<use diagrama_actividad_sistema_completo.png>
-Package pdftex.def Info: diagrama_actividad_sistema_completo.png  used on input line 810.
-(pdftex.def)             Requested size: 432.48051pt x 547.10515pt.
-
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -958,19 +942,11 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[27]
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.59999pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.59999pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
-
-[28 <./diagrama_actividad_sistema_completo.png>]
-<diagrama_despliegue_sistema_completo.png, id=571, 4617.25pt x 3131.7pt>
+[27 <./diagrama_actividad_sistema_completo.png>]
+<diagrama_despliegue_sistema_completo.png, id=554, 4617.25pt x 3131.7pt>
 File: diagrama_despliegue_sistema_completo.png Graphic file (type png)
 <use diagrama_despliegue_sistema_completo.png>
-Package pdftex.def Info: diagrama_despliegue_sistema_completo.png  used on input line 834.
+Package pdftex.def Info: diagrama_despliegue_sistema_completo.png  used on input line 860.
 (pdftex.def)             Requested size: 386.96027pt x 262.43979pt.
 
 
@@ -980,7 +956,15 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[29 <./diagrama_despliegue_sistema_completo.png>]
+[28 <./diagrama_despliegue_sistema_completo.png>]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[29]
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -1006,7 +990,11 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 
 [32]
 LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10.95> not available
-(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 1113.
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 1139.
+
+Overfull \hbox (10.95651pt too wide) in paragraph at lines 1141--1142
+[]\T1/cmr/bx/n/10.95 Metadatos \T1/cmtt/m/n/10.95 properties.yml\T1/cmr/bx/n/10.95 . \T1/cmr/m/n/10.95 Los cam-pos re-que-ri-dos (\T1/cmtt/m/n/10.95 id, name, category, subcategory,
+ []
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -1016,175 +1004,171 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [33]
-Overfull \hbox (10.95651pt too wide) in paragraph at lines 1115--1116
-[]\T1/cmr/bx/n/10.95 Metadatos \T1/cmtt/m/n/10.95 properties.yml\T1/cmr/bx/n/10.95 . \T1/cmr/m/n/10.95 Los cam-pos re-que-ri-dos (\T1/cmtt/m/n/10.95 id, name, category, subcategory,
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1181--1181
+Underfull \hbox (badness 10000) in paragraph at lines 1207--1207
 []|\T1/cmr/m/n/10 Extensibilidad
  []
 
 
-Underfull \hbox (badness 3260) in paragraph at lines 1182--1182
+Underfull \hbox (badness 3260) in paragraph at lines 1208--1208
 []|\T1/cmr/m/n/10 Tiempo de apa-ri-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1183--1183
+Underfull \hbox (badness 10000) in paragraph at lines 1209--1209
 []|\T1/cmr/m/n/10 Agregar un plu-
  []
 
 
-Underfull \hbox (badness 3000) in paragraph at lines 1183--1183
+Underfull \hbox (badness 3000) in paragraph at lines 1209--1209
 \T1/cmr/m/n/10 gin vá-li-do y co-rrer
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1184--1185
+Underfull \hbox (badness 10000) in paragraph at lines 1210--1211
 []|$\OML/cmm/m/it/10 <$\T1/cmr/m/n/10 1min; 0 plu-gins fa-llan
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1187--1187
+Underfull \hbox (badness 10000) in paragraph at lines 1213--1213
 []|\T1/cmr/m/n/10 Rendimiento --
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1187--1187
-\T1/cmr/m/n/10 car-ga gran-de
- []
-
-
-Underfull \hbox (badness 5008) in paragraph at lines 1188--1188
-[]|\T1/cmr/m/n/10 Tiempo a pri-mer
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1189--1189
-[]|\T1/cmtt/m/n/10 performance_test\T1/cmr/m/n/10 ;
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1189--1189
-\T1/cmr/m/n/10 me-di-do: 78.4ms
- []
-
-
-Underfull \hbox (badness 5119) in paragraph at lines 1193--1193
-[]|\T1/cmr/m/n/10 Confiabilidad --
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1195--1195
-[]|\T1/cmr/m/n/10 Inyección de fa-llos
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1199--1199
-[]|\T1/cmr/m/n/10 Confiabilidad
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1199--1199
-\T1/cmr/m/n/10 -- ex-por-ta-ción
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1205--1205
-[]|\T1/cmr/m/n/10 Usabilidad
- []
-
-
-Underfull \hbox (badness 1596) in paragraph at lines 1208--1209
-[]|$\OML/cmm/m/it/10 <$\T1/cmr/m/n/10 5min; ba-jas con-sul-tas al
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1211--1211
-[]|\T1/cmr/m/n/10 Rendimiento --
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1212--1212
-[]|\T1/cmr/m/n/10 Tiempo de
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1212--1212
-\T1/cmr/m/n/10 cambio;$ $% de
  []
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 1213--1213
-[]|\T1/cmr/m/n/10 Benchmark de
+\T1/cmr/m/n/10 car-ga gran-de
  []
 
 
-Underfull \hbox (badness 1629) in paragraph at lines 1214--1215
-[]|$\OML/cmm/m/it/10 <$\T1/cmr/m/n/10 1s cam-bio; me-mo-ria 70--
+Underfull \hbox (badness 5008) in paragraph at lines 1214--1214
+[]|\T1/cmr/m/n/10 Tiempo a pri-mer
  []
 
 
-Underfull \hbox (badness 5119) in paragraph at lines 1217--1217
+Underfull \hbox (badness 10000) in paragraph at lines 1215--1215
+[]|\T1/cmtt/m/n/10 performance_test\T1/cmr/m/n/10 ;
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1215--1215
+\T1/cmr/m/n/10 me-di-do: 78.4ms
+ []
+
+
+Underfull \hbox (badness 5119) in paragraph at lines 1219--1219
 []|\T1/cmr/m/n/10 Confiabilidad --
  []
 
 
-Underfull \hbox (badness 2302) in paragraph at lines 1218--1218
-[]|\T1/cmr/m/n/10 Tiempo del error;
+Underfull \hbox (badness 10000) in paragraph at lines 1221--1221
+[]|\T1/cmr/m/n/10 Inyección de fa-llos
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1219--1219
-[]|\T1/cmtt/m/n/10 test_fileio_
+Underfull \hbox (badness 10000) in paragraph at lines 1225--1225
+[]|\T1/cmr/m/n/10 Confiabilidad
  []
 
 
-Underfull \hbox (badness 1406) in paragraph at lines 1220--1221
-[]|\T1/cmr/m/n/10 Mensaje $\OML/cmm/m/it/10 <$\T1/cmr/m/n/10 2s; 0$ $% pér-di-da
+Underfull \hbox (badness 10000) in paragraph at lines 1225--1225
+\T1/cmr/m/n/10 -- ex-por-ta-ción
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1223--1223
-\T1/cmr/m/n/10 Usabilidad
+Underfull \hbox (badness 10000) in paragraph at lines 1231--1231
+[]|\T1/cmr/m/n/10 Usabilidad
  []
 
 
-Underfull \hbox (badness 7168) in paragraph at lines 1231--1231
-[]|\T1/cmtt/m/n/10 pytest \T1/cmr/m/n/10 --\T1/cmtt/m/n/10 cov \T1/cmr/m/n/10 so-bre
+Underfull \hbox (badness 1596) in paragraph at lines 1234--1235
+[]|$\OML/cmm/m/it/10 <$\T1/cmr/m/n/10 5min; ba-jas con-sul-tas al
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1235--1235
+Underfull \hbox (badness 10000) in paragraph at lines 1237--1237
 []|\T1/cmr/m/n/10 Rendimiento --
  []
 
 
-Underfull \hbox (badness 2469) in paragraph at lines 1238--1239
+Underfull \hbox (badness 10000) in paragraph at lines 1238--1238
+[]|\T1/cmr/m/n/10 Tiempo de
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1238--1238
+\T1/cmr/m/n/10 cambio;$ $% de
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1239--1239
+[]|\T1/cmr/m/n/10 Benchmark de
+ []
+
+
+Underfull \hbox (badness 1629) in paragraph at lines 1240--1241
+[]|$\OML/cmm/m/it/10 <$\T1/cmr/m/n/10 1s cam-bio; me-mo-ria 70--
+ []
+
+
+Underfull \hbox (badness 5119) in paragraph at lines 1243--1243
+[]|\T1/cmr/m/n/10 Confiabilidad --
+ []
+
+
+Underfull \hbox (badness 2302) in paragraph at lines 1244--1244
+[]|\T1/cmr/m/n/10 Tiempo del error;
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1245--1245
+[]|\T1/cmtt/m/n/10 test_fileio_
+ []
+
+
+Underfull \hbox (badness 1406) in paragraph at lines 1246--1247
+[]|\T1/cmr/m/n/10 Mensaje $\OML/cmm/m/it/10 <$\T1/cmr/m/n/10 2s; 0$ $% pér-di-da
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1249--1249
+\T1/cmr/m/n/10 Usabilidad
+ []
+
+
+Underfull \hbox (badness 7168) in paragraph at lines 1257--1257
+[]|\T1/cmtt/m/n/10 pytest \T1/cmr/m/n/10 --\T1/cmtt/m/n/10 cov \T1/cmr/m/n/10 so-bre
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1261--1261
+[]|\T1/cmr/m/n/10 Rendimiento --
+ []
+
+
+Underfull \hbox (badness 2469) in paragraph at lines 1264--1265
 []|\T1/cmr/m/n/10 Nada em-peo-ra; ren-der sin
  []
 
 
-Underfull \hbox (badness 1107) in paragraph at lines 1242--1242
+Underfull \hbox (badness 1107) in paragraph at lines 1268--1268
 []|\T1/cmr/m/n/10 Éxito de arran-que
  []
 
 
-Underfull \hbox (badness 2277) in paragraph at lines 1243--1243
+Underfull \hbox (badness 2277) in paragraph at lines 1269--1269
 []|\T1/cmr/m/n/10 Instalación en Win-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1243--1243
+Underfull \hbox (badness 10000) in paragraph at lines 1269--1269
 \T1/cmr/m/n/10 dows lim-pio sin
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1247--1247
+Underfull \hbox (badness 10000) in paragraph at lines 1273--1273
 \T1/cmr/m/n/10 cancelación
  []
 
+c:/Users/jlaur/Gamma-Lab-2.0/docs/SAD/main.tex:1279: ignored error: Infinite glue shrinkage found in box being split
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -1201,8 +1185,13 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [35]
-Underfull \hbox (badness 10000) in paragraph at lines 1309--1310
+Underfull \hbox (badness 10000) in paragraph at lines 1335--1336
 []\T1/cmr/m/n/10.95 Riverbank Com-pu-ting. \T1/cmr/m/it/10.95 PyQt5 Re-fe-ren-ce Gui-de\T1/cmr/m/n/10.95 . Dis-po-ni-ble en: [][]$\T1/cmtt/m/n/10.95 https : / / www .
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1341--1342
+\T1/cmtt/m/n/10.95 latest / api / python / vtkmodules . vtkChartsCore . html # vtkmodules . vtkChartsCore .
  []
 
 
@@ -1213,10 +1202,6 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [36]
-Underfull \hbox (badness 10000) in paragraph at lines 1315--1316
-\T1/cmtt/m/n/10.95 latest / api / python / vtkmodules . vtkChartsCore . html # vtkmodules . vtkChartsCore .
- []
-
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -1233,20 +1218,20 @@ LaTeX2e <2025-11-01>
 L3 programming layer <2025-12-24>
  ***********
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: 5C68F5401B42F4529A21DE756AAC01B6;13895.
+(rerunfilecheck)             Checksum: 18AAA848D4CC186B8503CC714E4C5D28;13629.
  ) 
 Here is how much of TeX's memory you used:
- 14924 strings out of 467871
- 237085 string characters out of 5428444
- 706254 words of memory out of 5000000
- 43436 multiletter control sequences out of 15000+600000
+ 14920 strings out of 467871
+ 237006 string characters out of 5428444
+ 707173 words of memory out of 5000000
+ 43434 multiletter control sequences out of 15000+600000
  641310 words of font info for 68 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,12n,79p,1086b,802s stack positions out of 10000i,1000n,20000p,200000b,200000s
- <C:\Users\jlaur\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1000.pk> <C:\Users\jlaur\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ectt1000.pk> <C:\Users\jlaur\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1000.pk> <C:\Users\jlaur\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecti1095.pk> <C:\Users\jlaur\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ectt1095.pk> <C:\Users\jlaur\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1095.pk> <C:\Users\jlaur\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1095.pk> <C:\Users\jlaur\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx2488.pk> <C:\Users\jlaur\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1440.pk> <C:\Users\jlaur\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1200.pk> <C:\Users\jlaur\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1200.pk><C:/Program Files/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Program Files/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Program Files/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
-Output written on main.pdf (38 pages, 4974292 bytes).
+ 75i,12n,79p,997b,802s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ <C:\Users\jlaur\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecti1000.pk> <C:\Users\jlaur\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1000.pk> <C:\Users\jlaur\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ectt1000.pk> <C:\Users\jlaur\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1000.pk> <C:\Users\jlaur\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecti1095.pk> <C:\Users\jlaur\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ectt1095.pk> <C:\Users\jlaur\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1095.pk> <C:\Users\jlaur\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1095.pk> <C:\Users\jlaur\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx2488.pk> <C:\Users\jlaur\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1440.pk> <C:\Users\jlaur\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1200.pk> <C:\Users\jlaur\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1200.pk><C:/Program Files/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Program Files/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Program Files/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
+Output written on main.pdf (38 pages, 4978223 bytes).
 PDF statistics:
- 1306 PDF objects out of 1440 (max. 8388607)
- 183 named destinations out of 1000 (max. 500000)
- 562 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 1316 PDF objects out of 1440 (max. 8388607)
+ 181 named destinations out of 1000 (max. 500000)
+ 554 words of extra memory for PDF output out of 10000 (max. 10000000)
 

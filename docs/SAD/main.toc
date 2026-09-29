@@ -56,25 +56,24 @@
 \contentsline {paragraph}{TrialDataset}{24}{paragraph*.23}%
 \contentsline {paragraph}{ProjectData}{24}{paragraph*.24}%
 \contentsline {subsubsection}{\numberline {5.3.10}Relaciones estructurales}{25}{subsubsection.5.3.10}%
-\contentsline {subsubsection}{\numberline {5.3.11}Mecanismos y patrones arquitectónicos}{25}{subsubsection.5.3.11}%
-\contentsline {subsubsection}{\numberline {5.3.12}Justificación de las decisiones}{26}{subsubsection.5.3.12}%
-\contentsline {subsubsection}{\numberline {5.3.13}Trazabilidad con los requerimientos}{27}{subsubsection.5.3.13}%
-\contentsline {subsection}{\numberline {5.4}Vista de Procesos}{27}{subsection.5.4}%
-\contentsline {subsection}{\numberline {5.5}Vista F\'isica}{29}{subsection.5.5}%
-\contentsline {section}{\numberline {6}Atributos de calidad}{30}{section.6}%
-\contentsline {subsection}{\numberline {6.1}Escenarios de calidad}{30}{subsection.6.1}%
-\contentsline {subsubsection}{\numberline {6.1.1}Escenario de Calidad 1: Integración de un Plugin Externo}{30}{subsubsection.6.1.1}%
+\contentsline {subsubsection}{\numberline {5.3.11}Justificación de las decisiones}{25}{subsubsection.5.3.11}%
+\contentsline {subsubsection}{\numberline {5.3.12}Trazabilidad con los requerimientos}{26}{subsubsection.5.3.12}%
+\contentsline {subsection}{\numberline {5.4}Vista de Procesos}{26}{subsection.5.4}%
+\contentsline {subsection}{\numberline {5.5}Vista F\'isica}{28}{subsection.5.5}%
+\contentsline {section}{\numberline {6}Atributos de calidad}{29}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Escenarios de calidad}{29}{subsection.6.1}%
+\contentsline {subsubsection}{\numberline {6.1.1}Escenario de Calidad 1: Integración de un Plugin Externo}{29}{subsubsection.6.1.1}%
 \contentsline {subsubsection}{\numberline {6.1.2}Escenario de Calidad 2: Carga de Señal de Gran Tamaño}{30}{subsubsection.6.1.2}%
-\contentsline {subsubsection}{\numberline {6.1.3}Escenario de Calidad 3: Manejo de Errores en Tiempo de Ejecución}{31}{subsubsection.6.1.3}%
+\contentsline {subsubsection}{\numberline {6.1.3}Escenario de Calidad 3: Manejo de Errores en Tiempo de Ejecución}{30}{subsubsection.6.1.3}%
 \contentsline {subsubsection}{\numberline {6.1.4}Escenario de Calidad 4: Exportación de Datos o Gráficas}{31}{subsubsection.6.1.4}%
-\contentsline {subsubsection}{\numberline {6.1.5}Escenario de Calidad 5: Uso del Sistema sin Experiencia Técnica}{32}{subsubsection.6.1.5}%
+\contentsline {subsubsection}{\numberline {6.1.5}Escenario de Calidad 5: Uso del Sistema sin Experiencia Técnica}{31}{subsubsection.6.1.5}%
 \contentsline {subsubsection}{\numberline {6.1.6}Escenario de Calidad 6: Rendimiento con Múltiples Señales Cargadas}{32}{subsubsection.6.1.6}%
-\contentsline {subsubsection}{\numberline {6.1.7}Escenario de Calidad 7: Resiliencia ante Archivos Corruptos o Incompatibles}{33}{subsubsection.6.1.7}%
+\contentsline {subsubsection}{\numberline {6.1.7}Escenario de Calidad 7: Resiliencia ante Archivos Corruptos o Incompatibles}{32}{subsubsection.6.1.7}%
 \contentsline {subsubsection}{\numberline {6.1.8}Escenario de Calidad 8: Consistencia entre Datos Ingresados y Gráficas Generadas}{33}{subsubsection.6.1.8}%
 \contentsline {subsection}{\numberline {6.2}Reglas de compatibilidad y versionado}{33}{subsection.6.2}%
 \contentsline {subsection}{\numberline {6.3}M\'etricas y plan de verificaci\'on}{34}{subsection.6.3}%
 \contentsline {subsection}{\numberline {6.4}Plan de evidencia}{35}{subsection.6.4}%
-\contentsline {subsection}{\numberline {6.5}Conclusi\'on}{36}{subsection.6.5}%
+\contentsline {subsection}{\numberline {6.5}Conclusi\'on}{35}{subsection.6.5}%
 \contentsline {section}{\numberline {7}Anexos}{36}{section.7}%
 \contentsline {subsection}{\numberline {7.1}Anexo A --- Relaci\'on con el SRS}{36}{subsection.7.1}%
 \contentsline {subsection}{\numberline {7.2}Anexo B --- Relaci\'on con el SDD}{36}{subsection.7.2}%

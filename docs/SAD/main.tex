@@ -625,7 +625,21 @@ La estructura lógica de Gamma Lab 2.0 responde al estilo arquitectónico de mic
 \subsubsection{Elementos del núcleo}
 
 \paragraph{Kernel}
-El Kernel constituye el punto central de coordinación del sistema y se encuentra implementado. Mantiene dos registros internos: el registro de extensiones, indexadas por nombre, y el registro de servicios, indexados por clave. Sus operaciones permiten registrar una extensión (register\_plugin), consultarla de forma individual o colectiva (get\_plugin y get\_plugins) y obtener las extensiones pertenecientes a una categoría funcional (get\_plugins\_by\_category), lo cual permite a la interfaz organizar los módulos por categorías. Asimismo, ofrece operaciones para registrar y localizar servicios por clave (register\_service y get\_service), para detener de forma ordenada todas las extensiones al finalizar la aplicación (stop\_plugins) y para publicar eventos dirigidos a los componentes suscritos (emit\_event). El Kernel se asocia con el PluginManager, el SettingsService, el FileIOService, el DataStore y el TaskOrchestrator, y administra las extensiones exclusivamente a través de la interfaz IPlugin.
+El Kernel constituye el punto central de coordinación del sistema y 
+se encuentra implementado. Mantiene dos registros internos: el registro 
+de extensiones, indexadas por nombre, y el registro de servicios,
+ indexados por clave. Sus operaciones permiten registrar una extensión
+  (register\_plugin), consultarla de forma individual o colectiva 
+  (get\_plugin y get\_plugins) y obtener las extensiones pertenecientes
+   a una categoría funcional (get\_plugins\_by\_category), lo cual permite 
+   a la interfaz organizar los módulos por categorías. Asimismo, ofrece
+    operaciones para registrar y localizar servicios por clave 
+    (register\_service y get\_service), para detener de forma ordenada todas
+     las extensiones al finalizar la aplicación (stop\_plugins) y para publicar 
+     eventos dirigidos a los componentes suscritos (emit\_event). El Kernel se 
+     asocia con el PluginManager, el SettingsService, el FileIOService,
+      el DataStore y el TaskOrchestrator, y administra las extensiones 
+      exclusivamente a través de la interfaz IPlugin.
 
 \paragraph{PluginManager}
 El PluginManager se encuentra implementado y es responsable de descubrir, cargar e instanciar las extensiones disponibles en el directorio de extensiones del sistema. Conserva la ubicación de dicho directorio y un registro de las extensiones descubiertas. Sus operaciones permiten cargar la totalidad de las extensiones (load\_all) y consultarlas de forma colectiva o por identificador (all y get). El PluginManager depende de la interfaz IPlugin, de modo que únicamente admite elementos que cumplan dicho contrato.
@@ -645,25 +659,56 @@ El ExportService se encuentra implementado y es responsable de exportar visualiz
 El DataStore se encuentra implementado y mantiene en memoria el estado compartido de la sesión de trabajo, el cual comprende las señales cargadas, la señal activa, las mediciones y los resultados de los análisis. Constituye la fuente única de verdad del estado de la aplicación. Ofrece operaciones genéricas de almacenamiento, consulta y verificación por clave (set, get y has), operaciones para incorporar señales (add\_signal), para establecer, consultar y liberar la señal activa (set\_active\_signal, get\_active\_signal y clear\_active\_signal) y para eliminar entradas del estado (remove).
 
 \paragraph{TaskOrchestrator}
-El TaskOrchestrator se encuentra planificado y tendrá la responsabilidad de coordinar la ejecución de las operaciones de cómputo solicitadas por las extensiones. Su propósito es garantizar que dichas operaciones se ejecuten de forma ordenada, que puedan ser canceladas por el usuario, que se presente retroalimentación de progreso y que sus resultados se publiquen de manera consistente. Para ello mantendrá una cola de solicitudes pendientes, una referencia a la operación en ejecución y un umbral de tiempo, fijado en un segundo, a partir del cual se presentará el indicador de progreso.
+El TaskOrchestrator tiene la responsabilidad de 
+coordinar la ejecución de las operaciones de cómputo solicitadas por las 
+extensiones. Su propósito es garantizar que dichas operaciones se ejecuten
+ de forma ordenada, que puedan ser canceladas por el usuario, que se presente 
+ retroalimentación de progreso y que sus resultados se publiquen de manera
+  consistente. Para ello mantendrá una cola de solicitudes pendientes, una 
+  referencia a la operación en ejecución y un umbral de tiempo, fijado en un 
+  segundo, a partir del cual se presentará el indicador de progreso.
 
-La operación solicitar constituirá el punto de entrada único mediante el cual una extensión pide la ejecución de un cómputo. La operación encolar diferirá una solicitud cuando exista otra operación en curso, en cumplimiento del requerimiento R70. Las operaciones cancelar y forzar\_terminacion permitirán, respectivamente, la cancelación de una tarea a petición del usuario y la terminación forzada de una tarea que no responda a la cancelación, conforme al caso de uso CU-014 y su excepción 2a. Por último, la operación publicar\_resultado escribirá los resultados en el estado compartido de forma sincronizada. El TaskOrchestrator será el único componente autorizado para escribir en el DataStore, en cumplimiento del requerimiento R54.
+La operación solicitar constituirá el punto de entrada único mediante el cual
+ una extensión pide la ejecución de un cómputo. La operación encolar diferirá 
+ una solicitud cuando exista otra operación en curso, en cumplimiento del 
+ requerimiento R70. Las operaciones cancelar y forzar\_terminacion permitirán,
+  respectivamente, la cancelación de una tarea a petición del usuario y la
+   terminación forzada de una tarea que no responda a la cancelación, conforme al caso de uso CU-014 y su excepción 2a. Por último, la operación publicar\_resultado escribirá los resultados en el estado compartido de forma sincronizada. El TaskOrchestrator será el único componente autorizado para escribir en el DataStore, en cumplimiento del requerimiento R54.
 
 \paragraph{ProjectService}
-El ProjectService se encuentra implementado y gestiona la persistencia del espacio de trabajo en archivos de proyecto con extensión glab. Cada archivo de proyecto es un manifiesto en formato JSON que registra la señal de origen, las mediciones realizadas, la configuración de la segmentación en ensayos y el estado de los análisis. Durante el guardado, el archivo de señal se copia a la carpeta del proyecto, de modo que el proyecto resulta autocontenido y puede reabrirse en otro equipo. Durante la apertura, el servicio verifica la disponibilidad del archivo de señal referenciado, lo recarga mediante el FileIOService y restaura el estado de la sesión en el DataStore.
+El ProjectService se encuentra implementado y gestiona la persistencia del 
+espacio de trabajo en archivos de proyecto con extensión glab. Cada archivo 
+de proyecto es un manifiesto en formato JSON que registra la señal de origen, 
+las mediciones realizadas, la configuración de la segmentación en ensayos y 
+el estado de los análisis. Durante el guardado, el archivo de señal se copia a 
+la carpeta del proyecto, de modo que el proyecto resulta autocontenido y puede 
+reabrirse en otro equipo. Durante la apertura, el servicio verifica 
+la disponibilidad del archivo de señal referenciado, lo recarga mediante el
+ FileIOService y restaura el estado de la sesión en el DataStore.
 
-El servicio mantiene la carpeta del proyecto, la ruta del archivo de proyecto, el nombre del proyecto, un indicador de cambios pendientes de guardar y una función de notificación que informa a la interfaz sobre la apertura, el guardado, el cambio de nombre o el cierre del proyecto. Sus operaciones principales permiten guardar el proyecto en su ubicación actual (save), guardarlo en una nueva ubicación (save\_as), abrir y restaurar un proyecto existente (open), y cerrar el proyecto activo liberando su estado (close). Adicionalmente, ofrece operaciones para asignar el nombre del proyecto (set\_project\_name), registrar la existencia de cambios pendientes (mark\_dirty), verificar si existe un proyecto abierto (is\_open) y generar un nombre predeterminado a partir del nombre de la señal (default\_project\_name). El ProjectService depende del FileIOService, del DataStore y del Kernel, y produce y consume objetos de tipo ProjectData.
+El servicio mantiene la carpeta del proyecto, la ruta del archivo de proyecto, 
+el nombre del proyecto, un indicador de cambios pendientes de guardar y una función 
+de notificación que informa a la interfaz sobre la apertura, el guardado, el cambio 
+de nombre o el cierre del proyecto. Sus operaciones principales permiten guardar 
+el proyecto en su ubicación actual (save), guardarlo en una nueva ubicación 
+(save\_as), abrir y restaurar un proyecto existente (open), y cerrar el proyecto
+ activo liberando su estado (close). Adicionalmente, ofrece operaciones para asignar
+  el nombre del proyecto (set\_project\_name), registrar la existencia de cambios 
+  pendientes (mark\_dirty), verificar si existe un proyecto abierto (is\_open) y 
+  generar un nombre predeterminado a partir del nombre de la señal 
+  (default\_project\_name). El ProjectService depende del FileIOService,
+     del DataStore y del Kernel, y produce y consume objetos de tipo ProjectData.
 
 \subsubsection{Elementos de presentación}
 
 \paragraph{MainWindow}
-La MainWindow se encuentra parcialmente implementada y constituye el contenedor principal de la interfaz gráfica. Es responsable de la navegación entre los módulos funcionales, de la presentación de la pantalla de inicio y de las operaciones de proyecto disponibles en el menú Archivo. Mantiene referencias al Kernel y al ProjectService. La operación switch\_module presenta las extensiones correspondientes a la categoría seleccionada por el usuario, la operación show\_home presenta la pantalla de inicio y la operación build\_home\_welcome construye el panel de bienvenida. Esta última se encuentra pendiente de incorporar la detección de la primera ejecución de la aplicación, requerida por el requerimiento R10.
+La MainWindow se encuentra parcialmente implementada y constituye el contenedor principal de la interfaz gráfica. Es responsable de la navegación entre los módulos funcionales, de la presentación de la pantalla de inicio y de las operaciones de proyecto disponibles en el menú Archivo. Mantiene referencias al Kernel y al ProjectService. La operación switch\_module presenta las extensiones correspondientes a la categoría seleccionada por el usuario, la operación (show\_home) presenta la pantalla de inicio y la operación (build\_home\_welcome) construye el panel de bienvenida. Esta última se encuentra pendiente de incorporar la detección de la primera ejecución de la aplicación, requerida por el requerimiento R10.
 
 \paragraph{VTKContextMenu}
 El VTKContextMenu se encuentra implementado y provee el menú contextual asociado a las visualizaciones. Sus operaciones permiten presentar el menú en la posición indicada por el usuario (show\_menu) y solicitar la exportación de la visualización como imagen o como tabla (export\_image y export\_table). Este elemento delega la exportación en el ExportService y opera sobre los componentes visuales provistos por las extensiones.
 
 \paragraph{TooltipHelper}
-El TooltipHelper se encuentra planificado y tendrá la responsabilidad de proveer ayuda contextual sobre los controles de la interfaz. Mantendrá un diccionario de descripciones asociadas a cada control. La operación aplicar\_tooltips asignará dichas descripciones a los controles de un componente visual y la operación al\_cambiar\_habilitado actualizará la descripción de un control cuando cambie su disponibilidad, de modo que el usuario conozca el motivo por el cual un control se encuentra deshabilitado.
+El TooltipHelper se encuentra planificado y tendrá la responsabilidad de proveer ayuda contextual sobre los controles de la interfaz. Mantendrá un diccionario de descripciones asociadas a cada control. La operación (aplicar\_tooltips) asignará dichas descripciones a los controles de un componente visual y la operación (al\_cambiar\_habilitado) actualizará la descripción de un control cuando cambie su disponibilidad, de modo que el usuario conozca el motivo por el cual un control se encuentra deshabilitado.
 
 \subsubsection{Contrato de extensión}
 
@@ -675,22 +720,27 @@ Se encuentra planificada la incorporación al contrato de la operación clear\_p
 \subsubsection{Extensiones}
 
 Todas las extensiones del sistema realizan la interfaz IPlugin. La Tabla~\ref{tab:extensiones} resume las extensiones representadas en el modelo, su estado de implementación y su responsabilidad.
-
 \begin{table}[H]
 \centering
 \caption{Extensiones representadas en la vista lógica.}
 \label{tab:extensiones}
-\begin{tabularx}{\linewidth}{@{}p{4.6cm}p{2.6cm}X@{}}
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{4.5cm} X}
 \toprule
-\textbf{Elemento} & \textbf{Estado} & \textbf{Responsabilidad} \\
+\textbf{Elemento} & \textbf{Responsabilidad} \\
 \midrule
-OpenSignalPlugin & Implementado & Selección y carga de señales desde archivo. \\
-FilterPlugin & Implementado & Filtrado en frecuencia de la señal. \\
-WaveletPlugin & Implementado & Análisis en tiempo y frecuencia mediante la transformada wavelet. \\
-TrialsPlugin & Implementado & Segmentación de la señal en ensayos. \\
-PACAnalysisPlugin & Planificado & Comportamiento común del análisis de acoplamiento entre fase y amplitud (PAC). \\
-PACSingleChannelPlugin & Planificado & Cálculo del acoplamiento entre fase y amplitud dentro de un mismo canal. \\
-PACInterChannelPlugin & Planificado & Cálculo del acoplamiento entre fase y amplitud y de la consistencia de fase por pares (PPC) entre dos canales. \\
+\texttt{OpenSignalPlugin} & Selección y carga de señales desde archivo. \\
+\addlinespace
+\texttt{FilterPlugin} & Filtrado en frecuencia de la señal. \\
+\addlinespace
+\texttt{WaveletPlugin} & Análisis en tiempo y frecuencia mediante la transformada wavelet. \\
+\addlinespace
+\texttt{TrialsPlugin} & Segmentación de la señal en ensayos. \\
+\addlinespace
+\texttt{PACAnalysisPlugin} & Comportamiento común del análisis de acoplamiento entre fase y amplitud (PAC). \\
+\addlinespace
+\texttt{PACSingleChannelPlugin} & Cálculo del acoplamiento entre fase y amplitud dentro de un mismo canal. \\
+\addlinespace
+\texttt{PACInterChannelPlugin} & Cálculo del acoplamiento entre fase y amplitud y de la consistencia de fase por pares (PPC) entre dos canales. \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -737,30 +787,6 @@ TaskOrchestrator & Asociación & DataStore & Publica los resultados en el estado
 \end{tabularx}
 \end{table}
 
-\subsubsection{Mecanismos y patrones arquitectónicos}
-
-La Tabla~\ref{tab:patrones_logica} identifica los patrones de diseño presentes en el modelo lógico, los elementos que los materializan y el propósito que cumplen dentro de la arquitectura.
-
-\begin{table}[H]
-\centering
-\caption{Patrones de diseño presentes en la vista lógica.}
-\label{tab:patrones_logica}
-\begin{tabularx}{\linewidth}{@{}p{3.4cm}p{4.6cm}X@{}}
-\toprule
-\textbf{Patrón} & \textbf{Elementos} & \textbf{Propósito} \\
-\midrule
-Microkernel & Kernel, PluginManager, IPlugin & Incorporar nuevas funcionalidades sin modificar el núcleo. \\
-Localizador de servicios & Kernel & Desacoplar a los consumidores de la construcción de los servicios. \\
-Publicador y suscriptor & Kernel & Comunicar componentes sin referencias directas entre ellos. \\
-Repositorio & DataStore & Centralizar el estado compartido de la sesión. \\
-Escritor único & TaskOrchestrator & Preservar la consistencia del estado ante ejecuciones concurrentes. \\
-Cola de comandos & TaskOrchestrator & Ejecutar las operaciones de forma ordenada y permitir su cancelación. \\
-Adaptador & FileIOService & Unificar formatos heterogéneos en un único modelo de datos. \\
-Memento & ProjectService, ProjectData & Capturar y restaurar el estado de la sesión de trabajo. \\
-Método plantilla & PACAnalysisPlugin y sus especializaciones & Reutilizar el procedimiento común y variar el cálculo específico. \\
-\bottomrule
-\end{tabularx}
-\end{table}
 
 \subsubsection{Justificación de las decisiones}
 
@@ -797,7 +823,7 @@ ProjectService, operación open, y ProjectData & CU-023 \\
 TaskOrchestrator, operación publicar\_resultado & R54 \\
 TaskOrchestrator, operación encolar & R70 \\
 MainWindow, operación build\_home\_welcome & R10 \\
-PACSingleChannelPlugin y PACInterChannelPlugin & CU-001 y casos de uso de análisis de acoplamiento \\
+PACSingleChannelPlugin y PACInterChannelPlugin & CU-001 y CU-002 \\
 \bottomrule
 \end{tabularx}
 \end{table}
