@@ -3,9 +3,9 @@ import pytest
 from pathlib import Path
 
 # --- Real pipeline imports (core app services & plugins) ---
-from core.services.fileio import FileIOService
+from core.services.fileio_service import FileIOService
 from core.filters import trials as tr
-from core.services.trial_dataset import TrialDataset
+from core.model.trial_dataset import TrialDataset
 from plugins.analysis.time.average.average_plugin import Average_plugin
 from core.plugins.meta import PluginMeta
 

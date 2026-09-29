@@ -1,0 +1,1598 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diagrama de clases · Gamma Lab 2.0</title>
+<style>
+:root {
+  --ui-bg: #f3f1ed;
+  --panel: #ffffff;
+  --ink: #1d1f22;
+  --ink2: #55595f;
+  --muted: #7a7f86;
+  --rule: #dedad3;
+  --accent: #2563eb;
+  --accent-soft: #e6eefc;
+  --danger: #b42318;
+  --canvas: #faf8f5;
+  --dot: #e2ddd4;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--ui-bg); color: var(--ink); font-size: 13px; display: grid; grid-template-rows: auto 1fr auto; }
+header.barra { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; padding: 8px 12px; background: var(--panel); border-bottom: 1px solid var(--rule); }
+.titulo-doc { font-family: inherit; font-size: 14px; font-weight: 600; line-height: 1.3; border: 1px solid transparent; border-radius: 6px; padding: 5px 7px; min-width: 280px; background: transparent; color: var(--ink); }
+.titulo-doc:hover { border-color: var(--rule); }
+.titulo-doc:focus { border-color: var(--accent); outline: none; }
+.grupo { display: flex; gap: 4px; align-items: center; }
+.grupo + .grupo { padding-left: 12px; border-left: 1px solid var(--rule); }
+button { font: inherit; border: 1px solid var(--rule); background: #fff; color: var(--ink); border-radius: 6px; padding: 5px 10px; cursor: pointer; white-space: nowrap; }
+button:hover { background: #f6f5f2; }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+button:disabled { opacity: 0.45; cursor: default; }
+button.activo { background: var(--accent-soft); border-color: var(--accent); color: #1e40af; }
+button.primario { background: var(--accent); border-color: var(--accent); color: #fff; }
+button.primario:hover { background: #1d4fd7; }
+button.peligro { color: var(--danger); }
+.zoom-val { min-width: 52px; text-align: center; color: var(--ink2); font-variant-numeric: tabular-nums; }
+main { display: grid; grid-template-columns: 1fr 340px; min-height: 0; }
+#zona { position: relative; overflow: hidden; background-color: var(--canvas); background-image: radial-gradient(var(--dot) 1px, transparent 1px); background-size: 20px 20px; cursor: grab; }
+#zona.paneando { cursor: grabbing; }
+#zona.modo-rel { cursor: crosshair; }
+#lienzo { width: 100%; height: 100%; display: block; touch-action: none; user-select: none; }
+#lienzo .clase { cursor: move; }
+#zona.modo-rel #lienzo .clase { cursor: crosshair; }
+#lienzo .rel-hit { cursor: pointer; }
+aside { background: var(--panel); border-left: 1px solid var(--rule); overflow-y: auto; padding: 16px; display: grid; align-content: start; gap: 14px; }
+aside h2 { font-size: 12px; margin: 0; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; }
+aside h3 { font-size: 13px; margin: 4px 0 0; }
+label { display: grid; gap: 4px; color: var(--ink2); font-size: 12px; }
+label.check { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink); }
+label.check input { width: auto; }
+input, select, textarea { font: inherit; font-size: 13px; color: var(--ink); border: 1px solid var(--rule); border-radius: 6px; padding: 6px 8px; background: #fff; width: 100%; }
+textarea { font-family: "Cascadia Mono", Consolas, monospace; font-size: 12px; line-height: 1.5; resize: vertical; min-height: 96px; white-space: pre; }
+textarea.notas { white-space: pre-wrap; font-family: inherit; font-size: 12.5px; min-height: 220px; }
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
+.fila { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.acciones { display: flex; flex-wrap: wrap; gap: 6px; }
+.ayuda { color: var(--muted); font-size: 12px; line-height: 1.55; margin: 0; }
+.lista-rel { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.lista-rel button { width: 100%; text-align: left; font-size: 12px; white-space: normal; }
+.atajos { display: grid; grid-template-columns: max-content 1fr; gap: 4px 10px; margin: 0; font-size: 12px; color: var(--ink2); }
+.atajos dt { white-space: nowrap; }
+.atajos dd { margin: 0; }
+kbd { font-family: "Cascadia Mono", Consolas, monospace; font-size: 11px; border: 1px solid var(--rule); border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; background: #faf9f7; }
+footer { padding: 6px 12px; font-size: 12px; color: var(--ink2); background: var(--panel); border-top: 1px solid var(--rule); display: flex; justify-content: space-between; gap: 12px; }
+.aviso { position: absolute; left: 12px; bottom: 12px; max-width: calc(100% - 24px); background: #fff; border: 1px solid var(--rule); border-radius: 8px; padding: 8px 10px; font-size: 12px; display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06); }
+.guia { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); background: #1e3a8a; color: #fff; padding: 6px 12px; border-radius: 999px; font-size: 12.5px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15); }
+@media (max-width: 900px) {
+  main { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
+  aside { border-left: 0; border-top: 1px solid var(--rule); max-height: 45vh; }
+}
+</style>
+</head>
+<body>
+<header class="barra">
+  <input class="titulo-doc" id="titulo" aria-label="Título del diagrama">
+  <div class="grupo">
+    <button id="b-clase" title="Agregar una clase (N)">+ Clase</button>
+    <button id="b-rel" title="Crear una relación: clic en la clase de origen y luego en la de destino (R)">+ Relación</button>
+    <button id="b-dup" title="Duplicar la clase seleccionada (Ctrl+D)">Duplicar</button>
+    <button id="b-borrar" class="peligro" title="Eliminar la selección (Supr)">Eliminar</button>
+  </div>
+  <div class="grupo">
+    <button id="b-deshacer" title="Deshacer (Ctrl+Z)">Deshacer</button>
+    <button id="b-rehacer" title="Rehacer (Ctrl+Y)">Rehacer</button>
+  </div>
+  <div class="grupo">
+    <button id="b-zmenos" aria-label="Alejar">−</button>
+    <span class="zoom-val" id="zoom">100 %</span>
+    <button id="b-zmas" aria-label="Acercar">+</button>
+    <button id="b-ajustar" title="Ver todo el diagrama (F)">Ajustar</button>
+    <button id="b-rejilla" class="activo" title="Alinear a la rejilla al mover (G)">Rejilla</button>
+  </div>
+  <div class="grupo">
+    <button id="b-guardar-html" class="primario" title="Guarda este HTML con tus cambios incluidos (Ctrl+S)">Guardar HTML</button>
+    <button id="b-guardar-json" title="Descarga solo los datos del diagrama">Guardar JSON</button>
+    <button id="b-abrir" title="Carga un diagrama guardado como JSON">Abrir JSON</button>
+    <input type="file" id="archivo" accept=".json,application/json" hidden>
+    <button id="b-svg">Exportar SVG</button>
+    <button id="b-png">Exportar PNG</button>
+    <button id="b-reset" class="peligro" title="Vuelve al diagrama guardado en este archivo">Restablecer</button>
+  </div>
+</header>
+<main>
+  <div id="zona">
+    <svg id="lienzo" xmlns="http://www.w3.org/2000/svg" font-family='"Segoe UI", system-ui, -apple-system, sans-serif' aria-label="Diagrama de clases"><g id="vista"></g></svg>
+    <div class="guia" id="guia" hidden></div>
+    <div class="aviso" id="aviso" hidden></div>
+  </div>
+  <aside id="panel" aria-label="Propiedades"></aside>
+</main>
+<footer><span id="estado">Arrastra las clases para moverlas · Ctrl + rueda para acercar · arrastra el fondo para desplazarte</span><span id="guardado"></span></footer>
+
+<script type="application/json" id="modelo">
+{
+ "version": 1,
+ "titulo": "Diagrama de clases — sistema completo (Gamma Lab 2.0)",
+ "leyenda": {
+  "x": 40,
+  "y": 20,
+  "visible": true
+ },
+ "clases": [
+  {
+   "id": "PluginMeta",
+   "nombre": "PluginMeta",
+   "estereotipo": "dataclass",
+   "estado": "existe",
+   "x": 600,
+   "y": 430,
+   "w": 160,
+   "atributos": [
+    "- id, name: str",
+    "- category, subcategory: str",
+    "- version, icon: str",
+    "- logic_class: str",
+    "- description: str"
+   ],
+   "metodos": [
+    "+ icon_path() Path"
+   ]
+  },
+  {
+   "id": "PluginManager",
+   "nombre": "PluginManager",
+   "estereotipo": "",
+   "estado": "existe",
+   "x": 640,
+   "y": 250,
+   "w": 160,
+   "atributos": [
+    "- plugins_dir: Path",
+    "- registry: dict[id, (PluginMeta, IPlugin)]"
+   ],
+   "metodos": [
+    "+ load_all()",
+    "+ all() / get(plugin_id)"
+   ]
+  },
+  {
+   "id": "Kernel",
+   "nombre": "Kernel",
+   "estereotipo": "",
+   "estado": "existe",
+   "x": 940,
+   "y": 90,
+   "w": 160,
+   "atributos": [
+    "- _plugins: dict[str, IPlugin]",
+    "- _services: dict[str, object]"
+   ],
+   "metodos": [
+    "+ register_plugin(nombre, plugin)",
+    "+ get_plugin(nombre) / get_plugins()",
+    "+ get_plugins_by_category(categoria)",
+    "+ load_and_register(nombre, módulo, clase)",
+    "+ register_service(clave, servicio) / get_service(clave)",
+    "+ stop_plugins()",
+    "+ emit_event(topico, payload)"
+   ]
+  },
+  {
+   "id": "MainWindow",
+   "nombre": "MainWindow",
+   "estereotipo": "",
+   "estado": "parcial",
+   "x": 1380,
+   "y": 350,
+   "w": 160,
+   "atributos": [
+    "- kernel: Kernel",
+    "- active_plugin: IPlugin"
+   ],
+   "metodos": [
+    "+ switch_section(seccion)",
+    "+ show_plugin_widget(plugin)",
+    "+ _build_home_welcome_widget()",
+    "+ _on_app_about_to_quit()"
+   ]
+  },
+  {
+   "id": "ProjectService",
+   "nombre": "ProjectService",
+   "estereotipo": "",
+   "estado": "nuevo",
+   "x": 1520,
+   "y": 130,
+   "w": 160,
+   "atributos": [
+    "- formato = \".glab\""
+   ],
+   "metodos": [
+    "+ guardar(ruta, señal, trials, análisis, parámetros)",
+    "+ abrir(ruta) → ProjectData",
+    "+ cerrar()",
+    "+ validar_ruta_señal(ruta) bool"
+   ]
+  },
+  {
+   "id": "IPlugin",
+   "nombre": "IPlugin",
+   "estereotipo": "abstract",
+   "estado": "parcial",
+   "x": 820,
+   "y": 570,
+   "w": 160,
+   "atributos": [
+    "- meta: PluginMeta",
+    "- kernel: Kernel",
+    "- mainwin: MainWindow",
+    "- active_signal: SignalDataset",
+    "- widget: QWidget",
+    "- alerts: PluginAlerts"
+   ],
+   "metodos": [
+    "+ initialize(kernel) / start(kernel)",
+    "+ get_widget(parent) QWidget  {abstracto}",
+    "+ process(data)  {abstracto}",
+    "+ stop()  {abstracto}",
+    "+ get_datastore() DataStore",
+    "+ get_active_signal() / get_active_trials()",
+    "+ on_kernel_event(topico, payload)",
+    "+ clear_params()"
+   ]
+  },
+  {
+   "id": "VTKContextMenu",
+   "nombre": "VTKContextMenu",
+   "estereotipo": "",
+   "estado": "existe",
+   "x": 320,
+   "y": 490,
+   "w": 160,
+   "atributos": [
+    "- export_service: ExportService",
+    "- measure_service: MeasurementService",
+    "- settings: SettingsService"
+   ],
+   "metodos": [
+    "+ show_menu(pos)",
+    "+ export_image(fmt) / export_table(fmt)",
+    "+ set_zoom_mode(modo) / reset_zoom()"
+   ]
+  },
+  {
+   "id": "ExportService",
+   "nombre": "ExportService",
+   "estereotipo": "",
+   "estado": "parcial",
+   "x": 360,
+   "y": 260,
+   "w": 160,
+   "atributos": [
+    "- vtk_widget",
+    "- get_active_chart: callable"
+   ],
+   "metodos": [
+    "+ export_image(fmt)",
+    "+ export_table(fmt)",
+    "+ export_vector(fmt=\"emf\")"
+   ]
+  },
+  {
+   "id": "MeasurementService",
+   "nombre": "MeasurementService",
+   "estereotipo": "",
+   "estado": "existe",
+   "x": 40,
+   "y": 510,
+   "w": 160,
+   "atributos": [],
+   "metodos": [
+    "+ start(tipo) / cancel()",
+    "+ set_context(vista, gráfico, trial, canal)",
+    "+ remove_last_measurement()",
+    "+ clear_all_measurements()",
+    "+ toggle_overlay()"
+   ]
+  },
+  {
+   "id": "SettingsService",
+   "nombre": "SettingsService",
+   "estereotipo": "",
+   "estado": "existe",
+   "x": 200,
+   "y": 710,
+   "w": 160,
+   "atributos": [
+    "- filename: str",
+    "- data: dict"
+   ],
+   "metodos": [
+    "+ get(clave) / set(clave, valor)",
+    "+ load() / save()"
+   ]
+  },
+  {
+   "id": "TooltipHelper",
+   "nombre": "TooltipHelper",
+   "estereotipo": "",
+   "estado": "nuevo",
+   "x": 520,
+   "y": 690,
+   "w": 160,
+   "atributos": [
+    "- descripciones: dict[str, str]"
+   ],
+   "metodos": [
+    "+ aplicar_tooltips(widget)",
+    "+ al_cambiar_habilitado(widget, habilitado)"
+   ]
+  },
+  {
+   "id": "DataStore",
+   "nombre": "DataStore",
+   "estereotipo": "",
+   "estado": "existe",
+   "x": 1060,
+   "y": 350,
+   "w": 160,
+   "atributos": [
+    "- _data: dict"
+   ],
+   "metodos": [
+    "+ set(k, v) / get(k) / has(k) / remove(k)",
+    "+ add_signal(signal) / get_signals()",
+    "+ set_active_signal(k) / get_active_signal()",
+    "+ clear_active_signal()"
+   ]
+  },
+  {
+   "id": "FileIOService",
+   "nombre": "FileIOService",
+   "estereotipo": "",
+   "estado": "existe",
+   "x": 1280,
+   "y": 110,
+   "w": 160,
+   "atributos": [],
+   "metodos": [
+    "+ load_abf(ruta) SignalDataset",
+    "+ load_edf(ruta) SignalDataset",
+    "+ load_mat(ruta) SignalDataset"
+   ]
+  },
+  {
+   "id": "SignalDataset",
+   "nombre": "SignalDataset",
+   "estereotipo": "dataclass",
+   "estado": "existe",
+   "x": 1220,
+   "y": 590,
+   "w": 160,
+   "atributos": [
+    "- name, format, source_path: str",
+    "- sampling_rate: float",
+    "- time, signals: ndarray",
+    "- channel_names, units: list[str]",
+    "- __trials_dataset: list[TrialDataset]"
+   ],
+   "metodos": [
+    "+ add_trial_dataset(trial)",
+    "+ get_active_trials(archivo, canal)",
+    "+ discard_trial() / include_trial()"
+   ]
+  },
+  {
+   "id": "TrialDataset",
+   "nombre": "TrialDataset",
+   "estereotipo": "dataclass",
+   "estado": "existe",
+   "x": 1460,
+   "y": 550,
+   "w": 160,
+   "atributos": [
+    "- source, channel_name, unit: str",
+    "- sampling_rate: float",
+    "- t0, t1: float",
+    "- time_rel: ndarray (Ns,)",
+    "- trials: ndarray (Ns, T)",
+    "- onsets_s, isi_s: list[float]"
+   ],
+   "metodos": []
+  },
+  {
+   "id": "TaskService",
+   "nombre": "TaskService",
+   "estereotipo": "",
+   "estado": "parcial",
+   "x": 1740,
+   "y": 330,
+   "w": 160,
+   "atributos": [
+    "- _queue: list[_Task]",
+    "- _running: _Task | None",
+    "- _cancel_timeout_ms = 2000"
+   ],
+   "metodos": [
+    "+ submit(fn, *, owner, **kwargs) → TaskHandle",
+    "+ cancel_all_from(owner) → int",
+    "+ has_active_tasks() → bool",
+    "+ pending_count() → int"
+   ]
+  },
+  {
+   "id": "TaskHandle",
+   "nombre": "TaskHandle",
+   "estereotipo": "",
+   "estado": "existe",
+   "x": 1700,
+   "y": 750,
+   "w": 160,
+   "atributos": [
+    "+ progress: señal(int, str)",
+    "+ finished: señal(object)",
+    "+ failed: señal(str)",
+    "+ cancelled: señal()"
+   ],
+   "metodos": [
+    "+ cancel()"
+   ]
+  },
+  {
+   "id": "OpenSignalPlugin",
+   "nombre": "OpenSignalPlugin",
+   "estereotipo": "",
+   "estado": "existe",
+   "x": 320,
+   "y": 970,
+   "w": 160,
+   "atributos": [],
+   "metodos": [
+    "+ get_widget(parent)",
+    "+ process(data)",
+    "+ stop()"
+   ]
+  },
+  {
+   "id": "TrialsPlugin",
+   "nombre": "TrialsPlugin",
+   "estereotipo": "",
+   "estado": "existe",
+   "x": 540,
+   "y": 970,
+   "w": 160,
+   "atributos": [],
+   "metodos": [
+    "+ get_widget(parent)",
+    "+ process(data)",
+    "+ stop()"
+   ]
+  },
+  {
+   "id": "FilterPlugin",
+   "nombre": "Filter_plugin",
+   "estereotipo": "",
+   "estado": "existe",
+   "x": 740,
+   "y": 970,
+   "w": 160,
+   "atributos": [],
+   "metodos": [
+    "+ get_widget(parent)",
+    "+ process(data)",
+    "+ stop()"
+   ]
+  },
+  {
+   "id": "WaveletPlugin",
+   "nombre": "Wavelet_plugin",
+   "estereotipo": "",
+   "estado": "existe",
+   "x": 940,
+   "y": 970,
+   "w": 160,
+   "atributos": [],
+   "metodos": [
+    "+ get_widget(parent)",
+    "+ process(data)",
+    "+ stop()"
+   ]
+  },
+  {
+   "id": "WaveletAveragePlugin",
+   "nombre": "Wavelet_average_plugin",
+   "estereotipo": "",
+   "estado": "existe",
+   "x": 1400,
+   "y": 970,
+   "w": 160,
+   "atributos": [],
+   "metodos": [
+    "+ get_widget(parent)",
+    "+ process(data)",
+    "+ stop()",
+    "+ on_create_wavelet()"
+   ]
+  },
+  {
+   "id": "PACAnalysisPlugin",
+   "nombre": "PACAnalysisPlugin",
+   "estereotipo": "abstract",
+   "estado": "nuevo",
+   "x": 1680,
+   "y": 970,
+   "w": 160,
+   "atributos": [
+    "- banda_fase: tuple",
+    "- rango_amplitud: tuple"
+   ],
+   "metodos": [
+    "+ calcular_mapa_fase_frecuencia()"
+   ]
+  },
+  {
+   "id": "PACSingleChannelPlugin",
+   "nombre": "PACSingleChannelPlugin",
+   "estereotipo": "",
+   "estado": "nuevo",
+   "x": 1680,
+   "y": 1190,
+   "w": 160,
+   "atributos": [],
+   "metodos": [
+    "+ calcular_pac_1_canal()"
+   ]
+  },
+  {
+   "id": "PACInterChannelPlugin",
+   "nombre": "PACInterChannelPlugin",
+   "estereotipo": "",
+   "estado": "nuevo",
+   "x": 1900,
+   "y": 1190,
+   "w": 160,
+   "atributos": [],
+   "metodos": [
+    "+ calcular_pac_2_canales()",
+    "+ calcular_ppc()"
+   ]
+  }
+ ],
+ "relaciones": [
+  {
+   "id": "r1",
+   "desde": "OpenSignalPlugin",
+   "hacia": "IPlugin",
+   "tipo": "generalizacion",
+   "etiqueta": "",
+   "multDesde": "",
+   "multHacia": ""
+  },
+  {
+   "id": "r2",
+   "desde": "TrialsPlugin",
+   "hacia": "IPlugin",
+   "tipo": "generalizacion",
+   "etiqueta": "",
+   "multDesde": "",
+   "multHacia": ""
+  },
+  {
+   "id": "r3",
+   "desde": "FilterPlugin",
+   "hacia": "IPlugin",
+   "tipo": "generalizacion",
+   "etiqueta": "",
+   "multDesde": "",
+   "multHacia": ""
+  },
+  {
+   "id": "r4",
+   "desde": "WaveletPlugin",
+   "hacia": "IPlugin",
+   "tipo": "generalizacion",
+   "etiqueta": "",
+   "multDesde": "",
+   "multHacia": ""
+  },
+  {
+   "id": "r5",
+   "desde": "WaveletAveragePlugin",
+   "hacia": "IPlugin",
+   "tipo": "generalizacion",
+   "etiqueta": "",
+   "multDesde": "",
+   "multHacia": ""
+  },
+  {
+   "id": "r6",
+   "desde": "PACAnalysisPlugin",
+   "hacia": "IPlugin",
+   "tipo": "generalizacion",
+   "etiqueta": "",
+   "multDesde": "",
+   "multHacia": ""
+  },
+  {
+   "id": "r7",
+   "desde": "PACSingleChannelPlugin",
+   "hacia": "PACAnalysisPlugin",
+   "tipo": "generalizacion",
+   "etiqueta": "",
+   "multDesde": "",
+   "multHacia": ""
+  },
+  {
+   "id": "r8",
+   "desde": "PACInterChannelPlugin",
+   "hacia": "PACAnalysisPlugin",
+   "tipo": "generalizacion",
+   "etiqueta": "",
+   "multDesde": "",
+   "multHacia": ""
+  },
+  {
+   "id": "r9",
+   "desde": "Kernel",
+   "hacia": "IPlugin",
+   "tipo": "agregacion",
+   "etiqueta": "",
+   "multDesde": "kernel 1",
+   "multHacia": "_plugins 0..*"
+  },
+  {
+   "id": "r10",
+   "desde": "Kernel",
+   "hacia": "MainWindow",
+   "tipo": "agregacion",
+   "etiqueta": "",
+   "multDesde": "kernel 1",
+   "multHacia": "_services"
+  },
+  {
+   "id": "r11",
+   "desde": "MainWindow",
+   "hacia": "IPlugin",
+   "tipo": "enlace",
+   "etiqueta": "",
+   "multDesde": "mainwin 0..1",
+   "multHacia": "active_plugin 0..1"
+  },
+  {
+   "id": "r12",
+   "desde": "Kernel",
+   "hacia": "DataStore",
+   "tipo": "agregacion",
+   "etiqueta": "",
+   "multDesde": "",
+   "multHacia": "_services"
+  },
+  {
+   "id": "r13",
+   "desde": "Kernel",
+   "hacia": "FileIOService",
+   "tipo": "agregacion",
+   "etiqueta": "",
+   "multDesde": "",
+   "multHacia": "_services"
+  },
+  {
+   "id": "r14",
+   "desde": "Kernel",
+   "hacia": "TaskService",
+   "tipo": "agregacion",
+   "etiqueta": "",
+   "multDesde": "",
+   "multHacia": "_services"
+  },
+  {
+   "id": "r15",
+   "desde": "PluginManager",
+   "hacia": "IPlugin",
+   "tipo": "asociacion",
+   "etiqueta": "",
+   "multDesde": "1",
+   "multHacia": "registry 0..*"
+  },
+  {
+   "id": "r16",
+   "desde": "PluginManager",
+   "hacia": "PluginMeta",
+   "tipo": "asociacion",
+   "etiqueta": "",
+   "multDesde": "1",
+   "multHacia": "0..*"
+  },
+  {
+   "id": "r17",
+   "desde": "IPlugin",
+   "hacia": "PluginMeta",
+   "tipo": "asociacion",
+   "etiqueta": "",
+   "multDesde": "",
+   "multHacia": "meta 1"
+  },
+  {
+   "id": "r18",
+   "desde": "MainWindow",
+   "hacia": "TaskService",
+   "tipo": "dependencia",
+   "etiqueta": "",
+   "multDesde": "",
+   "multHacia": ""
+  },
+  {
+   "id": "r19",
+   "desde": "MainWindow",
+   "hacia": "ProjectService",
+   "tipo": "asociacion",
+   "etiqueta": "",
+   "multDesde": "",
+   "multHacia": ""
+  },
+  {
+   "id": "r20",
+   "desde": "IPlugin",
+   "hacia": "SignalDataset",
+   "tipo": "asociacion",
+   "etiqueta": "",
+   "multDesde": "",
+   "multHacia": "active_signal 0..1"
+  },
+  {
+   "id": "r21",
+   "desde": "IPlugin",
+   "hacia": "DataStore",
+   "tipo": "dependencia",
+   "etiqueta": "",
+   "multDesde": "",
+   "multHacia": ""
+  },
+  {
+   "id": "r22",
+   "desde": "IPlugin",
+   "hacia": "VTKContextMenu",
+   "tipo": "dependencia",
+   "etiqueta": "«create»",
+   "multDesde": "",
+   "multHacia": ""
+  },
+  {
+   "id": "r23",
+   "desde": "IPlugin",
+   "hacia": "TooltipHelper",
+   "tipo": "dependencia",
+   "etiqueta": "",
+   "multDesde": "",
+   "multHacia": ""
+  },
+  {
+   "id": "r24",
+   "desde": "VTKContextMenu",
+   "hacia": "ExportService",
+   "tipo": "composicion",
+   "etiqueta": "",
+   "multDesde": "1",
+   "multHacia": "1"
+  },
+  {
+   "id": "r25",
+   "desde": "VTKContextMenu",
+   "hacia": "MeasurementService",
+   "tipo": "composicion",
+   "etiqueta": "",
+   "multDesde": "1",
+   "multHacia": "1"
+  },
+  {
+   "id": "r26",
+   "desde": "VTKContextMenu",
+   "hacia": "SettingsService",
+   "tipo": "composicion",
+   "etiqueta": "",
+   "multDesde": "1",
+   "multHacia": "1"
+  },
+  {
+   "id": "r27",
+   "desde": "DataStore",
+   "hacia": "SignalDataset",
+   "tipo": "agregacion",
+   "etiqueta": "",
+   "multDesde": "1",
+   "multHacia": "0..*"
+  },
+  {
+   "id": "r28",
+   "desde": "SignalDataset",
+   "hacia": "TrialDataset",
+   "tipo": "composicion",
+   "etiqueta": "",
+   "multDesde": "1",
+   "multHacia": "0..*"
+  },
+  {
+   "id": "r29",
+   "desde": "FileIOService",
+   "hacia": "SignalDataset",
+   "tipo": "dependencia",
+   "etiqueta": "«create»",
+   "multDesde": "",
+   "multHacia": ""
+  },
+  {
+   "id": "r30",
+   "desde": "TaskService",
+   "hacia": "TaskHandle",
+   "tipo": "dependencia",
+   "etiqueta": "«create»",
+   "multDesde": "",
+   "multHacia": ""
+  },
+  {
+   "id": "r31",
+   "desde": "WaveletAveragePlugin",
+   "hacia": "TaskService",
+   "tipo": "dependencia",
+   "etiqueta": "",
+   "multDesde": "",
+   "multHacia": ""
+  },
+  {
+   "id": "r32",
+   "desde": "WaveletAveragePlugin",
+   "hacia": "TaskHandle",
+   "tipo": "dependencia",
+   "etiqueta": "",
+   "multDesde": "",
+   "multHacia": ""
+  },
+  {
+   "id": "r33",
+   "desde": "ProjectService",
+   "hacia": "FileIOService",
+   "tipo": "dependencia",
+   "etiqueta": "",
+   "multDesde": "",
+   "multHacia": ""
+  },
+  {
+   "id": "r34",
+   "desde": "ProjectService",
+   "hacia": "DataStore",
+   "tipo": "dependencia",
+   "etiqueta": "",
+   "multDesde": "",
+   "multHacia": ""
+  }
+ ],
+ "notas": "Correcciones del 29 de septiembre de 2026 al diagrama original (diagrama_clases_sistema_completo.png), verificadas contra el código.\n\nNOTACIÓN\n1. Herencia: las 8 flechas van ahora del hijo al padre, con línea continua y triángulo hueco (generalización). En el original iban del padre al hijo, discontinuas y con punta abierta, lo que se leía como «IPlugin hereda de TrialsPlugin».\n2. IPlugin pasa de «interface» a «abstract»: en el código es IPlugin(ABC), con tres métodos abstractos (get_widget, process, stop) y además atributos y métodos implementados.\n3. Tipo de cada relación: agregación (rombo hueco) para lo que el Kernel registra (_plugins, _services); composición (rombo lleno) para lo que una clase crea y posee (VTKContextMenu y sus tres servicios; SignalDataset y sus TrialDataset); dependencia (discontinua) para los usos puntuales. Se agregaron multiplicidades y roles en los extremos.\n4. Los pares de ida y vuelta (Kernel–IPlugin, Kernel–MainWindow, MainWindow–IPlugin) son una sola asociación con un rol en cada extremo.\n\nFLECHAS ELIMINADAS (no existen en el código)\n5. Kernel → PluginManager: los conecta main.py.\n6. Kernel → SettingsService: main.py no la registra; la crea VTKContextMenu (vtk_context_menu.py:53).\n7. Orquestador → DataStore: el resultado sale por la señal finished y escribe el plugin, en el hilo de la interfaz (R54).\n8. TrialsPlugin → orquestador y FilterPlugin → orquestador: el plan no los migra (18,6 ms y 43 ms, bajo 100 ms).\n\nFLECHAS INVERTIDAS\n9. VTKContextMenu → IPlugin pasa a IPlugin ⇢ VTKContextMenu «create»: cada plugin con gráfico crea su menú.\n10. TooltipHelper → IPlugin pasa a IPlugin ⇢ TooltipHelper (planificado): quien usa el helper apunta a él.\n\nRELACIONES AGREGADAS (existen en el código)\n11. Kernel ◇ IPlugin con rol kernel (initialize(kernel)); MainWindow — IPlugin (active_plugin, mainwin); Kernel ◇ MainWindow (se registra como servicio); IPlugin ⇢ DataStore (get_datastore); IPlugin → PluginMeta y PluginManager → PluginMeta; DataStore ◇ SignalDataset; SignalDataset ◆ TrialDataset; FileIOService ⇢ SignalDataset «create»; VTKContextMenu ◆ MeasurementService y ◆ SettingsService; MainWindow ⇢ TaskService (cancel_all_from al cambiar de sección y al cerrar); Wavelet_average_plugin ⇢ TaskService y ⇢ TaskHandle; TaskService ⇢ TaskHandle «create».\n\nCLASES\n12. TaskOrchestrator pasa a TaskService, que ya existe (fase 2), con su API real (submit, cancel_all_from, has_active_tasks, pending_count) y su TaskHandle.\n13. Cajas nuevas que existen en el código: PluginMeta, MeasurementService, TaskHandle y Wavelet_average_plugin (el único plugin que hoy usa el orquestador).\n14. Nombres reales de las clases: Wavelet_plugin y Filter_plugin; se quita «(ya existe)» del nombre, porque el color ya lo indica.\n15. MainWindow: switch_section(), show_plugin_widget(), _build_home_welcome_widget() y _on_app_about_to_quit(). show_home() no existe.\n16. Atributos y métodos completados según el código en IPlugin, Kernel (load_and_register), SignalDataset, TrialDataset, SettingsService y VTKContextMenu.\n17. Estado nuevo «Existe, con cambios pendientes» (amarillo) para las clases que existen pero tienen algo por implementar: IPlugin (clear_params), ExportService (export_vector), MainWindow (R10) y TaskService (widget de progreso).\n18. Se quitó IPlugin ⇢ TrialDataset: se deduce de IPlugin → SignalDataset ◆ TrialDataset y del tipo que devuelve get_active_trials().\n19. Los usos planificados del orquestador (Wavelet_plugin en la fase 4, PAC en la fase 5) no se dibujan como flechas.\n\nSin cambios: ProjectService, TooltipHelper y las clases PAC (diseño nuevo); DataStore y FileIOService coinciden con el código.\n\nDETALLES QUE ANTES ESTABAN COMO COMENTARIOS EN EL DIAGRAMA\n(se quitaron de las cajas y de las flechas el 29 de septiembre de 2026; las cajas solo muestran atributos y métodos)\n• Kernel: execute(nombre, data) existe en el código pero está comentado; era un intento de orquestador abandonado. register_plugin() llama a plugin.initialize(kernel).\n• SettingsService: main.py no la registra en el Kernel; la crea cada VTKContextMenu.\n• IPlugin: clear_params() es nuevo (CU-009); hoy ningún plugin del proyecto lo implementa.\n• ExportService: export_vector() es nuevo (CU-017); hoy no existe ningún export vectorial. export_image() admite png, jpg, bmp y tiff; export_table(), csv, xlsx y json.\n• MainWindow: _build_home_welcome_widget() es un panel estático; no detecta la primera ejecución (falta R10). _on_app_about_to_quit() cancela las tareas.\n• TaskService: _queue ejecuta una tarea a la vez (R70); cancel_all_from() cubre CU-014; si una tarea no responde se desliga a los 2 s (CU-014 exc. 2a); el resultado sale por la señal finished en el hilo de la interfaz (R54). Falta el widget de progreso con umbral de 1 s. Hoy lo usa Wavelet_average_plugin; planificado: Wavelet_plugin (fase 4) y PAC (fase 5).\n• PluginManager: load_all() descubre y crea cada plugin.\n• PACAnalysisPlugin: calcular_mapa_fase_frecuencia() se hará mediante wavelet; la clase reemplaza al esqueleto Pac_plugin (pac_plugin.py, hoy sin lógica).\n• ProjectService: cerrar() libera la memoria activa. Las relaciones de ProjectService y de TooltipHelper son planificadas.\n• Flechas: IPlugin ⇢ DataStore es get_datastore(); MainWindow ⇢ TaskService es cancel_all_from() al cambiar de sección y al cerrar; Wavelet_average_plugin ⇢ TaskService es submit() y ⇢ TaskHandle conecta finished y failed; IPlugin ⇢ VTKContextMenu: lo crean los plugins con gráfico."
+}
+</script>
+
+<script>
+(function () {
+  "use strict";
+
+  // Copia del HTML tal como se cargó: "Guardar HTML" la reescribe con el modelo actual.
+  var PRISTINO = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+  var ORIGINAL = document.getElementById("modelo").textContent;
+  // Huella del modelo embebido: una copia del navegador solo se usa si salió de esta misma versión del archivo.
+  var HUELLA = (function (s) { var h = 5381; for (var i = 0; i < s.length; i++) h = ((h * 33) ^ s.charCodeAt(i)) >>> 0; return h.toString(36); })(ORIGINAL);
+  var NOMBRE_ARCHIVO = decodeURIComponent((location.pathname.split("/").pop() || "diagrama_clases.html")) || "diagrama_clases.html";
+  var CLAVE_LS = "gammalab.diagrama." + NOMBRE_ARCHIVO;
+  var FUENTE = '"Segoe UI", system-ui, -apple-system, sans-serif';
+  var FS = 12, LH = 17, PAD = 10, GRID = 10;
+  var COLOR_REL = "#5b5e63", COLOR_SEL = "#2563eb", COLOR_ORIGEN = "#16a34a", FONDO = "#faf8f5";
+
+  var ESTADOS = {
+    existe: { nombre: "Ya existe en el código", fill: "#eaf4dc", stroke: "#6f9e45", pliegue: "#5f8f36" },
+    nuevo: { nombre: "Nuevo — por implementar", fill: "#f9dfda", stroke: "#a94438", pliegue: "#8e2f25" },
+    parcial: { nombre: "Existe, con cambios pendientes", fill: "#fcefd2", stroke: "#b7862a", pliegue: "#98691a" }
+  };
+  var TIPOS = {
+    asociacion: { nombre: "Asociación (usa / conoce)", guion: false, fin: "flecha", inicio: null },
+    dependencia: { nombre: "Dependencia (usa temporalmente)", guion: true, fin: "flecha", inicio: null },
+    generalizacion: { nombre: "Generalización (hereda de)", guion: false, fin: "triangulo", inicio: null },
+    realizacion: { nombre: "Realización (implementa interfaz)", guion: true, fin: "triangulo", inicio: null },
+    agregacion: { nombre: "Agregación (contiene, rombo en el todo)", guion: false, fin: null, inicio: "rombo" },
+    composicion: { nombre: "Composición (es dueño, rombo en el todo)", guion: false, fin: null, inicio: "rombo-lleno" },
+    enlace: { nombre: "Asociación sin dirección", guion: false, fin: null, inicio: null }
+  };
+  var ESTEREOTIPOS = ["interface", "abstract", "service", "dataclass", "enumeration", "utility"];
+
+  var svg = document.getElementById("lienzo");
+  var g = document.getElementById("vista");
+  var zona = document.getElementById("zona");
+  var panel = document.getElementById("panel");
+  var guia = document.getElementById("guia");
+  var aviso = document.getElementById("aviso");
+  var titulo = document.getElementById("titulo");
+  var lblZoom = document.getElementById("zoom");
+  var lblGuardado = document.getElementById("guardado");
+
+  var M = null;
+  var vista = { x: 20, y: 20, k: 0.5 };
+  var sel = null;
+  var modoRel = null;
+  var rejilla = true;
+  var arrastre = null;
+  var pendiente = null;
+  var deshacerPila = [], rehacerPila = [];
+  var tGuardar = null;
+  var manejador = null;
+
+  // ---------------------------------------------------------------- utilidades
+  var cv = document.createElement("canvas").getContext("2d");
+  function ancho(t, peso, tam) {
+    cv.font = (peso || 400) + " " + (tam || FS) + "px " + FUENTE;
+    return cv.measureText(t).width;
+  }
+  function esc(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function nuevoId(pref) { return pref + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function clase(id) { for (var i = 0; i < M.clases.length; i++) if (M.clases[i].id === id) return M.clases[i]; return null; }
+  function rel(id) { for (var i = 0; i < M.relaciones.length; i++) if (M.relaciones[i].id === id) return M.relaciones[i]; return null; }
+  function instantanea() { return JSON.stringify(M); }
+  function f1(n) { return Math.round(n * 10) / 10; }
+
+  function validar(m) {
+    if (!m || !Array.isArray(m.clases) || !Array.isArray(m.relaciones)) throw new Error("El archivo no tiene clases ni relaciones.");
+    m.leyenda = m.leyenda || { x: 18, y: 18, visible: true };
+    m.titulo = m.titulo || "Diagrama de clases";
+    m.notas = m.notas || "";
+    m.clases.forEach(function (c) {
+      c.atributos = c.atributos || []; c.metodos = c.metodos || [];
+      c.estado = ESTADOS[c.estado] ? c.estado : "existe";
+      c.estereotipo = c.estereotipo || ""; c.w = c.w || 160;
+    });
+    m.relaciones = m.relaciones.filter(function (r) { return r.desde && r.hacia; });
+    m.relaciones.forEach(function (r) {
+      r.tipo = TIPOS[r.tipo] ? r.tipo : "asociacion";
+      r.etiqueta = r.etiqueta || ""; r.multDesde = r.multDesde || ""; r.multHacia = r.multHacia || "";
+    });
+    return m;
+  }
+
+  // ---------------------------------------------------------------- medidas y dibujo
+  function medidas(c) {
+    var est = c.estereotipo ? "«" + c.estereotipo + "»" : "";
+    var lineas = c.atributos.concat(c.metodos);
+    var w = Math.max(c.w || 160, ancho(c.nombre, 600, 13) + 2 * PAD + 8, est ? ancho(est, 400, 11) + 2 * PAD : 0);
+    lineas.forEach(function (l) { w = Math.max(w, ancho(l) + 2 * PAD); });
+    var hTit = 12 + (est ? 15 : 0) + 16 + 10;
+    var hAt = Math.max(1, c.atributos.length) * LH + 10;
+    var hMe = Math.max(1, c.metodos.length) * LH + 10;
+    return { w: Math.ceil(w), h: hTit + hAt + hMe, hTit: hTit, hAt: hAt, hMe: hMe, est: est };
+  }
+  function caja(c) {
+    var m = medidas(c);
+    return { x: c.x, y: c.y, w: m.w, h: m.h, cx: c.x + m.w / 2, cy: c.y + m.h / 2 };
+  }
+
+  function svgClase(c, exportar) {
+    var m = medidas(c), e = ESTADOS[c.estado] || ESTADOS.existe, x = c.x, y = c.y, s = "";
+    s += '<g class="clase" data-tipo="clase" data-id="' + esc(c.id) + '">';
+    s += '<rect x="' + x + '" y="' + y + '" width="' + m.w + '" height="' + m.h + '" rx="3" fill="' + e.fill + '" stroke="' + e.stroke + '" stroke-width="1.5"/>';
+    s += '<line x1="' + x + '" y1="' + (y + m.hTit) + '" x2="' + (x + m.w) + '" y2="' + (y + m.hTit) + '" stroke="' + e.stroke + '" stroke-width="1"/>';
+    s += '<line x1="' + x + '" y1="' + (y + m.hTit + m.hAt) + '" x2="' + (x + m.w) + '" y2="' + (y + m.hTit + m.hAt) + '" stroke="' + e.stroke + '" stroke-width="1"/>';
+    var ty = y + 12;
+    if (m.est) {
+      s += '<text x="' + f1(x + m.w / 2) + '" y="' + (ty + 11) + '" text-anchor="middle" font-size="11" font-style="italic" fill="#3d4146">' + esc(m.est) + "</text>";
+      ty += 15;
+    }
+    s += '<text x="' + f1(x + m.w / 2) + '" y="' + (ty + 13) + '" text-anchor="middle" font-size="13" font-weight="600" fill="#1d1f22">' + esc(c.nombre) + "</text>";
+    var yy = y + m.hTit + 5;
+    c.atributos.forEach(function (l) {
+      s += '<text x="' + (x + PAD) + '" y="' + (yy + 13) + '" font-size="' + FS + '" fill="#2b2e33" xml:space="preserve" style="white-space:pre">' + esc(l) + "</text>";
+      yy += LH;
+    });
+    yy = y + m.hTit + m.hAt + 5;
+    c.metodos.forEach(function (l) {
+      s += '<text x="' + (x + PAD) + '" y="' + (yy + 13) + '" font-size="' + FS + '" fill="#2b2e33" xml:space="preserve" style="white-space:pre">' + esc(l) + "</text>";
+      yy += LH;
+    });
+    s += '<path d="M' + (x + m.w - 12) + " " + (y + m.h) + " L" + (x + m.w) + " " + (y + m.h - 12) + " L" + (x + m.w) + " " + (y + m.h) + ' Z" fill="' + e.pliegue + '"/>';
+    if (!exportar && sel && sel.tipo === "clase" && sel.id === c.id)
+      s += '<rect x="' + (x - 4) + '" y="' + (y - 4) + '" width="' + (m.w + 8) + '" height="' + (m.h + 8) + '" rx="6" fill="none" stroke="' + COLOR_SEL + '" stroke-width="2"/>';
+    if (!exportar && modoRel && modoRel.desde === c.id)
+      s += '<rect x="' + (x - 4) + '" y="' + (y - 4) + '" width="' + (m.w + 8) + '" height="' + (m.h + 8) + '" rx="6" fill="none" stroke="' + COLOR_ORIGEN + '" stroke-width="2.5"/>';
+    return s + "</g>";
+  }
+
+  // Punto donde un rayo que sale de (ox, oy) con dirección (dx, dy) cruza el borde de la caja r.
+  function salida(r, ox, oy, dx, dy) {
+    var tx = dx > 0 ? (r.x + r.w - ox) / dx : dx < 0 ? (r.x - ox) / dx : Infinity;
+    var ty = dy > 0 ? (r.y + r.h - oy) / dy : dy < 0 ? (r.y - oy) / dy : Infinity;
+    var t = Math.max(0, Math.min(tx, ty));
+    return { x: ox + dx * t, y: oy + dy * t };
+  }
+  function pts(arr) { return arr.map(function (p) { return f1(p[0]) + "," + f1(p[1]); }).join(" "); }
+
+  // Devuelve [líneas y puntas, textos]: los textos se dibujan después de las clases para que no queden tapados.
+  function svgRel(r, exportar, off) {
+    var a = clase(r.desde), b = clase(r.hacia);
+    if (!a || !b || a === b) return ["", ""];
+    var ra = caja(a), rb = caja(b);
+    var dx = rb.cx - ra.cx, dy = rb.cy - ra.cy, L = Math.hypot(dx, dy) || 1;
+    var ux = dx / L, uy = dy / L, nx = -uy, ny = ux;
+    var ax = ra.cx + nx * off, ay = ra.cy + ny * off, bx = rb.cx + nx * off, by = rb.cy + ny * off;
+    var S = salida(ra, ax, ay, ux, uy), E = salida(rb, bx, by, -ux, -uy);
+    var t = TIPOS[r.tipo] || TIPOS.asociacion;
+    var seleccionada = !exportar && sel && sel.tipo === "rel" && sel.id === r.id;
+    var col = seleccionada ? COLOR_SEL : COLOR_REL, sw = seleccionada ? 2.2 : 1.4;
+    var x0 = S.x, y0 = S.y, x1 = E.x, y1 = E.y, s = "";
+    if (t.inicio) { x0 += ux * 18; y0 += uy * 18; }
+    if (t.fin === "triangulo") { x1 -= ux * 14; y1 -= uy * 14; }
+    s += '<g data-tipo="rel" data-id="' + esc(r.id) + '">';
+    s += '<line x1="' + f1(x0) + '" y1="' + f1(y0) + '" x2="' + f1(x1) + '" y2="' + f1(y1) + '" stroke="' + col + '" stroke-width="' + sw + '"' + (t.guion ? ' stroke-dasharray="7 5"' : "") + "/>";
+    if (t.fin === "flecha")
+      s += '<polyline points="' + pts([[E.x - ux * 12 + nx * 6, E.y - uy * 12 + ny * 6], [E.x, E.y], [E.x - ux * 12 - nx * 6, E.y - uy * 12 - ny * 6]]) + '" fill="none" stroke="' + col + '" stroke-width="' + sw + '" stroke-linejoin="round"/>';
+    if (t.fin === "triangulo")
+      s += '<polygon points="' + pts([[E.x, E.y], [E.x - ux * 14 + nx * 8, E.y - uy * 14 + ny * 8], [E.x - ux * 14 - nx * 8, E.y - uy * 14 - ny * 8]]) + '" fill="#ffffff" stroke="' + col + '" stroke-width="' + sw + '" stroke-linejoin="round"/>';
+    if (t.inicio)
+      s += '<polygon points="' + pts([[S.x, S.y], [S.x + ux * 9 + nx * 6, S.y + uy * 9 + ny * 6], [S.x + ux * 18, S.y + uy * 18], [S.x + ux * 9 - nx * 6, S.y + uy * 9 - ny * 6]]) + '" fill="' + (t.inicio === "rombo-lleno" ? col : "#ffffff") + '" stroke="' + col + '" stroke-width="' + sw + '" stroke-linejoin="round"/>';
+    if (!exportar)
+      s += '<line class="rel-hit" x1="' + f1(S.x) + '" y1="' + f1(S.y) + '" x2="' + f1(E.x) + '" y2="' + f1(E.y) + '" stroke="transparent" stroke-width="14"/>';
+    s += "</g>";
+    var halo = ' stroke="' + FONDO + '" stroke-width="4" paint-order="stroke" stroke-linejoin="round"', t = "";
+    if (r.etiqueta)
+      t += '<text x="' + f1((S.x + E.x) / 2) + '" y="' + f1((S.y + E.y) / 2 - 4) + '" text-anchor="middle" font-size="11" fill="' + (seleccionada ? COLOR_SEL : "#55595f") + '"' + halo + ">" + esc(r.etiqueta) + "</text>";
+    if (r.multDesde)
+      t += '<text x="' + f1(S.x + ux * 22 + nx * 12) + '" y="' + f1(S.y + uy * 22 + ny * 12 + 4) + '" text-anchor="middle" font-size="11" fill="#3d4146"' + halo + ">" + esc(r.multDesde) + "</text>";
+    if (r.multHacia)
+      t += '<text x="' + f1(E.x - ux * 22 + nx * 12) + '" y="' + f1(E.y - uy * 22 + ny * 12 + 4) + '" text-anchor="middle" font-size="11" fill="#3d4146"' + halo + ">" + esc(r.multHacia) + "</text>";
+    if (t) t = '<g data-tipo="rel" data-id="' + esc(r.id) + '">' + t + "</g>";
+    return [s, t];
+  }
+
+  function medidasLeyenda() {
+    var usados = Object.keys(ESTADOS).filter(function (k) { return M.clases.some(function (c) { return c.estado === k; }); });
+    var w = 12, items = [];
+    usados.forEach(function (k) { var tw = ancho(ESTADOS[k].nombre, 400, 12); items.push({ k: k, x: w, tw: tw }); w += 12 + 6 + tw + 18; });
+    return { w: w - 6, h: 30, items: items };
+  }
+  function svgLeyenda(exportar) {
+    if (!M.leyenda || M.leyenda.visible === false) return "";
+    var L = medidasLeyenda();
+    if (!L.items.length) return "";
+    var x = M.leyenda.x, y = M.leyenda.y, s = '<g data-tipo="leyenda" data-id="leyenda" class="clase">';
+    s += '<rect x="' + x + '" y="' + y + '" width="' + f1(L.w) + '" height="' + L.h + '" rx="6" fill="#ffffff" stroke="#bdb8ae" stroke-width="1"/>';
+    L.items.forEach(function (it) {
+      var e = ESTADOS[it.k];
+      s += '<rect x="' + f1(x + it.x) + '" y="' + (y + 9) + '" width="12" height="12" rx="2" fill="' + e.fill + '" stroke="' + e.stroke + '" stroke-width="1.5"/>';
+      s += '<text x="' + f1(x + it.x + 18) + '" y="' + (y + 19.5) + '" font-size="12" fill="#2b2e33">' + esc(e.nombre) + "</text>";
+    });
+    if (!exportar && sel && sel.tipo === "leyenda")
+      s += '<rect x="' + (x - 4) + '" y="' + (y - 4) + '" width="' + f1(L.w + 8) + '" height="' + (L.h + 8) + '" rx="8" fill="none" stroke="' + COLOR_SEL + '" stroke-width="2"/>';
+    return s + "</g>";
+  }
+
+  function contenido(exportar) {
+    var grupos = {};
+    M.relaciones.forEach(function (r) {
+      var k = [r.desde, r.hacia].sort().join("|");
+      (grupos[k] = grupos[k] || []).push(r.id);
+    });
+    var s = "", textos = "";
+    M.relaciones.forEach(function (r) {
+      var par = [r.desde, r.hacia].sort(), lista = grupos[par.join("|")];
+      var off = (lista.indexOf(r.id) - (lista.length - 1) / 2) * 16;
+      if (r.desde !== par[0]) off = -off;
+      var partes = svgRel(r, exportar, off);
+      s += partes[0];
+      textos += partes[1];
+    });
+    M.clases.forEach(function (c) { s += svgClase(c, exportar); });
+    return s + textos + svgLeyenda(exportar);
+  }
+
+  function render() {
+    g.innerHTML = contenido(false);
+    aplicarVista();
+    titulo.value = M.titulo;
+    document.title = M.titulo + " · editor";
+    document.getElementById("b-deshacer").disabled = !deshacerPila.length;
+    document.getElementById("b-rehacer").disabled = !rehacerPila.length;
+    document.getElementById("b-dup").disabled = !(sel && sel.tipo === "clase");
+    document.getElementById("b-borrar").disabled = !(sel && sel.tipo !== "leyenda");
+  }
+
+  // ---------------------------------------------------------------- vista
+  function aplicarVista() {
+    g.setAttribute("transform", "translate(" + f1(vista.x) + " " + f1(vista.y) + ") scale(" + vista.k + ")");
+    lblZoom.textContent = Math.round(vista.k * 100) + " %";
+  }
+  function aModelo(ev) {
+    var r = svg.getBoundingClientRect();
+    return { x: (ev.clientX - r.left - vista.x) / vista.k, y: (ev.clientY - r.top - vista.y) / vista.k };
+  }
+  function zoomEn(f, sx, sy) {
+    var k2 = Math.min(3, Math.max(0.12, vista.k * f));
+    vista.x = sx - (sx - vista.x) * (k2 / vista.k);
+    vista.y = sy - (sy - vista.y) * (k2 / vista.k);
+    vista.k = k2;
+    aplicarVista();
+  }
+  function limites(margen) {
+    var x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    M.clases.forEach(function (c) { var b = caja(c); x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y); x1 = Math.max(x1, b.x + b.w); y1 = Math.max(y1, b.y + b.h); });
+    if (M.leyenda && M.leyenda.visible !== false) {
+      var L = medidasLeyenda();
+      x0 = Math.min(x0, M.leyenda.x); y0 = Math.min(y0, M.leyenda.y); x1 = Math.max(x1, M.leyenda.x + L.w); y1 = Math.max(y1, M.leyenda.y + L.h);
+    }
+    if (!isFinite(x0)) { x0 = 0; y0 = 0; x1 = 800; y1 = 600; }
+    margen = margen || 0;
+    return { x: Math.floor(x0 - margen), y: Math.floor(y0 - margen), w: Math.ceil(x1 - x0 + 2 * margen), h: Math.ceil(y1 - y0 + 2 * margen) };
+  }
+  function ajustar() {
+    var b = limites(20), r = svg.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    var k = Math.min(r.width / b.w, r.height / b.h, 1.5);
+    vista.k = k;
+    vista.x = (r.width - b.w * k) / 2 - b.x * k;
+    vista.y = (r.height - b.h * k) / 2 - b.y * k;
+    aplicarVista();
+  }
+
+  // ---------------------------------------------------------------- historial y guardado
+  function registrar(snap) {
+    deshacerPila.push(snap);
+    if (deshacerPila.length > 200) deshacerPila.shift();
+    rehacerPila.length = 0;
+  }
+  function cambiar(fn) {
+    var s = instantanea();
+    fn();
+    registrar(s);
+    render();
+    renderPanel();
+    guardarLocal();
+  }
+  function deshacer() {
+    if (!deshacerPila.length) return;
+    rehacerPila.push(instantanea());
+    M = JSON.parse(deshacerPila.pop());
+    corregirSeleccion(); render(); renderPanel(); guardarLocal();
+  }
+  function rehacer() {
+    if (!rehacerPila.length) return;
+    deshacerPila.push(instantanea());
+    M = JSON.parse(rehacerPila.pop());
+    corregirSeleccion(); render(); renderPanel(); guardarLocal();
+  }
+  function corregirSeleccion() {
+    if (sel && sel.tipo === "clase" && !clase(sel.id)) sel = null;
+    if (sel && sel.tipo === "rel" && !rel(sel.id)) sel = null;
+  }
+  function marca(t) { lblGuardado.textContent = t; }
+  function guardarLocal() {
+    clearTimeout(tGuardar);
+    tGuardar = setTimeout(function () {
+      try { localStorage.setItem(CLAVE_LS, JSON.stringify({ base: HUELLA, modelo: M })); marca("Cambios guardados en este navegador · usa «Guardar HTML» para guardarlos en el archivo"); }
+      catch (e) { marca("No se pudo guardar en el navegador: usa «Guardar HTML»"); }
+    }, 300);
+  }
+  function descargar(blob, nombre) {
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = nombre;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  }
+  function htmlActual() {
+    var json = JSON.stringify(M, null, 1).replace(/</g, "\\u003c");
+    return PRISTINO.replace(/(<script type="application\/json" id="modelo">)[\s\S]*?(<\/script>)/, function (m0, a, b) { return a + "\n" + json + "\n" + b; });
+  }
+  function guardarHTML() {
+    var html = htmlActual();
+    if (window.showSaveFilePicker) {
+      var pedir = manejador ? Promise.resolve(manejador) : window.showSaveFilePicker({
+        suggestedName: NOMBRE_ARCHIVO,
+        types: [{ description: "Página HTML", accept: { "text/html": [".html"] } }]
+      });
+      pedir.then(function (h) {
+        manejador = h;
+        return h.createWritable().then(function (w) { return w.write(html).then(function () { return w.close(); }); });
+      }).then(function () {
+        marca("Guardado en " + manejador.name + " · " + new Date().toLocaleTimeString("es"));
+      }).catch(function (e) {
+        if (e && e.name === "AbortError") return;
+        manejador = null;
+        descargar(new Blob([html], { type: "text/html" }), NOMBRE_ARCHIVO);
+        marca("Se descargó una copia: reemplaza con ella el archivo original");
+      });
+      return;
+    }
+    descargar(new Blob([html], { type: "text/html" }), NOMBRE_ARCHIVO);
+    marca("Se descargó una copia: reemplaza con ella el archivo original");
+  }
+
+  // ---------------------------------------------------------------- exportar
+  function svgCompleto() {
+    var b = limites(40);
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + b.x + " " + b.y + " " + b.w + " " + b.h + '" width="' + b.w + '" height="' + b.h + "\" font-family='" + FUENTE + "'>" +
+      '<rect x="' + b.x + '" y="' + b.y + '" width="' + b.w + '" height="' + b.h + '" fill="' + FONDO + '"/>' + contenido(true) + "</svg>";
+  }
+  function base() { return NOMBRE_ARCHIVO.replace(/\.html?$/i, ""); }
+  function exportarPNG() {
+    var s = svgCompleto(), b = limites(40), img = new Image();
+    var url = URL.createObjectURL(new Blob([s], { type: "image/svg+xml" }));
+    img.onload = function () {
+      var escala = 2, c = document.createElement("canvas");
+      c.width = b.w * escala; c.height = b.h * escala;
+      var cx = c.getContext("2d");
+      cx.scale(escala, escala);
+      cx.drawImage(img, 0, 0, b.w, b.h);
+      URL.revokeObjectURL(url);
+      c.toBlob(function (bl) { descargar(bl, base() + ".png"); marca("PNG exportado"); }, "image/png");
+    };
+    img.onerror = function () { marca("No se pudo generar el PNG en este navegador; prueba con «Exportar SVG»"); };
+    img.src = url;
+  }
+
+  // ---------------------------------------------------------------- acciones
+  function seleccionar(s) { sel = s; render(); renderPanel(); }
+  function centroVista() {
+    var r = svg.getBoundingClientRect();
+    return { x: (r.width / 2 - vista.x) / vista.k, y: (r.height / 2 - vista.y) / vista.k };
+  }
+  function nuevaClase() {
+    var p = centroVista(), c = { id: nuevoId("c"), nombre: "NuevaClase", estereotipo: "", estado: "nuevo", x: Math.round((p.x - 90) / GRID) * GRID, y: Math.round((p.y - 50) / GRID) * GRID, w: 180, atributos: [], metodos: [] };
+    cambiar(function () { M.clases.push(c); });
+    seleccionar({ tipo: "clase", id: c.id });
+    enfocar("f-nombre");
+  }
+  function duplicar() {
+    if (!sel || sel.tipo !== "clase") return;
+    var o = clase(sel.id), c = JSON.parse(JSON.stringify(o));
+    c.id = nuevoId("c"); c.nombre = o.nombre + " (copia)"; c.x += 30; c.y += 30;
+    cambiar(function () { M.clases.push(c); });
+    seleccionar({ tipo: "clase", id: c.id });
+  }
+  function eliminar() {
+    if (!sel) return;
+    if (sel.tipo === "clase") {
+      var id = sel.id;
+      cambiar(function () {
+        M.clases = M.clases.filter(function (c) { return c.id !== id; });
+        M.relaciones = M.relaciones.filter(function (r) { return r.desde !== id && r.hacia !== id; });
+      });
+    } else if (sel.tipo === "rel") {
+      var rid = sel.id;
+      cambiar(function () { M.relaciones = M.relaciones.filter(function (r) { return r.id !== rid; }); });
+    }
+    seleccionar(null);
+  }
+  function iniciarModoRel() {
+    modoRel = { desde: sel && sel.tipo === "clase" ? sel.id : null };
+    zona.classList.add("modo-rel");
+    document.getElementById("b-rel").classList.add("activo");
+    actualizarGuia();
+    render();
+  }
+  function terminarModoRel() {
+    modoRel = null;
+    zona.classList.remove("modo-rel");
+    document.getElementById("b-rel").classList.remove("activo");
+    guia.hidden = true;
+    render();
+  }
+  function actualizarGuia() {
+    guia.hidden = !modoRel;
+    if (modoRel) guia.textContent = modoRel.desde ? "Ahora haz clic en la clase de destino · Esc para cancelar" : "Haz clic en la clase de origen · Esc para cancelar";
+  }
+  function crearRelacion(desde, hacia) {
+    var r = { id: nuevoId("r"), desde: desde, hacia: hacia, tipo: "asociacion", etiqueta: "", multDesde: "", multHacia: "" };
+    cambiar(function () { M.relaciones.push(r); });
+    terminarModoRel();
+    seleccionar({ tipo: "rel", id: r.id });
+  }
+  function mover(dx, dy) {
+    if (!sel) return;
+    var o = sel.tipo === "clase" ? clase(sel.id) : sel.tipo === "leyenda" ? M.leyenda : null;
+    if (!o) return;
+    cambiar(function () { o.x += dx; o.y += dy; });
+  }
+  function enfocar(id) { setTimeout(function () { var el = document.getElementById(id); if (el) { el.focus(); if (el.select) el.select(); } }, 0); }
+
+  // ---------------------------------------------------------------- puntero
+  svg.addEventListener("pointerdown", function (ev) {
+    if (ev.button !== 0 && ev.button !== 1) return;
+    var el = ev.target.closest ? ev.target.closest("[data-tipo]") : null;
+    var p = aModelo(ev);
+    if (modoRel && ev.button === 0) {
+      if (el && el.getAttribute("data-tipo") === "clase") {
+        var id = el.getAttribute("data-id");
+        if (!modoRel.desde) { modoRel.desde = id; actualizarGuia(); render(); }
+        else if (id !== modoRel.desde) crearRelacion(modoRel.desde, id);
+      } else terminarModoRel();
+      return;
+    }
+    if (el && ev.button === 0) {
+      var tipo = el.getAttribute("data-tipo"), idEl = el.getAttribute("data-id");
+      if (tipo === "rel") { seleccionar({ tipo: "rel", id: idEl }); return; }
+      var obj = tipo === "clase" ? clase(idEl) : M.leyenda;
+      if (!obj) return;
+      if (!(sel && sel.tipo === tipo && sel.id === idEl)) seleccionar({ tipo: tipo, id: idEl });
+      arrastre = { tipo: tipo, obj: obj, dx: p.x - obj.x, dy: p.y - obj.y, snap: instantanea(), movido: false };
+      svg.setPointerCapture(ev.pointerId);
+      return;
+    }
+    if (ev.button === 0 && sel) seleccionar(null);
+    arrastre = { tipo: "pan", sx: ev.clientX, sy: ev.clientY, x0: vista.x, y0: vista.y };
+    zona.classList.add("paneando");
+    svg.setPointerCapture(ev.pointerId);
+  });
+  svg.addEventListener("pointermove", function (ev) {
+    if (!arrastre) return;
+    if (arrastre.tipo === "pan") {
+      vista.x = arrastre.x0 + ev.clientX - arrastre.sx;
+      vista.y = arrastre.y0 + ev.clientY - arrastre.sy;
+      aplicarVista();
+      return;
+    }
+    var p = aModelo(ev), nx = p.x - arrastre.dx, ny = p.y - arrastre.dy;
+    if (rejilla) { nx = Math.round(nx / GRID) * GRID; ny = Math.round(ny / GRID) * GRID; }
+    else { nx = Math.round(nx); ny = Math.round(ny); }
+    if (nx !== arrastre.obj.x || ny !== arrastre.obj.y) {
+      arrastre.obj.x = nx; arrastre.obj.y = ny; arrastre.movido = true;
+      render();
+    }
+  });
+  function soltar() {
+    if (!arrastre) return;
+    if (arrastre.tipo !== "pan" && arrastre.movido) { registrar(arrastre.snap); render(); renderPanel(); guardarLocal(); }
+    arrastre = null;
+    zona.classList.remove("paneando");
+  }
+  svg.addEventListener("pointerup", soltar);
+  svg.addEventListener("pointercancel", soltar);
+  svg.addEventListener("dblclick", function (ev) {
+    var el = ev.target.closest ? ev.target.closest("[data-tipo]") : null;
+    if (el && el.getAttribute("data-tipo") === "clase") enfocar("f-nombre");
+    if (el && el.getAttribute("data-tipo") === "rel") enfocar("f-etiqueta");
+  });
+  svg.addEventListener("wheel", function (ev) {
+    ev.preventDefault();
+    var r = svg.getBoundingClientRect();
+    if (ev.ctrlKey || ev.metaKey) zoomEn(Math.exp(-ev.deltaY * 0.0018), ev.clientX - r.left, ev.clientY - r.top);
+    else { vista.x -= ev.deltaX; vista.y -= ev.deltaY; aplicarVista(); }
+  }, { passive: false });
+
+  // ---------------------------------------------------------------- teclado
+  document.addEventListener("keydown", function (ev) {
+    var tag = document.activeElement && document.activeElement.tagName;
+    var escribiendo = tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
+    var mod = ev.ctrlKey || ev.metaKey, k = ev.key.toLowerCase();
+    if (mod && k === "s") { ev.preventDefault(); guardarHTML(); return; }
+    if (escribiendo) { if (ev.key === "Escape") document.activeElement.blur(); return; }
+    if (mod && k === "z" && !ev.shiftKey) { ev.preventDefault(); deshacer(); return; }
+    if (mod && (k === "y" || (k === "z" && ev.shiftKey))) { ev.preventDefault(); rehacer(); return; }
+    if (mod && k === "d") { ev.preventDefault(); duplicar(); return; }
+    if (mod) return;
+    if (ev.key === "Delete" || ev.key === "Backspace") { ev.preventDefault(); eliminar(); return; }
+    if (ev.key === "Escape") { if (modoRel) terminarModoRel(); else seleccionar(null); return; }
+    if (k === "n") { nuevaClase(); return; }
+    if (k === "r") { if (modoRel) terminarModoRel(); else iniciarModoRel(); return; }
+    if (k === "f") { ajustar(); return; }
+    if (k === "g") { alternarRejilla(); return; }
+    var paso = ev.shiftKey ? 10 : 1;
+    if (ev.key === "ArrowLeft") { ev.preventDefault(); mover(-paso, 0); }
+    if (ev.key === "ArrowRight") { ev.preventDefault(); mover(paso, 0); }
+    if (ev.key === "ArrowUp") { ev.preventDefault(); mover(0, -paso); }
+    if (ev.key === "ArrowDown") { ev.preventDefault(); mover(0, paso); }
+  });
+
+  // ---------------------------------------------------------------- panel de propiedades
+  function el(tag, props, hijos) {
+    var e = document.createElement(tag);
+    if (props) Object.keys(props).forEach(function (k) {
+      if (k === "texto") e.textContent = props[k];
+      else if (k.slice(0, 2) === "on") e.addEventListener(k.slice(2), props[k]);
+      else e.setAttribute(k, props[k]);
+    });
+    (hijos || []).forEach(function (h) { if (h) e.appendChild(typeof h === "string" ? document.createTextNode(h) : h); });
+    return e;
+  }
+  // Campo de texto: el historial se registra una vez por edición, al empezar a escribir.
+  function campoTexto(etiqueta, id, valor, alCambiar, multilinea, extra) {
+    var input = multilinea ? el("textarea", Object.assign({ id: id, spellcheck: "false" }, extra || {})) : el("input", Object.assign({ id: id, type: "text" }, extra || {}));
+    input.value = valor;
+    input.addEventListener("focus", function () { pendiente = instantanea(); });
+    input.addEventListener("input", function () {
+      if (pendiente) { registrar(pendiente); pendiente = null; }
+      alCambiar(input.value);
+      render();
+      guardarLocal();
+    });
+    return el("label", null, [etiqueta, input]);
+  }
+  function campoSelect(etiqueta, id, opciones, valor, alCambiar) {
+    var s = el("select", { id: id });
+    opciones.forEach(function (o) { var op = el("option", { value: o[0], texto: o[1] }); if (o[0] === valor) op.selected = true; s.appendChild(op); });
+    s.addEventListener("change", function () { cambiar(function () { alCambiar(s.value); }); });
+    return el("label", null, [etiqueta, s]);
+  }
+  function lineas(txt) { return txt.split("\n").map(function (l) { return l.replace(/\s+$/, ""); }).filter(function (l, i, a) { return l !== "" || i < a.length - 1; }); }
+  function nombreRel(r) {
+    var a = clase(r.desde), b = clase(r.hacia);
+    return (a ? a.nombre : "?") + " → " + (b ? b.nombre : "?") + " · " + (TIPOS[r.tipo] ? TIPOS[r.tipo].nombre.split(" (")[0] : r.tipo);
+  }
+  function opcionesClases() {
+    return M.clases.slice().sort(function (a, b) { return a.nombre.localeCompare(b.nombre, "es"); }).map(function (c) { return [c.id, c.nombre]; });
+  }
+
+  function renderPanel() {
+    panel.innerHTML = "";
+    if (sel && sel.tipo === "clase" && clase(sel.id)) return panelClase(clase(sel.id));
+    if (sel && sel.tipo === "rel" && rel(sel.id)) return panelRel(rel(sel.id));
+    if (sel && sel.tipo === "leyenda") return panelLeyenda();
+    panelDiagrama();
+  }
+
+  function panelClase(c) {
+    panel.appendChild(el("h2", { texto: "Clase" }));
+    panel.appendChild(campoTexto("Nombre", "f-nombre", c.nombre, function (v) { c.nombre = v; }));
+    var est = campoTexto("Estereotipo (sin «»)", "f-est", c.estereotipo, function (v) { c.estereotipo = v.replace(/[«»<>]/g, "").trim(); }, false, { list: "lista-est", placeholder: "interface, abstract…" });
+    var dl = el("datalist", { id: "lista-est" });
+    ESTEREOTIPOS.forEach(function (e) { dl.appendChild(el("option", { value: e })); });
+    est.appendChild(dl);
+    panel.appendChild(el("div", { "class": "fila" }, [
+      campoSelect("Estado", "f-estado", Object.keys(ESTADOS).map(function (k) { return [k, ESTADOS[k].nombre]; }), c.estado, function (v) { c.estado = v; }),
+      campoTexto("Ancho mínimo (px)", "f-ancho", String(c.w), function (v) { var n = parseInt(v, 10); if (n > 40) c.w = n; }, false, { inputmode: "numeric" })
+    ]));
+    panel.appendChild(est);
+    panel.appendChild(campoTexto("Atributos · uno por línea", "f-atr", c.atributos.join("\n"), function (v) { c.atributos = lineas(v); }, true));
+    panel.appendChild(campoTexto("Métodos · uno por línea", "f-met", c.metodos.join("\n"), function (v) { c.metodos = lineas(v); }, true));
+    panel.appendChild(el("p", { "class": "ayuda", texto: "Una línea que empieza con espacios se muestra como continuación de la anterior." }));
+    panel.appendChild(el("div", { "class": "acciones" }, [
+      el("button", { texto: "Nueva relación desde aquí", onclick: iniciarModoRel }),
+      el("button", { texto: "Duplicar", onclick: duplicar }),
+      el("button", { "class": "peligro", texto: "Eliminar clase", onclick: eliminar })
+    ]));
+    var rels = M.relaciones.filter(function (r) { return r.desde === c.id || r.hacia === c.id; });
+    panel.appendChild(el("h3", { texto: "Relaciones (" + rels.length + ")" }));
+    var ul = el("ul", { "class": "lista-rel" });
+    rels.forEach(function (r) { ul.appendChild(el("li", null, [el("button", { texto: nombreRel(r), onclick: function () { seleccionar({ tipo: "rel", id: r.id }); } })])); });
+    panel.appendChild(ul);
+  }
+
+  function panelRel(r) {
+    panel.appendChild(el("h2", { texto: "Relación" }));
+    panel.appendChild(campoSelect("Tipo", "f-tipo", Object.keys(TIPOS).map(function (k) { return [k, TIPOS[k].nombre]; }), r.tipo, function (v) { r.tipo = v; }));
+    panel.appendChild(el("div", { "class": "fila" }, [
+      campoSelect("Desde", "f-desde", opcionesClases(), r.desde, function (v) { r.desde = v; }),
+      campoSelect("Hacia", "f-hacia", opcionesClases(), r.hacia, function (v) { r.hacia = v; })
+    ]));
+    panel.appendChild(el("div", { "class": "acciones" }, [
+      el("button", { texto: "Invertir dirección", onclick: function () { cambiar(function () { var t = r.desde; r.desde = r.hacia; r.hacia = t; t = r.multDesde; r.multDesde = r.multHacia; r.multHacia = t; }); } })
+    ]));
+    panel.appendChild(campoTexto("Etiqueta", "f-etiqueta", r.etiqueta, function (v) { r.etiqueta = v; }));
+    panel.appendChild(el("div", { "class": "fila" }, [
+      campoTexto("Multiplicidad en el origen", "f-md", r.multDesde, function (v) { r.multDesde = v; }, false, { placeholder: "1" }),
+      campoTexto("Multiplicidad en el destino", "f-mh", r.multHacia, function (v) { r.multHacia = v; }, false, { placeholder: "0..*" })
+    ]));
+    panel.appendChild(el("p", { "class": "ayuda", texto: "La punta queda en el destino. En herencia e implementación, el destino es la clase padre o la interfaz. En agregación y composición, el origen es el todo (lleva el rombo)." }));
+    panel.appendChild(el("div", { "class": "acciones" }, [el("button", { "class": "peligro", texto: "Eliminar relación", onclick: eliminar })]));
+  }
+
+  function panelLeyenda() {
+    panel.appendChild(el("h2", { texto: "Leyenda" }));
+    panel.appendChild(el("p", { "class": "ayuda", texto: "Muestra solo los estados que usan las clases. Arrástrala para moverla." }));
+    var chk = el("input", { type: "checkbox", id: "f-ley" });
+    chk.checked = M.leyenda.visible !== false;
+    chk.addEventListener("change", function () { cambiar(function () { M.leyenda.visible = chk.checked; }); });
+    panel.appendChild(el("label", { "class": "check" }, [chk, "Mostrar la leyenda"]));
+  }
+
+  function panelDiagrama() {
+    panel.appendChild(el("h2", { texto: "Diagrama" }));
+    var nNuevo = M.clases.filter(function (c) { return c.estado === "nuevo"; }).length;
+    panel.appendChild(el("p", { "class": "ayuda", texto: M.clases.length + " clases (" + nNuevo + " nuevas) y " + M.relaciones.length + " relaciones. Haz clic en una clase o en una flecha para editarla." }));
+    var chk = el("input", { type: "checkbox", id: "f-ley" });
+    chk.checked = M.leyenda.visible !== false;
+    chk.addEventListener("change", function () { cambiar(function () { M.leyenda.visible = chk.checked; }); });
+    panel.appendChild(el("label", { "class": "check" }, [chk, "Mostrar la leyenda"]));
+    panel.appendChild(campoTexto("Notas", "f-notas", M.notas, function (v) { M.notas = v; }, true, { "class": "notas" }));
+    panel.appendChild(el("h3", { texto: "Atajos" }));
+    var dl = el("dl", { "class": "atajos" });
+    [["N", "nueva clase"], ["R", "nueva relación"], ["Supr", "eliminar selección"], ["Ctrl+Z / Ctrl+Y", "deshacer / rehacer"], ["Ctrl+D", "duplicar clase"], ["Ctrl+S", "guardar HTML"], ["Flechas", "mover 1 px (Mayús: 10 px)"], ["F", "ver todo"], ["G", "rejilla"], ["Ctrl + rueda", "acercar / alejar"], ["Doble clic", "editar el nombre"]].forEach(function (a) {
+      dl.appendChild(el("dt", null, [el("kbd", { texto: a[0] })]));
+      dl.appendChild(el("dd", { texto: a[1] }));
+    });
+    panel.appendChild(dl);
+    panel.appendChild(el("p", { "class": "ayuda", texto: "Los cambios se guardan solos en este navegador. Para guardarlos en el archivo usa «Guardar HTML»: en Edge o Chrome puedes elegir este mismo archivo y sobrescribirlo." }));
+  }
+
+  // ---------------------------------------------------------------- barra
+  function alternarRejilla() {
+    rejilla = !rejilla;
+    document.getElementById("b-rejilla").classList.toggle("activo", rejilla);
+  }
+  document.getElementById("b-clase").addEventListener("click", nuevaClase);
+  document.getElementById("b-rel").addEventListener("click", function () { if (modoRel) terminarModoRel(); else iniciarModoRel(); });
+  document.getElementById("b-dup").addEventListener("click", duplicar);
+  document.getElementById("b-borrar").addEventListener("click", eliminar);
+  document.getElementById("b-deshacer").addEventListener("click", deshacer);
+  document.getElementById("b-rehacer").addEventListener("click", rehacer);
+  document.getElementById("b-zmas").addEventListener("click", function () { var r = svg.getBoundingClientRect(); zoomEn(1.2, r.width / 2, r.height / 2); });
+  document.getElementById("b-zmenos").addEventListener("click", function () { var r = svg.getBoundingClientRect(); zoomEn(1 / 1.2, r.width / 2, r.height / 2); });
+  document.getElementById("b-ajustar").addEventListener("click", ajustar);
+  document.getElementById("b-rejilla").addEventListener("click", alternarRejilla);
+  document.getElementById("b-guardar-html").addEventListener("click", guardarHTML);
+  document.getElementById("b-guardar-json").addEventListener("click", function () {
+    descargar(new Blob([JSON.stringify(M, null, 1)], { type: "application/json" }), base() + ".json");
+    marca("JSON descargado");
+  });
+  document.getElementById("b-abrir").addEventListener("click", function () { document.getElementById("archivo").click(); });
+  document.getElementById("archivo").addEventListener("change", function (ev) {
+    var f = ev.target.files[0];
+    if (!f) return;
+    f.text().then(function (t) {
+      var nuevo = validar(JSON.parse(t));
+      cambiar(function () { M = nuevo; });
+      sel = null; render(); renderPanel(); ajustar();
+      marca("Se abrió " + f.name);
+    }).catch(function (e) { marca("No se pudo abrir " + f.name + ": " + e.message); });
+    ev.target.value = "";
+  });
+  document.getElementById("b-svg").addEventListener("click", function () {
+    descargar(new Blob([svgCompleto()], { type: "image/svg+xml" }), base() + ".svg");
+    marca("SVG exportado");
+  });
+  document.getElementById("b-png").addEventListener("click", exportarPNG);
+  document.getElementById("b-reset").addEventListener("click", function () { restablecer(); });
+  titulo.addEventListener("focus", function () { pendiente = instantanea(); });
+  titulo.addEventListener("input", function () {
+    if (pendiente) { registrar(pendiente); pendiente = null; }
+    M.titulo = titulo.value;
+    document.title = M.titulo + " · editor";
+    guardarLocal();
+  });
+
+  function restablecer() {
+    cambiar(function () { M = validar(JSON.parse(ORIGINAL)); });
+    sel = null; aviso.hidden = true; render(); renderPanel(); ajustar();
+    marca("Se restableció el diagrama guardado en el archivo (Deshacer lo revierte)");
+  }
+
+  // ---------------------------------------------------------------- inicio
+  M = validar(JSON.parse(ORIGINAL));
+  function mostrarAviso(texto, boton, accion) {
+    aviso.innerHTML = "";
+    aviso.appendChild(document.createTextNode(texto));
+    aviso.appendChild(el("button", { texto: boton, onclick: accion }));
+    aviso.appendChild(el("button", { texto: "Cerrar", onclick: function () { aviso.hidden = true; } }));
+    aviso.hidden = false;
+  }
+  try {
+    var guardado = JSON.parse(localStorage.getItem(CLAVE_LS) || "null");
+    var copia = guardado && guardado.modelo ? guardado.modelo : guardado;
+    if (copia && JSON.stringify(copia) !== JSON.stringify(M)) {
+      if (guardado.base === HUELLA) {
+        M = validar(copia);
+        mostrarAviso("Se abrió la versión que editaste en este navegador.", "Ver la del archivo", restablecer);
+      } else {
+        mostrarAviso("El archivo cambió desde tu última edición en este navegador. Se muestra el archivo.", "Recuperar mi versión anterior", function () {
+          cambiar(function () { M = validar(JSON.parse(JSON.stringify(copia))); });
+          aviso.hidden = true; ajustar();
+        });
+      }
+    }
+  } catch (e) { /* sin almacenamiento local: se usa el modelo del archivo */ }
+  render();
+  renderPanel();
+  requestAnimationFrame(ajustar);
+  window.addEventListener("resize", function () { aplicarVista(); });
+})();
+</script>
+</body>
+</html>

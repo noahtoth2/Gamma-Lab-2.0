@@ -534,6 +534,7 @@ class MainWindow(QMainWindow):
     # Clean workspace
     def clear_plugin_area(self):
         if self.active_plugin_widget and self.active_plugin:
+            self._cancel_tasks_of(self.active_plugin)
             try:
                 self.active_plugin.stop()
             except Exception as e:
@@ -544,6 +545,18 @@ class MainWindow(QMainWindow):
         self.active_plugin = None
         # Update background/placeholder visibility
         self._update_background_logo_visibility()
+
+    def _cancel_tasks_of(self, plugin):
+        # Un plugin no gestiona sus propios hilos: solo pone su meta.id como
+        # owner al encolar, y al salir de su seccion se cancela todo lo suyo
+        # desde aqui. Sin esto un calculo largo sigue vivo tras cambiar de
+        # pestana e intenta dibujar sobre un widget que ya no esta.
+        try:
+            tasks = self.kernel.get_service("TaskService")
+            if tasks is not None and getattr(plugin, "meta", None) is not None:
+                tasks.cancel_all_from(plugin.meta.id)
+        except Exception as e:
+            print("cancel_tasks_of error:", e)
         self._update_home_welcome_visibility()
         self._update_plugin_button_selection()
 
@@ -1402,14 +1415,40 @@ class MainWindow(QMainWindow):
             return
         self._app_quitting = True
 
+<<<<<<< Updated upstream
+=======
+        # 1) Cancel any pending task before tearing down the widgets they
+        #    would draw on
+        try:
+            tasks = self.kernel.get_service("TaskService")
+            if tasks is not None:
+                for name in self.kernel.get_plugins():
+                    p = self.kernel.get_plugin(name)
+                    if p is not None and getattr(p, "meta", None) is not None:
+                        tasks.cancel_all_from(p.meta.id)
+        except Exception as e:
+            print("cancel tasks on quit error:", e)
+
+        # 2) Stop the active plugin, if any
+>>>>>>> Stashed changes
         try:
             import vtk
             vtk.vtkObject.GlobalWarningDisplayOff()
         except Exception:
             pass
 
+<<<<<<< Updated upstream
         try:
             self._finalize_all_vtk_render_windows()
+=======
+        # 3) Stop the rest
+        try:
+            for name in self.kernel.get_plugins():
+                p = self.kernel.get_plugin(name)
+                if p is not None and hasattr(p, "stop"):
+                    try: p.stop()
+                    except Exception as e: print(f"stop({name}) error:", e)
+>>>>>>> Stashed changes
         except Exception as e:
             print("finalize VTK windows error:", e)
 

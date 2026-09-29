@@ -12,6 +12,7 @@ from app.view.main_window import MainWindow
 from core.plugins.manager import PluginManager
 from core.services.data_store import DataStore
 from core.services.fileio_service import FileIOService
+from core.services.task_service import TaskService
 
 
 
@@ -44,8 +45,12 @@ def main():
     kernel = Kernel()
 
     # 1) Core services
+    # Van antes del descubrimiento de plugins: register_plugin() llama a
+    # initialize(kernel), y desde ahi un plugin ya puede pedir cualquier
+    # servicio. Si estas lineas se mueven despues, recibiria None.
     kernel.register_service("DataStore", DataStore())
     kernel.register_service("FileIO", FileIOService())
+    kernel.register_service("TaskService", TaskService())
 
     # 2) Discover and instantiate plugins
     plugins_dir = Path(__file__).resolve().parent / "plugins"

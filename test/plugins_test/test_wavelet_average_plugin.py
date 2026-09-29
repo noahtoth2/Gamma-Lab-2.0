@@ -10,6 +10,7 @@ from core.plugins.meta import PluginMeta
 from plugins.analysis.time_frequency.wavelet_average.wavelet_average_plugin import (
     Wavelet_average_plugin,
 )
+from plugins.analysis.time_frequency.wavelet_average import compute as cw
 
 
 # ============================================================
@@ -362,7 +363,7 @@ class WaveletAverageDouble(Wavelet_average_plugin):
         """
         pass
 
-    # --- Synchronous "full pipeline" using the real WaveletWorker ---
+    # --- Synchronous "full pipeline" using the real task function ---
 
     def run_average(
         self,
@@ -378,10 +379,8 @@ class WaveletAverageDouble(Wavelet_average_plugin):
         """
         Run the wavelet average using exactly the plugin's logic:
 
-          - Build WaveletWorker with the same parameters,
-          - Call worker.run() synchronously (no threads),
-          - Capture the average scalogram and the associated time
-            and frequency axes from the worker's 'finished' signal.
+          - Call compute.wavelet_promedio, the same pure function the plugin
+            submits to the TaskService, directly and synchronously.
 
         Returns:
             scalo_avg, t_axis, f_axis
@@ -401,37 +400,30 @@ class WaveletAverageDouble(Wavelet_average_plugin):
         # Compute sampling rate from time axis
         fs_calculated = round(1.0 / (t[1] - t[0]), 3)
 
-        # Build the REAL worker from the plugin
-        worker = self.WaveletWorker(
-            self,
-            data,
-            fs_calculated,
-            fs_plot,
-            fmin,
-            fmax,
-            cycles,
-            normalize,
-            scale_log,
-            norm_method,
-        )
+        class _CtxSincrono:
+            cancelled = False
 
-        # Local callback to capture the worker output
-        def _on_finished(times, freqs, avg_scalogram, scaled_flag, error):
-            self._last_error = error
-            if error is None and avg_scalogram is not None:
-                self.scalo = np.asarray(avg_scalogram, dtype=float)
-                self.t_axis = np.asarray(times, dtype=float)
-                self.f_axis = np.asarray(freqs, dtype=float)
+            def progress(self, *_args):
+                pass
 
-        worker.finished.connect(_on_finished)
-
-        # IMPORTANT: call run() directly → synchronous, no threads
-        worker.run()
-
-        if self._last_error is not None:
-            raise RuntimeError(
-                f"WaveletAverageDouble.run_average error: {self._last_error}"
+        try:
+            times, freqs, avg_scalogram, _ = cw.wavelet_promedio(
+                _CtxSincrono(),
+                data,
+                fs_calculated,
+                fs_plot,
+                fmin,
+                fmax,
+                cycles,
+                normalize,
+                scale_log,
+                norm_method,
             )
+            self.scalo = np.asarray(avg_scalogram, dtype=float)
+            self.t_axis = np.asarray(times, dtype=float)
+            self.f_axis = np.asarray(freqs, dtype=float)
+        except Exception as e:
+            raise RuntimeError(f"WaveletAverageDouble.run_average error: {e}")
 
         assert self.scalo is not None, "Average scalogram not obtained from plugin."
         return self.scalo, self.t_axis, self.f_axis

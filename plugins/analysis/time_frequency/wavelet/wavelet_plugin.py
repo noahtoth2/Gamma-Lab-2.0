@@ -1,6 +1,7 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QVBoxLayout
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+from vtkmodules.util import numpy_support
 import vtk
 import numpy as np
 import pywt
@@ -375,11 +376,9 @@ class Wavelet_plugin(IPlugin):
         img.SetSpacing(dt, df_spacing, 1.0)
         img.SetOrigin(t0, f0_range, 0.0)
         
-        img.AllocateScalars(vtk.VTK_FLOAT, 1)
-        
-        for j in range(n_freqs):
-            for i in range(n_times):
-                img.SetScalarComponentFromFloat(i, j, 0, 0, Z[j, i])
+        Z_plano = np.ascontiguousarray(Z, dtype=np.float32).ravel()
+        arr = numpy_support.numpy_to_vtk(Z_plano, deep=True, array_type=vtk.VTK_FLOAT)
+        img.GetPointData().SetScalars(arr)
         img.Modified()
 
         # --- Calculate limits and LUT ---

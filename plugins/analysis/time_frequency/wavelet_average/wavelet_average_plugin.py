@@ -1,15 +1,15 @@
-from PyQt5.QtCore import Qt, QThread, pyqtSignal
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QVBoxLayout
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+from vtkmodules.util import numpy_support
 import vtk
 import numpy as np
-import pywt
-from scipy.interpolate import interp1d
 
 from core.plugins.interfaces import IPlugin
 from core.plugins.meta import PluginMeta
 from core.utils.vtk_context_menu import VTKContextMenu
 from plugins.analysis.time_frequency.wavelet_average.wavelet_average_plugin_ui import Ui_Wavelet_Average
+from plugins.analysis.time_frequency.wavelet_average import compute as cw
 
 
 
@@ -23,7 +23,6 @@ class Wavelet_average_plugin(IPlugin):
         self.vtk_menu = None
         self._context_view = None
         self._vtk_renderer = None
-        self.worker = None
         self.params = {
             "sample_density_range": (0, 10000),
             "frequencies_range": (0, 10000),
@@ -50,8 +49,11 @@ class Wavelet_average_plugin(IPlugin):
     # end def
 
     def stop(self):
+<<<<<<< Updated upstream
         #self._cleanup_worker()  
 
+=======
+>>>>>>> Stashed changes
         """Stop plugin and disable VTK interactor if present."""
         if self.vtk_widget and self.vtk_widget.GetRenderWindow():
             interactor = self.vtk_widget.GetRenderWindow().GetInteractor()
@@ -60,6 +62,7 @@ class Wavelet_average_plugin(IPlugin):
                 self._log("VTK interactor disabled.")
     # end def
 
+<<<<<<< Updated upstream
     def _cleanup_worker(self):
         if self.worker is not None:
             try:
@@ -93,6 +96,8 @@ class Wavelet_average_plugin(IPlugin):
 
 
 
+=======
+>>>>>>> Stashed changes
     # =====================================================
     # === UI + VTK creation
     # =====================================================
@@ -201,7 +206,13 @@ class Wavelet_average_plugin(IPlugin):
     # === Main logic: compute average CWT and render
     # =====================================================
     def on_create_wavelet(self):
+        """Compute average CWT across all active trials and render the average scalogram."""
+        tasks = self.kernel.get_service("TaskService") if self.kernel else None
+        if tasks is None:
+            self.alerts.error("TaskService is not available.")
+            return
 
+<<<<<<< Updated upstream
         if self.worker is not None and self.worker.isRunning():
             self.alerts.info("A wavelet computation is already running.")
             return
@@ -210,6 +221,11 @@ class Wavelet_average_plugin(IPlugin):
         self.stop()
 
         
+=======
+        tasks.cancel_all_from(self.meta.id)
+        self.stop()
+
+>>>>>>> Stashed changes
         if self.get_active_signal() is None:
             return
 
@@ -252,24 +268,20 @@ class Wavelet_average_plugin(IPlugin):
         self.ui.createWaveletButton.setEnabled(False)
         self.ui.createWaveletButton.setText("Computing...")
 
-        # Create and execute thread
-        self.worker = self.WaveletWorker(
-            self, data, fs_calculado, fs, fmin, fmax, cycles, normalize, scaled, norm_method
+        handle = tasks.submit(
+            cw.wavelet_promedio, owner=self.meta.id,
+            data=data, fs_calculado=fs_calculado, fs=fs, fmin=fmin, fmax=fmax,
+            cycles=cycles, normalize=normalize, scaled=scaled,
+            norm_method=norm_method,
         )
-
-        # Connect signals
-       
-        self.worker.log_signal.connect(
-            lambda m: (self._log(m), self._notify(m))
-            )
-
-        self.worker.notify_signal.connect(lambda level, msg: self.alerts.info(msg, level))
-        self.worker.finished.connect(self._on_wavelet_done)
-
-        self.worker.start()
+        handle.progress.connect(self._on_wavelet_progress)
+        handle.finished.connect(self._on_wavelet_done)
+        handle.failed.connect(self._on_wavelet_failed)
+        handle.cancelled.connect(self.alerts.hide_spinner)
 
     # end def
 
+<<<<<<< Updated upstream
     def _on_wavelet_done(self, times, freqs, avg_scalogram, scaled, error):
         
 
@@ -279,8 +291,21 @@ class Wavelet_average_plugin(IPlugin):
             self.ui.createWaveletButton.setEnabled(True)
             self.ui.createWaveletButton.setText("Generate")
             return
+=======
+    def _on_wavelet_progress(self, percent, message):
+        self._log(f"{message} ({percent}%)")
+        self._notify(f"{message} ({percent}%)")
 
+    def _on_wavelet_failed(self, message):
+        self.alerts.hide_spinner()
+        self.alerts.error(f"No se pudo calcular la wavelet: {message}")
+>>>>>>> Stashed changes
+
+    def _on_wavelet_done(self, result):
+        """Callback when the task finishes, already on the UI thread."""
         try:
+            times, freqs, avg_scalogram, scaled = result
+
             self.ensure_vtk()
 
             self.render_scalogram(times, freqs, avg_scalogram, "Wavelet Average (Morlet)", scaled)
@@ -290,7 +315,6 @@ class Wavelet_average_plugin(IPlugin):
             self._log("Render failed:", e)
             self.alerts.error(f"Rendering failed: {e}")
         finally:
-            self._cleanup_worker()
             self.process("Done")
             self.ui.createWaveletButton.setEnabled(True)
             self.ui.createWaveletButton.setText("Generate")
@@ -333,105 +357,48 @@ class Wavelet_average_plugin(IPlugin):
     # === Wavelet computation (single trial)
     # =====================================================
     def compute_wavelet(self, sig, fs_calculado, fs, fmin, fmax, num_cycles):
+<<<<<<< Updated upstream
         
         try:
             freq_seg = 2 * int(max(1, fmax - fmin))
             factor = int(round(fs_calculado / fs)) if fs > 0 else 1
             factor = max(1, factor)
             sig = sig[::factor]
+=======
+        return cw.compute_wavelet(sig, fs_calculado, fs, fmin, fmax, num_cycles)
+>>>>>>> Stashed changes
 
-            if len(sig) < 4:
-                # return empty but shaped scalogram to indicate no meaningful output
-                return np.zeros((1, 1)), np.array([0.0]), np.array([0.0])
-        except Exception as e:
-            self._log("compute_wavelet: parameter processing failed:", e)
-            return np.zeros((1, 1)), np.array([0.0]), np.array([0.0])
-
-        try:
-            freq_axis = np.linspace(fmin, fmax, freq_seg)[::-1]
-            wavelet = f"cmor{num_cycles}-1.0"
-            central_freq = pywt.central_frequency(wavelet)
-            # protect against division by zero in freq_axis
-            freq_axis_safe = np.copy(freq_axis)
-            freq_axis_safe[freq_axis_safe == 0] = 1e-6
-            scales = central_freq * fs / freq_axis_safe
-
-            coef, _ = pywt.cwt(sig, scales, wavelet, sampling_period=1/fs if fs > 0 else 1.0)
-            scalogram = np.abs(coef)
-            time_axis = np.arange(len(sig)) / (fs if fs > 0 else 1.0)
-
-            return scalogram, time_axis, freq_axis
-        except Exception as e:
-            self._log("compute_wavelet error:", e)
-            return np.zeros((1, 1)), np.array([0.0]), np.array([0.0])
     # end def
 
     # =====================================================
     # === Normalization and scaling helpers
     # =====================================================
     def normalize_tf(self, tf, method="z-score"):
+<<<<<<< Updated upstream
        
         try:
             base_mean = np.mean(tf, axis=1, keepdims=True)
             base_std = np.std(tf, axis=1, ddof=0, keepdims=True)
             base_min = np.min(tf)
             base_max = np.max(tf)
+=======
+        return cw.normalize_tf(tf, method, log=self._log)
+>>>>>>> Stashed changes
 
-            if method == "z-score":
-                return (tf - base_mean) / (base_std + 1e-12)
-
-            elif method == "percent change":
-                return ((tf - base_mean) / (base_mean + 1e-12)) * 100
-
-            elif method == "relative power":
-                return tf / (base_mean + 1e-12)
-
-            elif method == "min-max":
-                denom = (base_max - base_min) if (base_max - base_min) != 0 else 1.0
-                return (tf - base_min) / denom
-
-            else:
-                raise ValueError("Unrecognized normalization method.")
-        except Exception as e:
-            self._log("normalize_tf error:", e)
-            raise
     # end def
 
     def _scale_log(self, scalogram, freqs):
+<<<<<<< Updated upstream
         
         freqs_numeric = np.asarray(freqs, dtype=np.float64)
         # filter positive freqs
         positive_mask = freqs_numeric > 0
         if not np.any(positive_mask):
             raise ValueError("scale_log: no positive frequencies available.")
+=======
+        return cw.scale_log(scalogram, freqs, log=self._log)
+>>>>>>> Stashed changes
 
-        fmin = np.min(freqs_numeric[positive_mask])
-        fmax = np.max(freqs_numeric)
-
-        n_freqs_new = scalogram.shape[0]
-
-        log_fmin = np.log10(fmin)
-        log_fmax = np.log10(fmax)
-
-        log_freqs_new = np.linspace(log_fmin, log_fmax, n_freqs_new)
-        freqs_new = 10**log_freqs_new
-
-        scalogram_new = np.zeros_like(scalogram)
-
-        freqs_orig_sorted = np.sort(freqs_numeric)
-
-        for i in range(scalogram.shape[1]):
-            # flip so that lowest freq corresponds to first element when interpolating
-            data_col = np.flipud(scalogram[:, i])
-            try:
-                interp_func = interp1d(freqs_orig_sorted, data_col, kind='linear', fill_value='extrapolate')
-                scalogram_new[:, i] = interp_func(freqs_new)
-            except Exception as e:
-                self._log(f"_scale_log: interpolation failed at time index {i}:", e)
-                # fallback: fill with zeros for this column
-                scalogram_new[:, i] = 0.0
-
-        return scalogram_new, freqs_new
     # end def
 
     def _get_log_ticks_coords(self, f_min_log, f_max_log):
@@ -508,11 +475,9 @@ class Wavelet_average_plugin(IPlugin):
         img.SetSpacing(dt, df_spacing, 1.0)
         img.SetOrigin(t0, f0_range, 0.0)
 
-        img.AllocateScalars(vtk.VTK_FLOAT, 1)
-
-        for j in range(n_freqs):
-            for i in range(n_times):
-                img.SetScalarComponentFromFloat(i, j, 0, 0, float(Z[j, i]))
+        Z_plano = np.ascontiguousarray(Z, dtype=np.float32).ravel()
+        arr = numpy_support.numpy_to_vtk(Z_plano, deep=True, array_type=vtk.VTK_FLOAT)
+        img.GetPointData().SetScalars(arr)
         img.Modified()
 
         # Compute limits and LUT
@@ -619,81 +584,3 @@ class Wavelet_average_plugin(IPlugin):
             ctf.AddRGBPoint(x, *rgba[:3])
         return ctf
     # end def
-
-    class WaveletWorker(QThread):
-        finished = pyqtSignal(object, object, object, bool, object)  # times, freqs, avg_scalogram, scaled, error
-        log_signal = pyqtSignal(str)
-        notify_signal = pyqtSignal(str, str)
-
-        def __init__(self, parent_plugin, data, fs_calculado, fs, fmin, fmax, cycles, normalize, scaled, norm_method):
-            super().__init__()
-            self.plugin = parent_plugin
-            self.data = data
-            self.fs_calculado = fs_calculado
-            self.fs = fs
-            self.fmin = fmin
-            self.fmax = fmax
-            self.cycles = cycles
-            self.normalize = normalize
-            self.scaled = scaled
-            self.norm_method = norm_method
-        # end def
-
-        def run(self):
-            try:
-                plugin = self.plugin
-                scalograms = []
-                n_trials = self.data.shape[1]
-                self.log_signal.emit(f"Computing wavelet for {n_trials} trials (threaded)...")
-
-                for trial_idx in range(n_trials):
-
-                    if self.isInterruptionRequested():
-                        self.log_signal.emit("Wavelet computation interrupted.")
-                        self.finished.emit(None, None, None, False, "Cancelled")
-                        return
-                    
-                    try:
-                        sig = np.nan_to_num(self.data[:, trial_idx], nan=0.0, posinf=0.0, neginf=0.0)
-
-                        scalogram, times, freqs = plugin.compute_wavelet(
-                            sig, 
-                            self.fs_calculado, 
-                            self.fs, self.fmin, 
-                            self.fmax, 
-                            self.cycles
-                        )
-                        if scalogram is None or scalogram.size == 0:
-                            self.log_signal.emit(f"Trial {trial_idx+1}/{n_trials}: empty scalogram, skipping.")
-                            self.notify_signal.emit("warning", f"Trial {trial_idx+1}/{n_trials}: empty scalogram, skipping.")
-                            continue
-                        scalograms.append(scalogram)
-                    except Exception as e:
-                        self.log_signal.emit(f"Trial {trial_idx+1}/{n_trials} failed: {e}")
-
-                    self.log_signal.emit(f"Trial {trial_idx+1}/{n_trials}: computed")
-
-                if not scalograms:
-                    raise ValueError("No valid scalograms computed")
-
-                stacked = np.stack(scalograms, axis=0)
-                avg_scalogram = np.mean(stacked, axis=0)
-
-                if self.normalize:
-                    avg_scalogram = plugin.normalize_tf(avg_scalogram, self.norm_method)
-                    self.log_signal.emit(f"Normalization applied: {self.norm_method}")
-
-                if self.scaled:
-                    avg_scalogram, freqs = plugin._scale_log(avg_scalogram, freqs)
-                    self.log_signal.emit("Log scaling applied.")
-
-                self.log_signal.emit(f"Wavelet average complete.")
-                self.finished.emit(times, freqs, avg_scalogram, self.scaled, None)
-
-            except Exception as e:
-                self.log_signal.emit(f"WaveletWorker error: {e}")
-                self.notify_signal.emit("error", str(e))
-                self.finished.emit(None, None, None, False, e)
-        # end def
-    # end class
-# end class
