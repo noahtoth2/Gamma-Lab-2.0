@@ -1,5 +1,7 @@
 from collections import defaultdict
 import os
+import shutil
+from pathlib import Path
 from PyQt5.QtWidgets import (
     QMainWindow,
     QHBoxLayout,
@@ -12,24 +14,34 @@ from PyQt5.QtWidgets import (
     QApplication,
     QMenu,
     QAction,
-    QTreeWidget,
-    QTreeWidgetItem,
+    QTreeView,
+    QStackedWidget,
+    QFileSystemModel,
+    QFileDialog,
+    QAbstractItemView,
     QWidgetAction,
     QLineEdit,
     QPushButton,
+    QMessageBox,
 )
 from app.view.main_window_ui import Ui_MainWindow 
 from PyQt5.QtGui import QIcon, QFontMetrics, QFont, QPixmap, QPainter
 from PyQt5.QtCore import QSize, Qt, QEvent
+from PyQt5.QtWidgets import QFrame, QCompleter
+from app.view.main_window_ui import Ui_MainWindow
+from PyQt5.QtGui import QIcon, QFontMetrics, QFont, QPixmap, QPainter, QDesktopServices
+from PyQt5.QtCore import QSize, Qt, QEvent, QUrl, QMimeData
 from PyQt5.QtWidgets import QFrame
 
 from core.plugins.interfaces import IPlugin
 from core.utils.plugin_alerts import PluginAlerts
+from core.services.project_service import ProjectService
 
 class MainWindow(QMainWindow):
     def __init__(self, kernel):
         super().__init__()
         self.kernel = kernel
+        self._project_busy = False
 
         # Register the main window as a service in the kernel so plugins can access it.
         self.kernel.register_service("MainWindow", self)
@@ -41,11 +53,23 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(icon)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        self.setup_plugin_search()
         
         self.alerts = PluginAlerts()
         self.alerts.parent = self
 
         self.kernel.event.connect(self.on_kernel_event)
+
+        # Project (.glab) persistence
+        self.project_service = ProjectService(self.kernel)
+        self.project_service.on_change = self._on_project_changed
+        self.kernel.register_service("ProjectService", self.project_service)
+        store = self.kernel.get_service("DataStore")
+        if store is not None:
+            # Reachable from VTKContextMenu/ExportService (which only ever get a
+            # DataStore reference) so exports can default into the project folder.
+            store.set("_project_service", self.project_service)
+        self.ui.titleProjectNameLabel.renamed.connect(self._on_project_name_edited)
 
         self.current_section = "Home"
         self.active_plugin = None  # Currently active plugin
@@ -107,6 +131,7 @@ class MainWindow(QMainWindow):
             btn.clicked.connect(lambda _, s=section: self.switch_section(s))
 
         self.setup_file_menu()
+        self._update_title_bar_signal_name()
 
         # Show Home plugins by default
         self.switch_section(self.current_section)
@@ -124,6 +149,13 @@ class MainWindow(QMainWindow):
         if plugin and plugin.category() == self.current_section:
             
             self.add_plugin_button(name)
+            self.refresh_plugin_search()
+
+    def refresh_plugin_search(self):
+        names = self._get_registered_plugin_names()
+
+        model = self._search_completer.model()
+        model.setStringList(names)
 
     # Switch section
     def switch_section(self, section):
@@ -170,7 +202,8 @@ class MainWindow(QMainWindow):
             group_box = QGroupBox(subcat, self.ui.buttonContainer)
             group_box.setAlignment(Qt.AlignHCenter | Qt.AlignBottom)
             row = QHBoxLayout(group_box)
-            row.setContentsMargins(0, 6, 0, 25)
+            # Side margins keep the selected outline off the group dividers
+            row.setContentsMargins(10, 6, 10, 25)
             row.setSpacing(20)
 
             for name in plugins:
@@ -182,7 +215,7 @@ class MainWindow(QMainWindow):
                     continue
                 btn = self.add_plugin_button(name)
                 if section == "Preprocessing":
-                    btn.setText(self._wrap_button_text(name.lower(), btn.font(), 88))
+                    btn.setText(name.lower())
                 row.addWidget(btn, 0, Qt.AlignBottom)
 
             contenedor.addWidget(group_box, 0, Qt.AlignVCenter)
@@ -204,6 +237,7 @@ class MainWindow(QMainWindow):
 
         # Push everything to the left
         contenedor.addStretch(1)
+        self._update_plugin_button_selection()
         # Update section-dependent visuals
         self._update_background_logo_visibility()
         self._update_home_welcome_visibility()
@@ -212,11 +246,15 @@ class MainWindow(QMainWindow):
         plugin = self.kernel.get_plugin(name)
         btn = QToolButton(self.ui.buttonContainer)
         btn.setObjectName(f"btn_{name}")
-        btn.setCheckable(False)
+        btn.setProperty("pluginName", name)
+        # Checkable so the active plugin keeps a highlighted outline (see QSS :checked)
+        btn.setCheckable(True)
         btn.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
 
-        # Size follows content (icon + text): no forced fixed box
-        btn.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        # Same height and minimum width for every plugin button; text on a single line
+        btn.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+        btn.setFixedHeight(64)
+        btn.setMinimumWidth(72)
 
         # Icon
         try:
@@ -227,12 +265,21 @@ class MainWindow(QMainWindow):
         except Exception as e:
             print("Icon not available for plugin", name, "->", e)
 
-        label = plugin.name()
-        fm_width = 88
-        btn.setText(self._wrap_button_text(label, btn.font(), fm_width))
+        btn.setText(plugin.name())
+        btn.setToolTip(plugin.description() or plugin.name())
 
         btn.clicked.connect(lambda _, n=name: self.on_button_click(n))
         return btn
+
+    def _update_plugin_button_selection(self):
+        """Check only the ribbon button of the active plugin (outlined via QSS)."""
+        for btn in self.ui.buttonContainer.findChildren(QToolButton):
+            name = btn.property("pluginName")
+            if name is None:
+                continue
+            active = (self.active_plugin is not None
+                      and self.kernel.get_plugin(name) is self.active_plugin)
+            btn.setChecked(active)
 
     def _build_icon_arrow_pair(self, icon_btn: QToolButton, menu: QMenu, gap: int = 8,
                                 left_margin: int = 0) -> QWidget:
@@ -299,6 +346,7 @@ class MainWindow(QMainWindow):
                 icon_btn.setFixedSize(icon_size, icon_size)
         except Exception as e:
             print("Icon not available for plugin", name, "->", e)
+        icon_btn.setToolTip(plugin.description() or plugin.name())
         icon_btn.clicked.connect(lambda _, mt=measure_type: self._start_measurement(mt))
 
         if menu_items:
@@ -360,6 +408,8 @@ class MainWindow(QMainWindow):
                     print(f"refresh {name} error:", e)
         if self.ui.resultsPanel.isVisible():
             self.refresh_results_panel()
+        self.project_service.mark_dirty()
+        self._update_title_bar_project_name()
 
     def _on_delete_last_measurement(self):
         svc = self._get_active_measure_service()
@@ -481,38 +531,6 @@ class MainWindow(QMainWindow):
         menu.addAction(widget_action)
         return self._build_icon_arrow_pair(btn, menu, gap=6)
 
-    def _wrap_button_text(self, text: str, font: QFont, max_width: int) -> str:
-        """
-        Insert an optimal line break so the text fits in 1–2 lines
-        within 'max_width'. If it already fits on one line, leave it as is.
-        """
-        fm = QFontMetrics(font)
-        if fm.horizontalAdvance(text) <= max_width:
-            return text
-
-        # Try to break at the last space so the first line fits <= max_width
-        words = text.split()
-        if len(words) == 1:
-            # No spaces; hard-cut at the largest substring that fits
-            for i in range(len(text)-1, 0, -1):
-                if fm.horizontalAdvance(text[:i]) <= max_width:
-                    return text[:i] + "\n" + text[i:]
-            return text  # fallback
-        else:
-            # Build line 1 with the maximum number of words that fit
-            line1 = words[0]
-            for w in words[1:]:
-                candidate = f"{line1} {w}"
-                if fm.horizontalAdvance(candidate) <= max_width:
-                    line1 = candidate
-                else:
-                    # The rest goes to the second line
-                    line2 = " ".join(words[len(line1.split()):])
-                    # If the second line is still too long, it's fine: button height supports it
-                    return line1 + "\n" + line2
-            # If everything fit, no second line needed
-            return line1
-
     # Clean workspace
     def clear_plugin_area(self):
         if self.active_plugin_widget and self.active_plugin:
@@ -527,6 +545,7 @@ class MainWindow(QMainWindow):
         # Update background/placeholder visibility
         self._update_background_logo_visibility()
         self._update_home_welcome_visibility()
+        self._update_plugin_button_selection()
 
 
     # Insert the active plugin's widget into the workspace
@@ -588,6 +607,7 @@ class MainWindow(QMainWindow):
         # Update background/placeholder visibility
         self._update_background_logo_visibility()
         self._update_home_welcome_visibility()
+        self._update_plugin_button_selection()
 
         # Notify it is shown
         if hasattr(plugin, "on_show"):
@@ -787,6 +807,8 @@ class MainWindow(QMainWindow):
                     print("Error in plugin process:", e)
         else:
             print("Plugin not found:", name)
+        # Clicking toggles the checkable button; re-sync so only the active one stays outlined
+        self._update_plugin_button_selection()
 
     '''File menu'''
 
@@ -802,7 +824,11 @@ class MainWindow(QMainWindow):
         act_exit = QAction("Exit", self)
 
         act_open_signal.triggered.connect(self.on_open_signal_clicked)
-        act_exit.triggered.connect(QApplication.instance().quit)
+        act_open_project.triggered.connect(self.on_open_project_clicked)
+        act_save.triggered.connect(self.on_save_project_clicked)
+        act_save_as.triggered.connect(self.on_save_project_as_clicked)
+        act_close_project.triggered.connect(self.on_close_project_clicked)
+        act_exit.triggered.connect(self.on_exit_clicked)
 
         file_menu.addAction(act_open_signal)
         file_menu.addAction(act_open_project)
@@ -812,6 +838,213 @@ class MainWindow(QMainWindow):
         file_menu.addAction(act_exit)
 
         self.ui.btn_file.setMenu(file_menu)
+
+    def on_save_project_clicked(self):
+        """File > Save: write the .glab to its existing location (or prompt if new)."""
+        try:
+            path = self.project_service.save(self)
+            if path:
+                self.statusBar().showMessage(f"Project saved: {path}", 4000)
+                self.alerts.info(f"Project saved:\n{path}", "Save Project")
+        except Exception as e:
+            self.alerts.error(str(e), "Save Project")
+
+    def on_save_project_as_clicked(self):
+        """File > Save as: always prompt for a location and (re)create the project there."""
+        try:
+            path = self.project_service.save_as(self)
+            if path:
+                self.statusBar().showMessage(f"Project saved: {path}", 4000)
+                self.alerts.info(f"Project saved:\n{path}", "Save Project As")
+        except Exception as e:
+            self.alerts.error(str(e), "Save Project As")
+
+    def on_open_project_clicked(self):
+        """File > Open project: pick a .glab and restore its signal + measurements."""
+        if not self._confirm_discard_unsaved_changes():
+            return
+
+        from core.services.settings_service import SettingsService
+        settings = SettingsService()
+        last_dir = settings.get("last_project_dir", str(Path.cwd()))
+
+        path_str, _ = QFileDialog.getOpenFileName(
+            self, "Open Project", last_dir, "Gamma Lab Project (*.glab)"
+        )
+        if not path_str:
+            return
+        settings.set("last_project_dir", str(Path(path_str).parent))
+
+        self._project_busy = True
+        try:
+            self.project_service.open(path_str, self)
+            self.statusBar().showMessage(f"Project opened: {path_str}", 4000)
+        except Exception as e:
+            self.alerts.error(str(e), "Open Project")
+        finally:
+            self._project_busy = False
+
+    def on_close_project_clicked(self):
+        """File > Close project: forget the project location and free the active signal."""
+        if not self._confirm_discard_unsaved_changes():
+            return
+        self.project_service.close()
+        store = self.kernel.get_service("DataStore")
+        if store is not None:
+            store.clear_active_signal()
+            store.set("measurements", [])
+        self._reset_all_plugin_widgets()
+        self.ui.resultsPanel.setVisible(False)
+        self._update_title_bar_signal_name()
+        self._update_background_logo_visibility()
+        self._update_home_welcome_visibility()
+
+    def _reset_all_plugin_widgets(self):
+        names = list(self.plugin_widgets.keys())
+        if not names:
+            return
+        try:
+            self._stop_all_background_workers()
+        except Exception as e:
+            print("stop background workers (close project) error:", e)
+        try:
+            self._finalize_all_vtk_render_windows(names)
+        except Exception as e:
+            print("finalize VTK windows (close project) error:", e)
+        for name in names:
+            widget = self.plugin_widgets.pop(name, None)
+            plugin = self.kernel.get_plugin(name)
+            if plugin is not None:
+                plugin.widget = None
+                if hasattr(plugin, "ui"):
+                    plugin.ui = None
+                self._reset_plugin_qt_vtk_state(plugin)
+            if widget is not None:
+                widget.setParent(None)
+                widget.deleteLater()
+        self._active_vtk_menu = None
+        self.active_plugin_widget = None
+        self.active_plugin = None
+        self._update_plugin_button_selection()
+
+    def _reset_plugin_qt_vtk_state(self, plugin):
+      
+        import vtk
+        from PyQt5.QtWidgets import QWidget
+
+        if getattr(plugin, "alerts", None) is not None:
+            plugin.alerts.parent = None
+
+        for attr_name, attr_value in list(vars(plugin).items()):
+            if attr_name in ("kernel", "meta", "mainwin", "alerts", "widget", "ui"):
+                continue
+            if isinstance(attr_value, (QWidget, vtk.vtkObjectBase)):
+                setattr(plugin, attr_name, None)
+            elif type(attr_value).__name__ == "VTKContextMenu":
+                setattr(plugin, attr_name, None)
+            elif isinstance(attr_value, (list, tuple)) and attr_value and all(
+                isinstance(v, (QWidget, vtk.vtkObjectBase)) for v in attr_value
+            ):
+                setattr(plugin, attr_name, type(attr_value)())
+
+    def on_exit_clicked(self):
+        """File > Exit: same unsaved-changes guard as Close Project, then quit."""
+        if not self._confirm_discard_unsaved_changes():
+            return
+        QApplication.instance().quit()
+
+    def _any_background_worker_running(self) -> bool:
+        for name in self.kernel.get_plugins():
+            plugin = self.kernel.get_plugin(name)
+            worker = getattr(plugin, "worker", None)
+            if worker is not None and hasattr(worker, "isRunning") and worker.isRunning():
+                return True
+        return False
+
+    def _stop_all_background_workers(self):
+        for name in self.kernel.get_plugins():
+            plugin = self.kernel.get_plugin(name)
+            cleanup = getattr(plugin, "_cleanup_worker", None)
+            if callable(cleanup):
+                try:
+                    cleanup()
+                except Exception:
+                    pass
+
+    def _confirm_discard_unsaved_changes(self) -> bool:
+        """Ask Save/Don't Save/Cancel if dirty; True means OK to proceed."""
+        if self._project_busy or self._any_background_worker_running():
+            box = QMessageBox(self)
+            box.setIcon(QMessageBox.Warning)
+            box.setWindowTitle("Project Still Loading")
+            box.setText("The project is still opening. Are you sure you want to close anyway?")
+            close_btn = box.addButton("Close Anyway", QMessageBox.DestructiveRole)
+            stay_btn = box.addButton("Stay", QMessageBox.RejectRole)
+            box.setDefaultButton(stay_btn)
+            box.exec_()
+            if box.clickedButton() is not close_btn:
+                return False
+            self._stop_all_background_workers()
+            return True
+        if not self.project_service.dirty:
+            return True
+
+        box = QMessageBox(self)
+        box.setIcon(QMessageBox.Warning)
+        box.setWindowTitle("Unsaved Changes")
+        box.setText("Are you sure you want to leave without saving changes to this project?")
+        save_btn = box.addButton("Save", QMessageBox.AcceptRole)
+        discard_btn = box.addButton("Don't Save", QMessageBox.DestructiveRole)
+        cancel_btn = box.addButton("Cancel", QMessageBox.RejectRole)
+        box.setDefaultButton(save_btn)
+        box.exec_()
+
+        clicked = box.clickedButton()
+        if clicked is cancel_btn:
+            return False
+        if clicked is save_btn:
+            try:
+                path = self.project_service.save(self)
+                if not path:
+                    return False  # user cancelled the folder picker inside Save As
+            except Exception as e:
+                self.alerts.error(str(e), "Save Project")
+                return False
+        return True
+
+    def _on_project_changed(self):
+        """ProjectService callback: refresh title bar + Explorer after open/save/rename/close."""
+        self._update_title_bar_project_name()
+        self.set_explorer_root(self.project_service.project_dir)
+
+    def _on_project_name_edited(self, new_name: str):
+        """User double-clicked the project name in the title bar and typed a new one."""
+        self.project_service.set_project_name(new_name)
+
+    def _update_title_bar_signal_name(self):
+        """Reflect the active signal's real file name in the title bar."""
+        store = self.kernel.get_service("DataStore")
+        ds = store.get_active_signal() if store else None
+        if ds is not None:
+            signal_file = Path(getattr(ds, "source_path", "") or "").name or ds.name
+            self.ui.titleFileNameLabel.setText(signal_file)
+            if not self.project_service.project_name:
+                self.project_service.project_name = self.project_service.default_project_name(ds.name)
+                self._update_title_bar_project_name()
+        else:
+            self.ui.titleFileNameLabel.setText("No signal loaded")
+
+    def _update_title_bar_project_name(self):
+        name = self.project_service.project_name
+        if name:
+            dirty_mark = " *" if self.project_service.dirty else ""
+            self.ui.titleProjectNameLabel.setEditableValue(name)
+            self.ui.titleProjectNameLabel.setText(f"{name}.glab{dirty_mark}")
+            self.ui.titleProjectNameLabel.setVisible(True)
+            self.ui.titleSeparatorLabel.setVisible(True)
+        else:
+            self.ui.titleProjectNameLabel.setVisible(False)
+            self.ui.titleSeparatorLabel.setVisible(False)
 
     def on_open_signal_clicked(self):
         """File > Open signal: show the channel/signal preview and pop the file picker."""
@@ -834,7 +1067,11 @@ class MainWindow(QMainWindow):
             print(f"New signal added: {payload}")
             self.update_signal_list()
             self._update_background_logo_visibility()
-        elif topic in ("signal_active_changed", "trials_generated", "trial_discard_updated"):
+            self._update_title_bar_signal_name()
+        elif topic == "signal_active_changed":
+            self._update_background_logo_visibility()
+            self._update_title_bar_signal_name()
+        elif topic in ("trials_generated", "trial_discard_updated"):
             # State changes that affect data availability
             self._update_background_logo_visibility()
 
@@ -926,6 +1163,7 @@ class MainWindow(QMainWindow):
                 print(f"Error building {plugin_name} widget:", e)
                 continue
             self.ui.resultsTabs.addTab(widget, tab_label)
+            self.plugin_widgets[plugin_name] = widget
 
     def refresh_results_panel(self):
         """Reload both results tables from DataStore['measurements']."""
@@ -949,38 +1187,214 @@ class MainWindow(QMainWindow):
                 return
 
     def setup_explorer_section(self):
-        """Build the Explorer tree (visual only, sample data)."""
+        """Build the Explorer: a real filesystem view rooted at the open project's folder."""
         container = self.ui.explorer_QWidget
         layout = container.layout()
         if layout is None:
             layout = QVBoxLayout(container)
             layout.setContentsMargins(0, 0, 0, 0)
 
-        tree = QTreeWidget(container)
-        tree.setObjectName("explorerTreeWidget")
-        tree.setHeaderHidden(True)
-        tree.setIndentation(14)
-        tree.setIconSize(QSize(16, 16))
-        tree.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.explorer_stack = QStackedWidget(container)
 
-        root = QTreeWidgetItem(["nombre del proyecto"])
-        root_font = QFont(tree.font())
-        root_font.setBold(True)
-        root.setFont(0, root_font)
+        self.explorer_placeholder = QLabel(
+            "No project open.\nSave or open a project to see its folder here.", container
+        )
+        self.explorer_placeholder.setObjectName("explorerPlaceholder")
+        self.explorer_placeholder.setAlignment(Qt.AlignCenter)
+        self.explorer_placeholder.setWordWrap(True)
 
-        results_folder = QTreeWidgetItem(root, ["archivos de resultado"])
+        self.explorer_model = QFileSystemModel(self)
+        # Allow rename/move/delete through the model (defaults to read-only).
+        self.explorer_model.setReadOnly(False)
+        self.explorer_project_dir = None
+        self.explorer_model.directoryLoaded.connect(self._on_explorer_directory_loaded)
+        self.explorer_model.rowsInserted.connect(self._on_explorer_rows_inserted)
 
-        xlsx_item = QTreeWidgetItem(results_folder, ["signal_trials_23n09000.xlsx"])
-        xlsx_item.setIcon(0, QIcon("assets/iconos/excel-icon.png"))
+        self.explorer_tree = QTreeView(container)
+        self.explorer_tree.setObjectName("explorerTreeWidget")
+        self.explorer_tree.setModel(self.explorer_model)
+        self.explorer_tree.setHeaderHidden(True)
+        self.explorer_tree.setIndentation(14)
+        self.explorer_tree.setIconSize(QSize(16, 16))
+        self.explorer_tree.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        # Only the name column is useful in this narrow sidebar.
+        for col in range(1, 4):
+            self.explorer_tree.setColumnHidden(col, True)
 
-        abf_item = QTreeWidgetItem(root, ["23n09000.abf"])
-        abf_item.setIcon(0, QIcon("assets/iconos/abf-icon.png"))
+        self.explorer_tree.setEditTriggers(QAbstractItemView.EditKeyPressed)
 
-        tree.addTopLevelItem(root)
-        tree.expandAll()
+        # Drag files between folders to move them.
+        self.explorer_tree.setDragEnabled(True)
+        self.explorer_tree.setAcceptDrops(True)
+        self.explorer_tree.setDropIndicatorShown(True)
+        self.explorer_tree.setDragDropMode(QAbstractItemView.DragDrop)
+        self.explorer_tree.setDefaultDropAction(Qt.MoveAction)
 
-        layout.addWidget(tree)
-        self.explorer_tree = tree
+        # Double-click a file to open it in its OS-associated app (Excel, Photos, ...).
+        self.explorer_tree.doubleClicked.connect(self._on_explorer_double_clicked)
+
+        # Right-click -> "Rename" context menu.
+        self.explorer_tree.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.explorer_tree.customContextMenuRequested.connect(self._on_explorer_context_menu)
+
+        self.explorer_stack.addWidget(self.explorer_placeholder)
+        self.explorer_stack.addWidget(self.explorer_tree)
+        self.explorer_stack.setCurrentWidget(self.explorer_placeholder)
+
+        layout.addWidget(self.explorer_stack)
+
+    def _on_explorer_double_clicked(self, index):
+        """Open a file from the Explorer with whatever app the OS associates with it."""
+        if not index.isValid() or self.explorer_model.isDir(index):
+            return  # let the default expand/collapse behavior handle folders
+        path = self.explorer_model.filePath(index)
+        QDesktopServices.openUrl(QUrl.fromLocalFile(path))
+
+    def _on_explorer_context_menu(self, pos):
+        """Right-click in the Explorer: item -> Rename/Copy/Paste; empty space -> New Folder."""
+        index = self.explorer_tree.indexAt(pos)
+        menu = QMenu(self.explorer_tree)
+
+        if index.isValid():
+            rename_action = menu.addAction("Rename")
+            copy_action = menu.addAction("Copy")
+            paste_action = menu.addAction("Paste")
+            paste_action.setEnabled(QApplication.clipboard().mimeData().hasUrls())
+            menu.addSeparator()
+            delete_action = menu.addAction("Delete")
+
+            chosen = menu.exec_(self.explorer_tree.viewport().mapToGlobal(pos))
+            if chosen == rename_action:
+                self.explorer_tree.edit(index)
+            elif chosen == copy_action:
+                self._explorer_copy_path(index)
+            elif chosen == paste_action:
+                path = Path(self.explorer_model.filePath(index))
+                target_dir = path if self.explorer_model.isDir(index) else path.parent
+                self._explorer_paste_into(target_dir)
+            elif chosen == delete_action:
+                self._explorer_delete_path(index)
+        else:
+            new_folder_action = menu.addAction("New Folder")
+            paste_action = menu.addAction("Paste")
+            paste_action.setEnabled(QApplication.clipboard().mimeData().hasUrls())
+
+            chosen = menu.exec_(self.explorer_tree.viewport().mapToGlobal(pos))
+            if chosen == new_folder_action:
+                self._explorer_create_new_folder()
+            elif chosen == paste_action:
+                if self.explorer_project_dir:
+                    self._explorer_paste_into(self.explorer_project_dir)
+
+    def _explorer_copy_path(self, index):
+        """Put the file/folder's path on the system clipboard as a file URL."""
+        path = self.explorer_model.filePath(index)
+        mime = QMimeData()
+        mime.setUrls([QUrl.fromLocalFile(path)])
+        QApplication.clipboard().setMimeData(mime)
+
+    def _explorer_delete_path(self, index):
+        """Delete a file/folder from the Explorer, after confirmation."""
+        path = Path(self.explorer_model.filePath(index))
+        is_dir = self.explorer_model.isDir(index)
+        kind = "folder" if is_dir else "file"
+        reply = QMessageBox.warning(
+            self, "Delete",
+            f"Are you sure you want to delete this {kind}?\n\n{path}",
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+        )
+        if reply != QMessageBox.Yes:
+            return
+        try:
+            if is_dir:
+                shutil.rmtree(path)
+            else:
+                path.unlink()
+        except Exception as e:
+            self.alerts.error(f"Could not delete '{path.name}':\n{e}", "Delete")
+
+    def _explorer_paste_into(self, target_dir: Path):
+        """Copy whatever file/folder is on the clipboard into target_dir."""
+        mime = QApplication.clipboard().mimeData()
+        if not mime.hasUrls():
+            return
+        for url in mime.urls():
+            src = Path(url.toLocalFile())
+            if not src.exists():
+                continue
+            dest = self._explorer_unique_path(target_dir / src.name)
+            try:
+                if src.is_dir():
+                    shutil.copytree(src, dest)
+                else:
+                    shutil.copy2(src, dest)
+            except Exception as e:
+                self.alerts.error(f"Could not paste '{src.name}':\n{e}", "Paste")
+
+    def _explorer_create_new_folder(self):
+        """New Folder in the currently browsed project folder, ready to rename."""
+        root_path = self.explorer_project_dir
+        if not root_path:
+            return
+        dest = self._explorer_unique_path(Path(root_path) / "New Folder")
+        parent_index = self.explorer_model.index(str(root_path))
+        new_index = self.explorer_model.mkdir(parent_index, dest.name)
+        if new_index.isValid():
+            self.explorer_tree.setCurrentIndex(new_index)
+            self.explorer_tree.edit(new_index)
+
+    @staticmethod
+    def _explorer_unique_path(path: Path) -> Path:
+        """Append ' (2)', ' (3)', ... if `path` already exists."""
+        if not path.exists():
+            return path
+        stem, suffix, parent = path.stem, path.suffix, path.parent
+        n = 1
+        while True:
+            n += 1
+            candidate = parent / f"{stem} ({n}){suffix}"
+            if not candidate.exists():
+                return candidate
+
+    def set_explorer_root(self, folder_path):
+
+        if not folder_path:
+            self.explorer_project_dir = None
+            self.explorer_stack.setCurrentWidget(self.explorer_placeholder)
+            return
+        folder_path = Path(folder_path)
+        self.explorer_project_dir = folder_path
+        self.explorer_model.setRootPath(str(folder_path.parent))
+        folder_index = self.explorer_model.index(str(folder_path))
+        parent_index = self.explorer_model.parent(folder_index)
+        self.explorer_tree.setRootIndex(parent_index)
+        self._explorer_hide_siblings(parent_index)
+        self.explorer_tree.expand(folder_index)
+        self.explorer_tree.setCurrentIndex(folder_index)
+        self.explorer_stack.setCurrentWidget(self.explorer_tree)
+
+    def _explorer_hide_siblings(self, parent_index):
+       
+        if not self.explorer_project_dir:
+            return
+        for row in range(self.explorer_model.rowCount(parent_index)):
+            sibling = self.explorer_model.index(row, 0, parent_index)
+            is_project_dir = Path(self.explorer_model.filePath(sibling)) == self.explorer_project_dir
+            self.explorer_tree.setRowHidden(row, parent_index, not is_project_dir)
+
+    def _on_explorer_directory_loaded(self, path_str):
+        
+        if not self.explorer_project_dir or Path(path_str) != self.explorer_project_dir.parent:
+            return
+        self._explorer_hide_siblings(self.explorer_model.index(path_str))
+
+    def _on_explorer_rows_inserted(self, parent_index, first, last):
+       
+        if not self.explorer_project_dir:
+            return
+        if self.explorer_model.filePath(parent_index) != str(self.explorer_project_dir.parent):
+            return
+        self._explorer_hide_siblings(parent_index)
 
     def _on_app_about_to_quit(self):
         """Shut down plugins and their UI safely. Idempotent."""
@@ -988,33 +1402,17 @@ class MainWindow(QMainWindow):
             return
         self._app_quitting = True
 
-        # 1) Stop the active plugin, if any
         try:
-            if self.active_plugin and hasattr(self.active_plugin, "stop"):
-                self.active_plugin.stop()
-        except Exception as e:
-            print("stop(active_plugin) error:", e)
+            import vtk
+            vtk.vtkObject.GlobalWarningDisplayOff()
+        except Exception:
+            pass
 
-        # 2) Stop the rest (if your kernel exposes a way to list them)
         try:
-            # Option A: if you have a method to list them all
-            if hasattr(self.kernel, "get_all_plugins"):
-                for name in self.kernel.get_all_plugins():
-                    p = self.kernel.get_plugin(name)
-                    if p is not None and hasattr(p, "stop"):
-                        try: p.stop()
-                        except Exception as e: print(f"stop({name}) error:", e)
-            else:
-                # Option B: use those that are instantiated in the UI
-                for name in list(self.plugin_widgets.keys()):
-                    p = self.kernel.get_plugin(name)
-                    if p is not None and hasattr(p, "stop"):
-                        try: p.stop()
-                        except Exception as e: print(f"stop({name}) error:", e)
+            self._finalize_all_vtk_render_windows()
         except Exception as e:
-            print("stop(all) error:", e)
+            print("finalize VTK windows error:", e)
 
-        # 3) Hide widgets and clear references (avoid late renders)
         try:
             for name, w in list(self.plugin_widgets.items()):
                 if w is not None:
@@ -1025,6 +1423,79 @@ class MainWindow(QMainWindow):
         except Exception as e:
             print("cleanup widgets error:", e)
 
+    def _finalize_all_vtk_render_windows(self, plugin_names=None):
+        from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+
+        if plugin_names is None:
+            plugin_names = self.kernel.get_plugins()
+        for name in plugin_names:
+            plugin = self.kernel.get_plugin(name)
+            if plugin is None or getattr(plugin, "widget", None) is None:
+                continue
+            for attr_value in list(vars(plugin).values()):
+                if isinstance(attr_value, QVTKRenderWindowInteractor):
+                    try:
+                        render_window = attr_value.GetRenderWindow()
+                        if render_window is not None:
+                            render_window.Finalize()
+                    except Exception as e:
+                        print(f"Finalize() error for plugin '{name}':", e)
+
     def closeEvent(self, event):
+        if not self._confirm_discard_unsaved_changes():
+            event.ignore()
+            return
         self._on_app_about_to_quit()
         super().closeEvent(event)
+
+    #seacrh bar
+    def _get_registered_plugin_names(self):
+        """Obtiene los nombres de todos los plugins registrados (cualquier categoría)."""
+        return sorted(self.kernel.get_plugins())
+
+
+    def setup_plugin_search(self):
+        """Configura el autocompletado y la navegación."""
+        self._search_completer = QCompleter(
+            self._get_registered_plugin_names(), self
+        )
+        self._search_completer.setCaseSensitivity(
+            Qt.CaseInsensitive
+        )
+        self._search_completer.setFilterMode(
+            Qt.MatchContains
+        )
+        self._search_completer.setCompletionMode(
+            QCompleter.PopupCompletion
+        )
+
+        self.ui.searchLineEdit.setCompleter(
+            self._search_completer
+        )
+
+        self._search_completer.activated[str].connect(
+            self._open_plugin_from_search
+        )
+
+        self.ui.searchLineEdit.returnPressed.connect(
+            self._search_exact_plugin
+        )
+
+
+    def _open_plugin_from_search(self, name):
+        """Abre el plugin seleccionado en las sugerencias."""
+        self.ui.searchLineEdit.clear()
+        self.on_button_click(name)
+
+
+    def _search_exact_plugin(self):
+        """Abre el plugin si el texto coincide con su nombre."""
+        query = self.ui.searchLineEdit.text().strip().casefold()
+
+        if not query:
+            return
+
+        for name in self._get_registered_plugin_names():
+            if name.casefold() == query:
+                self._open_plugin_from_search(name)
+                return

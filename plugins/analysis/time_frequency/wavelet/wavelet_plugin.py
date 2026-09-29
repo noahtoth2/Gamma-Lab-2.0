@@ -102,6 +102,18 @@ class Wavelet_plugin(IPlugin):
         )
 
         self.ui.createWaveletButton.clicked.connect(self.on_create_wavelet)
+        self.ui.clearButton.clicked.connect(self._on_clear_clicked)
+    # end def
+
+    def _on_clear_clicked(self):
+        self.ui.sampleDensitySpinBox.setValue(self.params["sample_density_value"])
+        self.ui.lowFrequencySpinBox.setValue(self.params["low_frequency_value"])
+        self.ui.highFrequencySpinBox.setValue(self.params["high_frequency_value"])
+        self.ui.cyclesSpinBox.setValue(self.params["cycles_value"])
+        self.ui.normalizeCheckBox.setChecked(False)
+        self.ui.normalizeComboBox.setCurrentIndex(0)
+        self.ui.scaleCheckBox.setChecked(False)
+        self.ui.scaleComboBox.setCurrentIndex(0)
     # end def
 
     def ensure_vtk(self):
@@ -190,7 +202,41 @@ class Wavelet_plugin(IPlugin):
             scalogram, freqs = self._scale_log(scalogram, freqs)
 
         self.render_scalogram(times, freqs, scalogram, "Scalogram Wavelet (Morlet)", scaled)
+        self.mark_project_dirty()
     # end def
+
+    # =====================================================
+    # === Project save/restore
+    # =====================================================
+    def get_analysis_params(self) -> dict:
+        return {
+            "sample_density": self.ui.sampleDensitySpinBox.value(),
+            "low_freq": self.ui.lowFrequencySpinBox.value(),
+            "high_freq": self.ui.highFrequencySpinBox.value(),
+            "cycles": self.ui.cyclesSpinBox.value(),
+            "normalize_enabled": self.ui.normalizeCheckBox.isChecked(),
+            "normalize_mode": self.ui.normalizeComboBox.currentText(),
+            "scale_enabled": self.ui.scaleCheckBox.isChecked(),
+            "scale_mode": self.ui.scaleComboBox.currentText(),
+        }
+
+    def apply_analysis_params(self, params: dict):
+        self.ui.sampleDensitySpinBox.setValue(params.get("sample_density", self.ui.sampleDensitySpinBox.value()))
+        self.ui.lowFrequencySpinBox.setValue(params.get("low_freq", self.ui.lowFrequencySpinBox.value()))
+        self.ui.highFrequencySpinBox.setValue(params.get("high_freq", self.ui.highFrequencySpinBox.value()))
+        self.ui.cyclesSpinBox.setValue(params.get("cycles", self.ui.cyclesSpinBox.value()))
+
+        self.ui.normalizeCheckBox.setChecked(params.get("normalize_enabled", False))
+        idx = self.ui.normalizeComboBox.findText(params.get("normalize_mode", ""))
+        if idx >= 0:
+            self.ui.normalizeComboBox.setCurrentIndex(idx)
+
+        self.ui.scaleCheckBox.setChecked(params.get("scale_enabled", False))
+        idx = self.ui.scaleComboBox.findText(params.get("scale_mode", ""))
+        if idx >= 0:
+            self.ui.scaleComboBox.setCurrentIndex(idx)
+
+        self.on_create_wavelet()
 
     # =====================================================
     # === Wavelet Calculation

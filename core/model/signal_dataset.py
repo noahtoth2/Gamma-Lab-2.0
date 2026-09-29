@@ -22,6 +22,8 @@ class SignalDataset:
     channel_names: List[str]
     units: List[str]
     metadata: Dict[str, Any] = field(default_factory=dict)
+    sampling_rate_source: str = "header"     
+    original_sampling_rate: float | None = None  # value auto-detected at load time
     vtk_table = None
 
     __trials_dataset:List[TrialDataset] = field(default_factory=list)
@@ -39,8 +41,46 @@ class SignalDataset:
             raise ValueError("trial must be of type TrialDataset")
         self.__trials_dataset.append(trial)
 
+    def replace_trial_datasets(self, new_trials: List["TrialDataset"]):
+        """Swap out all TrialDatasets at once (e.g. after regenerating them
+        under a corrected sampling rate, CU-018). Old discards/caches no
+        longer apply once the underlying trials have been re-cut."""
+        self.__trials_dataset = list(new_trials)
+        self.__discarded_trials.clear()
+        self.__filtered_cache.clear()
+        self.__discard_versions.clear()
+
+    # ---------------- sampling rate (CU-018) ----------------
+    def set_sampling_rate(self, new_fs: float):
+        """Public API to correct the sampling rate (R67): no caller should
+        reach into `sampling_rate`/`time` directly. Recomputes the time axis
+        and invalidates the cached VTK table so a stale axis is never drawn (R72)."""
+        new_fs = float(new_fs)
+        if new_fs <= 0:
+            raise ValueError("Sampling rate must be greater than zero.")
+        n = self.time.shape[0]
+        self.sampling_rate = new_fs
+        self.time = np.arange(n, dtype=np.float64) / new_fs
+        self.sampling_rate_source = "manual"
+        self.vtk_table = None
+
+    def restore_original_sampling_rate(self):
+        """Restore the sampling rate auto-detected from the file header at load time."""
+        if self.original_sampling_rate is None:
+            raise ValueError("No original sampling rate was recorded for this signal.")
+        self.set_sampling_rate(self.original_sampling_rate)
+        self.sampling_rate_source = "header"
+
     def number_of_trials_dataset(self):
         return len(self.__trials_dataset)
+
+    def get_all_trials_datasets(self) -> List["TrialDataset"]:
+        """All generated TrialDatasets, in generation order (for project save/restore)."""
+        return list(self.__trials_dataset)
+
+    def get_discarded_trials_map(self) -> Dict[tuple[str, str], set[int]]:
+        """Discarded-trial indices per (source, channel) key (for project save/restore)."""
+        return {k: set(v) for k, v in self.__discarded_trials.items()}
 
     def get_active_trials(self, file_name: str, channel_name: str = None):
         """

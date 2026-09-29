@@ -10,6 +10,8 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+from app.view.widgets.editable_label import EditableLabel
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -56,25 +58,68 @@ class Ui_MainWindow(object):
         self.titleFileNameLabel.setObjectName("titleFileNameLabel")
         titleBarLayout.addWidget(self.titleFileNameLabel)
 
+        self.titleSeparatorLabel = QtWidgets.QLabel(self.titleBar)
+        self.titleSeparatorLabel.setObjectName("titleSeparatorLabel")
+        self.titleSeparatorLabel.setText("-")
+        self.titleSeparatorLabel.setVisible(False)
+        titleBarLayout.addWidget(self.titleSeparatorLabel)
+
+        self.titleProjectNameLabel = EditableLabel(self.titleBar)
+        self.titleProjectNameLabel.setObjectName("titleProjectNameLabel")
+        self.titleProjectNameLabel.label.setObjectName("titleProjectNameLabelText")
+        self.titleProjectNameLabel.edit.setObjectName("titleProjectNameLabelEdit")
+        self.titleProjectNameLabel.setVisible(False)
+        titleBarLayout.addWidget(self.titleProjectNameLabel)
+
         titleBarLayout.addStretch(1)
 
         self.searchBar = QtWidgets.QWidget(self.titleBar)
         self.searchBar.setObjectName("searchBar")
         self.searchBar.setMinimumWidth(340)
         self.searchBar.setMaximumWidth(420)
+
         searchBarLayout = QtWidgets.QHBoxLayout(self.searchBar)
-        searchBarLayout.setContentsMargins(14, 0, 10, 0)
-        searchBarLayout.setSpacing(6)
-
-        self.searchLineEdit = QtWidgets.QLineEdit(self.searchBar)
-        self.searchLineEdit.setObjectName("searchLineEdit")
-        self.searchLineEdit.setFrame(False)
-        searchBarLayout.addWidget(self.searchLineEdit)
-
+        searchBarLayout.setContentsMargins(8, 0, 10, 0)
+        searchBarLayout.setSpacing(0)
+        
+        # ===== Search icon + line edit =====
         self.searchIconLabel = QtWidgets.QLabel(self.searchBar)
         self.searchIconLabel.setObjectName("searchIconLabel")
-        self.searchIconLabel.setText("\U0001F50D")
+        self.searchIconLabel.setPixmap(
+            QtGui.QPixmap("assets/icons/home/icon_search.png").scaled(
+                16, 16, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation
+            )
+        )
+
+        self.searchIconLabel.setSizePolicy(
+            QtWidgets.QSizePolicy.Fixed,
+            QtWidgets.QSizePolicy.Preferred
+        )
         searchBarLayout.addWidget(self.searchIconLabel)
+
+        #==== Search line edit =====
+        self.searchLineEdit = QtWidgets.QLineEdit(self.searchBar)
+        self.searchLineEdit.setObjectName("searchLineEdit")
+
+        self.searchLineEdit.setLayoutDirection(QtCore.Qt.LeftToRight)
+
+        self.searchLineEdit.setAlignment(QtCore.Qt.AlignLeft)
+
+        self.searchLineEdit.setTextMargins(0, 0, 0, 0)
+
+        self.searchLineEdit.setFrame(False)
+        self.searchLineEdit.setMinimumWidth(0)
+
+        self.searchLineEdit.setAlignment(
+        QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
+        )
+
+        self.searchLineEdit.setSizePolicy(
+        QtWidgets.QSizePolicy.Expanding,
+        QtWidgets.QSizePolicy.Fixed
+        )
+
+        searchBarLayout.addWidget(self.searchLineEdit, 1)
 
         titleBarLayout.addWidget(self.searchBar)
         titleBarLayout.addStretch(1)
@@ -247,7 +292,7 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.titleLabTextLabel.setText(_translate("MainWindow", "LAB"))
-        self.titleFileNameLabel.setText(_translate("MainWindow", "23n09000.abf   -   23n09000_gammalab.glb"))
+        self.titleFileNameLabel.setText(_translate("MainWindow", "No signal loaded"))
         self.searchLineEdit.setPlaceholderText(_translate("MainWindow", "search function by name"))
         self.btn_file.setText(_translate("MainWindow", "File"))
         self.bnt_home.setText(_translate("MainWindow", "Home"))

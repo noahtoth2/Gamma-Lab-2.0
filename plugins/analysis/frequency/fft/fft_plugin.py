@@ -64,6 +64,7 @@ class Fft_plugin(IPlugin):
     def _wire_ui(self):
         self._log("wire ui")
         self.ui.calculateFftButton.clicked.connect(self._on_calculate_clicked)
+        self.ui.clearButton.clicked.connect(self._on_clear_clicked)
         self.ui.lowFrequencySpinBox.valueChanged.connect(self._sync_range)
         self.ui.highFrequencySpinBox.valueChanged.connect(self._sync_range)
         self.ui.sampleDensitySpinBox.setRange(0, 10000)
@@ -77,6 +78,11 @@ class Fft_plugin(IPlugin):
         self.ui.lowFrequencySpinBox.setRange(0.0, 10000)
         self.ui.lowFrequencySpinBox.setSingleStep(1.0)
         self.ui.lowFrequencySpinBox.setValue(0.0)
+
+    def _on_clear_clicked(self):
+        self.ui.sampleDensitySpinBox.setValue(1000)
+        self.ui.lowFrequencySpinBox.setValue(0.0)
+        self.ui.highFrequencySpinBox.setValue(500.0)
 
     # ------- VTK -------
     def _ensure_vtk(self):
@@ -121,6 +127,21 @@ class Fft_plugin(IPlugin):
             # 4) Plot
             self._plot_fft(freq, mag, ch_name, lo, hi)
             self._notify(f"FFT ready: fs_eff={fs_eff:.2f} Hz, {freq.size} bins, trials={mag.shape[1]}")
+            self.mark_project_dirty()
+
+    # ====== Project save/restore ======
+    def get_analysis_params(self) -> dict:
+        return {
+            "sample_density": self.ui.sampleDensitySpinBox.value(),
+            "low_freq": self.ui.lowFrequencySpinBox.value(),
+            "high_freq": self.ui.highFrequencySpinBox.value(),
+        }
+
+    def apply_analysis_params(self, params: dict):
+        self.ui.sampleDensitySpinBox.setValue(params.get("sample_density", self.ui.sampleDensitySpinBox.value()))
+        self.ui.lowFrequencySpinBox.setValue(params.get("low_freq", self.ui.lowFrequencySpinBox.value()))
+        self.ui.highFrequencySpinBox.setValue(params.get("high_freq", self.ui.highFrequencySpinBox.value()))
+        self._on_calculate_clicked()
 
     def _sync_range(self):
         lo = float(self.ui.lowFrequencySpinBox.value())

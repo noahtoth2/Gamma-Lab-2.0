@@ -33,6 +33,7 @@ class Ui_Trials(QtWidgets.QWidget):
 
         self.resultsPanel = ResultsTablesWidget(self.plotSplitter)
         self.resultsPanel.setObjectName("resultsPanel")
+        self.resultsPanel.setVisible(False)
 
         self.plotSplitter.setStretchFactor(0, 1)
         self.plotSplitter.setStretchFactor(1, 0)

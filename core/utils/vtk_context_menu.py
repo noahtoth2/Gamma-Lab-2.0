@@ -74,11 +74,26 @@ class VTKContextMenu:
                     self.plugin_name or "plugin")
 
 
+        def _active_project_service():
+            try:
+                return self._datastore.get("_project_service") if self._datastore else None
+            except Exception:
+                return None
+
         def _get_last_dir():
+            project = _active_project_service()
+            if project is not None and project.is_open:
+                archivos = project.archivos_dir()
+                if archivos:
+                    return archivos
             return self.settings.get("last_export_dir", os.getcwd())
 
         def _set_last_dir(path):
-            self.settings.set("last_export_dir", path)
+            # Don't let a one-off export inside the project folder overwrite the
+            # general "last export dir" the user picked outside any project.
+            project = _active_project_service()
+            if not (project is not None and project.is_open):
+                self.settings.set("last_export_dir", path)
             VTKContextMenu.last_export_dir = path
 
         self.export_service = ExportService(

@@ -45,11 +45,21 @@ class Average_plugin(IPlugin):
 
             # Connect "Calculate Average" button
             self.ui.calculateAverageButton.clicked.connect(self._on_calculate_average)
+            self.ui.clearButton.clicked.connect(self._on_clear_clicked)
 
         else:
             self.widget.setParent(parent)
 
         return self.widget
+
+    def _on_clear_clicked(self):
+        self.ui.chkSelectAll.setChecked(True)
+        self.ui.chkSingleTrial.setChecked(False)
+        self.ui.chkUseRange.setChecked(False)
+        self.ui.spnSingleTrial.setValue(1)
+        self.ui.spnFrom.setValue(1)
+        self.ui.spnTo.setValue(1)
+        self.ui.txtFilter.clear()
 
     def _ensure_trials_list(self, n_trials: int):
         """Rebuild the list if empty or out-of-date."""
@@ -89,6 +99,16 @@ class Average_plugin(IPlugin):
         
         # Render in VTK
         self.render_average(t, av_data, trials.channel_name, trials.unit)
+        self.mark_project_dirty()
+
+    # ====== Project save/restore ======
+    def get_analysis_params(self) -> dict:
+        # No configurable parameters - always averages all active trials. The
+        # entry's mere presence in the manifest means "re-run this on open".
+        return {"used": True}
+
+    def apply_analysis_params(self, params: dict):
+        self._on_calculate_average()
 
     def render_average(self, t, av_data, channel_name=None, unit=None):
         """
