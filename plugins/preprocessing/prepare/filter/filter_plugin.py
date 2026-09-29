@@ -99,6 +99,14 @@ class Filter_plugin(IPlugin):
         self.ui.typeSelectComboBox.addItems(["Butterworth", "Chebyshev", "Elliptic"])
 
         self.ui.applyFilterButton.clicked.connect(self.on_apply_filter)
+        self.ui.Btn_clear_params.clicked.connect(self._on_clear_clicked)
+    # end def
+
+    def _on_clear_clicked(self):
+        self.ui.highFrequencySpinBox.setValue(4.0)
+        self.ui.lowFrequencySpinBox.setValue(0.5)
+        self.ui.orderSpinBox.setValue(8)
+        self.ui.typeSelectComboBox.setCurrentIndex(0)
     # end def
 
     def ensure_vtk(self):

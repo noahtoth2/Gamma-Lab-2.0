@@ -127,6 +127,7 @@ class Relative_psd_plugin(IPlugin):
 
     def _wire_ui(self):
         self.ui.calculateRelativePsd.clicked.connect(self._on_calculate_clicked)
+        self.ui.clearButton.clicked.connect(self._init_defaults)
         self.ui.npersegSpinBox.valueChanged.connect(self._sync_noverlap)
         # keep lo/hi consistent
         self.ui.lowFrequencySpinBox.valueChanged.connect(self._sync_range)
@@ -150,6 +151,7 @@ class Relative_psd_plugin(IPlugin):
         self.ui.lowFrequencySpinBox.setValue(8.0)
 
     def _init_defaults(self):
+        self.ui.sampleDensitySpinBox.setValue(1000)
         # Hamming window (like MATLAB)
         try:
             idx = self.ui.windowComboBox.findText("hamming", QtCore.Qt.MatchFixedString)

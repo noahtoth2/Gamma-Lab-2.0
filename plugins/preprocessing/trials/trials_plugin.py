@@ -65,6 +65,7 @@ class TrialsPlugin(IPlugin):
 
             self._ensure_vtk()
             self.ui.Btn_generate_trials.clicked.connect(self._on_generate_clicked)
+            self.ui.Btn_clear_params.clicked.connect(self._on_clear_params_clicked)
             self._init_controls()
 
             self._populate_channels_once()
@@ -159,7 +160,14 @@ class TrialsPlugin(IPlugin):
         self.ui.stimNumberSpinBox.valueChanged.connect(self._on_stim_count_changed)
         self._apply_interstim_ui_rules(self.ui.stimNumberSpinBox.value())
 
-    
+    def _on_clear_params_clicked(self):
+        self.ui.thresholdDoubleSpinBox.setValue(self.params["threshold"])
+        self.ui.initialTimeDoubleSpinBox.setValue(self.params["t0"])
+        self.ui.finalTimeDoubleSpinBox.setValue(self.params["t1"])
+        self.ui.stimNumberSpinBox.setValue(self.params["stim_count"] or 0)
+        self._apply_interstim_ui_rules(self.ui.stimNumberSpinBox.value())
+
+
     def on_kernel_event(self, topic: str, payload: object):
         """
         Listen to events emitted by the Kernel.

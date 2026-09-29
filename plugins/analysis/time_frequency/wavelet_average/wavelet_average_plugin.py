@@ -113,7 +113,22 @@ class Wavelet_average_plugin(IPlugin):
         self._create_vtk_container()
 
         self.ui.createWaveletButton.clicked.connect(self.on_create_wavelet)
+        self.ui.clearButton.clicked.connect(self._on_clear_clicked)
         return self.widget
+    # end def
+
+    def _on_clear_clicked(self):
+        if self.worker is not None and self.worker.isRunning():
+            self.alerts.info("A wavelet computation is already running.")
+            return
+        self.ui.sampleDensitySpinBox.setValue(self.params["sample_density_value"])
+        self.ui.lowFrequencySpinBox.setValue(self.params["low_frequency_value"])
+        self.ui.highFrequencySpinBox.setValue(self.params["high_frequency_value"])
+        self.ui.cyclesSpinBox.setValue(self.params["cycles_value"])
+        self.ui.normalizeCheckBox.setChecked(False)
+        self.ui.normalizeComboBox.setCurrentIndex(0)
+        self.ui.scaleCheckBox.setChecked(False)
+        self.ui.scaleComboBox.setCurrentIndex(0)
     # end def
 
     def _init_controls(self):

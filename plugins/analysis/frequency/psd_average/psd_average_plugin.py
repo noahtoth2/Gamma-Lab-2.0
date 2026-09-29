@@ -79,6 +79,7 @@ class Psd_average_plugin(IPlugin):
     def _wire_ui(self):
         self._log("wire ui")
         self.ui.calculatePsdAvgButton.clicked.connect(self._on_calculate_clicked)
+        self.ui.clearButton.clicked.connect(self._on_clear_clicked)
         self.ui.lowFrequencySpinBox.valueChanged.connect(self._sync_range)
         self.ui.highFrequencySpinBox.valueChanged.connect(self._sync_range)
         self.ui.npersegSpinBox.setRange(0, 500)
@@ -101,6 +102,15 @@ class Psd_average_plugin(IPlugin):
         
         # Keep noverlap synced to nperseg
         self.ui.npersegSpinBox.valueChanged.connect(self._sync_noverlap)
+
+    def _on_clear_clicked(self):
+        self.ui.windowComboBox.setCurrentIndex(0)
+        self.ui.npersegSpinBox.setValue(256)
+        self.ui.noverlapSpinBox.setValue(128)
+        self.ui.nfftSpinBox.setValue(256)
+        self.ui.sampleDensitySpinBox.setValue(1000)
+        self.ui.lowFrequencySpinBox.setValue(0.0)
+        self.ui.highFrequencySpinBox.setValue(40.0)
 
     def _sync_noverlap(self):
         """Set noverlap to half of nperseg by default."""

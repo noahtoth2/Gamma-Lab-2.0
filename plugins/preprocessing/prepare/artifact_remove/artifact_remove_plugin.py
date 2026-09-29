@@ -221,6 +221,7 @@ class ArtifactRemovePlugin(IPlugin):
         self.ui.prev_button.clicked.connect(self._go_to_previous_trial)
         self.ui.next_button.clicked.connect(self._go_to_next_trial)
         self.ui.mode_combo.currentTextChanged.connect(self._on_mode_changed)
+        self.ui.Btn_clear_params.clicked.connect(self._on_clear_params_clicked)
 
         # Ensure correct initial visibility/state
         try:
@@ -229,6 +230,11 @@ class ArtifactRemovePlugin(IPlugin):
             pass
 
         print(f"{LOGP} UI controls connected.")
+
+    def _on_clear_params_clicked(self):
+        self.ui.mode_combo.setCurrentIndex(0)
+        self.ui.point_a.setText("0.0")
+        self.ui.point_b.setText("0.0")
 
     def _on_mode_changed(self, mode_text: str):
         """Update Point B visibility depending on mode."""

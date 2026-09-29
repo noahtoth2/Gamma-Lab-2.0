@@ -56,6 +56,7 @@ class Fft_average_plugin(IPlugin):
     def _wire_ui(self):
         self._log("wire ui")
         self.ui.calculateFftAvgButton.clicked.connect(self._on_calculate_clicked)
+        self.ui.clearButton.clicked.connect(self._on_clear_clicked)
         self.ui.lowFrequencySpinBox.valueChanged.connect(self._sync_range)
         self.ui.highFrequencySpinBox.valueChanged.connect(self._sync_range)
         self.ui.sampleDensitySpinBox.setRange(0, 10000)
@@ -69,6 +70,11 @@ class Fft_average_plugin(IPlugin):
         self.ui.lowFrequencySpinBox.setRange(0.0, 10000)
         self.ui.lowFrequencySpinBox.setSingleStep(1.0)
         self.ui.lowFrequencySpinBox.setValue(0.0)
+
+    def _on_clear_clicked(self):
+        self.ui.sampleDensitySpinBox.setValue(1000)
+        self.ui.lowFrequencySpinBox.setValue(0.0)
+        self.ui.highFrequencySpinBox.setValue(500.0)
 
     def _on_calculate_clicked(self):
             self._log("_on_calculate_clicked()")

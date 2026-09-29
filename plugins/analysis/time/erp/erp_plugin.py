@@ -95,9 +95,19 @@ class Erp_plugin(IPlugin):
     
     def _wire_ui(self):
         self.ui.plotErpButton.clicked.connect(self._on_plot_clicked)
+        self.ui.clearButton.clicked.connect(self._on_clear_clicked)
         self.ui.spnFrom.valueChanged.connect(self._sync_range)
         self.ui.spnTo.valueChanged.connect(self._sync_range)
         self.ui.txtFilter.textChanged.connect(self._apply_filter)
+
+    def _on_clear_clicked(self):
+        self.ui.chkSelectAll.setChecked(True)
+        self.ui.chkSingleTrial.setChecked(False)
+        self.ui.chkUseRange.setChecked(False)
+        self.ui.spnSingleTrial.setValue(1)
+        self.ui.spnFrom.setValue(1)
+        self.ui.spnTo.setValue(1)
+        self.ui.txtFilter.clear()
 
     # ========= Dataset =========
     def _load_trials_from_store(self):

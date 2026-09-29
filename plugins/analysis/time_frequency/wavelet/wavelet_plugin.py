@@ -102,6 +102,18 @@ class Wavelet_plugin(IPlugin):
         )
 
         self.ui.createWaveletButton.clicked.connect(self.on_create_wavelet)
+        self.ui.clearButton.clicked.connect(self._on_clear_clicked)
+    # end def
+
+    def _on_clear_clicked(self):
+        self.ui.sampleDensitySpinBox.setValue(self.params["sample_density_value"])
+        self.ui.lowFrequencySpinBox.setValue(self.params["low_frequency_value"])
+        self.ui.highFrequencySpinBox.setValue(self.params["high_frequency_value"])
+        self.ui.cyclesSpinBox.setValue(self.params["cycles_value"])
+        self.ui.normalizeCheckBox.setChecked(False)
+        self.ui.normalizeComboBox.setCurrentIndex(0)
+        self.ui.scaleCheckBox.setChecked(False)
+        self.ui.scaleComboBox.setCurrentIndex(0)
     # end def
 
     def ensure_vtk(self):

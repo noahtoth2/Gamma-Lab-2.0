@@ -79,6 +79,7 @@ class Psd_plugin(IPlugin):
 
     def _init_defaults(self):
         """Set MATLAB-like defaults and a wide plotting range."""
+        self.ui.sampleDensitySpinBox.setValue(1000)
         # Window: hamming
         try:
             idx = self.ui.windowComboBox.findText("hamming", QtCore.Qt.MatchFixedString)
@@ -111,6 +112,7 @@ class Psd_plugin(IPlugin):
     def _wire_ui(self):
         self._log("wire ui")
         self.ui.calculatePsdButton.clicked.connect(self._on_calculate_clicked)
+        self.ui.clearButton.clicked.connect(self._init_defaults)
         self.ui.lowFrequencySpinBox.valueChanged.connect(self._sync_range)
         self.ui.highFrequencySpinBox.valueChanged.connect(self._sync_range)
         self.ui.npersegSpinBox.setRange(0, 500)
