@@ -17,6 +17,13 @@ from core.model.signal_dataset import SignalDataset
 from core.utils.adapters import dataset_to_vtk_table
 
 from plugins.io.open_signal.open_signal_ui import Ui_OpenSignal
+from core.filters.trials import cut_trials_single_channel
+
+_ORIGIN_LABELS = {
+    "header": "(from file header)",
+    "default": "(default, unknown)",
+    "manual": "(set manually)",
+}
 
 
 class OpenSignalPlugin(IPlugin):
@@ -60,6 +67,8 @@ class OpenSignalPlugin(IPlugin):
             self._ensure_vtk()
 
             self.ui.listChannels.itemChanged.connect(self._on_channel_item_changed)
+            self.ui.btnApplySamplingRate.clicked.connect(self._on_apply_sampling_rate_clicked)
+            self.ui.btnRestoreSamplingRate.clicked.connect(self._on_restore_sampling_rate_clicked)
 
             if hasattr(self.ui, "splitter"):
                 self.ui.splitter.splitterMoved.connect(lambda *_: self._relayout_charts())
@@ -265,6 +274,99 @@ class OpenSignalPlugin(IPlugin):
         self._populate_channel_list(ds)
         self._vtk_table = dataset_to_vtk_table(ds)
         self._render_selected()
+        self._refresh_sampling_rate_labels()
+
+    def _refresh_sampling_rate_labels(self):
+        self.ui.lblSamplingRateError.setText("")
+        if self.current_ds is None:
+            self.ui.lblSamplingRateValue.setText("Current: -")
+            self.ui.lblSamplingRateOrigin.setText("")
+            self.ui.lblSampleCountValue.setText("Samples per channel: -")
+            self.ui.btnRestoreSamplingRate.setEnabled(False)
+            return
+        ds = self.current_ds
+        origin = _ORIGIN_LABELS.get(ds.sampling_rate_source, ds.sampling_rate_source)
+        self.ui.lblSamplingRateValue.setText(f"Current: {ds.sampling_rate:.4f} Hz")
+        self.ui.lblSamplingRateOrigin.setText(origin)
+        n_samples = ds.time.shape[0] if ds.time is not None else 0
+        self.ui.lblSampleCountValue.setText(f"Samples per channel: {n_samples}")
+        self.ui.spnNewSamplingRate.blockSignals(True)
+        self.ui.spnNewSamplingRate.setValue(ds.sampling_rate)
+        self.ui.spnNewSamplingRate.blockSignals(False)
+        self.ui.btnRestoreSamplingRate.setEnabled(ds.original_sampling_rate is not None)
+
+    # ---------------- CU-018: adjust sampling rate (inline, no dialog) ----------------
+    def _on_restore_sampling_rate_clicked(self):
+        if self.current_ds is None or self.current_ds.original_sampling_rate is None:
+            return
+        ds = self.current_ds
+        try:
+            ds.restore_original_sampling_rate()
+        except ValueError:
+            return
+        self._after_sampling_rate_change(ds)
+
+    def _on_apply_sampling_rate_clicked(self):
+        if self.current_ds is None:
+            self.alerts.warning("No signal has been loaded.")
+            return
+        ds = self.current_ds
+        try:
+            ds.set_sampling_rate(self.ui.spnNewSamplingRate.value())
+        except ValueError:
+            self.ui.lblSamplingRateError.setText("The sampling rate must be a number greater than zero.")
+            return
+        self._after_sampling_rate_change(ds)
+
+    def _after_sampling_rate_change(self, ds: SignalDataset):
+        self.ui.lblSamplingRateError.setText("")
+
+        # R72: cached VTK table was invalidated on the model; rebuild it here
+        # so the redraw never uses the previous time axis.
+        self._vtk_table = dataset_to_vtk_table(ds)
+        self._render_selected()
+        self._refresh_sampling_rate_labels()
+        self.mark_project_dirty()
+
+        if self.mainwin:
+            self.mainwin.statusBar().showMessage(
+                f"Sampling rate updated to {ds.sampling_rate:.4f} Hz.", 4000
+            )
+
+        if ds.number_of_trials_dataset() > 0:
+            self._offer_trials_regeneration(ds)
+
+    def _offer_trials_regeneration(self, ds: SignalDataset):
+        reply = QMessageBox.question(
+            self.ui,
+            "Regenerate trials?",
+            "Trials generated before this change keep the previous sampling rate.\n\n"
+            "Do you want to regenerate them now using the corrected sampling rate?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.Yes,
+        )
+        if reply != QMessageBox.Yes:
+            return
+
+        new_trials = []
+        for td in ds.get_all_trials_datasets():
+            params = (td.metadata or {}).get("generation_params")
+            if not params:
+                new_trials.append(td)
+                continue
+            try:
+                new_td = cut_trials_single_channel(ds=ds, **params)
+                new_td.metadata["generation_params"] = params
+                new_trials.append(new_td)
+            except Exception as e:
+                self._log("Error regenerating trials:", e)
+                new_trials.append(td)
+
+        ds.replace_trial_datasets(new_trials)
+        self.mark_project_dirty()
+        self.kernel.emit_event("trials_generated", {"key": ds.name})
+        if self.mainwin:
+            self.mainwin.statusBar().showMessage("Trials regenerated with the corrected sampling rate.", 4000)
 
     def _populate_channel_list(self, ds: SignalDataset):
         lw = self.ui.listChannels

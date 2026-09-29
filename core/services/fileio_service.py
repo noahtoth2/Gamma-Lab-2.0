@@ -52,6 +52,8 @@ class FileIOService:
                 "channelCount": channel_count,
                 "protocolPath": getattr(abf, 'protocolPath', None),
             },
+            sampling_rate_source="header",
+            original_sampling_rate=sampling_rate,
         )
         return ds
     
@@ -126,6 +128,8 @@ class FileIOService:
                     "fs_list": fs_list,
                     "uniform": same_fs and same_len,
                 },
+                sampling_rate_source="header",
+                original_sampling_rate=sampling_rate,
             )
             print("EDF processed successfully")
             return ds
@@ -193,6 +197,8 @@ class FileIOService:
                     channel_names=channel_names,
                     units=["a.u."] * len(channel_names),
                     metadata={"variables": keys},
+                    sampling_rate_source="default",
+                    original_sampling_rate=None,
                 )
 
                 print("MAT file processed successfully.")
