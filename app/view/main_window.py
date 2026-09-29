@@ -966,7 +966,19 @@ class MainWindow(QMainWindow):
             return
         QApplication.instance().quit()
 
+    def _cancel_all_tasks(self):
+        tasks = self.kernel.get_service("TaskService")
+        if tasks is None:
+            return
+        for name in self.kernel.get_plugins():
+            plugin = self.kernel.get_plugin(name)
+            if plugin is not None and getattr(plugin, "meta", None) is not None:
+                tasks.cancel_all_from(plugin.meta.id)
+
     def _any_background_worker_running(self) -> bool:
+        tasks = self.kernel.get_service("TaskService")
+        if tasks is not None and tasks.has_active_tasks():
+            return True
         for name in self.kernel.get_plugins():
             plugin = self.kernel.get_plugin(name)
             worker = getattr(plugin, "worker", None)
@@ -975,6 +987,10 @@ class MainWindow(QMainWindow):
         return False
 
     def _stop_all_background_workers(self):
+        try:
+            self._cancel_all_tasks()
+        except Exception as e:
+            print("cancel tasks error:", e)
         for name in self.kernel.get_plugins():
             plugin = self.kernel.get_plugin(name)
             cleanup = getattr(plugin, "_cleanup_worker", None)
@@ -989,10 +1005,14 @@ class MainWindow(QMainWindow):
         if self._project_busy or self._any_background_worker_running():
             box = QMessageBox(self)
             box.setIcon(QMessageBox.Warning)
-            box.setWindowTitle("Project Still Loading")
-            box.setText("The project is still opening. Are you sure you want to close anyway?")
-            close_btn = box.addButton("Close Anyway", QMessageBox.DestructiveRole)
-            stay_btn = box.addButton("Stay", QMessageBox.RejectRole)
+            if self._project_busy:
+                box.setWindowTitle("Proyecto abriéndose")
+                box.setText("El proyecto todavía se está abriendo. ¿Quieres cerrarlo de todos modos?")
+            else:
+                box.setWindowTitle("Cálculo en curso")
+                box.setText("Hay un cálculo en curso. Si cierras ahora, se cancelará. ¿Quieres cerrar de todos modos?")
+            close_btn = box.addButton("Cerrar de todos modos", QMessageBox.DestructiveRole)
+            stay_btn = box.addButton("Quedarme", QMessageBox.RejectRole)
             box.setDefaultButton(stay_btn)
             box.exec_()
             if box.clickedButton() is not close_btn:
@@ -1415,40 +1435,20 @@ class MainWindow(QMainWindow):
             return
         self._app_quitting = True
 
-<<<<<<< Updated upstream
-=======
-        # 1) Cancel any pending task before tearing down the widgets they
-        #    would draw on
+        # Las tareas se cancelan antes de desmontar los widgets en los que dibujarían.
         try:
-            tasks = self.kernel.get_service("TaskService")
-            if tasks is not None:
-                for name in self.kernel.get_plugins():
-                    p = self.kernel.get_plugin(name)
-                    if p is not None and getattr(p, "meta", None) is not None:
-                        tasks.cancel_all_from(p.meta.id)
+            self._cancel_all_tasks()
         except Exception as e:
             print("cancel tasks on quit error:", e)
 
-        # 2) Stop the active plugin, if any
->>>>>>> Stashed changes
         try:
             import vtk
             vtk.vtkObject.GlobalWarningDisplayOff()
         except Exception:
             pass
 
-<<<<<<< Updated upstream
         try:
             self._finalize_all_vtk_render_windows()
-=======
-        # 3) Stop the rest
-        try:
-            for name in self.kernel.get_plugins():
-                p = self.kernel.get_plugin(name)
-                if p is not None and hasattr(p, "stop"):
-                    try: p.stop()
-                    except Exception as e: print(f"stop({name}) error:", e)
->>>>>>> Stashed changes
         except Exception as e:
             print("finalize VTK windows error:", e)
 

@@ -1,3 +1,5 @@
+from functools import partial
+
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QVBoxLayout
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
@@ -23,6 +25,8 @@ class Wavelet_average_plugin(IPlugin):
         self.vtk_menu = None
         self._context_view = None
         self._vtk_renderer = None
+        self._handle = None
+        self._calculando = False
         self.params = {
             "sample_density_range": (0, 10000),
             "frequencies_range": (0, 10000),
@@ -49,11 +53,6 @@ class Wavelet_average_plugin(IPlugin):
     # end def
 
     def stop(self):
-<<<<<<< Updated upstream
-        #self._cleanup_worker()  
-
-=======
->>>>>>> Stashed changes
         """Stop plugin and disable VTK interactor if present."""
         if self.vtk_widget and self.vtk_widget.GetRenderWindow():
             interactor = self.vtk_widget.GetRenderWindow().GetInteractor()
@@ -62,42 +61,6 @@ class Wavelet_average_plugin(IPlugin):
                 self._log("VTK interactor disabled.")
     # end def
 
-<<<<<<< Updated upstream
-    def _cleanup_worker(self):
-        if self.worker is not None:
-            try:
-                try:
-                    self.worker.finished.disconnect()
-                except Exception:
-                    pass
-                try:
-                    self.worker.log_signal.disconnect()
-                except Exception:
-                    pass
-                try:
-                    self.worker.notify_signal.disconnect()
-                except Exception:
-                    pass
-
-                self.worker.requestInterruption()
-
-                print("Waiting for worker thread to terminate...")
-                if self.worker.isRunning():
-                    self.worker.quit()
-                    print("Worker thread terminated.")
-                    self.worker.wait()
-                    print("Worker thread terminated.")
-
-                print("No está corriendo el worker")  
-            except Exception as e:
-                self._log(f"Error cleaning worker: {e}")
-
-            self.worker = None
-
-
-
-=======
->>>>>>> Stashed changes
     # =====================================================
     # === UI + VTK creation
     # =====================================================
@@ -123,8 +86,8 @@ class Wavelet_average_plugin(IPlugin):
     # end def
 
     def _on_clear_clicked(self):
-        if self.worker is not None and self.worker.isRunning():
-            self.alerts.info("A wavelet computation is already running.")
+        if self._calculando:
+            self.alerts.info("Hay un cálculo de wavelet en curso; espera a que termine.")
             return
         self.ui.sampleDensitySpinBox.setValue(self.params["sample_density_value"])
         self.ui.lowFrequencySpinBox.setValue(self.params["low_frequency_value"])
@@ -209,23 +172,9 @@ class Wavelet_average_plugin(IPlugin):
         """Compute average CWT across all active trials and render the average scalogram."""
         tasks = self.kernel.get_service("TaskService") if self.kernel else None
         if tasks is None:
-            self.alerts.error("TaskService is not available.")
+            self.alerts.error("El servicio de tareas no está disponible.")
             return
 
-<<<<<<< Updated upstream
-        if self.worker is not None and self.worker.isRunning():
-            self.alerts.info("A wavelet computation is already running.")
-            return
-
-        self._cleanup_worker()
-        self.stop()
-
-        
-=======
-        tasks.cancel_all_from(self.meta.id)
-        self.stop()
-
->>>>>>> Stashed changes
         if self.get_active_signal() is None:
             return
 
@@ -235,7 +184,7 @@ class Wavelet_average_plugin(IPlugin):
 
         t = trials.time_rel
         if t is None or len(t) < 2:
-            self.alerts.error(f"No enough information on time. {self.active_signal.name}.")
+            self.alerts.error(f"No hay suficiente información de tiempo en {self.active_signal.name}.")
             return
 
         try:
@@ -246,7 +195,7 @@ class Wavelet_average_plugin(IPlugin):
             if data.shape[0] < data.shape[1]:
                 data = data.T
         except Exception as e:
-            self.alerts.error(f"Unable to obtain trials matrix: {e}")
+            self.alerts.error(f"No se pudo obtener la matriz de trials: {e}")
             self._log("on_create_wavelet: failed to convert trials to array:", e)
             return
 
@@ -262,9 +211,16 @@ class Wavelet_average_plugin(IPlugin):
         norm_method = self.ui.normalizeComboBox.currentText().lower()
 
         if fmin <= 0:
-            self.alerts.error("Low frequency cannot be zero or negative.")
+            self.alerts.error("La frecuencia baja debe ser mayor que cero.")
             return
 
+        # Un cálculo anterior de este plugin (por ejemplo, al reabrir un proyecto)
+        # se cancela; sus señales tardías se ignoran porque ya no es la tarea vigente.
+        tasks.cancel_all_from(self.meta.id)
+        self._terminar_calculo()
+        self.stop()
+
+        self._calculando = True
         self.ui.createWaveletButton.setEnabled(False)
         self.ui.createWaveletButton.setText("Computing...")
 
@@ -274,36 +230,46 @@ class Wavelet_average_plugin(IPlugin):
             cycles=cycles, normalize=normalize, scaled=scaled,
             norm_method=norm_method,
         )
-        handle.progress.connect(self._on_wavelet_progress)
-        handle.finished.connect(self._on_wavelet_done)
-        handle.failed.connect(self._on_wavelet_failed)
-        handle.cancelled.connect(self.alerts.hide_spinner)
+        self._handle = handle
+        handle.progress.connect(partial(self._on_wavelet_progress, handle))
+        handle.finished.connect(partial(self._on_wavelet_done, handle))
+        handle.failed.connect(partial(self._on_wavelet_failed, handle))
+        handle.cancelled.connect(partial(self._on_wavelet_cancelled, handle))
 
     # end def
 
-<<<<<<< Updated upstream
-    def _on_wavelet_done(self, times, freqs, avg_scalogram, scaled, error):
-        
-
-        if error:
-            self.alerts.error(f"Failed to compute wavelet: {error}")
-            self._cleanup_worker()
+    def _terminar_calculo(self):
+        self._calculando = False
+        self._handle = None
+        if self.ui is not None:
             self.ui.createWaveletButton.setEnabled(True)
             self.ui.createWaveletButton.setText("Generate")
+
+    def _on_wavelet_progress(self, handle, percent, message):
+        if handle is not self._handle:
             return
-=======
-    def _on_wavelet_progress(self, percent, message):
         self._log(f"{message} ({percent}%)")
         self._notify(f"{message} ({percent}%)")
 
-    def _on_wavelet_failed(self, message):
-        self.alerts.hide_spinner()
+    def _on_wavelet_failed(self, handle, message):
+        if handle is not self._handle:
+            return
+        self._terminar_calculo()
         self.alerts.error(f"No se pudo calcular la wavelet: {message}")
->>>>>>> Stashed changes
 
-    def _on_wavelet_done(self, result):
+    def _on_wavelet_cancelled(self, handle):
+        if handle is not self._handle:
+            return
+        self._terminar_calculo()
+
+    def _on_wavelet_done(self, handle, result):
         """Callback when the task finishes, already on the UI thread."""
+        if handle is not self._handle:
+            return
         try:
+            # Si el proyecto se cerró mientras calculaba, ya no hay dónde dibujar.
+            if self.ui is None:
+                return
             times, freqs, avg_scalogram, scaled = result
 
             self.ensure_vtk()
@@ -313,11 +279,10 @@ class Wavelet_average_plugin(IPlugin):
             self.mark_project_dirty()
         except Exception as e:
             self._log("Render failed:", e)
-            self.alerts.error(f"Rendering failed: {e}")
+            self.alerts.error(f"No se pudo dibujar el escalograma: {e}")
         finally:
+            self._terminar_calculo()
             self.process("Done")
-            self.ui.createWaveletButton.setEnabled(True)
-            self.ui.createWaveletButton.setText("Generate")
 
     # =====================================================
     # === Project save/restore
@@ -357,16 +322,7 @@ class Wavelet_average_plugin(IPlugin):
     # === Wavelet computation (single trial)
     # =====================================================
     def compute_wavelet(self, sig, fs_calculado, fs, fmin, fmax, num_cycles):
-<<<<<<< Updated upstream
-        
-        try:
-            freq_seg = 2 * int(max(1, fmax - fmin))
-            factor = int(round(fs_calculado / fs)) if fs > 0 else 1
-            factor = max(1, factor)
-            sig = sig[::factor]
-=======
         return cw.compute_wavelet(sig, fs_calculado, fs, fmin, fmax, num_cycles)
->>>>>>> Stashed changes
 
     # end def
 
@@ -374,30 +330,12 @@ class Wavelet_average_plugin(IPlugin):
     # === Normalization and scaling helpers
     # =====================================================
     def normalize_tf(self, tf, method="z-score"):
-<<<<<<< Updated upstream
-       
-        try:
-            base_mean = np.mean(tf, axis=1, keepdims=True)
-            base_std = np.std(tf, axis=1, ddof=0, keepdims=True)
-            base_min = np.min(tf)
-            base_max = np.max(tf)
-=======
         return cw.normalize_tf(tf, method, log=self._log)
->>>>>>> Stashed changes
 
     # end def
 
     def _scale_log(self, scalogram, freqs):
-<<<<<<< Updated upstream
-        
-        freqs_numeric = np.asarray(freqs, dtype=np.float64)
-        # filter positive freqs
-        positive_mask = freqs_numeric > 0
-        if not np.any(positive_mask):
-            raise ValueError("scale_log: no positive frequencies available.")
-=======
         return cw.scale_log(scalogram, freqs, log=self._log)
->>>>>>> Stashed changes
 
     # end def
 
