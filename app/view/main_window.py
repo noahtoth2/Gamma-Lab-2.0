@@ -893,8 +893,59 @@ class MainWindow(QMainWindow):
         if store is not None:
             store.clear_active_signal()
             store.set("measurements", [])
+        self._reset_all_plugin_widgets()
+        self.ui.resultsPanel.setVisible(False)
         self._update_title_bar_signal_name()
         self._update_background_logo_visibility()
+        self._update_home_welcome_visibility()
+
+    def _reset_all_plugin_widgets(self):
+        names = list(self.plugin_widgets.keys())
+        if not names:
+            return
+        try:
+            self._stop_all_background_workers()
+        except Exception as e:
+            print("stop background workers (close project) error:", e)
+        try:
+            self._finalize_all_vtk_render_windows(names)
+        except Exception as e:
+            print("finalize VTK windows (close project) error:", e)
+        for name in names:
+            widget = self.plugin_widgets.pop(name, None)
+            plugin = self.kernel.get_plugin(name)
+            if plugin is not None:
+                plugin.widget = None
+                if hasattr(plugin, "ui"):
+                    plugin.ui = None
+                self._reset_plugin_qt_vtk_state(plugin)
+            if widget is not None:
+                widget.setParent(None)
+                widget.deleteLater()
+        self._active_vtk_menu = None
+        self.active_plugin_widget = None
+        self.active_plugin = None
+        self._update_plugin_button_selection()
+
+    def _reset_plugin_qt_vtk_state(self, plugin):
+      
+        import vtk
+        from PyQt5.QtWidgets import QWidget
+
+        if getattr(plugin, "alerts", None) is not None:
+            plugin.alerts.parent = None
+
+        for attr_name, attr_value in list(vars(plugin).items()):
+            if attr_name in ("kernel", "meta", "mainwin", "alerts", "widget", "ui"):
+                continue
+            if isinstance(attr_value, (QWidget, vtk.vtkObjectBase)):
+                setattr(plugin, attr_name, None)
+            elif type(attr_value).__name__ == "VTKContextMenu":
+                setattr(plugin, attr_name, None)
+            elif isinstance(attr_value, (list, tuple)) and attr_value and all(
+                isinstance(v, (QWidget, vtk.vtkObjectBase)) for v in attr_value
+            ):
+                setattr(plugin, attr_name, type(attr_value)())
 
     def on_exit_clicked(self):
         """File > Exit: same unsaved-changes guard as Close Project, then quit."""
@@ -1112,6 +1163,7 @@ class MainWindow(QMainWindow):
                 print(f"Error building {plugin_name} widget:", e)
                 continue
             self.ui.resultsTabs.addTab(widget, tab_label)
+            self.plugin_widgets[plugin_name] = widget
 
     def refresh_results_panel(self):
         """Reload both results tables from DataStore['measurements']."""
@@ -1338,10 +1390,12 @@ class MainWindow(QMainWindow):
         except Exception as e:
             print("cleanup widgets error:", e)
 
-    def _finalize_all_vtk_render_windows(self):
+    def _finalize_all_vtk_render_windows(self, plugin_names=None):
         from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
-        for name in self.kernel.get_plugins():
+        if plugin_names is None:
+            plugin_names = self.kernel.get_plugins()
+        for name in plugin_names:
             plugin = self.kernel.get_plugin(name)
             if plugin is None or getattr(plugin, "widget", None) is None:
                 continue

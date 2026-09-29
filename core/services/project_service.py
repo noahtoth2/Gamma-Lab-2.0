@@ -295,7 +295,12 @@ class ProjectService:
                 if not getattr(plugin, "started", False):
                     plugin.start(self.kernel)
                     plugin.started = True
-                plugin.get_widget(parent=parent)
+                widget = plugin.get_widget(parent=parent)
+                if mainwin is not None and widget is not None:
+                    mainwin.plugin_widgets[name] = widget
+                    if mainwin.plugin_layout is not None and mainwin.plugin_layout.indexOf(widget) == -1:
+                        mainwin.plugin_layout.addWidget(widget)
+                    widget.setVisible(False)
                 setter = getattr(plugin, "apply_analysis_params", None)
                 if callable(setter):
                     setter(params)

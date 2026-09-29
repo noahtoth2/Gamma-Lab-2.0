@@ -14,8 +14,7 @@ from plugins.analysis.time_frequency.wavelet_average.wavelet_average_plugin_ui i
 
 
 class Wavelet_average_plugin(IPlugin):
-    """Time-Frequency Analysis Plugin (Wavelet CWT average across trials + VTK Visualization)."""
-
+    
     def __init__(self, meta: PluginMeta):
         super().__init__(meta)
         self.vtk_widget = None
@@ -51,7 +50,7 @@ class Wavelet_average_plugin(IPlugin):
     # end def
 
     def stop(self):
-        #self._cleanup_worker()  # ✅ Asegúrate de limpiar al detener
+        #self._cleanup_worker()  
 
         """Stop plugin and disable VTK interactor if present."""
         if self.vtk_widget and self.vtk_widget.GetRenderWindow():
@@ -64,8 +63,21 @@ class Wavelet_average_plugin(IPlugin):
     def _cleanup_worker(self):
         if self.worker is not None:
             try:
+                try:
+                    self.worker.finished.disconnect()
+                except Exception:
+                    pass
+                try:
+                    self.worker.log_signal.disconnect()
+                except Exception:
+                    pass
+                try:
+                    self.worker.notify_signal.disconnect()
+                except Exception:
+                    pass
+
                 self.worker.requestInterruption()
-                
+
                 print("Waiting for worker thread to terminate...")
                 if self.worker.isRunning():
                     self.worker.quit()
@@ -85,7 +97,7 @@ class Wavelet_average_plugin(IPlugin):
     # === UI + VTK creation
     # =====================================================
     def get_widget(self, parent=None):
-        """Create or reuse the widget and wire UI events."""
+      
         if self.widget is not None:
             self.widget.setParent(parent)
             return self.widget
@@ -105,7 +117,7 @@ class Wavelet_average_plugin(IPlugin):
     # end def
 
     def _init_controls(self):
-        """Initialize UI control ranges and connections."""
+       
 
         self.ui.sampleDensitySpinBox.setRange(*self.params["sample_density_range"])
         self.ui.sampleDensitySpinBox.setValue(self.params["sample_density_value"])
@@ -130,7 +142,7 @@ class Wavelet_average_plugin(IPlugin):
     # end def
 
     def _create_vtk_container(self):
-        """Create VTK widget and context view container in the UI plotArea."""
+       
         try:
             vtk_layout = QVBoxLayout(self.ui.plotArea)
             vtk_layout.setContentsMargins(0, 0, 0, 0)
@@ -154,7 +166,7 @@ class Wavelet_average_plugin(IPlugin):
     # end def
 
     def ensure_vtk(self):
-        """Ensure VTK context view exists and is configured."""
+       
         try:
             if not self.vtk_widget or not self.renwin:
                 self._log("ensure_vtk: no vtk widget or render window available.")
@@ -182,7 +194,7 @@ class Wavelet_average_plugin(IPlugin):
         self._cleanup_worker()
         self.stop()
 
-        """Compute average CWT across all active trials and render the average scalogram."""
+        
         if self.get_active_signal() is None:
             return
 
@@ -244,7 +256,7 @@ class Wavelet_average_plugin(IPlugin):
     # end def
 
     def _on_wavelet_done(self, times, freqs, avg_scalogram, scaled, error):
-        """Callback when the worker thread finishes computation."""
+        
 
         if error:
             self.alerts.error(f"Failed to compute wavelet: {error}")
@@ -306,7 +318,7 @@ class Wavelet_average_plugin(IPlugin):
     # === Wavelet computation (single trial)
     # =====================================================
     def compute_wavelet(self, sig, fs_calculado, fs, fmin, fmax, num_cycles):
-        """Compute Continuous Wavelet Transform (Morlet) for a single signal vector."""
+        
         try:
             freq_seg = 2 * int(max(1, fmax - fmin))
             factor = int(round(fs_calculado / fs)) if fs > 0 else 1
@@ -343,7 +355,7 @@ class Wavelet_average_plugin(IPlugin):
     # === Normalization and scaling helpers
     # =====================================================
     def normalize_tf(self, tf, method="z-score"):
-        """Normalize time-frequency map. Method names: 'z-score', 'percent change', 'relative power', 'min-max'."""
+       
         try:
             base_mean = np.mean(tf, axis=1, keepdims=True)
             base_std = np.std(tf, axis=1, ddof=0, keepdims=True)
@@ -371,7 +383,7 @@ class Wavelet_average_plugin(IPlugin):
     # end def
 
     def _scale_log(self, scalogram, freqs):
-        """Resample scalogram rows so rows are spaced logarithmically in frequency."""
+        
         freqs_numeric = np.asarray(freqs, dtype=np.float64)
         # filter positive freqs
         positive_mask = freqs_numeric > 0
@@ -427,7 +439,7 @@ class Wavelet_average_plugin(IPlugin):
     # === Rendering (VTK)
     # =====================================================
     def render_scalogram(self, t, freqs, scalogram, title="Scalogram", log_scale=False):
-        """Render a 2D scalogram using VTK chart (histogram2D)."""
+        
         if t is None or freqs is None or scalogram is None:
             self._log("render_scalogram aborted: empty data.")
             return
