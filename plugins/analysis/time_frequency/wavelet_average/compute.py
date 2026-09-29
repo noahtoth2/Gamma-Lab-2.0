@@ -7,13 +7,28 @@ def _sin_log(*args):
     pass
 
 
-def compute_wavelet(sig, fs_calculado, fs, fmin, fmax, num_cycles):
+VOCES_POR_OCTAVA = 16
+
+
+def eje_frecuencias(fmin, fmax, escala_log=False):
+    """Lineal: descendente, 2 filas por Hz. Logarítmica: ascendente, VOCES_POR_OCTAVA filas por octava."""
+    if escala_log:
+        n = int(round(np.log2(fmax / fmin) * VOCES_POR_OCTAVA)) + 1
+        return np.geomspace(fmin, fmax, max(n, 2))
+    return np.linspace(fmin, fmax, 2 * int(max(1, fmax - fmin)))[::-1]
+
+
+def compute_wavelet(sig, fs_calculado, fs, fmin, fmax, num_cycles, escala_log=False, t0=0.0):
     if fs <= 0:
         raise ValueError(f"La densidad de muestreo debe ser mayor que cero (se recibió {fs}).")
     if fmin <= 0:
         raise ValueError(f"La frecuencia baja debe ser mayor que cero (se recibió {fmin}).")
+    if fmax <= fmin:
+        raise ValueError(f"La frecuencia alta ({fmax:g} Hz) debe ser mayor que la baja ({fmin:g} Hz).")
+    if fmax > fs / 2:
+        raise ValueError(f"La frecuencia alta ({fmax:g} Hz) no puede superar {fs / 2:g} Hz, "
+                         f"la mitad de la densidad de muestreo.")
 
-    freq_seg = 2 * int(max(1, fmax - fmin))
     factor = max(1, int(round(fs_calculado / fs)))
     sig = sig[::factor]
 
@@ -21,14 +36,14 @@ def compute_wavelet(sig, fs_calculado, fs, fmin, fmax, num_cycles):
         raise ValueError(
             f"La señal tiene {len(sig)} muestras después del submuestreo; se necesitan al menos 4.")
 
-    freq_axis = np.linspace(fmin, fmax, freq_seg)[::-1]
+    freq_axis = eje_frecuencias(fmin, fmax, escala_log)
     wavelet = f"cmor{num_cycles}-1.0"
     central_freq = pywt.central_frequency(wavelet)
     scales = central_freq * fs / freq_axis
 
     coef, _ = pywt.cwt(sig, scales, wavelet, sampling_period=1/fs)
     scalogram = np.abs(coef)
-    time_axis = np.arange(len(sig)) / fs
+    time_axis = t0 + np.arange(len(sig)) / fs
 
     return scalogram, time_axis, freq_axis
 
@@ -97,7 +112,7 @@ def scale_log(scalogram, freqs, log=None):
 
 
 def wavelet_promedio(ctx, data, fs_calculado, fs, fmin, fmax, cycles,
-                     normalize, scaled, norm_method):
+                     normalize, scaled, norm_method, t0=0.0):
     n_trials = data.shape[1]
     if n_trials == 0:
         raise ValueError("No hay trials activos para promediar.")
@@ -113,7 +128,7 @@ def wavelet_promedio(ctx, data, fs_calculado, fs, fmin, fmax, cycles,
         sig = np.nan_to_num(data[:, trial_idx], nan=0.0, posinf=0.0, neginf=0.0)
         try:
             scalogram, times, freqs = compute_wavelet(
-                sig, fs_calculado, fs, fmin, fmax, cycles)
+                sig, fs_calculado, fs, fmin, fmax, cycles, escala_log=scaled, t0=t0)
             if acumulador is None:
                 acumulador = scalogram.astype(np.float64)
             else:
@@ -127,10 +142,9 @@ def wavelet_promedio(ctx, data, fs_calculado, fs, fmin, fmax, cycles,
 
     avg_scalogram = acumulador / n_trials
 
+    # Con escala logarítmica las filas ya se calcularon sobre el eje logarítmico,
+    # así que la normalización trabaja sobre filas reales y no hace falta interpolar.
     if normalize:
         avg_scalogram = normalize_tf(avg_scalogram, norm_method)
-
-    if scaled:
-        avg_scalogram, freqs = scale_log(avg_scalogram, freqs)
 
     return times, freqs, avg_scalogram, scaled

@@ -14,6 +14,9 @@ from core.model.signal_dataset import SignalDataset
 from core.services.data_store import DataStore
 from plugins.analysis.time_frequency.wavelet.wavelet_plugin_ui import Ui_Wavelet
 
+# Filas por octava del eje logarítmico (igual que en Wavelet Average).
+VOCES_POR_OCTAVA = 16
+
 
 class Wavelet_plugin(IPlugin):
     """Time-Frequency Analysis Plugin (Wavelet CWT with PyWavelets + VTK Visualization)"""
@@ -162,7 +165,8 @@ class Wavelet_plugin(IPlugin):
     # =====================================================
     def on_create_wavelet(self):
         """ Load active signal, compute CWT wavelet and render scalogram in VTK """
-        if self.get_active_signal() is None:
+        signal = self.get_active_signal()
+        if signal is None:
             return
 
         trials = self.get_active_trials()
@@ -171,7 +175,7 @@ class Wavelet_plugin(IPlugin):
         
         t = trials.time_rel
         if t is None or len(t) < 2:
-            self.alerts.error(f"No enough information on time. {sig.name}.")
+            self.alerts.error(f"No hay suficiente información de tiempo en {signal.name}.")
             return
 
         try:
@@ -191,18 +195,34 @@ class Wavelet_plugin(IPlugin):
         norm_method = self.ui.normalizeComboBox.currentText().lower()
 
         if fmin <= 0:
-            self.alerts.error("Low frequency cannot be zero or negative.")
+            self.alerts.error("La frecuencia baja debe ser mayor que cero.")
             return
-        
-        scalogram, times, freqs = self.compute_wavelet(sig, fs_calculado, fs, fmin, fmax, cycles)
+        if fmax <= fmin:
+            self.alerts.error(f"La frecuencia alta ({fmax:g} Hz) debe ser mayor que la baja ({fmin:g} Hz).")
+            return
+        if fmax > fs / 2:
+            self.alerts.error(f"La frecuencia alta ({fmax:g} Hz) no puede superar {fs / 2:g} Hz, "
+                              f"la mitad de la densidad de muestreo.")
+            return
 
-        if normalize:
-            scalogram = self.normalize_tf(scalogram, norm_method)
-        
-        if scaled:
-            scalogram, freqs = self._scale_log(scalogram, freqs)
+        # Con escala logarítmica la CWT se calcula directamente sobre el eje
+        # logarítmico, así que la normalización trabaja sobre filas reales.
+        try:
+            scalogram, times, freqs = self.compute_wavelet(
+                sig, fs_calculado, fs, fmin, fmax, cycles, escala_log=scaled, t0=float(t[0]))
+            if normalize:
+                scalogram = self.normalize_tf(scalogram, norm_method)
+        except Exception as e:
+            self._log("on_create_wavelet:", e)
+            self.alerts.error(f"No se pudo calcular la wavelet: {e}")
+            return
 
-        self.render_scalogram(times, freqs, scalogram, "Scalogram Wavelet (Morlet)", scaled)
+        try:
+            self.render_scalogram(times, freqs, scalogram, "Scalogram Wavelet (Morlet)", scaled)
+        except Exception as e:
+            self._log("render_scalogram:", e)
+            self.alerts.error(f"No se pudo dibujar el escalograma: {e}")
+            return
         self.mark_project_dirty()
     # end def
 
@@ -242,20 +262,30 @@ class Wavelet_plugin(IPlugin):
     # =====================================================
     # === Wavelet Calculation
     # =====================================================
-    def compute_wavelet(self, sig, fs_calculado, fs, fmin, fmax, num_cycles):
-        """Compute the Continuous Wavelet Transform (CWT) using Morlet wavelet."""
-        freq_seg = 2 * int(fmax - fmin)
-        factor = int(round(fs_calculado / fs))
-        sig = sig[::factor]
+    def compute_wavelet(self, sig, fs_calculado, fs, fmin, fmax, num_cycles, escala_log=False, t0=0.0):
+        """Compute the Continuous Wavelet Transform (CWT) using Morlet wavelet.
 
-        freq_axis = np.linspace(fmin, fmax, freq_seg)[::-1] 
+        Eje lineal: descendente, 2 filas por Hz. Eje logarítmico: ascendente,
+        VOCES_POR_OCTAVA filas por octava.
+        """
+        factor = max(1, int(round(fs_calculado / fs)))
+        sig = sig[::factor]
+        if len(sig) < 4:
+            raise ValueError(
+                f"La señal tiene {len(sig)} muestras después del submuestreo; se necesitan al menos 4.")
+
+        if escala_log:
+            n = int(round(np.log2(fmax / fmin) * VOCES_POR_OCTAVA)) + 1
+            freq_axis = np.geomspace(fmin, fmax, max(n, 2))
+        else:
+            freq_axis = np.linspace(fmin, fmax, 2 * int(max(1, fmax - fmin)))[::-1]
         wavelet = f"cmor{num_cycles}-1.0"
         central_freq = pywt.central_frequency(wavelet)
         scales = central_freq * fs / freq_axis
 
         coef, _ = pywt.cwt(sig, scales, wavelet, sampling_period=1/fs)
         scalogram = np.abs(coef)
-        time_axis = np.arange(len(sig)) / fs
+        time_axis = t0 + np.arange(len(sig)) / fs
 
         return scalogram, time_axis, freq_axis
     # end def
@@ -271,19 +301,19 @@ class Wavelet_plugin(IPlugin):
         base_max = np.max(tf)
 
         if method == "z-score":
-            return (tf - base_mean) / base_std
+            return (tf - base_mean) / (base_std + 1e-12)
 
         elif method == "percent change":
-            return ((tf - base_mean) / base_mean) * 100
+            return ((tf - base_mean) / (base_mean + 1e-12)) * 100
 
         elif method == "relative power":
-            return tf / base_mean
+            return tf / (base_mean + 1e-12)
 
         elif method == "min-max":
-            denom = base_max - base_min
+            denom = (base_max - base_min) if (base_max - base_min) != 0 else 1.0
             return (tf - base_min) / denom
         else:
-            raise ValueError("Not recognized method.")
+            raise ValueError(f"Método de normalización no reconocido: {method}.")
     # end def
 
     def _scale_log(self, scalogram, freqs):
@@ -315,18 +345,15 @@ class Wavelet_plugin(IPlugin):
     # end def
 
     def _get_log_ticks_coords(self, f_min_log, f_max_log):
-        start = np.floor(f_min_log)
-        end = np.ceil(f_max_log)
+        """Marcas 1-2-5 de cada década; entradas y posiciones en log10, etiquetas en Hz."""
+        valores = [m * 10.0 ** k
+                   for k in range(int(np.floor(f_min_log)), int(np.ceil(f_max_log)) + 1)
+                   for m in (1, 2, 5)]
+        valores = [v for v in valores if f_min_log - 1e-9 <= np.log10(v) <= f_max_log + 1e-9]
+        if len(valores) < 2:
+            valores = [10 ** f_min_log, 10 ** f_max_log]
 
-        tick_coords = np.arange(start, end + 0.5, 0.5) 
-        tick_coords = tick_coords[(tick_coords >= f_min_log) & (tick_coords <= f_max_log)]
-            
-        labels = []
-        for t_coord in tick_coords:
-            label_val = 10**t_coord
-            labels.append(f"{label_val:.1f}") 
-                
-        return tick_coords, labels
+        return np.log10(valores), [f"{v:.3g}" for v in valores]
     # end def
 
     # =====================================================
@@ -343,33 +370,25 @@ class Wavelet_plugin(IPlugin):
         # --- Preprocessing and Assignment ---
         n_freqs, n_times = scalogram.shape
         t0, t_end = float(t[0]), float(t[-1])
+        # vtkChartHistogram2D dibuja cada punto con un paso de ancho, así que
+        # n pasos cubren exactamente de t0 a t_end.
         dt = (t_end - t0) / n_times if n_times > 1 else 1.0
 
+        # Filas ordenadas de la frecuencia más baja a la más alta, con el origen
+        # en la mínima y paso positivo (en log10 si la escala es logarítmica).
+        f = np.asarray(freqs, dtype=float)
+        Z = np.nan_to_num(scalogram.astype(np.float32))
+        if f[0] > f[-1]:
+            Z = np.flipud(Z)
+            f = f[::-1]
         if log_scale:
-            Z = np.nan_to_num(scalogram.astype(np.float32))
             ax_title = "Frequency (Hz) - Log"
-            
-            # Calculate limits in LOG10 scale
-            f0_orig = float(freqs[0]) if freqs[0] > 0 else 1e-6
-            f_end_orig = float(freqs[-1])
-            
-            f0_coord = np.log10(f0_orig)
-            f_end_coord = np.log10(f_end_orig)
-            df_coord = (f_end_coord - f0_coord) / n_freqs if n_freqs > 1 else 1.0
-            
-            # VTK uses LOG10 coordinates directly
-            f0_range, f_end_range = f0_coord, f_end_coord
-            df_spacing = df_coord
-
+            f0_range, f_end_range = float(np.log10(max(f[0], 1e-6))), float(np.log10(f[-1]))
         else:
-            Z = np.flipud(np.nan_to_num(scalogram.astype(np.float32)))
             ax_title = "Frequency (Hz)"
-            
-            # Ranges in linear scale
-            f0_range = float(freqs[0])
-            f_end_range = float(freqs[-1])
-            df_spacing = (f_end_range - f0_range) / n_freqs if n_freqs > 1 else 1.0
-            
+            f0_range, f_end_range = float(f[0]), float(f[-1])
+        df_spacing = (f_end_range - f0_range) / n_freqs if n_freqs > 1 else 1.0
+
         # --- Configure vtkImageData ---
         img = vtk.vtkImageData()
         img.SetDimensions(n_times, n_freqs, 1)
@@ -392,13 +411,13 @@ class Wavelet_plugin(IPlugin):
         chart.SetTransferFunction(lut)
 
         ax_bottom, ax_left = chart.GetAxis(vtk.vtkAxis.BOTTOM), chart.GetAxis(vtk.vtkAxis.LEFT)
-        ax_bottom.SetBehavior(0)
+        ax_bottom.SetBehavior(vtk.vtkAxis.FIXED)
         ax_bottom.SetTitle("Time (s)")
         ax_bottom.SetRange(t0, t_end)
-        
+
         # --- Y Axis Configuration ---
         ax_left.SetTitle(ax_title)
-        ax_left.SetBehavior(0)  
+        ax_left.SetBehavior(vtk.vtkAxis.FIXED)
         ax_left.SetLogScale(False)
         ax_left.SetRange(f0_range, f_end_range)
 

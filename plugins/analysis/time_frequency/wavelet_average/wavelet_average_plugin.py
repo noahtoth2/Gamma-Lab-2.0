@@ -213,6 +213,13 @@ class Wavelet_average_plugin(IPlugin):
         if fmin <= 0:
             self.alerts.error("La frecuencia baja debe ser mayor que cero.")
             return
+        if fmax <= fmin:
+            self.alerts.error(f"La frecuencia alta ({fmax:g} Hz) debe ser mayor que la baja ({fmin:g} Hz).")
+            return
+        if fmax > fs / 2:
+            self.alerts.error(f"La frecuencia alta ({fmax:g} Hz) no puede superar {fs / 2:g} Hz, "
+                              f"la mitad de la densidad de muestreo.")
+            return
 
         # Un cálculo anterior de este plugin (por ejemplo, al reabrir un proyecto)
         # se cancela; sus señales tardías se ignoran porque ya no es la tarea vigente.
@@ -228,7 +235,7 @@ class Wavelet_average_plugin(IPlugin):
             cw.wavelet_promedio, owner=self.meta.id,
             data=data, fs_calculado=fs_calculado, fs=fs, fmin=fmin, fmax=fmax,
             cycles=cycles, normalize=normalize, scaled=scaled,
-            norm_method=norm_method,
+            norm_method=norm_method, t0=float(t[0]),
         )
         self._handle = handle
         handle.progress.connect(partial(self._on_wavelet_progress, handle))
@@ -321,8 +328,9 @@ class Wavelet_average_plugin(IPlugin):
     # =====================================================
     # === Wavelet computation (single trial)
     # =====================================================
-    def compute_wavelet(self, sig, fs_calculado, fs, fmin, fmax, num_cycles):
-        return cw.compute_wavelet(sig, fs_calculado, fs, fmin, fmax, num_cycles)
+    def compute_wavelet(self, sig, fs_calculado, fs, fmin, fmax, num_cycles, escala_log=False, t0=0.0):
+        return cw.compute_wavelet(sig, fs_calculado, fs, fmin, fmax, num_cycles,
+                                  escala_log=escala_log, t0=t0)
 
     # end def
 
@@ -340,19 +348,15 @@ class Wavelet_average_plugin(IPlugin):
     # end def
 
     def _get_log_ticks_coords(self, f_min_log, f_max_log):
-        """Return tick coordinates and labels for log10 axis (inputs are log10 values)."""
-        start = np.floor(f_min_log)
-        end = np.ceil(f_max_log)
+        """Marcas 1-2-5 de cada década; entradas y posiciones en log10, etiquetas en Hz."""
+        valores = [m * 10.0 ** k
+                   for k in range(int(np.floor(f_min_log)), int(np.ceil(f_max_log)) + 1)
+                   for m in (1, 2, 5)]
+        valores = [v for v in valores if f_min_log - 1e-9 <= np.log10(v) <= f_max_log + 1e-9]
+        if len(valores) < 2:
+            valores = [10 ** f_min_log, 10 ** f_max_log]
 
-        tick_coords = np.arange(start, end + 0.5, 0.5)
-        tick_coords = tick_coords[(tick_coords >= f_min_log) & (tick_coords <= f_max_log)]
-
-        labels = []
-        for t_coord in tick_coords:
-            label_val = 10**t_coord
-            labels.append(f"{label_val:.1f}")
-
-        return tick_coords, labels
+        return np.log10(valores), [f"{v:.3g}" for v in valores]
     # end def
 
     # =====================================================
@@ -383,29 +387,25 @@ class Wavelet_average_plugin(IPlugin):
             self._log("render_scalogram: invalid scalogram shape:", scalogram.shape)
             return
 
-        t0, t_end = float(t[0]), float(t[-1]) if len(t) > 1 else (0.0, float(t[0]) if len(t) > 0 else 1.0)[1]
+        t0, t_end = float(t[0]), float(t[-1])
+        # vtkChartHistogram2D dibuja cada punto con un paso de ancho, así que
+        # n pasos cubren exactamente de t0 a t_end.
         dt = (t_end - t0) / n_times if n_times > 1 else 1.0
 
+        # Filas ordenadas de la frecuencia más baja a la más alta, con el origen
+        # en la mínima y paso positivo (en log10 si la escala es logarítmica).
+        f = np.asarray(freqs, dtype=float)
+        Z = np.nan_to_num(scalogram.astype(np.float32))
+        if f[0] > f[-1]:
+            Z = np.flipud(Z)
+            f = f[::-1]
         if log_scale:
-            Z = np.nan_to_num(scalogram.astype(np.float32))
             ax_title = "Frequency (Hz) - Log"
-
-            f0_orig = float(freqs[0]) if freqs[0] > 0 else 1e-6
-            f_end_orig = float(freqs[-1])
-
-            f0_coord = np.log10(f0_orig)
-            f_end_coord = np.log10(f_end_orig)
-            df_coord = (f_end_coord - f0_coord) / n_freqs if n_freqs > 1 else 1.0
-
-            f0_range, f_end_range = f0_coord, f_end_coord
-            df_spacing = df_coord
+            f0_range, f_end_range = float(np.log10(max(f[0], 1e-6))), float(np.log10(f[-1]))
         else:
-            Z = np.flipud(np.nan_to_num(scalogram.astype(np.float32)))
             ax_title = "Frequency (Hz)"
-
-            f0_range = float(freqs[0])
-            f_end_range = float(freqs[-1])
-            df_spacing = (f_end_range - f0_range) / n_freqs if n_freqs > 1 else 1.0
+            f0_range, f_end_range = float(f[0]), float(f[-1])
+        df_spacing = (f_end_range - f0_range) / n_freqs if n_freqs > 1 else 1.0
 
         # Configure vtkImageData
         img = vtk.vtkImageData()
@@ -429,12 +429,12 @@ class Wavelet_average_plugin(IPlugin):
         chart.SetTransferFunction(lut)
 
         ax_bottom, ax_left = chart.GetAxis(vtk.vtkAxis.BOTTOM), chart.GetAxis(vtk.vtkAxis.LEFT)
-        ax_bottom.SetBehavior(0)
+        ax_bottom.SetBehavior(vtk.vtkAxis.FIXED)
         ax_bottom.SetTitle("Time (s)")
         ax_bottom.SetRange(t0, t_end)
 
         ax_left.SetTitle(ax_title)
-        ax_left.SetBehavior(0)
+        ax_left.SetBehavior(vtk.vtkAxis.FIXED)
         ax_left.SetLogScale(False)
         ax_left.SetRange(f0_range, f_end_range)
 
