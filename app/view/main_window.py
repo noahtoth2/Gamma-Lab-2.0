@@ -1317,39 +1317,17 @@ class MainWindow(QMainWindow):
             return
         self._app_quitting = True
 
-        # 1) Stop the active plugin, if any
         try:
-            if self.active_plugin and hasattr(self.active_plugin, "stop"):
-                self.active_plugin.stop()
-        except Exception as e:
-            print("stop(active_plugin) error:", e)
+            import vtk
+            vtk.vtkObject.GlobalWarningDisplayOff()
+        except Exception:
+            pass
 
-        # 2) Stop the rest (if your kernel exposes a way to list them)
-        try:
-            # Option A: if you have a method to list them all
-            if hasattr(self.kernel, "get_all_plugins"):
-                for name in self.kernel.get_all_plugins():
-                    p = self.kernel.get_plugin(name)
-                    if p is not None and hasattr(p, "stop"):
-                        try: p.stop()
-                        except Exception as e: print(f"stop({name}) error:", e)
-            else:
-                # Option B: use those that are instantiated in the UI
-                for name in list(self.plugin_widgets.keys()):
-                    p = self.kernel.get_plugin(name)
-                    if p is not None and hasattr(p, "stop"):
-                        try: p.stop()
-                        except Exception as e: print(f"stop({name}) error:", e)
-        except Exception as e:
-            print("stop(all) error:", e)
-
-        # 3) Finalize VTK render windows before Qt destroys their widgets
         try:
             self._finalize_all_vtk_render_windows()
         except Exception as e:
             print("finalize VTK windows error:", e)
 
-        # 4) Hide widgets and clear references (avoid late renders)
         try:
             for name, w in list(self.plugin_widgets.items()):
                 if w is not None:
