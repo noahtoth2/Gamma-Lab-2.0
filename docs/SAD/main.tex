@@ -528,7 +528,7 @@ Concretar \textbf{escenarios} que ejerciten decisiones y atributos de calidad de
 
 La Figura \ref{fig:vistacasosuso} revela que el subsistema \textbf{N\'ucleo y Ciclo de Vida} --- en particular CU-020, el orquestador de tareas --- es el verdadero centro de gravedad arquitect\'onico: diez de los otros veintid\'os casos de uso lo incluyen expl\'icitamente. Esa centralidad se concreta a continuaci\'on en tres escenarios representativos.
 
-\begin{table}[htbp]
+\begin{table}[H]
 \centering
 \caption{UC-01 --- Calcular acoplamiento fase-amplitud (PAC) de un canal}
 \begin{tabularx}{\linewidth}{@{}p{2.6cm}X@{}}
@@ -543,7 +543,7 @@ La Figura \ref{fig:vistacasosuso} revela que el subsistema \textbf{N\'ucleo y Ci
 \end{tabularx}
 \end{table}
 
-\begin{table}[htbp]
+\begin{table}[H]
 \centering
 \caption{UC-02 --- Cancelar un c\'omputo pesado en curso}
 \label{tab:uc02}
@@ -559,7 +559,7 @@ La Figura \ref{fig:vistacasosuso} revela que el subsistema \textbf{N\'ucleo y Ci
 \end{tabularx}
 \end{table}
 
-\begin{table}[htbp]
+\begin{table}[H]
 \centering
 \caption{UC-03 --- Guardar y reabrir un proyecto (.glab)}
 \begin{tabularx}{\linewidth}{@{}p{2.6cm}X@{}}
@@ -577,42 +577,230 @@ La Figura \ref{fig:vistacasosuso} revela que el subsistema \textbf{N\'ucleo y Ci
 \subsubsection*{Conclusi\'on de la vista}
 Los tres escenarios anclan los atributos de calidad de Gamma Lab 2.0 en situaciones verificables: rendimiento y capacidad de respuesta durante el c\'omputo (UC-01), robustez ante cancelaci\'on (UC-02) y persistencia confiable del estado de trabajo (UC-03). Los tres dependen de piezas que \textbf{no existen a\'un} en el c\'odigo (\texttt{Task\-Orchestrator}, \texttt{ProjectService}), lo que los convierte en criterios de aceptaci\'on directos para la implementaci\'on futura, no solo en documentaci\'on de un sistema ya construido.
 
-\subsection{Vista L\'ogica}
-La vista l\'ogica presenta los componentes fundamentales del sistema Gamma Lab 2.0 y sus relaciones estructurales, diferenciando expl\'icitamente lo que ya existe en el c\'odigo de lo que debe construirse. Para el contrato completo de clases, v\'ease el diagrama de clases del sistema completo.
+\subsection{Vista Lógica}
+\label{sec:vista_logica}
 
-\begin{figure}[htbp]
+\subsubsection{Propósito}
+
+La vista lógica describe la descomposición funcional de Gamma Lab 2.0 en clases, 
+interfaces y abstracciones, junto con las responsabilidades de cada elemento y 
+las relaciones estructurales que los vinculan. Esta vista describe los elementos que lo componen,
+ la responsabilidad que asume cada uno de ellos y la forma en que colaboran para 
+ satisfacer los requerimientos funcionales.
+
+\subsubsection{Notación}
+
+Dado que Gamma Lab 2.0 evoluciona a partir de un sistema existente, 
+cada elemento del modelo se clasifica según su estado de implementación.
+ Los elementos representados en color verde se encontraban implementados 
+ en el código fuente de gammaLab 1.0, mientras que los elementos representados en
+ color rojo están planificados para gammaLab 2.0 y deben construirse para satisfacer casos de 
+ uso o requerimientos pendientes. Esta distinción permite que el modelo sirva 
+ simultáneamente como descripción del sistema pre-existente y como especificación de 
+ la arquitectura objetivo, es decir gammaLab 2.0.
+
+\subsubsection{Visión general del modelo}
+
+La estructura lógica de Gamma Lab 2.0 responde al estilo arquitectónico de microkernel,
+ en el cual un núcleo mínimo administra un conjunto de extensiones independientes que 
+ aportan la funcionalidad del sistema. Los elementos del modelo se organizan en seis 
+ agrupaciones. El núcleo administra el ciclo de vida de las extensiones y el registro
+  de servicios. Los servicios del sistema proveen capacidades transversales de configuración,
+   entrada y salida de archivos, exportación, persistencia de proyectos, estado compartido y 
+   ejecución de tareas. La capa de presentación agrupa los elementos de interfaz gráfica que 
+   coordinan la interacción con el usuario. El contrato de extensión define la interfaz que 
+   todo módulo funcional debe cumplir. Las extensiones implementan las operaciones y los 
+   análisis sobre las señales. Finalmente, el modelo de datos representa las señales,
+    sus segmentaciones y los proyectos persistidos. 
+    
+    La Figura~\ref{fig:vista_logica} presenta el diagrama de clases del sistema.
+
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.95\linewidth]{diagrama_clases_sistema_completo.png}
-    \caption{Vista l\'ogica del sistema Gamma Lab 2.0: n\'ucleo, servicios y familias de plugins (verde = ya existe, rojo = nuevo).}
+    \caption{Diagrama de clases del sistema Gamma Lab 2.0. Los elementos en verde se encuentran implementados y los elementos en rojo están planificados.}
     \label{fig:vista_logica}
 \end{figure}
 
-En la Figura \ref{fig:vista_logica} se observa:
-\begin{itemize}[nosep]
-    \item \textbf{APP}: \texttt{MainWindow}, navegaci\'on por categor\'ias de plugins (ya existe); el panel de bienvenida de Home es est\'atico y \textbf{no} detecta la primera ejecuci\'on del usuario (falta R10).
-    \item \textbf{CORE (ya existe)}: \texttt{Kernel} (registro de plugins y servicios), \texttt{PluginManager} + \texttt{loader} (descubrimiento v\'ia YAML \texttt{properties.yml}), \texttt{DataStore}, \texttt{FileIOService} (lee abf/edf/mat), \texttt{ExportService} (exporta raster y tablas), \texttt{SettingsService} (clase completa, pero \textbf{no} registrada en \texttt{main.py} hoy).
-    \item \textbf{CORE (nuevo)}: \texttt{Task\-Orchestrator} --- el verdadero centro de gravedad arquitect\'onico, seg\'un revela la Figura \ref{fig:vistacasosuso} ---, \texttt{ProjectService} (persistencia \texttt{.glab}), \texttt{TooltipHelper} (ayuda contextual).
-    \item \textbf{PLUGINS (ya existen)}: E/S (\texttt{OpenSignalPlugin}), preprocesamiento (\texttt{TrialsPlugin}, \texttt{ArtifactRemovePlugin}, \texttt{FilterPlugin}), an\'alisis (FFT*, PSD*, \texttt{AveragePlugin}, \texttt{ERPPlugin}, Wavelet*), medici\'on y FAQ (fuera del alcance de los 23 CU).
-    \item \textbf{PLUGINS (nuevos)}: \texttt{PACSingleChannelPlugin} y \texttt{PACInterChannelPlugin}, ambos derivados de \texttt{PACAnalysisPlugin} \textit{(abstract)}.
-\end{itemize}
+\subsubsection{Elementos del núcleo}
 
-El \textit{Kernel} centraliza el registro y consumo de servicios mediante \texttt{register\_service()}/\texttt{get\_service()}; el \textit{DataStore} soporta la comunicaci\'on entre m\'odulos mediante claves can\'onicas. El propio c\'odigo contiene evidencia de que la orquestaci\'on de tareas ya se intent\'o una vez: \texttt{Kernel} conserva un m\'etodo \texttt{execute(nombre, data)} escrito pero comentado, nunca activado.
+\paragraph{Kernel}
+El Kernel constituye el punto central de coordinación del sistema y se encuentra implementado. Mantiene dos registros internos: el registro de extensiones, indexadas por nombre, y el registro de servicios, indexados por clave. Sus operaciones permiten registrar una extensión (register\_plugin), consultarla de forma individual o colectiva (get\_plugin y get\_plugins) y obtener las extensiones pertenecientes a una categoría funcional (get\_plugins\_by\_category), lo cual permite a la interfaz organizar los módulos por categorías. Asimismo, ofrece operaciones para registrar y localizar servicios por clave (register\_service y get\_service), para detener de forma ordenada todas las extensiones al finalizar la aplicación (stop\_plugins) y para publicar eventos dirigidos a los componentes suscritos (emit\_event). El Kernel se asocia con el PluginManager, el SettingsService, el FileIOService, el DataStore y el TaskOrchestrator, y administra las extensiones exclusivamente a través de la interfaz IPlugin.
 
-\subsection{Vista de Desarrollo}
-Complementando el modelo 4+1, la vista de desarrollo (o de implementaci\'on) agrupa los m\'odulos de Gamma Lab 2.0 por su empaquetado real en el \'arbol del proyecto, no por su relaci\'on de herencia.
+\paragraph{PluginManager}
+El PluginManager se encuentra implementado y es responsable de descubrir, cargar e instanciar las extensiones disponibles en el directorio de extensiones del sistema. Conserva la ubicación de dicho directorio y un registro de las extensiones descubiertas. Sus operaciones permiten cargar la totalidad de las extensiones (load\_all) y consultarlas de forma colectiva o por identificador (all y get). El PluginManager depende de la interfaz IPlugin, de modo que únicamente admite elementos que cumplan dicho contrato.
 
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.95\linewidth]{diagrama_componentes_sistema_completo.png}
-    \caption{Vista de desarrollo: componentes de Gamma Lab 2.0 agrupados por paquete real (\texttt{io}, \texttt{preprocessing}, \texttt{analysis}, \texttt{measure}, \texttt{faq}) m\'as los componentes nuevos transversales.}
-    \label{fig:vistadesarrollo}
-\end{figure}
+\subsubsection{Servicios del sistema}
 
-Dos hallazgos relevantes para la planificaci\'on de la implementaci\'on:
-\begin{itemize}[nosep]
-    \item Los paquetes \texttt{measure/} (Amplitude, Slope) y \texttt{faq/} (manual PDF est\'atico) existen en el c\'odigo pero \textbf{ninguno} de los 23 casos de uso los cubre --- se muestran en gris neutro para delimitar la frontera del alcance actual.
-    \item \texttt{TooltipHelper} depende de los plugins de preprocesamiento y an\'alisis por igual (CU-010): su ausencia hoy no es aislada, sino transversal a $\sim$15 plugins que carecen de \textit{tooltips}, salvo dos excepciones puntuales ya presentes en \texttt{TrialsPlugin} y \texttt{RelativePSDPlugin}.
-\end{itemize}
+\paragraph{SettingsService}
+El SettingsService se encuentra implementado y gestiona la configuración persistente de la aplicación. La configuración se mantiene en memoria como un diccionario y se almacena en disco en formato JSON. El servicio ofrece operaciones para consultar y modificar valores de configuración por clave (get y set) y para cargar y almacenar la configuración (load y save).
+
+\paragraph{FileIOService}
+El FileIOService se encuentra implementado y adapta los formatos de archivo soportados al modelo de datos interno del sistema. Sus operaciones load\_abf, load\_edf y load\_mat leen archivos en los formatos ABF, EDF y MAT, respectivamente, y retornan en todos los casos un objeto SignalDataset. De esta manera, el resto del sistema permanece independiente de la representación de las señales en disco.
+
+\paragraph{ExportService}
+El ExportService se encuentra implementado y es responsable de exportar visualizaciones y resultados tabulares a formatos externos. Mantiene una referencia al componente de visualización y una función que provee la gráfica activa en cada momento. La operación export\_image exporta la visualización a formatos de imagen ráster (PNG, JPG, BMP y TIFF) y la operación export\_table exporta los resultados a formatos tabulares (CSV, XLSX y JSON). Se encuentra planificada la operación export\_vector, que permitirá la exportación a formato vectorial EMF en respuesta al caso de uso CU-017.
+
+\paragraph{DataStore}
+El DataStore se encuentra implementado y mantiene en memoria el estado compartido de la sesión de trabajo, el cual comprende las señales cargadas, la señal activa, las mediciones y los resultados de los análisis. Constituye la fuente única de verdad del estado de la aplicación. Ofrece operaciones genéricas de almacenamiento, consulta y verificación por clave (set, get y has), operaciones para incorporar señales (add\_signal), para establecer, consultar y liberar la señal activa (set\_active\_signal, get\_active\_signal y clear\_active\_signal) y para eliminar entradas del estado (remove).
+
+\paragraph{TaskOrchestrator}
+El TaskOrchestrator se encuentra planificado y tendrá la responsabilidad de coordinar la ejecución de las operaciones de cómputo solicitadas por las extensiones. Su propósito es garantizar que dichas operaciones se ejecuten de forma ordenada, que puedan ser canceladas por el usuario, que se presente retroalimentación de progreso y que sus resultados se publiquen de manera consistente. Para ello mantendrá una cola de solicitudes pendientes, una referencia a la operación en ejecución y un umbral de tiempo, fijado en un segundo, a partir del cual se presentará el indicador de progreso.
+
+La operación solicitar constituirá el punto de entrada único mediante el cual una extensión pide la ejecución de un cómputo. La operación encolar diferirá una solicitud cuando exista otra operación en curso, en cumplimiento del requerimiento R70. Las operaciones cancelar y forzar\_terminacion permitirán, respectivamente, la cancelación de una tarea a petición del usuario y la terminación forzada de una tarea que no responda a la cancelación, conforme al caso de uso CU-014 y su excepción 2a. Por último, la operación publicar\_resultado escribirá los resultados en el estado compartido de forma sincronizada. El TaskOrchestrator será el único componente autorizado para escribir en el DataStore, en cumplimiento del requerimiento R54.
+
+\paragraph{ProjectService}
+El ProjectService se encuentra implementado y gestiona la persistencia del espacio de trabajo en archivos de proyecto con extensión glab. Cada archivo de proyecto es un manifiesto en formato JSON que registra la señal de origen, las mediciones realizadas, la configuración de la segmentación en ensayos y el estado de los análisis. Durante el guardado, el archivo de señal se copia a la carpeta del proyecto, de modo que el proyecto resulta autocontenido y puede reabrirse en otro equipo. Durante la apertura, el servicio verifica la disponibilidad del archivo de señal referenciado, lo recarga mediante el FileIOService y restaura el estado de la sesión en el DataStore.
+
+El servicio mantiene la carpeta del proyecto, la ruta del archivo de proyecto, el nombre del proyecto, un indicador de cambios pendientes de guardar y una función de notificación que informa a la interfaz sobre la apertura, el guardado, el cambio de nombre o el cierre del proyecto. Sus operaciones principales permiten guardar el proyecto en su ubicación actual (save), guardarlo en una nueva ubicación (save\_as), abrir y restaurar un proyecto existente (open), y cerrar el proyecto activo liberando su estado (close). Adicionalmente, ofrece operaciones para asignar el nombre del proyecto (set\_project\_name), registrar la existencia de cambios pendientes (mark\_dirty), verificar si existe un proyecto abierto (is\_open) y generar un nombre predeterminado a partir del nombre de la señal (default\_project\_name). El ProjectService depende del FileIOService, del DataStore y del Kernel, y produce y consume objetos de tipo ProjectData.
+
+\subsubsection{Elementos de presentación}
+
+\paragraph{MainWindow}
+La MainWindow se encuentra parcialmente implementada y constituye el contenedor principal de la interfaz gráfica. Es responsable de la navegación entre los módulos funcionales, de la presentación de la pantalla de inicio y de las operaciones de proyecto disponibles en el menú Archivo. Mantiene referencias al Kernel y al ProjectService. La operación switch\_module presenta las extensiones correspondientes a la categoría seleccionada por el usuario, la operación show\_home presenta la pantalla de inicio y la operación build\_home\_welcome construye el panel de bienvenida. Esta última se encuentra pendiente de incorporar la detección de la primera ejecución de la aplicación, requerida por el requerimiento R10.
+
+\paragraph{VTKContextMenu}
+El VTKContextMenu se encuentra implementado y provee el menú contextual asociado a las visualizaciones. Sus operaciones permiten presentar el menú en la posición indicada por el usuario (show\_menu) y solicitar la exportación de la visualización como imagen o como tabla (export\_image y export\_table). Este elemento delega la exportación en el ExportService y opera sobre los componentes visuales provistos por las extensiones.
+
+\paragraph{TooltipHelper}
+El TooltipHelper se encuentra planificado y tendrá la responsabilidad de proveer ayuda contextual sobre los controles de la interfaz. Mantendrá un diccionario de descripciones asociadas a cada control. La operación aplicar\_tooltips asignará dichas descripciones a los controles de un componente visual y la operación al\_cambiar\_habilitado actualizará la descripción de un control cuando cambie su disponibilidad, de modo que el usuario conozca el motivo por el cual un control se encuentra deshabilitado.
+
+\subsubsection{Contrato de extensión}
+
+\paragraph{IPlugin}
+IPlugin es la interfaz que define el contrato que toda extensión debe cumplir para integrarse al sistema, y constituye el mecanismo principal de extensibilidad de la arquitectura. Se encuentra implementada y establece las siguientes operaciones: get\_widget, que provee la interfaz gráfica de la extensión; process, que ejecuta el procesamiento propio de la extensión; stop, que detiene la extensión y libera sus recursos; y get\_active\_signal y get\_active\_trials, que proporcionan acceso a los datos de trabajo. IPlugin depende de las clases SignalDataset y TrialDataset.
+
+Se encuentra planificada la incorporación al contrato de la operación clear\_params, cuya finalidad es restablecer los parámetros de una extensión a sus valores predeterminados, conforme al caso de uso CU-009. Actualmente esta operación se encuentra implementada de forma individual en las extensiones FilterPlugin, TrialsPlugin y ArtifactRemovePlugin, pero aún no forma parte de la interfaz común.
+
+\subsubsection{Extensiones}
+
+Todas las extensiones del sistema realizan la interfaz IPlugin. La Tabla~\ref{tab:extensiones} resume las extensiones representadas en el modelo, su estado de implementación y su responsabilidad.
+
+\begin{table}[H]
+\centering
+\caption{Extensiones representadas en la vista lógica.}
+\label{tab:extensiones}
+\begin{tabularx}{\linewidth}{@{}p{4.6cm}p{2.6cm}X@{}}
+\toprule
+\textbf{Elemento} & \textbf{Estado} & \textbf{Responsabilidad} \\
+\midrule
+OpenSignalPlugin & Implementado & Selección y carga de señales desde archivo. \\
+FilterPlugin & Implementado & Filtrado en frecuencia de la señal. \\
+WaveletPlugin & Implementado & Análisis en tiempo y frecuencia mediante la transformada wavelet. \\
+TrialsPlugin & Implementado & Segmentación de la señal en ensayos. \\
+PACAnalysisPlugin & Planificado & Comportamiento común del análisis de acoplamiento entre fase y amplitud (PAC). \\
+PACSingleChannelPlugin & Planificado & Cálculo del acoplamiento entre fase y amplitud dentro de un mismo canal. \\
+PACInterChannelPlugin & Planificado & Cálculo del acoplamiento entre fase y amplitud y de la consistencia de fase por pares (PPC) entre dos canales. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+PACAnalysisPlugin es una clase abstracta que concentra los parámetros y el procedimiento comunes a todo análisis de acoplamiento entre fase y amplitud. Sus atributos definen la banda de frecuencia de la fase y el rango de frecuencia de la amplitud, y su operación calcular\_mapa\_fase\_frecuencia obtiene el mapa de fase y frecuencia mediante la transformada wavelet. Las clases PACSingleChannelPlugin y PACInterChannelPlugin especializan este comportamiento. La primera incorpora la operación calcular\_pac\_1\_canal, que calcula el acoplamiento dentro de un mismo canal, y la segunda incorpora las operaciones calcular\_pac\_2\_canales y calcular\_ppc, que calculan el acoplamiento y la consistencia de fase entre dos canales.
+
+\subsubsection{Modelo de datos}
+
+\paragraph{SignalDataset}
+SignalDataset se encuentra implementada y representa una señal electrofisiológica multicanal. Sus atributos contienen la matriz de muestras de la señal, la frecuencia de muestreo expresada en hercios y los identificadores de los canales.
+
+\paragraph{TrialDataset}
+TrialDataset se encuentra implementada y representa una señal segmentada en ensayos. Sus atributos contienen la matriz de ensayos, cuyas dimensiones corresponden al número de muestras por ensayo y al número de ensayos, los instantes de inicio de cada ensayo expresados en segundos y los intervalos entre estímulos expresados en segundos.
+
+\paragraph{ProjectData}
+ProjectData es una estructura de datos implementada que representa en memoria el contenido de un archivo de proyecto. En la implementación actual se materializa como un diccionario serializado en formato JSON, producido por la operación save y retornado por la operación open del ProjectService. Sus atributos registran la versión del esquema del formato de proyecto, el nombre del proyecto, la fecha y hora del último guardado, la información de la señal de origen (nombre de archivo, formato, nombre y frecuencia de muestreo), las mediciones realizadas, la configuración de la segmentación en ensayos y los parámetros y el estado de las extensiones de análisis. La versión del esquema permite detectar incompatibilidades entre versiones del formato al momento de abrir un proyecto.
+
+\subsubsection{Relaciones estructurales}
+
+La Tabla~\ref{tab:relaciones_logica} resume las relaciones entre los elementos del modelo lógico.
+
+\begin{table}[H]
+\centering
+\caption{Relaciones estructurales de la vista lógica.}
+\label{tab:relaciones_logica}
+\begin{tabularx}{\linewidth}{@{}p{3.6cm}p{2.4cm}p{3.6cm}X@{}}
+\toprule
+\textbf{Origen} & \textbf{Tipo} & \textbf{Destino} & \textbf{Descripción} \\
+\midrule
+Kernel & Asociación & PluginManager & Delega la carga de extensiones. \\
+Kernel & Asociación & SettingsService, FileIOService, DataStore, TaskOrchestrator & Registra y expone los servicios del sistema. \\
+Kernel, PluginManager & Dependencia & IPlugin & Administran las extensiones a través de su contrato. \\
+MainWindow & Asociación & Kernel, ProjectService & Accede a las extensiones, a los servicios y a las operaciones de proyecto. \\
+ProjectService & Dependencia & FileIOService, DataStore & Recarga la señal y restaura el estado de la sesión. \\
+ProjectService & Dependencia & ProjectData & Produce y consume el contenido del proyecto. \\
+VTKContextMenu & Dependencia & ExportService & Delega la exportación. \\
+VTKContextMenu, TooltipHelper & Dependencia & IPlugin & Operan sobre los componentes visuales de las extensiones. \\
+IPlugin & Dependencia & SignalDataset, TrialDataset & Manipula el modelo de datos. \\
+Extensiones concretas y PACAnalysisPlugin & Realización & IPlugin & Implementan el contrato de extensión. \\
+PACSingleChannelPlugin, PACInterChannelPlugin & Generalización & PACAnalysisPlugin & Especializan el análisis de acoplamiento. \\
+Extensiones de análisis & Dependencia & TaskOrchestrator & Solicitan la ejecución de operaciones de cómputo. \\
+TaskOrchestrator & Asociación & DataStore & Publica los resultados en el estado compartido. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection{Mecanismos y patrones arquitectónicos}
+
+La Tabla~\ref{tab:patrones_logica} identifica los patrones de diseño presentes en el modelo lógico, los elementos que los materializan y el propósito que cumplen dentro de la arquitectura.
+
+\begin{table}[H]
+\centering
+\caption{Patrones de diseño presentes en la vista lógica.}
+\label{tab:patrones_logica}
+\begin{tabularx}{\linewidth}{@{}p{3.4cm}p{4.6cm}X@{}}
+\toprule
+\textbf{Patrón} & \textbf{Elementos} & \textbf{Propósito} \\
+\midrule
+Microkernel & Kernel, PluginManager, IPlugin & Incorporar nuevas funcionalidades sin modificar el núcleo. \\
+Localizador de servicios & Kernel & Desacoplar a los consumidores de la construcción de los servicios. \\
+Publicador y suscriptor & Kernel & Comunicar componentes sin referencias directas entre ellos. \\
+Repositorio & DataStore & Centralizar el estado compartido de la sesión. \\
+Escritor único & TaskOrchestrator & Preservar la consistencia del estado ante ejecuciones concurrentes. \\
+Cola de comandos & TaskOrchestrator & Ejecutar las operaciones de forma ordenada y permitir su cancelación. \\
+Adaptador & FileIOService & Unificar formatos heterogéneos en un único modelo de datos. \\
+Memento & ProjectService, ProjectData & Capturar y restaurar el estado de la sesión de trabajo. \\
+Método plantilla & PACAnalysisPlugin y sus especializaciones & Reutilizar el procedimiento común y variar el cálculo específico. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection{Justificación de las decisiones}
+
+La separación entre el núcleo y las extensiones mediante la interfaz IPlugin favorece la extensibilidad del sistema, ya que permite incorporar nuevos análisis, como los de acoplamiento entre fase y amplitud, sin modificar el código existente, en conformidad con el principio de abierto y cerrado.
+
+La asignación exclusiva de la escritura sobre el estado compartido al TaskOrchestrator garantiza la consistencia del estado de la aplicación, al eliminar las condiciones de carrera entre operaciones concurrentes, conforme al requerimiento R54.
+
+La centralización de la ejecución de los cómputos en el TaskOrchestrator mejora la capacidad de respuesta del sistema y el control que ejerce el usuario sobre él, puesto que habilita la ejecución ordenada de las operaciones (R70), su cancelación (CU-014) y la presentación de progreso, sin que cada extensión deba gestionar sus propios hilos de ejecución.
+
+La concentración de la lectura de archivos en el FileIOService asegura la independencia del sistema respecto de los formatos de señal, y confina a un único elemento el impacto de incorporar nuevos formatos.
+
+La persistencia de proyectos mediante el ProjectService y la estructura ProjectData produce proyectos autocontenidos y versionados. La inclusión de una copia de la señal de origen permite reabrir el trabajo en otro equipo, y la versión del esquema permite detectar incompatibilidades entre versiones del formato.
+
+Por último, la jerarquía encabezada por PACAnalysisPlugin promueve la reutilización, al evitar la duplicación del cálculo del mapa de fase y frecuencia entre las variantes de análisis de uno y de dos canales.
+
+\subsubsection{Trazabilidad con los requerimientos}
+
+La Tabla~\ref{tab:trazabilidad_logica} relaciona los elementos y operaciones del modelo lógico con los casos de uso y requerimientos que los originan.
+
+\begin{table}[H]
+\centering
+\caption{Trazabilidad entre elementos de la vista lógica y requerimientos.}
+\label{tab:trazabilidad_logica}
+\begin{tabularx}{\linewidth}{@{}X p{5cm}@{}}
+\toprule
+\textbf{Elemento u operación} & \textbf{Caso de uso o requerimiento} \\
+\midrule
+IPlugin, operación clear\_params & CU-009 \\
+TaskOrchestrator, operación cancelar & CU-014 \\
+TaskOrchestrator, operación forzar\_terminacion & CU-014, excepción 2a \\
+ExportService, operación export\_vector & CU-017 \\
+ProjectService, operaciones save, save\_as y close & CU-021, R07 \\
+ProjectService, operación open, y ProjectData & CU-023 \\
+TaskOrchestrator, operación publicar\_resultado & R54 \\
+TaskOrchestrator, operación encolar & R70 \\
+MainWindow, operación build\_home\_welcome & R10 \\
+PACSingleChannelPlugin y PACInterChannelPlugin & CU-001 y casos de uso de análisis de acoplamiento \\
+\bottomrule
+\end{tabularx}
+\end{table}
 
 \subsection{Vista de Procesos}
 La vista de procesos describe el comportamiento din\'amico del sistema completo como un \'unico flujo maestro de sesi\'on, construido a partir de las cadenas de precondici\'on declaradas por las propias 23 fichas (p.\,ej. CU-006 exige trials generados por CU-004, que a su vez exige una se\~nal cargada por CU-003) --- no es una fusi\'on literal de los 23 flujos detallados, que ser\'ia ileg\'ible.
