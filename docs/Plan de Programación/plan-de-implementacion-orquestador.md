@@ -150,6 +150,8 @@ Lo que hay que saber para seguir con el plan:
 
 Y un hallazgo que no se fue a buscar: **las pruebas de validación del wavelet contra MATLAB ya fallan hoy**, antes de tocar nada (pasa el 0,23 % de los puntos). Es anterior e independiente del orquestador, pero es una cuestión de correctitud y merece su propio frente de trabajo. Está desarrollado en el documento de resultados.
 
+> **Actualización (30 de septiembre de 2026):** se confirmó que viene de Gamma Lab 1.0 —2.0 da los mismos bits que 1.0— y ya hay causas identificadas. Ver el nº 2 de [`problemas-encontrados.md`](problemas-encontrados.md).
+
 ---
 
 ## Fase 1 — Las tres optimizaciones reales
@@ -248,6 +250,8 @@ El reemplazo es una conversión en bloque del arreglo completo, asignada como es
 > Es exactamente el incidente que el propio SAD documenta en "Estabilidad de módulos internos". Los únicos dos archivos que sí corren son los del wavelet, y ésos se verificaron: fallan idéntico a antes del cambio.
 >
 > **Como criterio de regresión, esta suite no sirve hoy.** Arreglar los 6 imports es trabajo de una hora y devolvería una red de seguridad real para las fases siguientes. Conviene hacerlo antes de la Fase 3, que es cuando se empieza a mover código de plugins de verdad.
+>
+> **Actualización (30 de septiembre de 2026):** los 6 imports ya se arreglaron (nº 1 de [`problemas-encontrados.md`](problemas-encontrados.md)) y los 8 archivos corren. Además, la Fase 1 se volvió a verificar contra el código original de Gamma Lab 1.0: los escalogramas y los datos que recibe VTK son **idénticos bit a bit** ([`resultados-fase-1.md`](resultados-fase-1.md)). Las únicas fallas que quedan son las comparaciones con MATLAB, heredadas de 1.0.
 
 ---
 
@@ -318,6 +322,8 @@ Va **antes** del descubrimiento de plugins, porque `register_plugin()` llama a `
 - [x] Cancelar durante la ejecución devuelve la interfaz en menos de 3 s → en la aplicación, una tarea que ignora la cancelación la libera a los **2,0 s** (umbral de desligue de 2.000 ms desde el 27 de septiembre de 2026; la prueba, con 200 ms, da < 1 s).
 - [x] Una excepción dentro de la tarea emite `failed` y **no** tumba la aplicación → verificado, y el servicio queda usable después.
 
+> **Corrección (30 de septiembre de 2026):** una revisión con pruebas de estrés encontró que el propio servicio **sí podía tumbar la aplicación**, no por una excepción sino al terminar cualquier tarea: soltaba el `QThread` antes de que el hilo terminara de salir, y Qt abortaba el proceso. Con 3.000 tareas cortas pasaba en 13 de 20 corridas. Ya está corregido —el hilo se conserva hasta su propia señal `QThread.finished`— y hay una prueba de 10.000 tareas que lo vigila. Detalle en [`resultados-fase-2.md`](resultados-fase-2.md).
+
 Resultados completos en [`resultados-fase-2.md`](resultados-fase-2.md).
 
 ---
@@ -327,6 +333,16 @@ Resultados completos en [`resultados-fase-2.md`](resultados-fase-2.md).
 *Objetivo: validar la abstracción contra código que ya funciona, antes de usarla en código nuevo.*
 
 Esta es la jugada de menor riesgo del plan. Si la migración de `wavelet_average` produce exactamente el mismo resultado que hoy, la abstracción está probada.
+
+> **Estado al 30 de septiembre de 2026: la mitad ya está hecha.**
+>
+> | Paso | Estado |
+> |---|---|
+> | 3.1 `wavelet_average` | ✅ **Hecho.** Ya no hay `WaveletWorker` ni `_cleanup_worker()`: el cálculo es la función pura `wavelet_promedio` en `wavelet_average/compute.py`, el plugin hace `submit()`, y el avance por trial llega a la barra de estado. Su resultado es **idéntico bit a bit** al de Gamma Lab 1.0 |
+> | 3.2 `artifact_remove` | ⬜ **Pendiente, y con más trabajo del previsto.** Su hilo no solo calcula: **escribe** en el `TrialDataset` compartido. Hay que partirlo en leer / calcular / escribir (nº 15 de [`problemas-encontrados.md`](problemas-encontrados.md)) |
+> | 3.3 Cancelar al salir | ✅ **Hecho, por otro camino.** No se hizo en `IPlugin.stop()` sino en `MainWindow.clear_plugin_area`, que cancela las tareas del plugin antes de llamar a su `stop()`. Mismo efecto: ningún plugin tiene que acordarse. La rama muerta de `get_all_plugins()` ya no existe, y el cierre de la aplicación usa `has_active_tasks()` |
+>
+> El orquestador tenía un fallo que podía cerrar la aplicación al terminar una tarea; se corrigió el 30 de septiembre, antes de seguir con esta fase. El texto de abajo es el plan original.
 
 ### 3.1 — `wavelet_average`
 
@@ -365,10 +381,11 @@ Y el bug desaparece **para todos los plugins a la vez**, sin que ninguno tenga q
 
 ### Criterio de salida de la Fase 3
 
-- [ ] Ya no queda ningún `QThread` ni `moveToThread` fuera de `core/services/task_service.py`.
-- [ ] El resultado numérico de los dos plugins es idéntico al de antes de migrar.
-- [ ] Cambiar de sección con un wavelet corriendo ya no deja hilos vivos.
-- [ ] La barra de progreso muestra el avance real por trial.
+- [ ] Ya no queda ningún `QThread` ni `moveToThread` fuera de `core/services/task_service.py` → falta `artifact_remove`.
+- [~] El resultado numérico de los dos plugins es idéntico al de antes de migrar → `wavelet_average` sí, bit a bit contra 1.0; falta `artifact_remove`.
+- [x] Cambiar de sección con un wavelet corriendo ya no deja hilos vivos → lo cubre `test_cancelacion_al_cambiar_seccion.py`.
+- [~] La barra de progreso muestra el avance real por trial → el avance llega como texto a la barra de estado; falta el widget con porcentaje y botón Cancelar (nº 9).
+- [ ] *(nuevo)* Cerrar la aplicación a mitad de una modificación de `artifact_remove` muestra el aviso de «Cálculo en curso» y no deja el hilo huérfano (nº 15).
 
 ---
 

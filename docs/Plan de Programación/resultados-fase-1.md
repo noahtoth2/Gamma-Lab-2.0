@@ -29,12 +29,14 @@ El plan de implementación las puso primero por tres razones, y las dos primeras
 Código actual, sin `method` (PyWavelets usa `method='conv'` por defecto):
 
 ```python
-# plugins/analysis/time_frequency/wavelet/wavelet_plugin.py:210
+# plugins/analysis/time_frequency/wavelet/wavelet_plugin.py:286
 coef, _ = pywt.cwt(sig, scales, wavelet, sampling_period=1/fs)
 
-# plugins/analysis/time_frequency/wavelet_average/compute.py:32
-coef, _ = pywt.cwt(sig, scales, wavelet, sampling_period=1/fs if fs > 0 else 1.0)
+# plugins/analysis/time_frequency/wavelet_average/compute.py:44
+coef, _ = pywt.cwt(sig, scales, wavelet, sampling_period=1/fs)
 ```
+
+*(Líneas al 30 de septiembre de 2026. La guarda `if fs > 0 else 1.0` ya no hace falta en `compute.py`: la función rechaza antes una densidad de muestreo menor o igual a cero.)*
 
 ### Qué se probó
 
@@ -291,7 +293,14 @@ Sumando cálculo más dibujo, que es lo que transcurre entre pulsar el botón y 
 | Pico de memoria (30 trials) | 1.715 MB | **414 MB** | **4,1× menos** |
 | Pico de memoria (60 trials, el archivo real) | 3.107 MB | **414 MB** | **7,5× menos** |
 
-> **Con convolución** (estimado sumando mediciones ya hechas: cálculo de la Fase 0 + render de la Fase 1; la suite no se volvió a correr): un wavelet individual queda en ~300 ms (202,0 + 97,7), unas **3,1×** más rápido que antes. El promedio de 20 trials queda en ~4,29 s (4.213,6 + 80,4), unas **1,15×**. La memoria no cambia.
+> **Con convolución, medido el 30 de septiembre de 2026** (suite completa en el mismo equipo, etiqueta `verif_2026-09-30`, guardada fuera de `perf_results.json`):
+>
+> | Acción | Gamma Lab 1.0 (ago-16) | Fase 0 | **Hoy, con convolución** | |
+> |---|---:|---:|---:|---|
+> | Wavelet individual (cálculo + dibujo) | 940,9 ms | 918,5 ms | **271,6 ms** (190,8 + 80,8) | **3,5× más rápido que 1.0** |
+> | Wavelet promedio, 20 trials (cálculo + dibujo) | 4.931,8 ms | 4.945,7 ms | **3.973,9 ms** (3.880,7 + 93,2) | **1,24×** |
+>
+> La mejora que queda sin FFT viene casi toda del dibujo (1.3). El cálculo del promedio sigue en ~3,9 s, y por eso sigue necesitando el orquestador. La memoria no cambia (ver la verificación contra 1.0, más abajo).
 
 ### El costo de todo esto
 
@@ -310,6 +319,33 @@ Ese último punto es el que conviene subrayar: **todo lo anterior se consiguió 
 De haber construido primero el orquestador, habría movido los ~200 ms de cómputo a un hilo trabajador y dejado **716 ms de renderizado congelando la ventana**, en `wavelet_average` justo *después* de que el hilo terminara — es decir, en el momento en que el usuario cree que ya acabó. La conclusión razonable habría sido "el orquestador no sirvió".
 
 Ahora el reparto es otro: el render está en ~80-98 ms, por debajo del umbral de percepción, y lo que queda por sacar del hilo de interfaz son los ~4,2 s del cómputo promedio con convolución (~2 s cuando se usaba FFT). Eso sí es trabajo para el orquestador.
+
+---
+
+## Verificación contra Gamma Lab 1.0 (30 de septiembre de 2026)
+
+Antes de pasar a la Fase 3 se repitió la comprobación, esta vez contra el código original de **Gamma Lab 1.0** (`gamma-lab-desktop-app`, rama `develop`) y no contra una versión intermedia de 2.0. Cada versión corrió en su propio proceso sobre el mismo archivo `17308005.abf`, con los parámetros por defecto (`fmin=1`, `fmax=500`, 2 ciclos, 1000 Hz, escala lineal). Gamma Lab 1.0 no se modificó.
+
+| Resultado | 1.0 contra 2.0 |
+|---|---|
+| Trials cortados (30.501 × 60) y su eje de tiempo | **Idénticos bit a bit** |
+| Wavelet de 1 trial (998 × 3051) y sus ejes | **Idénticos bit a bit** |
+| Wavelet promedio de 20 trials, sin normalizar y con z-score | **Idénticos bit a bit** |
+| Datos que recibe VTK al dibujar (3.044.898 valores) | **Idénticos bit a bit** |
+| Normalizaciones del wavelet individual (z-score, percent change, relative power) | Diferencia relativa ~1e-10, por la protección `+1e-12` contra división por cero agregada el 29 de septiembre |
+| Min-max y la interpolación logarítmica antigua | Idénticos bit a bit |
+
+Que el promedio salga idéntico a 1.0 confirma el acumulador (1.2) —sumar y dividir da los mismos bits que `np.stack` + `np.mean`— y que la función que hoy ejecuta el orquestador (`compute.wavelet_promedio`) calcula exactamente lo mismo que el `WaveletWorker` de 1.0.
+
+La memoria se volvió a medir con el mismo método (`PeakWorkingSetSize`, un proceso nuevo por medición):
+
+| Trials | Consumo del promedio en 1.0 | En 2.0 |
+|---:|---:|---:|
+| 10 | 491 MB | **90 MB** |
+| 30 | 1.422 MB | **91 MB** |
+| 60 *(el archivo real)* | 2.815 MB | **91 MB** |
+
+> **Lo que sí cambió a propósito después de la Fase 1** (29 de septiembre, fuera del alcance del orquestador): con la escala logarítmica activada el wavelet ya no interpola el eje lineal, sino que calcula directamente sobre frecuencias logarítmicas; el eje de tiempo empieza en el `time_rel` real (−0,05 s) en vez de 0; y los ejes del dibujo quedan fijos a los datos. Por eso la comparación de arriba se hizo en escala lineal y llamando al cálculo con `t0=0`. Detalle en [`problemas-encontrados.md`](problemas-encontrados.md), nº 16.
 
 ---
 

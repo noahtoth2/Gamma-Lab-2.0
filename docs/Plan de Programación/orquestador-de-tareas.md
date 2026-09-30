@@ -213,17 +213,20 @@ Esta sección es la que conecta todo con la realidad de los equipos del laborato
 
 ### El problema, con números
 
-Los valores por defecto del wavelet son `fmin=1, fmax=500`, lo que da **998 escalas**. Con un trial de 4050 muestras, PyWavelets reserva una matriz compleja de 998 × 4050, a 16 bytes por elemento: **65 MB**. Más el módulo, otros 32 MB. En total unos **100 MB para un solo trial**. Tolerable.
+Los valores por defecto del wavelet son `fmin=1, fmax=500`, lo que da **998 escalas**. Con un trial de 3051 muestras (los 30.501 del archivo de prueba, submuestreados de 10 kHz a 1 kHz), PyWavelets reserva una matriz compleja de 998 × 3051, a 16 bytes por elemento: **49 MB**. Más el módulo, otros 24 MB. En total unos **75 MB para un solo trial**. Tolerable.
 
 Pero `wavelet_average` hace eso mismo una vez por trial y **guarda todos los resultados en una lista**, y al final llama a `np.stack`, que copia el conjunto entero:
 
-| Trials | En la lista | La copia | Pico |
+| Trials | En la lista | La copia | Consumo medido en Gamma Lab 1.0 |
 |---|---|---|---|
-| 10 | 323 MB | 323 MB | ~710 MB |
-| 30 | 970 MB | 970 MB | **~2 GB** |
-| 100 | 3,2 GB | 3,2 GB | revienta |
+| 10 | 244 MB | 244 MB | 491 MB |
+| 30 | 731 MB | 731 MB | **1.422 MB** |
+| 60 *(el archivo real)* | 1,5 GB | 1,5 GB | **2.815 MB** |
+| 100 | 2,4 GB | 2,4 GB | ~4,9 GB (estimado) |
 
-Y si el usuario sube `fmax` a 2000, un solo trial ya son 259 MB.
+Y si el usuario sube `fmax` a 2000 (lo que exige una densidad de al menos 4000 Hz), un solo trial ya pasa de 1 GB.
+
+> **Corregido el 30 de septiembre de 2026.** La primera versión de esta sección suponía trials de 4050 muestras y daba 65 MB + 32 MB por trial. La Fase 0 midió 3051 muestras; las cifras de arriba salen de ahí, y la última columna se midió con el código de Gamma Lab 1.0.
 
 Este es, hoy, el problema más grave de la aplicación. Y no es de velocidad.
 
@@ -235,7 +238,7 @@ Cambiar *"guardar todo y luego apilar"* por *"ir sumando"*:
 acumulador += escalograma        # en vez de lista.append(escalograma)
 ```
 
-Con eso el pico deja de depender del número de trials. Da igual si son 10 o 200: siempre ~100 MB. **De 2 GB a 100 MB**, y no tiene nada que ver con concurrencia.
+Con eso el pico deja de depender del número de trials. Da igual si son 10 o 200: siempre lo mismo. Medido tras la Fase 1: **91 MB con 10, 30 o 60 trials, contra 2.815 MB de la versión con lista para los 60 del archivo real**. Y no tiene nada que ver con concurrencia.
 
 Por eso conviene que la reducción incremental sea parte del **contrato** de las tareas que promedian, no una optimización que alguien recuerde aplicar.
 
@@ -306,9 +309,11 @@ Ambas mediciones son de una tarde.
 
 El orquestador saca los cálculos del hilo de la interfaz. Lo que **no** puede sacar es el dibujo, porque VTK obliga a llenar sus estructuras desde el hilo gráfico.
 
-Y ahí hay un problema serio: el código llena las imágenes de VTK punto por punto desde Python. En el wavelet son **cuatro millones de llamadas**, que son varios segundos de ventana congelada — y en `wavelet_average` eso ocurre *después* del hilo, justo cuando el usuario cree que ya terminó.
+Y ahí hay un problema serio: el código llena las imágenes de VTK punto por punto desde Python. En el wavelet son **3,04 millones de llamadas** (998 × 3051), unos 0,7 s de ventana congelada — y en `wavelet_average` eso ocurre *después* del hilo, justo cuando el usuario cree que ya terminó.
 
 El R59 ya exige hacer esas conversiones en bloque, y el proyecto **ya tiene la solución escrita y en uso** en `core/utils/adapters.py`. Pero mientras no se aplique, el investigador va a seguir viendo la aplicación congelada, por mucho orquestador que haya.
+
+> **Actualización (30 de septiembre de 2026):** la cifra original decía «cuatro millones de llamadas», porque suponía trials de 4050 muestras; son 3,04 millones. La conversión en bloque se aplicó en la Fase 1.3: el dibujo del escalograma bajó de ~725 ms a ~80-100 ms, con los mismos datos bit a bit.
 
 No es parte de esta propuesta, pero sí es condición para que se note.
 

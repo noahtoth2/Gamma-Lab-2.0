@@ -1,5 +1,9 @@
+import os
+import subprocess
+import sys
 import threading
 import time
+from pathlib import Path
 
 import pytest
 from PyQt5.QtCore import QCoreApplication
@@ -233,3 +237,37 @@ def test_sin_ctx_no_se_inyecta_nada(qt_app):
     rec = Recorder(svc.submit(suma, owner="p1", a=10, b=5))
     assert wait_for(lambda: rec.settled)
     assert rec.finished == [15]
+
+
+_MUCHAS_TAREAS = """
+import sys, time
+from PyQt5.QtCore import QCoreApplication
+app = QCoreApplication([])
+from core.services.task_service import TaskService
+svc = TaskService()
+n = int(sys.argv[1])
+hechas = []
+for i in range(n):
+    svc.submit(lambda i=i: i, owner=f"p{i}").finished.connect(hechas.append)
+limite = time.monotonic() + 60
+while (svc.has_active_tasks() or svc._threads) and time.monotonic() < limite:
+    app.processEvents()
+print(len(hechas), len(svc._threads))
+"""
+
+
+def test_muchas_tareas_cortas_no_tumban_la_aplicacion():
+    # Hasta el 30 de septiembre de 2026 el servicio soltaba cada QThread apenas
+    # llegaba su resultado, a veces antes de que el hilo saliera, y Qt abortaba
+    # el proceso ("QThread: Destroyed while thread is still running"). Con 3.000
+    # tareas pasaba en 13 de 20 corridas. Corre en un proceso aparte para que,
+    # si vuelve, falle esta prueba y no se caiga toda la sesion de pytest.
+    n = 10_000
+    env = dict(os.environ, QT_FORCE_STDERR_LOGGING="1")
+    r = subprocess.run([sys.executable, "-c", _MUCHAS_TAREAS, str(n)],
+                       cwd=Path(__file__).resolve().parents[2], env=env,
+                       capture_output=True, text=True, timeout=120)
+
+    assert "QThread: Destroyed" not in r.stderr, "Qt destruyo un hilo que seguia corriendo"
+    assert r.returncode == 0, r.stderr[-800:]
+    assert r.stdout.split() == [str(n), "0"], "no terminaron todas o quedaron hilos sin liberar"

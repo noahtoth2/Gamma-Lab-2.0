@@ -84,6 +84,11 @@ class TaskService(QObject):
         self._queue = []
         self._running = None
         self._detached = {}
+        # Cada hilo se conserva hasta que Qt emite su propio QThread.finished.
+        # Soltarlo antes (al llegar `done`, que se emite todavia dentro de run())
+        # puede destruir un QThread que aun no salio, y Qt aborta toda la
+        # aplicacion con "QThread: Destroyed while thread is still running".
+        self._threads = set()
 
     def submit(self, fn, *, owner: str, **kwargs) -> TaskHandle:
         self._discard_queued_from(owner)
@@ -136,8 +141,17 @@ class TaskService(QObject):
 
         worker = _Worker(task, ctx)
         task.worker = worker
+        self._threads.add(worker)
         worker.done.connect(self._on_worker_done)
+        # Se conecta antes de start(): una tarea muy corta puede terminar
+        # antes de que se alcance a conectar despues.
+        worker.finished.connect(self._release_thread)
         worker.start()
+
+    def _release_thread(self) -> None:
+        worker = self.sender()
+        self._threads.discard(worker)
+        worker.deleteLater()
 
     def _cancel(self, task_id: str) -> None:
         for task in self._queue:
@@ -173,9 +187,8 @@ class TaskService(QObject):
         self._start_next_if_idle()
 
     def _on_worker_done(self, task_id, result, error) -> None:
-        worker = self._detached.pop(task_id, None)
-        if worker is not None:
-            worker.deleteLater()
+        # El hilo no se libera aqui sino en _release_thread, cuando ya salio de run().
+        if self._detached.pop(task_id, None) is not None:
             return
 
         task = self._running
@@ -183,9 +196,7 @@ class TaskService(QObject):
             return
 
         self._running = None
-        if task.worker is not None:
-            task.worker.deleteLater()
-            task.worker = None
+        task.worker = None
 
         if task.cancel_event.is_set():
             task.state = "cancelled"

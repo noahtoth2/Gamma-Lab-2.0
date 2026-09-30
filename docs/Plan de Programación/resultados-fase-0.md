@@ -188,6 +188,8 @@ Fallan **todas** las filas del escalograma, y la prueba de correlación por fila
 
 **Recomendación:** abrirlo como frente de trabajo aparte y levantarlo con la directora del proyecto antes de avanzar con la Fase 1. No bloquea al orquestador, pero no debería quedar enterrado dentro de un informe de rendimiento.
 
+> **Actualización (30 de septiembre de 2026):** se confirmó que la diferencia **ya estaba en Gamma Lab 1.0**. Con el mismo archivo y los mismos parámetros, el código original de 1.0 y el de 2.0 producen el mismo escalograma bit a bit. Las causas identificadas están en el nº 2 de [`problemas-encontrados.md`](problemas-encontrados.md).
+
 ---
 
 ## Decisiones que salen de la Fase 0
@@ -361,6 +363,24 @@ pytest test/plugins_test/test_wavelet_plugin.py test/plugins_test/test_wavelet_a
 Conviene correr cada archivo **por separado** y comparar archivo contra archivo. Mezclar ambos en una sola corrida y leer solo el final lleva a comparar la salida de un plugin contra la del otro, que es un error fácil de cometer.
 
 ---
+
+## Nueva verificación (30 de septiembre de 2026)
+
+Antes de pasar a la Fase 3 se repitieron las mediciones con el código actual, en el mismo equipo y con las mismas versiones. La suite se corrió guardando los resultados fuera del repositorio (etiqueta `verif_2026-09-30`), así que `perf_results.json` no cambió.
+
+| Operación | ago-16 (1.0) | Fase 0 | 30 de septiembre |
+|---|---:|---:|---:|
+| `wavelet.compute_wavelet` (1 trial, convolución) | 215,6 ms | 202,0 ms | **190,8 ms** |
+| `wavelet_average.compute_wavelet` (×20 trials) | 4.190,2 ms | 4.213,6 ms | **3.880,7 ms** |
+| `wavelet.render_scalogram` | 725,3 ms | 716,5 ms | **80,8 ms** (vectorizado en la Fase 1) |
+| `wavelet_average.render_scalogram` | 741,6 ms | 732,1 ms | **93,2 ms** |
+| `fft._compute_fft` | 3,8 ms | 3,7 ms | 3,6 ms |
+| `psd_average._compute_psd` | 9,2 ms | 11,9 ms | 8,8 ms |
+| `fileio.load_abf` | 59,8 ms | 78,6 ms | 55,6 ms |
+
+Las 25 pruebas de rendimiento pasaron. El cálculo sigue en el mismo orden que en la Fase 0, como corresponde a haber vuelto a la convolución; el dibujo conserva la mejora de la Fase 1. Las decisiones de la tabla de arriba siguen en pie: lo único que pasa de 100 ms es el cálculo del wavelet, individual y promedio.
+
+**El GIL, medido de la forma que importa para el R55.** La prueba de 2 hilos mostraba que el GIL se suelta. Esta vez se midió directamente la interfaz: un temporizador de 10 ms en el hilo principal mientras el orquestador calculaba un promedio real de 20 trials. El hueco más largo entre dos disparos fue de **34 ms** (p99: 19 ms), contra un límite de 300 ms.
 
 ## Estado
 
