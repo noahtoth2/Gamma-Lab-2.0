@@ -1,32 +1,53 @@
 # plugins/preprocessing/prepare/artifact_remove/artifact_logic.py
-from typing import List, Tuple
-import numpy as np
+"""Lectura y escritura de los trials que modifica artifact_remove.
+
+La modificación se hace en tres pasos para que los datos compartidos solo se
+toquen desde el hilo de la interfaz (regla de escritura única del orquestador):
+
+  1. preparar_modificacion  -> hilo de la interfaz: lee y copia los trials activos.
+  2. calcular_modificacion  -> orquestador (compute.py): función pura, sin Kernel.
+  3. escribir_modificacion  -> hilo de la interfaz, en el slot de `finished`.
+"""
+from dataclasses import dataclass
 from pathlib import Path
-from scipy.interpolate import CubicSpline
+
+import numpy as np
+
+from plugins.preprocessing.prepare.artifact_remove.compute import calcular_modificacion
 
 LOGL = "[ArtifactLogic]"
 
 # ----------------- Helpers -----------------
 
+def _last_trial_dataset(sd):
+    """Último TrialDataset generado, por la API pública de SignalDataset (o None).
+
+    Antes se leía `sd.trials_dataset`, un atributo que SignalDataset no tiene: el
+    error se tragaba y siempre se usaba el primer canal de la señal.
+    """
+    try:
+        tds = sd.get_all_trials_datasets()
+        return tds[-1] if tds else None
+    except Exception:
+        return None
+
 def _get_active_signal_and_name(kernel):
     store = kernel.get_service("DataStore")
     if not store:
-        raise RuntimeError("DataStore missing.")
+        raise RuntimeError("No está disponible el DataStore.")
     sd = store.get_active_signal()
     if sd is None:
-        raise RuntimeError("No active signal.")
+        raise RuntimeError("No hay una señal activa.")
     # SignalDataset uses file_name (Path(source).name) as key.
     # Try to take it from the last TrialDataset if available; otherwise from source_path.
     file_name = None
-    try:
-        if sd.trials_dataset:
-            file_name = Path(sd.trials_dataset[-1].source).name
-    except Exception:
-        pass
+    last_td = _last_trial_dataset(sd)
+    if last_td is not None and getattr(last_td, "source", None):
+        file_name = Path(last_td.source).name
     if not file_name:
         file_name = Path(getattr(sd, "source_path", "")).name or getattr(sd, "name", None)
     if not file_name:
-        raise RuntimeError("Active signal has no file name.")
+        raise RuntimeError("La señal activa no tiene nombre de archivo.")
     return sd, file_name
 
 def _get_current_channel_name(sd) -> str:
@@ -36,13 +57,9 @@ def _get_current_channel_name(sd) -> str:
       2) first name in sd.channel_names
       3) 'ch-1' if there are signals loaded
     """
-    try:
-        if sd.trials_dataset:
-            ch = getattr(sd.trials_dataset[-1], "channel_name", None)
-            if ch:
-                return str(ch)
-    except Exception:
-        pass
+    ch = getattr(_last_trial_dataset(sd), "channel_name", None)
+    if ch:
+        return str(ch)
     try:
         names = getattr(sd, "channel_names", None)
         if names and len(names) > 0:
@@ -52,50 +69,45 @@ def _get_current_channel_name(sd) -> str:
     sig = getattr(sd, "signals", None)
     if sig is not None and getattr(sig, "shape", None) and sig.shape[0] > 0:
         return "ch-1"
-    raise RuntimeError("No channel selected/found. Generate Trials first or select a channel.")
+    raise RuntimeError("No se encontró el canal. Genera los trials primero o selecciona un canal.")
 
-def _time_window_indices(t: np.ndarray, a: float, b: float) -> Tuple[int, int]:
-    """Return indices [i_a, i_b) for window [a, b] (swap if b<a)."""
-    if b < a:
-        a, b = b, a
-    i_a = int(np.searchsorted(t, a, side="left"))
-    i_b = int(np.searchsorted(t, b, side="right"))
-    i_a = max(0, min(i_a, t.shape[0]))
-    i_b = max(0, min(i_b, t.shape[0]))
-    return i_a, i_b
-
-
-def _fill_nan_segments(t: np.ndarray, data: np.ndarray) -> np.ndarray:
-    """
-    Replace NaN/Inf segments column-wise using interpolation so downstream analysis
-    receives finite values. Uses np.interp which clamps to edge values when the
-    NaN block touches the start/end.
-    """
-    if not np.isnan(data).any():
-        return data
-
-    for col in range(data.shape[1]):
-        y = data[:, col]
-        valid = np.isfinite(y)
-        if valid.all():
-            continue
-        idx = np.where(valid)[0]
-        if idx.size == 0:
-            data[:, col] = 0.0
-            continue
-        data[:, col] = np.interp(t, t[idx], y[idx])
-    return data
+def _discarded_for(sd, file_name: str, channel_name: str) -> frozenset:
+    """Descartes de (archivo, canal); si no hay, prueba con el nombre del archivo sin extensión."""
+    discarded_dict = getattr(sd, "_SignalDataset__discarded_trials", {})
+    discarded = discarded_dict.get((file_name, channel_name), set()) or set()
+    if not discarded and isinstance(discarded_dict, dict):
+        # Try alternate keys by filename stem
+        stem = Path(file_name).stem
+        for (k_file, k_ch), disc in discarded_dict.items():
+            try:
+                if k_ch == channel_name and Path(k_file).stem == stem:
+                    discarded = disc or set()
+                    break
+            except Exception:
+                continue
+    return frozenset(discarded)
 
 # ----------------- Public logic -----------------
 
-def apply_modification_to_all_valid(kernel, *, mode: str, point_a: float, point_b: float = 0.0):
+@dataclass
+class ModificacionPreparada:
+    """Lo que se lee en el hilo de la interfaz antes de calcular."""
+    sd: object
+    td_base: object
+    file_name: str
+    channel_name: str
+    t: np.ndarray             # copia del eje de tiempo (Ns,)
+    trials: np.ndarray        # copia de los trials activos (Ns, T_act)
+    orig_indices: list        # columna activa -> columna del TrialDataset base
+    discarded: frozenset      # descartes vigentes al leer
+    base_shape: tuple         # forma del TrialDataset base al leer
+
+
+def preparar_modificacion(kernel):
     """
-    Modify values inside ACTIVE trials without re-segmentation or discards:
-      - mode='blank' (alias 'cut'): set NaN in [A,B] or until A if B is missing.
-      - mode='interpolate': fill [A,B] using cubic spline (natural) when possible; otherwise linear.
-    Reads active trials with SignalDataset.get_active_trials(...), and writes modifications
-    back to the base TrialDataset (sd.trials_dataset) by mapping active columns
-    to original indices using sd.discarded_trials[(file_name, channel_name)].
+    Paso 1, en el hilo de la interfaz: ubica los trials activos y el TrialDataset
+    base, arma el mapa de columnas y COPIA los datos que va a usar el cálculo.
+    Devuelve None si no hay trials activos.
     """
     sd, file_name = _get_active_signal_and_name(kernel)
     channel_name = _get_current_channel_name(sd)
@@ -103,12 +115,12 @@ def apply_modification_to_all_valid(kernel, *, mode: str, point_a: float, point_
     # 1) Read ACTIVE trials (filtered by discards) from the dataset
     td_active = sd.get_active_trials(file_name, channel_name)
     if td_active is None:
-        raise RuntimeError(f"No active trials for ({file_name}, {channel_name}).")
+        raise RuntimeError(f"No hay trials activos para ({file_name}, {channel_name}).")
 
-    t = np.asarray(td_active.time_rel)          # (Ns,)
-    trials_active = np.asarray(td_active.trials)  # (Ns, T_act)
+    t = np.array(td_active.time_rel, copy=True)          # (Ns,)
+    trials_active = np.array(td_active.trials, copy=True)  # (Ns, T_act)
     if t.ndim != 1 or trials_active.ndim != 2:
-        raise RuntimeError(f"Active trials missing (time_rel or trials).")
+        raise RuntimeError("Los trials activos no tienen eje de tiempo o datos válidos.")
     Ns, T_act = trials_active.shape
     if T_act == 0:
         return None
@@ -141,24 +153,14 @@ def apply_modification_to_all_valid(kernel, *, mode: str, point_a: float, point_
         except Exception:
             td_base = None
     if td_base is None:
-        raise RuntimeError(f"No base TrialDataset found for ({file_name}, {channel_name}).")
+        raise RuntimeError(f"No se encontró el conjunto de trials original para ({file_name}, {channel_name}).")
     if td_base.trials.shape[0] != Ns:
-        raise RuntimeError(f"Shape mismatch: base Ns={td_base.trials.shape[0]} vs active Ns={Ns}.")
+        raise RuntimeError(f"Los trials activos tienen {Ns} muestras y los originales "
+                           f"{td_base.trials.shape[0]}; no coinciden.")
 
     # 3) Build ACTIVE → ORIGINAL index mapping using discarded_trials if present
-    discarded_dict = getattr(sd, "_SignalDataset__discarded_trials", {})
-    discarded = discarded_dict.get((file_name, channel_name), set()) or set()
+    discarded = _discarded_for(sd, file_name, channel_name)
     T_total = td_base.trials.shape[1]
-    if not discarded and isinstance(discarded_dict, dict):
-        # Try alternate keys by filename stem
-        stem = Path(file_name).stem
-        for (k_file, k_ch), disc in discarded_dict.items():
-            try:
-                if k_ch == channel_name and Path(k_file).stem == stem:
-                    discarded = disc or set()
-                    break
-            except Exception:
-                continue
     orig_indices = [i for i in range(T_total) if i not in discarded]
     # If mapping length still mismatched, assume no discards
     if len(orig_indices) != T_act:
@@ -167,64 +169,31 @@ def apply_modification_to_all_valid(kernel, *, mode: str, point_a: float, point_
         trials_active = trials_active[:, :T_act]
         orig_indices = orig_indices[:T_act]
 
-    # 4) Create a copy to modify
-    out_active = trials_active.copy()
+    return ModificacionPreparada(sd=sd, td_base=td_base, file_name=file_name, channel_name=channel_name,
+                                 t=t, trials=trials_active, orig_indices=orig_indices,
+                                 discarded=discarded, base_shape=td_base.trials.shape)
 
-    if mode in ("blank", "cut"):
-        if point_b and point_b != point_a:
-            i_a, i_b = _time_window_indices(t, point_a, point_b)
-            if i_b > i_a:
-                out_active[i_a:i_b, :] = np.nan
-            else:
-                return None
-        else:
-            # blank until A
-            i_a = int(np.searchsorted(t, point_a, side="left"))
-            i_a = max(0, min(i_a, Ns))
-            if i_a > 0:
-                out_active[:i_a, :] = np.nan
-            else:
-                return None
 
-    elif mode == "interpolate":
-        if point_a == point_b:
-            raise ValueError("Points A and B cannot be the same for interpolation.")
-        i_a, i_b = _time_window_indices(t, point_a, point_b)
-        if i_b - i_a < 2:
-            return None
-        for j in range(T_act):
-            y = out_active[:, j].copy()
-            valid = np.isfinite(y)
-            # Exclude the interval [i_a, i_b) from the fit; we want to bridge over it
-            keep = valid.copy()
-            keep[i_a:i_b] = False
+def escribir_modificacion(kernel, prep: ModificacionPreparada, out_active: np.ndarray, mode: str):
+    """
+    Paso 3, en el hilo de la interfaz: escribe las columnas modificadas en el
+    TrialDataset base, invalida la caché de trials activos y avisa a los plugins.
+    Antes comprueba que los trials no hayan cambiado desde que se leyeron.
+    """
+    store = kernel.get_service("DataStore")
+    sd = store.get_active_signal() if store else None
+    vigente = (
+        sd is prep.sd
+        and any(td is prep.td_base for td in getattr(sd, "_SignalDataset__trials_dataset", []))
+        and prep.td_base.trials.shape == prep.base_shape
+        and _discarded_for(sd, prep.file_name, prep.channel_name) == prep.discarded
+    )
+    if not vigente:
+        raise RuntimeError("Los trials cambiaron mientras se calculaba la modificación; "
+                           "no se aplicó ningún cambio. Vuelve a aplicarla.")
 
-            x_keep = t[keep]
-            y_keep = y[keep]
-
-            if x_keep.size >= 4:
-                try:
-                    spline = CubicSpline(x_keep, y_keep, bc_type='natural')
-                    y[i_a:i_b] = spline(t[i_a:i_b])
-                    out_active[:, j] = y
-                    continue
-                except Exception:
-                    # Fallback to linear interpolation if spline fails
-                    pass
-
-            # Linear fallback (uses points outside the interval)
-            if x_keep.size >= 2:
-                ya = np.interp(t[i_a], x_keep, y_keep)
-                yb = np.interp(t[i_b-1], x_keep, y_keep)
-                r = np.linspace(0.0, 1.0, i_b - i_a)
-                y[i_a:i_b] = ya + (yb - ya) * r
-                out_active[:, j] = y
-            # else: not enough context to interpolate — leave as-is
-    else:
-        raise ValueError(f"Unknown mode: {mode}")
-
-    # Smooth NaN segments so later analysis plugins receive finite values
-    out_active = _fill_nan_segments(t, out_active)
+    td_base = prep.td_base
+    orig_indices = prep.orig_indices
 
     # 5) Write changes into the BASE TrialDataset (by mapped columns)
     for k, orig_col in enumerate(orig_indices):
@@ -232,7 +201,7 @@ def apply_modification_to_all_valid(kernel, *, mode: str, point_a: float, point_
             td_base.trials[:, orig_col] = out_active[:, k]
 
     # 5.5) Invalidate filtered cache so get_active_trials recomputes arrays after edits
-    key = (file_name, channel_name)
+    key = (prep.file_name, prep.channel_name)
     try:
         cache = getattr(sd, "_SignalDataset__filtered_cache", None)
         if isinstance(cache, dict):
@@ -256,9 +225,24 @@ def apply_modification_to_all_valid(kernel, *, mode: str, point_a: float, point_
     # 7) Notify the UI (if the pipeline uses it)
     if hasattr(kernel, "event"):
         try:
-            kernel.event.emit("trials_generated", {"signal": file_name, "channel": channel_name})
+            kernel.event.emit("trials_generated", {"signal": prep.file_name, "channel": prep.channel_name})
         except Exception:
             pass
 
-    print(f"{LOGL} Mode='{mode}' applied to {len(orig_indices)} active trials on ({file_name}, {channel_name}).")
+    print(f"{LOGL} Modo '{mode}' aplicado a {len(orig_indices)} trials activos de "
+          f"({prep.file_name}, {prep.channel_name}).")
+
+
+def apply_modification_to_all_valid(kernel, *, mode: str, point_a: float, point_b: float = 0.0):
+    """
+    Los tres pasos seguidos, en el hilo que llama (sin orquestador).
+    Devuelve True si modificó los trials y None si no había nada que modificar.
+    """
+    prep = preparar_modificacion(kernel)
+    if prep is None:
+        return None
+    out_active = calcular_modificacion(prep.t, prep.trials, mode=mode, point_a=point_a, point_b=point_b)
+    if out_active is None:
+        return None
+    escribir_modificacion(kernel, prep, out_active, mode)
     return True

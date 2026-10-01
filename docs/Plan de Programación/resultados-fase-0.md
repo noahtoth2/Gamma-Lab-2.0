@@ -121,7 +121,7 @@ Eso es precisión de máquina. **Los dos modos dan el mismo resultado.**
 
 **Adoptar `method='fft'`.** Es un argumento en dos archivos, casi duplica la velocidad del CWT y no cambia ningún resultado.
 
-> **Actualización (26 de septiembre de 2026):** `method='fft'` se adoptó en la Fase 1.1 y después se revirtió. La wavelet volvió a usar convolución directa (`method='conv'`). Detalle en [`resultados-fase-1.md`](resultados-fase-1.md).
+> **Actualización (1 de octubre de 2026):** `method='fft'` quedó fijado en la Fase 1.1 y sigue vigente. Re-medido con el código actual, el eje de frecuencias cambia bastante la ganancia: **1,8×** en el eje lineal (el que usa la casilla sin marcar) y **8,1×** en el logarítmico. Detalle en [`resultados-fase-1.md`](resultados-fase-1.md).
 
 Dos advertencias sobre las expectativas:
 
@@ -196,7 +196,7 @@ Fallan **todas** las filas del escalograma, y la prueba de correlación por fila
 
 | Pregunta | Respuesta medida | Decisión |
 |---|---|---|
-| ¿Adoptar `method='fft'`? | 1,89× más rápido, diferencia de 4,3e-14 | **Sí.** Entra en la Fase 1.1. *Revertido después: se usa convolución* |
+| ¿Adoptar `method='fft'`? | 1,89× más rápido, diferencia de 4,3e-14 | **Sí.** Entra en la Fase 1.1. *Vigente: 1,8× en eje lineal, 8,1× en logarítmico* |
 | ¿Los hilos sirven, o el GIL estorba? | Se suelta: 1,82× (`conv`), 1,32× (`fft`) | **Hilos confirmados.** El diseño se sostiene |
 | ¿Entra el paralelismo interno (sección 6)? | Viable, pero el techo con 2 hilos es 1,3-1,8× | **No en la v1.** Viable ≠ prioritario |
 | ¿Qué migrar al orquestador? | Solo 4 operaciones pasan de 100 ms | Wavelet, wavelet promedio y los dos renders. **FFT y PSD no** |
