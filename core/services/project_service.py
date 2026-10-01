@@ -183,6 +183,7 @@ class ProjectService:
                 "format": getattr(ds, "format", None),
                 "name": getattr(ds, "name", None),
                 "sampling_rate": getattr(ds, "sampling_rate", None),
+                "sampling_rate_source": getattr(ds, "sampling_rate_source", None),
             },
             "measurements": measurements_json,
             "trials": self._trials_to_json(ds),
@@ -270,6 +271,14 @@ class ProjectService:
             if signal_path.exists():
                 ds = self._load_signal_file(signal_path)
 
+        if ds is not None and sig_info.get("sampling_rate_source") == "manual":
+            saved_fs = sig_info.get("sampling_rate")
+            if saved_fs:
+                try:
+                    ds.set_sampling_rate(float(saved_fs))
+                except ValueError:
+                    pass
+
         if ds is not None:
             self._restore_trials(ds, manifest.get("trials") or [])
 
@@ -298,6 +307,8 @@ class ProjectService:
             ds = fileio.load_abf(str(path))
         elif ext == ".edf" and hasattr(fileio, "load_edf"):
             ds = fileio.load_edf(str(path))
+        elif ext == ".mat" and hasattr(fileio, "load_mat"):
+            ds = fileio.load_mat(str(path))
 
         if ds is not None:
             key = store.add_signal(ds, ds.name)

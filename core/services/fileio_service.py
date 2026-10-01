@@ -150,6 +150,50 @@ class FileIOService:
             mat_data = loadmat(file_path)
             valid_keys = [k for k in mat_data.keys() if not k.startswith("__")]
             print("File loaded with scipy.io.loadmat")
+            print(f"Found variables: {valid_keys}")
+
+            data_key = None
+            for key in valid_keys:
+                arr = mat_data[key]
+                if (
+                    isinstance(arr, np.ndarray)
+                    and arr.ndim in (1, 2)
+                    and arr.size > 1
+                    and np.issubdtype(arr.dtype, np.number)
+                ):
+                    data_key = key
+                    break
+            if data_key is None:
+                raise ValueError("No numeric data matrix found in the .mat file")
+
+            raw = np.asarray(mat_data[data_key], dtype=np.float64)
+            if raw.ndim == 1:
+                signals = raw.reshape(1, -1)
+            else:
+                # MATLAB files from this lab store samples x channels (far more
+                # samples than channels); the model expects channels x samples.
+                signals = raw.T if raw.shape[0] >= raw.shape[1] else raw
+
+            C, N = signals.shape
+            channel_names = [f"ch{i + 1}" for i in range(C)]
+            sampling_rate = 1.0  # .mat files don't carry it (R80); corrected via CU-018
+            time_data = np.arange(N, dtype=np.float64) / sampling_rate
+
+            ds = SignalDataset(
+                name=Path(file_path).name,
+                format="mat",
+                source_path=file_path,
+                sampling_rate=sampling_rate,
+                time=time_data,
+                signals=signals,
+                channel_names=channel_names,
+                units=["a.u."] * C,
+                metadata={"variable": data_key, "variables": valid_keys},
+                sampling_rate_source="default",
+                original_sampling_rate=None,
+            )
+            print(f"MAT file processed successfully (classic format, variable='{data_key}').")
+            return ds
         except NotImplementedError:
             with h5py.File(file_path, "r") as f:
                 print(".mat file in HDF5 (v7.3) format. Loading with h5py...")
