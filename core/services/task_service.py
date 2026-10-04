@@ -70,7 +70,9 @@ class _Worker(QThread):
             kwargs["ctx"] = self._ctx
         try:
             result, error = task.fn(**kwargs), None
-        except Exception as e:
+        except BaseException as e:
+            # BaseException y no Exception: un SystemExit dentro de la tarea no
+            # emitiria `done`, y la cola quedaria bloqueada para siempre.
             result, error = None, e
         self.done.emit(task.id, result, error)
 
@@ -203,7 +205,9 @@ class TaskService(QObject):
             task.handle.cancelled.emit()
         elif error is not None:
             task.state = "done"
-            task.handle.failed.emit(str(error) or type(error).__name__)
+            detalle = str(error)
+            task.handle.failed.emit(
+                f"{type(error).__name__}: {detalle}" if detalle else type(error).__name__)
         else:
             task.state = "done"
             task.handle.finished.emit(result)

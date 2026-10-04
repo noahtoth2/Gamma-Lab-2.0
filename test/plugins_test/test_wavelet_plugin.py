@@ -65,7 +65,11 @@ F_LO = 1.0           # lowFrequencySpinBox
 F_HI = 500.0         # highFrequencySpinBox
 CYCLES = 2.0         # cyclesSpinBox
 NORMALIZE = False    # normalizeCheckBox
-SCALE_LOG = True     # scaleCheckBox
+# La referencia de MATLAB (wavelet_data_matlab.csv) son 999 filas en eje LINEAL.
+# Con SCALE_LOG=True se comparaba un eje logaritmico contra uno lineal y la
+# correlacion media caia de 0,753 a 0,221: la comparacion no medía el calculo
+# sino el desajuste de rejilla. Ver problemas-encontrados.md nº 2 y nº 16.
+SCALE_LOG = False    # scaleCheckBox
 
 
 # ============================================================

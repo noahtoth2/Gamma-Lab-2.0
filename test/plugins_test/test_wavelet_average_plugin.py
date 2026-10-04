@@ -68,7 +68,11 @@ F_LO = 1.0           # lowFrequencySpinBox
 F_HI = 500.0         # highFrequencySpinBox
 CYCLES = 2.0         # cyclesSpinBox
 NORMALIZE = False    # normalizeCheckBox
-SCALE_LOG = True     # scaleCheckBox
+# La referencia de MATLAB son filas en eje LINEAL. Con SCALE_LOG=True se
+# comparaba el eje logaritmico de produccion (geomspace, 144 filas) contra las
+# primeras 144 de las 999 lineales de MATLAB, asi que no medía nada util.
+# Ver problemas-encontrados.md nº 2 y nº 16.
+SCALE_LOG = False    # scaleCheckBox
 
 
 # ============================================================

@@ -12,7 +12,7 @@ Todo lo que está acá fue **verificado directamente contra el código o ejecuta
 
 Ninguno de los problemas 1 a 13 lo causaron los cambios de la Fase 1. Los que podían confundirse con eso se verificaron explícitamente. El nº 14 sí es de la Fase 2: estaba en el propio orquestador, y ya se corrigió.
 
-**Última actualización:** 30 de septiembre de 2026, en la revisión de las fases 0, 1 y 2 antes de empezar la Fase 3.
+**Última actualización:** 30 de septiembre de 2026, al revisar las fases 0, 1 y 2 y al cerrar la Fase 3.
 
 ---
 
@@ -27,18 +27,21 @@ Ninguno de los problemas 1 a 13 lo causaron los cambios de la Fase 1. Los que po
 | 5 | `Kernel.get_all_plugins()` no existe: rama muerta al cerrar | Baja | ✅ **Resuelto** (29 sep) |
 | 6 | `load_mat()` inalcanzable desde la interfaz | Media | ⬜ Abierto |
 | 7 | Tres servicios sin registrar en el Kernel | Media | ⬜ Abierto (el `TaskService` sí se registra) |
-| 8 | Señal `progress` declarada y nunca emitida | Baja | ⬜ Lo resuelve la Fase 3 |
+| 8 | Señal `progress` declarada y nunca emitida | Baja | ✅ **Resuelto** (Fase 3) |
 | 9 | El spinner es modal e indeterminado | Media | ⬜ Parcial: ya nadie lo usa, falta el widget con Cancelar |
 | 10 | `_build_lut` sigue siendo un bucle de Python | Baja | ⬜ Abierto |
 | 11 | La suite de benchmarks no mide memoria | Media | ⬜ Abierto |
 | 12 | `load_edf` cuadruplica la memoria del archivo | Media | ⬜ Abierto |
 | 13 | Error del menú contextual durante los benchmarks | Baja | ⬜ Sin investigar |
 | 14 | El orquestador podía cerrar la aplicación al terminar una tarea | **Alta** | ✅ **Arreglado** (30 sep) |
-| 15 | `artifact_remove` escribe los datos compartidos desde su hilo | Media | ⬜ Lo resuelve la Fase 3 |
+| 15 | `artifact_remove` escribe los datos compartidos desde su hilo | Media | ✅ **Resuelto** (Fase 3) |
 | 16 | Escala logarítmica, eje de tiempo y ejes del escalograma | Media | ✅ **Arreglado** (29 sep) |
 | 17 | PyWavelets crea franjas falsas en frecuencias bajas | Media | ⬜ Abierto |
 | 18 | Submuestreo inexacto y sin filtro antialias | Media | ⬜ Abierto |
-| 19 | Una tarea que lanza `SystemExit` bloquea la cola del orquestador | Baja | ⬜ Abierto |
+| 19 | Una tarea que lanza `SystemExit` bloquea la cola del orquestador | Baja | ✅ **Arreglado** (30 sep) |
+| 20 | `artifact_remove` falla si los trials se generaron en otro canal | Media | ✅ **Arreglado** (30 sep) |
+| 21 | Las modificaciones de `artifact_remove` no se guardan en el proyecto | **Alta** | ⬜ Abierto · hay que elegir diseño |
+| 22 | `MainWindow` conserva código de los hilos viejos que ya nada usa | Baja | ⬜ Abierto |
 
 ---
 
@@ -113,7 +116,7 @@ Fallan **todas** las filas del escalograma, y la correlación por fila también.
 
 **Verificado que NO lo causó la Fase 1.** Tras aplicar `method='fft'`, las cifras del fallo son idénticas dígito por dígito: mismo `passed=6917`, mismo peor punto en `(row=177, col=2379)`, mismo `APP=0.447459`. Si el cambio hubiera alterado algo, esos números se habrían movido.
 
-> **Actualización (26 de septiembre de 2026):** `method='fft'` se revirtió y la wavelet volvió a usar convolución. El fallo sigue igual: `test_wavelet_average_plugin` da de nuevo `passed=6917`.
+> **Actualización (1 de octubre de 2026):** `method='fft'` quedó fijado de forma definitiva, y el fallo es indiferente al modo. Corriendo la suite con `conv` y con `fft` sobre el mismo código, las cifras salen idénticas dígito por dígito: `passed=62786/3044898` y correlación mínima 0,5212 en el promedio, `passed=58999/3044898` y mínima 0,3857 en el individual. Las cifras cambiaron respecto al `passed=6917` de arriba, pero por el ajuste de `SCALE_LOG` descrito más abajo, no por el modo de cálculo.
 
 > **Actualización (30 de septiembre de 2026): viene de Gamma Lab 1.0, y ya se conocen las causas.**
 >
@@ -123,7 +126,17 @@ Fallan **todas** las filas del escalograma, y la correlación por fila también.
 >   - el submuestreo sin filtro antialias (nº 18);
 >   - a eso se suman las franjas de precisión de PyWavelets en frecuencias bajas (nº 17).
 > - **Ninguna está corregida todavía.** Es una decisión científica que conviene cerrar con la directora.
-> - **Ojo con la prueba de Wavelet Average:** usa `SCALE_LOG = True`. Desde el nº 16 compara nuestras 144 filas logarítmicas con las primeras 144 de las 999 filas lineales de MATLAB, así que esa comparación ya no mide nada útil (ya fallaba antes). Hay que ponerle `SCALE_LOG = False` o exportar la referencia de MATLAB en la misma rejilla.
+> - **Ojo con la prueba de Wavelet Average:** usaba `SCALE_LOG = True`. Desde el nº 16 comparaba nuestras 144 filas logarítmicas con las primeras 144 de las 999 filas lineales de MATLAB, así que esa comparación no medía nada útil (ya fallaba antes).
+>
+> **Corregido (1 de octubre de 2026):** las dos pruebas de wavelet quedaron en `SCALE_LOG = False`, que es la rejilla en la que está exportada la referencia. El diagnóstico que lo respalda, comparando los tres caminos de cálculo contra el CSV de MATLAB:
+>
+> | Camino | Forma | Correlación media | Filas > 0,8 |
+> |---|---|---|---|
+> | Lineal (`escala_log=False`) | 998×3051 | 0,753 | 402/998 |
+> | Logarítmico de producción (`geomspace`) | 144×3051 | 0,035 | 0/144 |
+> | Lineal + `scale_log` posterior (lo que hacía la prueba) | 998×3051 | 0,221 | 116/998 |
+>
+> El efecto en las pruebas fue grande: el promedio pasó de fallar **998 filas a fallar 5** (986-990, correlación mínima 0,5212) y el individual de 998 a 596 (mínima 0,3857). Las cuatro siguen sin alcanzar el umbral de 0,8 en todas las filas, pero ahora fallan por la discrepancia real descrita arriba y no por comparar dos rejillas distintas.
 
 **Qué hacer.** Abrirlo como frente de trabajo aparte y levantarlo con la directora. No bloquea al orquestador, pero en una herramienta de análisis científico una discrepancia de este tamaño con la referencia pesa más que cualquier mejora de rendimiento.
 
@@ -221,7 +234,7 @@ Solo dos. `ExportService` y `MeasurementService` los construye directamente `VTK
 
 ---
 
-## 8. Señal `progress` declarada y nunca emitida ⬜ LO RESUELVE LA FASE 3
+## 8. Señal `progress` declarada y nunca emitida ✅ RESUELTO
 
 **Dónde.** `artifact_remove_plugin.py:28`:
 
@@ -238,7 +251,7 @@ Código muerto: la señal existe, pero nadie la dispara ni la escucha. Alguien p
 
 Entre los dos está casi todo lo necesario para un indicador de progreso real; lo que falta es unificarlo, que es justo lo que hace el orquestador.
 
-> **Estado al 30 de septiembre de 2026:** la mitad del wavelet ya está. Wavelet Average reporta su avance con `ctx.progress` y el texto *«Trial 3/20 (15%)»* llega a la barra de estado de la ventana. La señal muerta de `artifact_remove` sigue igual hasta que se migre en la Fase 3.
+> **Resuelto el 30 de septiembre de 2026 (Fase 3).** `_ApplyWorker` y su señal muerta ya no existen. Los dos plugins reportan su avance con `ctx.progress` del orquestador, y el texto llega a la barra de estado: *«Trial 3/20 (15%)»* en Wavelet Average, *«Aplicando la modificación: Trial 12/60 (20%)»* al interpolar en `artifact_remove`. Falta el widget propio con porcentaje (nº 9).
 
 ---
 
@@ -340,7 +353,9 @@ Detalle completo en [`resultados-fase-2.md`](resultados-fase-2.md).
 
 ---
 
-## 15. `artifact_remove` escribe los datos compartidos desde su hilo ⬜ LO RESUELVE LA FASE 3
+## 15. `artifact_remove` escribe los datos compartidos desde su hilo ✅ RESUELTO
+
+> **Resuelto el 30 de septiembre de 2026, en la Fase 3**, de la forma que se describe abajo: leer en la interfaz, calcular en el orquestador (`artifact_remove/compute.py`) y escribir en el slot de `finished`. Antes de escribir se comprueba que los trials no hayan cambiado. El resultado es idéntico bit a bit al anterior en 11 escenarios, y `MainWindow` ya ve el cálculo al cerrar. Detalle en [`resultados-fase-3.md`](resultados-fase-3.md). El texto de abajo queda como registro.
 
 **Dónde.** `plugins/preprocessing/prepare/artifact_remove/artifact_logic.py`, función `apply_modification_to_all_valid`, que corre dentro del `_ApplyWorker` en un `QThread` propio.
 
@@ -410,13 +425,67 @@ Con los valores por defecto (10.000 → 1.000 Hz, factor exacto 10) no hay corri
 
 ---
 
-## 19. Una tarea que lanza `SystemExit` bloquea la cola del orquestador ⬜ ABIERTO
+## 19. Una tarea que lanza `SystemExit` bloquea la cola del orquestador ✅ ARREGLADO
+
+> **Arreglado el 30 de septiembre de 2026.** `_Worker.run` atrapa `BaseException`, así que la tarea emite `failed` y la cola sigue. Lo cubre la prueba `systemexit_en_la_tarea_no_bloquea_la_cola`. El texto de abajo queda como registro.
 
 **Gravedad: baja.** Verificado ejecutándolo, pero no ocurre con las funciones actuales.
 
 **Qué pasa.** El hilo del orquestador atrapa `Exception`. `SystemExit` hereda de `BaseException`, no de `Exception`, así que se escapa: la tarea no emite ninguna señal, el servicio la sigue dando por corriendo para siempre y **ninguna tarea posterior arranca**. Prueba: una tarea que hace `raise SystemExit(3)` seguida de otra normal; a los 3 s no hubo ninguna señal, `has_active_tasks()` seguía en verdadero y la segunda tarea seguía en cola.
 
 **Qué hacer.** Atrapar `BaseException` en `_Worker.run` y emitir `failed`. Es una línea.
+
+---
+
+## 20. `artifact_remove` falla si los trials se generaron en otro canal ✅ ARREGLADO
+
+> **Arreglado el 30 de septiembre de 2026.** `artifact_logic.py` y el plugin toman el último `TrialDataset` con `sd.get_all_trials_datasets()`. De los 11 escenarios con que se verificó la Fase 3, los otros 10 siguen idénticos bit a bit, y este ahora funciona: modifica los 60 trials del canal `IN 7`. Lo cubre la prueba `funciona_con_trials_de_otro_canal`. El texto de abajo queda como registro.
+
+**Cómo apareció.** Al capturar el comportamiento de `artifact_remove` antes de migrarlo en la Fase 3, uno de los escenarios generó los trials en el segundo canal del archivo de prueba (`IN 7`).
+
+**Qué pasa.** Para saber qué canal modificar, `artifact_logic.py` lee `sd.trials_dataset[-1].channel_name`. Pero `SignalDataset` no tiene ningún atributo `trials_dataset`: el campo real es privado (`__trials_dataset`). El error lo atrapa un `try`, y la función cae siempre al primer canal de la señal (`channel_names[0]`). Si los trials son de otro canal, no encuentra el `TrialDataset` base y «Apply» termina con:
+
+> *No se encontró el conjunto de trials original para (17308005.abf, CA1).*
+
+El plugin tiene la misma búsqueda en su propio `_get_current_channel_name`.
+
+**Verificado que no lo causó la Fase 3:** falla igual con el código anterior y con el migrado. Se dejó idéntico a propósito, porque arreglarlo cambia el comportamiento.
+
+**Qué hacer.** Usar la API pública que ya existe: `sd.get_all_trials_datasets()[-1].channel_name`. Son dos líneas, en `artifact_logic.py` y en el plugin, más una prueba con trials del segundo canal.
+
+---
+
+## 21. Las modificaciones de `artifact_remove` no se guardan en el proyecto ⬜ ABIERTO
+
+**Gravedad: alta.** Es pérdida silenciosa de trabajo del investigador.
+
+**Cómo apareció.** En la revisión de la Fase 3 (30 de septiembre), siguiendo qué pasa con los datos después de «Apply». Verificado leyendo el código de guardar y abrir proyectos; no se reprodujo con un proyecto real.
+
+**Qué pasa.** Dos cosas que se suman:
+
+1. **El proyecto no guarda los valores de los trials**, sino cómo se generaron. `ProjectService._trials_to_json` guarda por cada `TrialDataset` sus `generation_params` (canal, umbral, ventana…) y los índices descartados. Al abrir, `_restore_trials` vuelve a cortar los trials desde la señal cruda con esos parámetros y reaplica los descartes. **No hay nada que reaplique las modificaciones de `artifact_remove`**: al reabrir, los trials vuelven a estar como antes de modificarlos. Tampoco se guarda el metadato `modified_trials`.
+2. **`artifact_remove` nunca marca el proyecto como modificado.** Los plugins de análisis y el de trials llaman a `mark_project_dirty()`; este no. Si lo último que se hizo fue modificar artefactos, al cerrar no aparece el aviso de cambios sin guardar.
+
+**No lo causó la Fase 3:** pasaba igual con el código anterior. La migración no cambió qué se guarda.
+
+**Qué hacer: hay que elegir un diseño.**
+
+| Opción | Cómo | A favor | En contra |
+|---|---|---|---|
+| **A. Guardar la receta** | Guardar en el proyecto la lista de modificaciones aplicadas (modo, A, B, en orden) junto a los `generation_params`, y reaplicarlas al abrir, después de los descartes | Sigue el diseño que ya usa el proyecto (guardar cómo, no el resultado). Ocupa unos bytes. El cálculo es determinista, así que se reconstruye el mismo resultado bit a bit | Hay que guardar también los descartes vigentes en el momento de cada modificación, porque afectan a qué columnas se tocaron. Abrir un proyecto tarda lo que tarde reaplicar |
+| **B. Guardar los datos** | Guardar la matriz de trials modificada (por ejemplo, un `.npy` dentro de la carpeta del proyecto) | Exacto y simple de restaurar | 14,6 MB por cada 60 trials de 30.501 muestras, y cambia el formato del proyecto a guardar datos derivados |
+
+En los dos casos, además, `artifact_remove` tiene que llamar a `mark_project_dirty()` después de escribir. Esa parte es una línea y no depende de la opción.
+
+---
+
+## 22. `MainWindow` conserva código de los hilos viejos que ya nada usa ⬜ ABIERTO
+
+**Gravedad: baja.** No hace daño; es limpieza.
+
+**Dónde.** `app/view/main_window.py`: `_any_background_worker_running` todavía recorre los plugins buscando un atributo `worker`, y `_stop_all_background_workers` busca un método `_cleanup_worker`. Eran los hilos propios de `wavelet_average`. Desde la Fase 3 ningún plugin los tiene (verificado con una búsqueda en `plugins/`), y todo lo que corre en segundo plano lo conoce el `TaskService`.
+
+**Qué hacer.** Borrar esos dos bucles y dejar solo las llamadas al orquestador (`has_active_tasks()` y `_cancel_all_tasks()`). La prueba `ningun_plugin_crea_hilos_propios` garantiza que no vuelvan a hacer falta.
 
 ---
 
@@ -431,13 +500,16 @@ Con los valores por defecto (10.000 → 1.000 Hz, factor exacto 10) no hay corri
 Son cuestiones de si los números que entrega la herramienta son correctos. Merecen su propio frente y conversación con la directora. Los nº 2, 17 y 18 conviene decidirlos juntos, porque los tres cambian el escalograma.
 
 **Lo que absorben las fases del orquestador**
-- nº 8 y nº 15 → Fase 3 (migrar `artifact_remove`)
-- nº 9 → el widget de progreso con Cancelar, trabajo de interfaz en paralelo con la Fase 3
+- nº 9 → el widget de progreso con Cancelar, trabajo de interfaz; es lo único que falta de la Fase 3
 - nº 7 → decisión pendiente sobre qué servicios pasan por el Kernel
-- nº 19 → una línea en el `TaskService`
-- ~~nº 4~~, ~~nº 14~~ → ya resueltos
+- ~~nº 4~~, ~~nº 8~~, ~~nº 14~~, ~~nº 15~~, ~~nº 19~~ → ya resueltos
+
+**Pérdida de trabajo del usuario** *(antes de seguir agregando funciones)*
+- nº 21 — las modificaciones de artefactos no se guardan en el proyecto; hay que elegir diseño
 
 **Deuda técnica suelta** *(cada una es de horas, no de días)*
+- nº 22 — código de los hilos viejos en `MainWindow`
+- ~~nº 20 — `artifact_remove` con trials de otro canal~~ (resuelto)
 - ~~nº 5 — rama muerta al cerrar~~ (resuelto)
 - nº 6 — `load_mat` inalcanzable
 - nº 10 — el bucle de `_build_lut`

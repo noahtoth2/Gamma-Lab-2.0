@@ -113,11 +113,11 @@ Un `submit()` nuevo del mismo `owner` **descarta las que ese owner tenga en cola
 
 ## Verificación
 
-### 17 pruebas automatizadas, todas en verde
+### 18 pruebas automatizadas, todas en verde
 
-> Eran 14 al cerrar la fase (12 unitarias y 2 de integración). Desde entonces se sumaron las 2 de `test_cancelacion_al_cambiar_seccion.py` (29 de septiembre) y la de estrés `muchas_tareas_cortas_no_tumban_la_aplicacion` (30 de septiembre).
+> Eran 14 al cerrar la fase (12 unitarias y 2 de integración). Desde entonces se sumaron las 2 de `test_cancelacion_al_cambiar_seccion.py` (29 de septiembre) y, el 30 de septiembre, la de estrés `muchas_tareas_cortas_no_tumban_la_aplicacion` y `systemexit_en_la_tarea_no_bloquea_la_cola`.
 
-`test/services_test/test_task_service.py` — 13 pruebas unitarias:
+`test/services_test/test_task_service.py` — 14 pruebas unitarias:
 
 | Prueba | Qué comprueba |
 |---|---|
@@ -133,6 +133,7 @@ Un `submit()` nuevo del mismo `owner` **descarta las que ese owner tenga en cola
 | `tarea_terca_se_desliga_y_devuelve_la_interfaz` | R46: el desligue |
 | `has_active_tasks` | El gancho para el cierre de la aplicación |
 | `sin_ctx_no_se_inyecta_nada` | Una función pura se llama tal cual |
+| `systemexit_en_la_tarea_no_bloquea_la_cola` | Una tarea que lanza `SystemExit` emite `failed` y la siguiente corre (30 de septiembre) |
 | `muchas_tareas_cortas_no_tumban_la_aplicacion` | 10.000 tareas seguidas en un proceso aparte: terminan todas y no queda ningún hilo sin liberar (30 de septiembre) |
 
 `test/services_test/test_task_service_integracion.py` — 2 pruebas de punta a punta con el kernel y el plugin reales.
@@ -142,7 +143,7 @@ Un `submit()` nuevo del mismo `owner` **descarta las que ese owner tenga en cola
 ```
 12 passed in 3.09s      (al cerrar la fase, 19 de septiembre)
  2 passed in 5.20s
-17 passed               (30 de septiembre, las tres suites juntas)
+18 passed               (30 de septiembre, las tres suites juntas)
 ```
 
 ### Criterio 1 — sin costo en el arranque
@@ -289,7 +290,7 @@ def _release_thread(self) -> None:
 | Cerrar la aplicación a mitad de un Wavelet Average, en 10 momentos distintos | Salida limpia las 10 veces |
 | Suite completa sin benchmarks | 100 pasan; fallan las mismas 5 comparaciones con MATLAB |
 
-> **Pendiente, de gravedad baja:** si una tarea lanzara `SystemExit` (hereda de `BaseException`, no de `Exception`), el hilo no emitiría ninguna señal y la cola quedaría bloqueada. Se verificó ejecutándolo; no ocurre con las funciones actuales. Nº 19 de [`problemas-encontrados.md`](problemas-encontrados.md).
+> **También corregido el 30 de septiembre:** si una tarea lanzaba `SystemExit` (hereda de `BaseException`, no de `Exception`), el hilo no emitía ninguna señal y la cola quedaba bloqueada. Ahora `_Worker.run` atrapa `BaseException` y la tarea emite `failed`. Nº 19 de [`problemas-encontrados.md`](problemas-encontrados.md).
 
 ---
 
@@ -300,7 +301,7 @@ def _release_thread(self) -> None:
 | Archivo | Líneas (al 27 de septiembre de 2026) | Qué es |
 |---|---:|---|
 | `core/services/task_service.py` | 207 (218 tras la corrección del 30 de septiembre) | El servicio |
-| `test/services_test/test_task_service.py` | 235 (273 con la prueba de estrés) | 12 pruebas unitarias (13 desde el 30 de septiembre) |
+| `test/services_test/test_task_service.py` | 235 (273 con la prueba de estrés) | 12 pruebas unitarias (14 desde el 30 de septiembre) |
 | `test/services_test/test_task_service_integracion.py` | 129 | 2 pruebas de punta a punta |
 
 ### Archivo modificado: `main.py`
@@ -358,4 +359,4 @@ El orden importa: `register_plugin()` llama a `initialize(kernel)`, y desde ese 
 | 2.5 Registrado en `main.py` | ✅ |
 | Corrección del hilo que se soltaba antes de tiempo | ✅ 30 de septiembre |
 
-Sigue la **Fase 3**. `wavelet_average` ya está migrado y la cancelación al cambiar de sección ya funciona; falta migrar `artifact_remove`, separando su lectura, su cálculo y su escritura (nº 15 de [`problemas-encontrados.md`](problemas-encontrados.md)).
+Sigue la **Fase 3**, ya completa en lo que es de código: [`resultados-fase-3.md`](resultados-fase-3.md).

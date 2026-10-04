@@ -20,6 +20,8 @@ Y sin embargo trata a esas tres como notas al margen; la de VTK queda explícita
 
 Las tres son de un día cada una y son independientes entre sí y del orquestador.
 
+> **Actualización (1 de octubre de 2026):** la primera pregunta ya tiene respuesta medida y es **no**. Con `method='fft'` el promedio de 60 trials baja de 14,67 s a 7,98 s en el eje lineal, y 20 trials quedan en ~2,7 s. No baja de 1 s, así que la cola sigue haciendo falta tal como se diseñó: el orquestador no se vuelve opcional, solo administra una tarea que ahora tarda la mitad.
+
 ---
 
 ## Las seis fases de un vistazo
@@ -91,6 +93,8 @@ python test/performance_test/compare_report.py v2_fase0_baseline v2_fase0_cwt_ff
 ```
 
 > **Ojo:** `fft` y `conv` no dan resultados bit a bit idénticos (uno convoluciona en el dominio del tiempo, el otro multiplica en frecuencia). Antes de fijar el cambio hay que verificar contra las pruebas de `test/plugins_test/`, que comparan la salida contra MATLAB. Si la tolerancia no pasa, hay que ajustarla conscientemente y dejarlo documentado — no cambiar el número a ojo.
+>
+> **Resuelto (1 de octubre de 2026):** no hubo que tocar ninguna tolerancia. La diferencia entre los dos modos es de 2,6e-14 en valor absoluto sobre coeficientes de magnitud ~0,59, nueve órdenes por debajo del `atol=1e-4` de las pruebas. Se corrió la suite con los dos modos sobre el mismo código y las cifras salieron idénticas dígito por dígito: `passed=58999/3044898` y correlación mínima 0,3857 en el plugin individual, `passed=62786/3044898` y mínima 0,5212 en el promedio. Las pruebas no distinguen un modo del otro.
 
 ### 0.3 — ¿El GIL se suelta o no?
 
@@ -142,7 +146,7 @@ Lo que hay que saber para seguir con el plan:
 
 | Pregunta | Respuesta medida | Decisión |
 |---|---|---|
-| ¿`method='fft'`? | 1,89× más rápido, diferencia numérica de 4,3e-14 | **Adoptar** en la Fase 1.1. *Revertido después: se usa convolución* |
+| ¿`method='fft'`? | 1,89× más rápido, diferencia numérica de 4,3e-14 | **Adoptar** en la Fase 1.1. *Fijado: con el eje actual son 1,8× (lineal) y 8,1× (logarítmico)* |
 | ¿Los hilos sirven, o el GIL estorba? | Se suelta: 1,82× (`conv`), 1,32× (`fft`) | **Hilos confirmados**; el diseño se sostiene |
 | ¿Entra la Fase 6 (paralelismo interno)? | Viable, pero el techo con 2 hilos es 1,3-1,8× | **Sigue fuera de la v1** |
 | ¿Qué migrar al orquestador? | Solo 4 operaciones pasan de 100 ms | Wavelet, wavelet promedio y los dos renders. **FFT y PSD no** |
@@ -164,7 +168,7 @@ Ninguna de las tres es concurrencia. Las tres son medibles con la suite que ya e
 
 Si la Fase 0 lo respalda, se fija en los dos plugins (`wavelet_plugin.py:209`, `wavelet_average_plugin.py:290`). Un argumento.
 
-> **Actualización (26 de septiembre de 2026):** se aplicó y después se revirtió. La wavelet usa convolución directa (`method='conv'`). Detalle en [`resultados-fase-1.md`](resultados-fase-1.md).
+> **Actualización (1 de octubre de 2026):** fijado. Las dos llamadas llevan `method="fft"`: `wavelet_plugin.py:289` y `wavelet_average/compute.py:47` — la del plugin promedio se movió al módulo de cálculo puro durante la Fase 3, así que la referencia a `wavelet_average_plugin.py:290` ya no aplica. Detalle en [`resultados-fase-1.md`](resultados-fase-1.md).
 
 ### 1.2 — Acumulador incremental en `wavelet_average`
 
@@ -334,12 +338,12 @@ Resultados completos en [`resultados-fase-2.md`](resultados-fase-2.md).
 
 Esta es la jugada de menor riesgo del plan. Si la migración de `wavelet_average` produce exactamente el mismo resultado que hoy, la abstracción está probada.
 
-> **Estado al 30 de septiembre de 2026: la mitad ya está hecha.**
+> **Estado al 30 de septiembre de 2026: fase completa en lo que es de código.** Resultados en [`resultados-fase-3.md`](resultados-fase-3.md).
 >
 > | Paso | Estado |
 > |---|---|
 > | 3.1 `wavelet_average` | ✅ **Hecho.** Ya no hay `WaveletWorker` ni `_cleanup_worker()`: el cálculo es la función pura `wavelet_promedio` en `wavelet_average/compute.py`, el plugin hace `submit()`, y el avance por trial llega a la barra de estado. Su resultado es **idéntico bit a bit** al de Gamma Lab 1.0 |
-> | 3.2 `artifact_remove` | ⬜ **Pendiente, y con más trabajo del previsto.** Su hilo no solo calcula: **escribe** en el `TrialDataset` compartido. Hay que partirlo en leer / calcular / escribir (nº 15 de [`problemas-encontrados.md`](problemas-encontrados.md)) |
+> | 3.2 `artifact_remove` | ✅ **Hecho, con más trabajo del previsto.** Su hilo no solo calculaba: **escribía** en el `TrialDataset` compartido. Se partió en leer (interfaz) / calcular (orquestador, `compute.py`) / escribir (interfaz). Resultado idéntico bit a bit al anterior en 11 escenarios |
 > | 3.3 Cancelar al salir | ✅ **Hecho, por otro camino.** No se hizo en `IPlugin.stop()` sino en `MainWindow.clear_plugin_area`, que cancela las tareas del plugin antes de llamar a su `stop()`. Mismo efecto: ningún plugin tiene que acordarse. La rama muerta de `get_all_plugins()` ya no existe, y el cierre de la aplicación usa `has_active_tasks()` |
 >
 > El orquestador tenía un fallo que podía cerrar la aplicación al terminar una tarea; se corrigió el 30 de septiembre, antes de seguir con esta fase. El texto de abajo es el plan original.
@@ -381,11 +385,11 @@ Y el bug desaparece **para todos los plugins a la vez**, sin que ninguno tenga q
 
 ### Criterio de salida de la Fase 3
 
-- [ ] Ya no queda ningún `QThread` ni `moveToThread` fuera de `core/services/task_service.py` → falta `artifact_remove`.
-- [~] El resultado numérico de los dos plugins es idéntico al de antes de migrar → `wavelet_average` sí, bit a bit contra 1.0; falta `artifact_remove`.
-- [x] Cambiar de sección con un wavelet corriendo ya no deja hilos vivos → lo cubre `test_cancelacion_al_cambiar_seccion.py`.
+- [x] Ya no queda ningún `QThread` ni `moveToThread` fuera de `core/services/task_service.py` → y lo vigila la prueba `ningun_plugin_crea_hilos_propios`.
+- [x] El resultado numérico de los dos plugins es idéntico al de antes de migrar → `wavelet_average` bit a bit contra 1.0; `artifact_remove` bit a bit contra el código anterior en 11 escenarios.
+- [x] Cambiar de sección con un cálculo corriendo ya no deja hilos vivos → lo cubren `test_cancelacion_al_cambiar_seccion.py` y `test_artifact_remove_orquestador.py`.
 - [~] La barra de progreso muestra el avance real por trial → el avance llega como texto a la barra de estado; falta el widget con porcentaje y botón Cancelar (nº 9).
-- [ ] *(nuevo)* Cerrar la aplicación a mitad de una modificación de `artifact_remove` muestra el aviso de «Cálculo en curso» y no deja el hilo huérfano (nº 15).
+- [x] *(nuevo)* Cerrar la aplicación a mitad de una modificación de `artifact_remove` muestra el aviso de «Cálculo en curso» y no deja el hilo huérfano.
 
 ---
 
@@ -399,7 +403,7 @@ La parte mecánica: mover cada `_compute_*` a un `compute.py` y partir el botón
 
 | Plugin | Medición | ¿Migrar? |
 |---|---|---|
-| `wavelet` (individual) | 216 ms + 725 ms de render | **Sí** |
+| `wavelet` (individual) | 216 ms + 725 ms de render. *Hoy, con el paso 1.3 y `fft`: ~133 ms de cálculo + ~81 ms de dibujo ≈ 214 ms* | **Sí**, sigue pasando de 100 ms |
 | `open_signal` (archivos grandes) | 60 ms con el archivo de prueba; sin medir con 1-2 GB | **Sí**, medir primero |
 | `average` | cálculo de una línea (`average_plugin.py:66`) | Extraerlo a función pura igual, aunque no se encole |
 | `erp` | sin función de cálculo: el NumPy vive dentro de `_render_heatmap` (línea 290) | Separar cálculo de dibujo primero |
@@ -461,8 +465,8 @@ Nada de esto entra al alcance inicial. Cada punto tiene una condición de entrad
 
 | Riesgo | Señal temprana | Qué hacer |
 |---|---|---|
-| El GIL no se suelta con `conv` | Fase 0.3 da ganancia ≈1× | Fijar `method='fft'` es obligatorio, no opcional. *No ocurrió: la Fase 0.3 midió 1,82× con `conv`, así que volver a convolución no afecta a los hilos* |
-| `fft` cambia los resultados numéricos | `test/plugins_test/` falla | Ajustar tolerancia conscientemente y documentarlo; si no, quedarse en `conv` y replantear |
+| El GIL no se suelta con `conv` | Fase 0.3 da ganancia ≈1× | Fijar `method='fft'` es obligatorio, no opcional. *No ocurrió: la Fase 0.3 midió 1,82× con `conv`, así que los hilos funcionan con cualquiera de los dos modos* |
+| `fft` cambia los resultados numéricos | `test/plugins_test/` falla | Ajustar tolerancia conscientemente y documentarlo; si no, quedarse en `conv` y replantear. *No ocurrió: la suite da cifras idénticas con los dos modos, no hubo que tocar ninguna tolerancia* |
 | La imagen de VTK sale transpuesta al vectorizar | Se ve al primer render | Es el orden de memoria (VTK espera x-rápido) |
 | El orquestador se come el tiempo de la Fase 3 | Fin de la semana 2 sin un caso funcionando | Recortar más: sin reemplazo, sin progreso; solo submit/finished/cancel |
 | PAC se escribe con su propio hilo | Aparece un `QThread` en `pac_plugin.py` | Sincronizar los dos frentes antes de la semana 3 |

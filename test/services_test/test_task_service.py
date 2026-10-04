@@ -104,7 +104,7 @@ def test_excepcion_emite_failed_y_no_tumba_nada(qt_app):
     assert wait_for(lambda: rec.settled)
     assert not rec.finished
     assert len(rec.failed) == 1
-    assert rec.failed[0] == "fallo a proposito"
+    assert rec.failed[0] == "ValueError: fallo a proposito"
 
     rec2 = Recorder(svc.submit(suma, owner="p1", a=1, b=1))
     assert wait_for(lambda: rec2.settled)
@@ -229,6 +229,24 @@ def test_has_active_tasks(qt_app):
     assert svc.has_active_tasks()
 
     assert wait_for(lambda: rec.settled)
+    assert not svc.has_active_tasks()
+
+
+def sale_del_programa():
+    raise SystemExit(3)
+
+
+def test_systemexit_en_la_tarea_no_bloquea_la_cola(qt_app):
+    # SystemExit hereda de BaseException, no de Exception. Hasta el 30 de
+    # septiembre de 2026 se escapaba: la tarea no emitia ninguna senal y la
+    # siguiente nunca arrancaba.
+    svc = TaskService()
+    rec = Recorder(svc.submit(sale_del_programa, owner="p1"))
+    rec2 = Recorder(svc.submit(suma, owner="p2", a=4, b=4))
+
+    assert wait_for(lambda: rec.settled and rec2.settled)
+    assert rec.failed == ["SystemExit: 3"] and not rec.finished and rec.cancelled == 0
+    assert rec2.finished == [8]
     assert not svc.has_active_tasks()
 
 
