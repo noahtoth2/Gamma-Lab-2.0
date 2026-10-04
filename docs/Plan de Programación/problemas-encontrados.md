@@ -28,7 +28,7 @@ Ninguno de los problemas 1 a 13 lo causaron los cambios de la Fase 1. Los que po
 | 6 | `load_mat()` inalcanzable desde la interfaz | Media | ⬜ Abierto |
 | 7 | Tres servicios sin registrar en el Kernel | Media | ⬜ Abierto (el `TaskService` sí se registra) |
 | 8 | Señal `progress` declarada y nunca emitida | Baja | ✅ **Resuelto** (Fase 3) |
-| 9 | El spinner es modal e indeterminado | Media | ⬜ Parcial: ya nadie lo usa, falta el widget con Cancelar |
+| 9 | El spinner es modal e indeterminado | Media | ✅ **Resuelto** (1 oct) |
 | 10 | `_build_lut` sigue siendo un bucle de Python | Baja | ⬜ Abierto |
 | 11 | La suite de benchmarks no mide memoria | Media | ⬜ Abierto |
 | 12 | `load_edf` cuadruplica la memoria del archivo | Media | ⬜ Abierto |
@@ -37,11 +37,12 @@ Ninguno de los problemas 1 a 13 lo causaron los cambios de la Fase 1. Los que po
 | 15 | `artifact_remove` escribe los datos compartidos desde su hilo | Media | ✅ **Resuelto** (Fase 3) |
 | 16 | Escala logarítmica, eje de tiempo y ejes del escalograma | Media | ✅ **Arreglado** (29 sep) |
 | 17 | PyWavelets crea franjas falsas en frecuencias bajas | Media | ⬜ Abierto |
-| 18 | Submuestreo inexacto y sin filtro antialias | Media | ⬜ Abierto |
+| 18 | Submuestreo inexacto y sin filtro antialias | Media | ✅ **Cerrado** (1 oct): eje corregido; el antialias se descarta a proposito |
 | 19 | Una tarea que lanza `SystemExit` bloquea la cola del orquestador | Baja | ✅ **Arreglado** (30 sep) |
 | 20 | `artifact_remove` falla si los trials se generaron en otro canal | Media | ✅ **Arreglado** (30 sep) |
-| 21 | Las modificaciones de `artifact_remove` no se guardan en el proyecto | **Alta** | ⬜ Abierto · hay que elegir diseño |
+| 21 | Las modificaciones de `artifact_remove` no se guardan en el proyecto | **Alta** | ✅ **Resuelto** (1 oct, opción A) |
 | 22 | `MainWindow` conserva código de los hilos viejos que ya nada usa | Baja | ⬜ Abierto |
+| 23 | `erp` se quedó fuera de la vectorización de VTK del paso 1.3 | Media | ✅ **Resuelto** (1 oct) |
 
 ---
 
@@ -255,7 +256,7 @@ Entre los dos está casi todo lo necesario para un indicador de progreso real; l
 
 ---
 
-## 9. El spinner es modal e indeterminado ⬜ LO TOCA LA FASE 2
+## 9. El spinner es modal e indeterminado ✅ RESUELTO
 
 **Dónde.** `core/utils/plugin_alerts.py:40-63`.
 
@@ -269,6 +270,14 @@ Dos limitaciones, las dos deliberadas en su momento pero problemáticas ahora:
 **Por qué importa.** El orquestador puede implementar la cancelación entera por dentro, pero si la interfaz no tiene desde dónde dispararla, el usuario no la va a poder usar. Hace falta un widget de progreso **no modal, determinado y con botón de cancelar**. Es un frente de trabajo de interfaz, no de núcleo.
 
 > **Estado al 30 de septiembre de 2026: parcial.** Wavelet Average ya no abre el spinner modal. Mientras calcula, el botón queda deshabilitado con el texto *«Computing...»*, el resto de la aplicación sigue usable y el avance por trial aparece en la barra de estado. Cambiar de sección o cerrar el proyecto cancela el cálculo. Lo que sigue faltando es el widget propio con porcentaje y botón **Cancelar**. `PluginAlerts.show_spinner()` sigue existiendo, pero hoy ningún plugin lo llama.
+
+> **Resuelto el 1 de octubre de 2026.** El widget nuevo es `core/utils/task_progress.py` → `TaskProgressBar`: no modal, con rango 0-100 y botón **Cancelar** conectado al `cancel()` del `TaskHandle`.
+>
+> **Va una sola, en la barra de estado de la ventana principal**, enganchada a una señal nueva del orquestador: `TaskService.task_started`, que `submit()` emite con el handle recién creado. Así cualquier plugin que use el orquestador obtiene porcentaje y Cancelar **sin hacer nada**, hoy los tres migrados y mañana PAC. Es la misma decisión de la Fase 3.3: resolverlo en un sitio en vez de que cada plugin se acuerde. La alternativa —un widget que cada plugin embebe— obligaba a tocar tres interfaces y a que cada plugin nuevo se acordara.
+>
+> Verificado con `test/ui_test/escenarios_progreso.py`, **15 escenarios**: que la barra es determinada y no un spinner indeterminado, que no abre ningún diálogo modal, que el porcentaje avanza, que **Cancelar cancela de verdad** la tarea, que se oculta al terminar, al fallar y al cancelar, y que al relanzar sigue a la tarea nueva sin que la vieja mueva la barra.
+>
+> **`PluginAlerts.show_spinner()` se dejó en su sitio.** Está dibujado en el diagrama `1_application_core.html` del SDD, así que borrarlo obliga a corregir documentación de tesis. Nada lo llama; queda como decisión aparte.
 
 ---
 
@@ -315,6 +324,43 @@ signals_raw.append(np.asarray(sig, dtype=np.float64))
 **Por qué importa.** El Escenario de Calidad 2 del SAD plantea explícitamente archivos de 1-2 GB como caso de estrés, con visualización inicial en menos de 8 segundos. Hoy **nadie ha probado eso**: el archivo de pruebas son 7 MB y `load_abf` mide 60-79 ms.
 
 **Qué hacer.** Conseguir un archivo grande de verdad y medir. Ahí es donde `numpy.memmap` o la lectura por bloques tendrían sentido — a diferencia del wavelet, donde el acumulador ya resolvió el problema sin tocar disco.
+
+> **Medido el 1 de octubre de 2026 en la Fase 4, y las dos predicciones se confirman.** Con `load_abf` y el ABF de prueba (6,87 MB en disco, mediana de 5 cargas):
+>
+> | Medida | Valor |
+> |---|---|
+> | Arreglos en memoria | 27,5 MB — **4,00× el tamaño en disco** |
+> | Crecimiento del working set | +54,9 MB — **el doble de los arreglos**, el pico transitorio de `np.stack` |
+> | Tiempo de carga | 82,5 ms → **12,0 ms por MB** |
+>
+> La señal queda en `float32`, no en `float64`, así que el 4× viene de los enteros de 16 bits del ABF más el eje de tiempo, que pesa como un canal entero. Extrapolado linealmente, un archivo de 1 GB daría ~4 GB de arreglos, ~8 GB de working set y ~12 s de carga — sin contar la lectura en frío del disco, porque esta medición se tomó con la caché caliente.
+>
+> **Sigue faltando el archivo grande.** No hay ninguno en el equipo: los tres ABF disponibles pesan 6,87 MB. Mientras no se consiga, el Escenario de Calidad 2 del SAD no se puede ni verificar ni refutar, y la extrapolación de arriba es solo indicativa. Detalle en [`resultados-fase-4.md`](resultados-fase-4.md).
+
+> **Actualización (2 de octubre de 2026): la duplicación está corregida, y la causa no era la que decía esta entrada.**
+>
+> El escenario del SAD no solo pide un tiempo: también exige cargar «sin duplicación innecesaria de datos». Eso **sí** se puede verificar con el archivo de 7 MB, y se verificó.
+>
+> **La atribución anterior era incorrecta.** Esta entrada culpaba al `np.stack` de `load_abf`. Se quitó esa copia y **la medición no se movió**: seguía en 2,00×. El diagnóstico mostró por qué: **pyabf ya tiene el archivo entero en memoria** —`abf.data` son 13,7 MB y `abf.sweepX` otros 13,7 MB en `float64`—, y abrir el ABF ya cuesta +27,9 MB, casi exactamente el tamaño del resultado. Nosotros lo copiábamos otra vez. El `np.stack` era un transitorio real pero menor; la copia dominante era la nuestra sobre la de la librería.
+>
+> **La corrección** es quedarse con los arreglos de pyabf en lugar de copiarlos: el objeto `abf` muere al salir del cargador, así que NumPy los mantiene vivos y nadie más los referencia. Con una sola sweep, `abf.data[ch]` **es** la sweep 0 del canal (verificado); con varias sweeps hay que armar la matriz, y para eso se escribe en un arreglo ya reservado en vez de apilar al final.
+>
+> Medido en un proceso limpio, porque medir cargas sucesivas en el mismo proceso confunde «copia viva» con «liberada pero no devuelta al sistema»:
+>
+> | | Residente tras cargar | Pico del proceso |
+> |---|---:|---:|
+> | Antes | +55,2 MB (**2,01×**) | +75,8 MB (2,76×) |
+> | Después | **+27,7 MB (1,01×)** | +55,1 MB (2,01×) |
+>
+> La duplicación residente desaparece. El 2,01× de pico que queda es un transitorio **interno de pyabf** mientras lee y convierte el archivo; está en la librería, no en nuestro código. Extrapolado a 1 GB: el residente baja de ~8 GB a ~4 GB.
+>
+> **`load_edf` tenía el mismo patrón, y peor.** En su camino de remuestreo los canales crudos seguían vivos mientras se construía la matriz remuestreada: hasta el triple. Ahora lee la cabecera primero (`getNSamples()`), reserva la matriz y escribe canal por canal, interpolando directo en la fila que le toca. Solo un canal crudo vive a la vez.
+>
+> **Verificación.** `load_edf` no tenía pruebas y no hay archivos EDF en el proyecto, así que se generan sintéticos con `pyedflib.EdfWriter` y se comparan contra la lógica original usada como oráculo: **idéntico** en los cuatro casos, incluido el de remuestreo. Todo en `test/services_test/test_fileio_sin_duplicar.py`, **10 pruebas**.
+>
+> De paso hubo que completar dos dobles de prueba: `DummyABF` no exponía `data` y los `DummyEDF` no tenían `getNSamples()`, atributos que las librerías reales sí tienen. Eran modelos incompletos de la API.
+>
+> **Lo que sigue pendiente** es solo el umbral de los 8 segundos con 1-2 GB, que necesita el archivo.
 
 ---
 
@@ -409,7 +455,7 @@ Con `precision=16` la mayoría de las filas coinciden con la exacta dentro de un
 
 ---
 
-## 18. Submuestreo inexacto y sin filtro antialias ⬜ ABIERTO
+## 18. Submuestreo inexacto y sin filtro antialias ✅ CERRADO
 
 **Dónde.** `compute_wavelet` de los dos plugins: `factor = round(fs_original / densidad)` y después `sig[::factor]`.
 
@@ -422,6 +468,55 @@ Con `precision=16` la mayoría de las filas coinciden con la exacta dentro de un
 Con los valores por defecto (10.000 → 1.000 Hz, factor exacto 10) no hay corrimiento, pero sí falta el antialias.
 
 **Qué hacer.** Usar la densidad efectiva (`fs_original / factor`) para los ejes o rechazar densidades que no dividan, y filtrar antes de submuestrear (por ejemplo con `scipy.signal.decimate`). Afecta al resultado numérico, así que conviene decidirlo con el nº 2.
+
+> **Actualización (1 de octubre de 2026): el problema se partió en dos, y solo uno era una decisión científica.**
+>
+> ### El eje corrido: ✅ corregido
+>
+> No era una decisión, era un bug nuestro. Se verificó que **MATLAB no lo tiene**: `f_tf.m:8` y `f_Phase_PAC.m:6` calculan `srate = srate/srt`, o sea la tasa efectiva. Y nuestro propio `fft_average_plugin.py:195` ya hacía `fs_eff = fs / srt`. El wavelet era el único camino que usaba la densidad **pedida**.
+>
+> Medido con un tono puro de 100 Hz, antes y después:
+>
+> | Densidad pedida | Factor | Tasa real | Pico antes | Pico después |
+> |---:|---:|---:|---:|---:|
+> | 1.000 | 10 | 1.000,0 | 98,6 Hz | 98,6 Hz |
+> | 2.500 | 4 | 2.500,0 | 98,6 Hz | 98,6 Hz |
+> | **3.000** | 3 | **3.333,3** | **89,1 Hz** | **98,6 Hz** |
+> | **4.000** | 2 | **5.000,0** | **79,1 Hz** | **98,6 Hz** |
+> | **7.000** | 1 | **10.000,0** | **69,1 Hz** | **98,6 Hz** |
+>
+> (El −1,4 % residual es la resolución del eje, de ~0,5 Hz, no el bug: es idéntico en todas las densidades.)
+>
+> Dentro de un mismo análisis el error era un **porcentaje constante** en todo el eje, no creciente con la frecuencia; lo que crecía con la frecuencia era el error en Hz absolutos. Lo que determinaba la magnitud era la densidad pedida.
+>
+> Se arregló con una función nueva, `tasa_efectiva(fs_calculado, fs)`, usada en las escalas, el `sampling_period` y el eje de tiempo. **De paso se tapó un agujero en la validación:** comparaba `fmax` contra la mitad de la densidad **pedida**, así que con 3.800 Hz —factor 3, Nyquist real 1.666— dejaba pasar un `fmax` de 1.800. Ahora se valida contra la tasa efectiva, y la comprobación duplicada de los dos plugins se unificó. Los plugins avisan en español cuando la densidad pedida no es alcanzable.
+>
+> **El arreglo es inerte para la suite:** las pruebas contra MATLAB usan 1.000 Hz sobre un archivo de 10.000, factor 10 exacto, así que `fs_efectiva == fs`. No se movió ninguna cifra (171 pasan, los 5 fallos conocidos).
+>
+> ### El antialias: ✅ decidido — no se filtra, para coincidir con MATLAB
+>
+> Se implementó el filtro, se midió su efecto y **se decidió no usarlo**. El código del filtro se quitó: dejar un parámetro que nadie enciende es peor que una limitación documentada.
+>
+> **El aliasing es real**, y quedó medido: un tono de 800 Hz submuestreado a 1.000 Hz (Nyquist 500) **reaparece en 200 Hz**, donde no se distingue de uno legítimo. Con un filtro previo, su energía ahí bajaba más de diez veces.
+>
+> **Pero filtrar aparta el resultado de la referencia**, y bastante:
+>
+> | | Correlación media | Filas > 0,8 | Filas que fallan |
+> |---|---:|---:|---:|
+> | Individual, sin filtro (MATLAB) | 0,7527 | 402/998 | 596 |
+> | Individual, con filtro | 0,7414 | 446/998 | 552 |
+> | **Promedio, sin filtro (MATLAB)** | **0,9610** | **993/998** | **5** |
+> | **Promedio, con filtro** | 0,8667 | 627/998 | **371** |
+>
+> En el promedio la concordancia se derrumba: de 5 filas que fallan a 371. La explicación es directa: **la referencia de MATLAB se generó sin filtrar, así que tiene el aliasing dentro**. Al quitárselo a nuestro resultado, deja de parecerse a una referencia que lo tiene.
+>
+> **La decisión (1 de octubre de 2026):** la referencia del proyecto es el MATLAB de `BOARD_FTD_PACC`, no Gamma Lab 1.0, y 2.0 debe compararse siempre contra él. Como filtrar rompe esa comparación, no se filtra. Queda como **limitación conocida y heredada**, no como olvido.
+>
+> Dato que vale para la tesis: el promedio sin filtro tiene correlación media **0,9610** con MATLAB y **993 de 998 filas** por encima de 0,8. La concordancia es buena — y parte de ella viene de que los dos programas comparten el mismo aliasing. Conviene decirlo explícitamente en el documento en lugar de dejarlo implícito.
+>
+> **Lo que queda si algún día se revisa:** el aliasing es del submuestreo, no del wavelet, así que el mismo criterio aplica a PAC, cuyo MATLAB también usa `downsample`. Si se decidiera corregir, habría que corregir los dos programas a la vez y regenerar la referencia.
+>
+> Verificado con `test/plugins_test/test_submuestreo_wavelet.py`, **20 pruebas**: la tasa efectiva en siete combinaciones, que un tono cae en su frecuencia con seis densidades distintas, que el corrimiento ya no crece a lo largo del eje, el rechazo del `fmax` imposible, y una prueba que **documenta el aliasing** —el tono de 800 Hz tiene que seguir apareciendo en 200— de modo que si alguien añade el filtro, esa prueba falla y obliga a actualizar esta entrada.
 
 ---
 
@@ -455,7 +550,7 @@ El plugin tiene la misma búsqueda en su propio `_get_current_channel_name`.
 
 ---
 
-## 21. Las modificaciones de `artifact_remove` no se guardan en el proyecto ⬜ ABIERTO
+## 21. Las modificaciones de `artifact_remove` no se guardan en el proyecto ✅ RESUELTO
 
 **Gravedad: alta.** Es pérdida silenciosa de trabajo del investigador.
 
@@ -477,6 +572,18 @@ El plugin tiene la misma búsqueda en su propio `_get_current_channel_name`.
 
 En los dos casos, además, `artifact_remove` tiene que llamar a `mark_project_dirty()` después de escribir. Esa parte es una línea y no depende de la opción.
 
+> **Resuelto el 1 de octubre de 2026 con la opción A.**
+>
+> **Dónde quedó el cálculo.** Reaplicar la receta al abrir es trabajo de `ProjectService`, y core no debe importar de `plugins/`. El cálculo se movió a `core/filters/artifacts.py`, que es la misma situación de `core/filters/trials.py`: `_restore_trials` ya llamaba a `cut_trials_single_channel` de ahí para reconstruir los trials, así que reaplicar una modificación es la misma clase de operación en la misma capa. El `compute.py` del plugin reexporta los nombres, de modo que las rutas de import de las pruebas y la sustitución de los escenarios siguen funcionando.
+>
+> **Qué se guarda.** Por cada modificación, una receta con `mode`, `point_a`, `point_b` y `discarded_indices` —los descartes vigentes en ese momento, porque determinan qué columnas del TrialDataset base se tocaron—. Van en `metadata["modificaciones"]`, el manifiesto las escribe como `modifications` junto a los `generation_params`, y `_restore_trials` las reaplica **después** de los descartes.
+>
+> **La línea que faltaba.** `artifact_remove` ya llama a `mark_project_dirty()` en el slot de `finished`, así que cerrar después de modificar sí avisa de cambios sin guardar.
+>
+> Verificado con `test/services_test/test_persistencia_artifact_remove.py`, **15 pruebas**. La central comprueba que la reconstrucción es **idéntica bit a bit** en cuatro escenarios de descartes (ninguno, tres en medio, el primero, varios en los extremos), y antes confirma que al recortar de cero los trials **no** salen ya modificados, para que el escenario pruebe algo. También: que la receta sobrevive a `json.dumps`, que dos modificaciones encadenadas se reconstruyen igual, que **con ventanas solapadas el orden se respeta**, que una receta inválida se salta sin interrumpir las demás, y que el manifiesto no inventa la clave cuando no hubo modificaciones.
+>
+> **Un detalle medido de paso:** dos modificaciones sobre ventanas **disjuntas** conmutan, así que ahí el orden no cambia el resultado. La prueba del orden usa ventanas que se solapan, donde sí importa.
+
 ---
 
 ## 22. `MainWindow` conserva código de los hilos viejos que ya nada usa ⬜ ABIERTO
@@ -489,25 +596,67 @@ En los dos casos, además, `artifact_remove` tiene que llamar a `mark_project_di
 
 ---
 
+## 23. `erp` se quedó fuera de la vectorización de VTK del paso 1.3 ✅ RESUELTO
+
+**Gravedad: media.** Es tiempo de dibujo en el hilo de la interfaz, que es justo lo que la Fase 1.3 se propuso quitar.
+
+**Cómo apareció.** Al separar cálculo de dibujo en la Fase 4.
+
+**Dónde.** `plugins/analysis/time/erp/erp_plugin.py`, en `_render_heatmap`:
+
+```python
+for j in range(K):
+    for i in range(Tn):
+        img.SetScalarComponentFromFloat(i, j, 0, 0, X[j, i])
+```
+
+**Por qué importa.** Es el mismo patrón que el paso 1.3 reemplazó en los dos plugins de wavelet, donde se midió **82× más lento** que la versión vectorizada con `numpy_support.numpy_to_vtk`. Con el límite de 2.000 muestras del mapa de calor y 60 trials son hasta 120.000 llamadas al método de VTK, una por punto, desde Python.
+
+La Fase 1.3 solo tocó los dos plugins de wavelet porque eran los que se habían medido; a `erp` nunca se le aplicó, aunque tiene la misma forma.
+
+**Qué hacer.** El arreglo es el que ya está escrito dos veces en el proyecto, y el plugin **ya importa `numpy_support`**: basta con envolver la matriz en un arreglo de VTK y asignarla de una vez, cuidando el orden de memoria (VTK espera x-rápido, así que la matriz va contigua por filas de tiempo).
+
+**Por qué no se hizo en la Fase 4.** El alcance de esa fase era separar cálculo de dibujo, no optimizar el dibujo. Ahora que `preparar_mapa_calor` existe, el cambio queda contenido en el método de dibujo.
+
+> **Resuelto el 1 de octubre de 2026.** El doble bucle se reemplazó por el patrón del paso 1.3, que el plugin ya tenía importado:
+>
+> ```python
+> X_plano = np.ascontiguousarray(X, dtype=np.float32).ravel()
+> arr = numpy_support.numpy_to_vtk(X_plano, deep=True, array_type=vtk.VTK_FLOAT)
+> img.GetPointData().SetScalars(arr)
+> ```
+>
+> Medido construyendo el `vtkImageData` por los dos caminos y comparando sus escalares:
+>
+> | Tamaño | Bucle | Vectorizado | Ganancia | Escalares |
+> |---|---:|---:|---:|---|
+> | 3 × 500 | 0,8 ms | 0,2 ms | 4,1× | idénticos |
+> | 20 × 2.000 | 11,1 ms | 0,3 ms | 40,3× | idénticos |
+> | 60 × 2.000 | 36,0 ms | 0,4 ms | **91,3×** | idénticos |
+>
+> El 91× con 60 trials es consistente con el 82× que midió la Fase 1.3. Verificado con `test/plugins_test/test_erp_vtk_llenado.py`, **7 pruebas**: los mismos escalares que el bucle en cinco tamaños, que el tiempo queda en la x —si se invirtiera el orden la imagen saldría transpuesta, que era el riesgo anotado para la vectorización— y que los NaN se conservan en los mismos puntos.
+
+---
+
 ## Cómo agrupar esto en trabajo real
 
 **Frente de correctitud científica** *(el más urgente, y no es del orquestador)*
 - nº 2 — el wavelet contra MATLAB
 - nº 3 — la columna 0 de `psd_average`
 - nº 17 — las franjas de precisión de PyWavelets
-- nº 18 — el submuestreo inexacto y sin antialias
+- ~~nº 18 — el submuestreo~~ (cerrado: eje corregido, antialias descartado para coincidir con MATLAB)
 
 Son cuestiones de si los números que entrega la herramienta son correctos. Merecen su propio frente y conversación con la directora. Los nº 2, 17 y 18 conviene decidirlos juntos, porque los tres cambian el escalograma.
 
 **Lo que absorben las fases del orquestador**
-- nº 9 → el widget de progreso con Cancelar, trabajo de interfaz; es lo único que falta de la Fase 3
 - nº 7 → decisión pendiente sobre qué servicios pasan por el Kernel
-- ~~nº 4~~, ~~nº 8~~, ~~nº 14~~, ~~nº 15~~, ~~nº 19~~ → ya resueltos
+- ~~nº 4~~, ~~nº 8~~, ~~nº 9~~, ~~nº 14~~, ~~nº 15~~, ~~nº 19~~ → ya resueltos
 
-**Pérdida de trabajo del usuario** *(antes de seguir agregando funciones)*
-- nº 21 — las modificaciones de artefactos no se guardan en el proyecto; hay que elegir diseño
+**Pérdida de trabajo del usuario**
+- ~~nº 21 — las modificaciones de artefactos no se guardan en el proyecto~~ (resuelto el 1 de octubre con la opción A: se guarda la receta)
 
 **Deuda técnica suelta** *(cada una es de horas, no de días)*
+- ~~nº 23 — el bucle de VTK en `erp`~~ (resuelto)
 - nº 22 — código de los hilos viejos en `MainWindow`
 - ~~nº 20 — `artifact_remove` con trials de otro canal~~ (resuelto)
 - ~~nº 5 — rama muerta al cerrar~~ (resuelto)

@@ -235,7 +235,7 @@ El reemplazo es una conversión en bloque del arreglo completo, asignada como es
 ### Criterio de salida de la Fase 1
 
 - [x] Suite de benchmarks corrida con etiqueta nueva y comparada contra la base → `v2_fase1_completa`.
-- [~] `test/plugins_test/` sigue pasando — **no se puede cumplir tal como estaba escrito**, ver abajo.
+- [x] `test/plugins_test/` sigue pasando → hubo que reformularlo dos veces (ver abajo), pero hoy los 8 archivos se recolectan sin error y corren: **59 pasan y 5 fallan**, y los 5 son las comparaciones con MATLAB heredadas de 1.0, no regresiones.
 - [x] El pico de memoria de `wavelet_average` ya no crece con el número de trials → medido en 10, 30 y 60 trials: **414 MB constante**.
 - [x] La imagen de VTK no cambió → verificado más fuerte que con un PNG: comparación bit a bit de los escalares (`max diferencia = 0.000e+00`) más lectura por coordenadas en las cuatro esquinas.
 
@@ -388,7 +388,7 @@ Y el bug desaparece **para todos los plugins a la vez**, sin que ninguno tenga q
 - [x] Ya no queda ningún `QThread` ni `moveToThread` fuera de `core/services/task_service.py` → y lo vigila la prueba `ningun_plugin_crea_hilos_propios`.
 - [x] El resultado numérico de los dos plugins es idéntico al de antes de migrar → `wavelet_average` bit a bit contra 1.0; `artifact_remove` bit a bit contra el código anterior en 11 escenarios.
 - [x] Cambiar de sección con un cálculo corriendo ya no deja hilos vivos → lo cubren `test_cancelacion_al_cambiar_seccion.py` y `test_artifact_remove_orquestador.py`.
-- [~] La barra de progreso muestra el avance real por trial → el avance llega como texto a la barra de estado; falta el widget con porcentaje y botón Cancelar (nº 9).
+- [x] La barra de progreso muestra el avance real por trial → el avance llega como texto a la barra de estado y, desde el 1 de octubre, con porcentaje y botón Cancelar en el widget `TaskProgressBar` (nº 9, resuelto).
 - [x] *(nuevo)* Cerrar la aplicación a mitad de una modificación de `artifact_remove` muestra el aviso de «Cálculo en curso» y no deja el hilo huérfano.
 
 ---
@@ -396,6 +396,17 @@ Y el bug desaparece **para todos los plugins a la vez**, sin que ninguno tenga q
 ## Fase 4 — Extender a los plugins síncronos
 
 *Objetivo: cubrir lo que de verdad se siente, no todo por simetría.*
+
+> **Estado al 1 de octubre de 2026: dos de los tres criterios cumplidos.** Resultados en [`resultados-fase-4.md`](resultados-fase-4.md).
+>
+> | Paso | Estado |
+> |---|---|
+> | `wavelet` individual | ✅ **Migrado.** El cálculo compartido se consolidó en `core/filters/wavelet.py` (eliminó ~79 líneas duplicadas); el botón quedó partido en `submit()` + slot de `finished`. Resultado idéntico bit a bit, y 17 escenarios nuevos confirman que corre fuera del hilo de interfaz |
+> | `average` | ✅ **Extraído** a `promedio_trials` en su `compute.py`. No se encola: menos de 1 ms |
+> | `erp` | ✅ **Separado** cálculo de dibujo con `preparar_mapa_calor`, más 13 pruebas nuevas. El mapa de calor no lo cubría ninguna prueba |
+> | `open_signal` | ⬜ **Medición parcial.** No hay ningún archivo de 1-2 GB en el equipo; los tres ABF disponibles pesan 6,87 MB. Medido: 12,0 ms por MB y arreglos de 4× el tamaño en disco, con el working set creciendo al doble. La conclusión provisional es que el cuello de botella es la memoria, no la cola |
+>
+> De paso apareció que `erp` se quedó fuera de la vectorización del paso 1.3: su `_render_heatmap` todavía llena VTK con un doble bucle de Python. No se tocó, por estar fuera del alcance de la fase. El texto de abajo es el plan original.
 
 La parte mecánica: mover cada `_compute_*` a un `compute.py` y partir el botón en dos — lo que pide y lo que dibuja cuando llega la respuesta.
 
@@ -415,9 +426,9 @@ La parte mecánica: mover cada `_compute_*` a un `compute.py` y partir el botón
 
 ### Criterio de salida de la Fase 4
 
-- [ ] Todo lo que pasa de 100 ms va por el orquestador.
-- [ ] `average` y `erp` tienen su cálculo separado del dibujo, aunque no se encolen.
-- [ ] Medición con un archivo grande de verdad (1-2 GB) para decidir si hace falta la segunda cola.
+- [x] Todo lo que pasa de 100 ms va por el orquestador → el wavelet individual migrado; el resto está por debajo del umbral salvo `open_signal`, que depende del tercer punto.
+- [x] `average` y `erp` tienen su cálculo separado del dibujo, aunque no se encolen → `promedio_trials` y `preparar_mapa_calor`.
+- [ ] Medición con un archivo grande de verdad (1-2 GB) para decidir si hace falta la segunda cola → **no se pudo**: no existe un archivo así en el equipo. Hay medición y extrapolación en [`resultados-fase-4.md`](resultados-fase-4.md).
 
 ---
 
@@ -480,7 +491,7 @@ El PMP asigna cuatro frentes (UX/UI, paralelización núcleo, amplitude coupling
 - **Quien lleve "paralelización núcleo"** → Fases 0 y 2 (medir y construir el `TaskService`).
 - **Quien lleve "paralelización módulo"** → Fases 1 y 3 (las tres optimizaciones y migrar los dos plugins con hilos).
 - **Quien lleve "amplitude coupling"** → Fase 5, coordinando con la 2 para no adelantarse con un hilo propio.
-- **Quien lleve UX/UI** → el widget de progreso no modal con botón **Cancelar**. Hoy no existe ninguno: `PluginAlerts.show_spinner()` (línea 40) es modal, indeterminado (`setRange(0, 0)`, línea 63) y sin forma de cancelar. Sin ese widget, la cancelación del orquestador no tiene por dónde dispararse.
+- ~~**Quien lleve UX/UI** → el widget de progreso no modal con botón **Cancelar**.~~ *Hecho el 1 de octubre de 2026: `core/utils/task_progress.py`, una sola barra en la barra de estado enganchada a `TaskService.task_started`, así que sirve para todos los plugins sin que ninguno se acuerde.*
 
 Las fases 1 y 2 no se tocan entre sí, así que pueden ir en paralelo desde la semana 2.
 

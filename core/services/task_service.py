@@ -79,6 +79,11 @@ class _Worker(QThread):
 
 class TaskService(QObject):
 
+    # La emite submit() con el TaskHandle recien creado. Existe para que la
+    # interfaz pueda mostrar progreso y ofrecer Cancelar sin que cada plugin
+    # tenga que acordarse de engancharse (requisito R04, problema nº 9).
+    task_started = pyqtSignal(object)
+
     def __init__(self, cancel_timeout_ms: int = DEFAULT_CANCEL_TIMEOUT_MS):
         super().__init__()
         self._cancel_timeout_ms = cancel_timeout_ms
@@ -100,6 +105,9 @@ class TaskService(QObject):
         task = _Task(task_id, fn, kwargs, owner, handle)
 
         self._queue.append(task)
+        # Antes de arrancar, para que quien escuche ya tenga el handle conectado
+        # cuando empiecen a llegar las señales de progreso.
+        self.task_started.emit(handle)
         self._start_next_if_idle()
         return handle
 

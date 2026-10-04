@@ -2,7 +2,7 @@
 
 *Migrar al orquestador los dos plugins que ya usaban hilos*
 
-> **Estado: fase completa en lo que es de código.** Ningún plugin crea ya hilos propios: todo el trabajo en segundo plano pasa por el `TaskService`. Queda abierto un único criterio, el widget de progreso con botón Cancelar (nº 9 de [`problemas-encontrados.md`](problemas-encontrados.md)), que es trabajo de interfaz.
+> **Estado: fase completa.** Ningún plugin crea ya hilos propios: todo el trabajo en segundo plano pasa por el `TaskService`. El último criterio que quedaba abierto, el widget de progreso con botón Cancelar (nº 9), se cerró el 1 de octubre de 2026 con `core/utils/task_progress.py`.
 
 **Fecha:** 30 de septiembre de 2026. Mismo equipo y versiones que las fases anteriores.
 
@@ -180,7 +180,7 @@ No se tocaron el dibujo con VTK, la navegación entre trials ni la interfaz del 
 - [x] Ya no queda ningún `QThread` ni `moveToThread` fuera de `core/services/task_service.py` → verificado, y ahora lo vigila `ningun_plugin_crea_hilos_propios`.
 - [x] El resultado numérico de los dos plugins es idéntico al de antes de migrar → `wavelet_average` bit a bit contra 1.0; `artifact_remove` bit a bit contra el código anterior en 11 escenarios.
 - [x] Cambiar de sección con un cálculo corriendo ya no deja hilos vivos → `test_cancelacion_al_cambiar_seccion.py` y `cancelar_no_escribe_nada`.
-- [~] La barra de progreso muestra el avance real por trial → llega como texto a la barra de estado en los dos plugins; falta el widget con porcentaje y botón Cancelar (nº 9).
+- [x] La barra de progreso muestra el avance real por trial → llega como texto a la barra de estado en los dos plugins, y desde el 1 de octubre con porcentaje y botón Cancelar (nº 9, resuelto).
 - [x] Cerrar la aplicación a mitad de una modificación de `artifact_remove` muestra el aviso de «Cálculo en curso» y no deja el hilo huérfano.
 
 ---
@@ -206,6 +206,6 @@ No se tocaron `main.py` ni otros plugins, y no hay dependencias nuevas.
 ## Lo que sigue
 
 - **Decidir cómo guardar las modificaciones de artefactos en el proyecto** (nº 21). Es pérdida de trabajo del usuario, así que conviene antes de agregar funciones nuevas.
-- **El widget de progreso con botón Cancelar** (nº 9). Es lo único que falta para cerrar del todo la fase, y es trabajo de interfaz: el orquestador ya reporta el avance y ya sabe cancelar.
+- ~~**El widget de progreso con botón Cancelar** (nº 9).~~ *Hecho el 1 de octubre de 2026: `TaskProgressBar`, una sola barra en la barra de estado, enganchada a la señal `task_started` del orquestador.*
 - **Fase 4:** extender el orquestador a los plugins síncronos que pasan de 100 ms. Con el archivo de prueba, hoy solo el wavelet individual (~190 ms); `open_signal` hay que medirlo con un archivo grande de verdad.
 - **Fase 5:** PAC nace ya orquestado, con su cálculo en un `compute.py`. La prueba `ningun_plugin_crea_hilos_propios` avisará si alguien le pone un hilo propio.

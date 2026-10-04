@@ -216,10 +216,18 @@ class Wavelet_average_plugin(IPlugin):
         if fmax <= fmin:
             self.alerts.error(f"La frecuencia alta ({fmax:g} Hz) debe ser mayor que la baja ({fmin:g} Hz).")
             return
-        if fmax > fs / 2:
-            self.alerts.error(f"La frecuencia alta ({fmax:g} Hz) no puede superar {fs / 2:g} Hz, "
-                              f"la mitad de la densidad de muestreo.")
+
+        # El factor de submuestreo es entero, asi que una densidad que no divida
+        # a la del archivo no se puede alcanzar. Se valida y se avisa contra la
+        # que de verdad se va a usar, no contra la pedida (problema nº 18).
+        fs_efectiva, _ = cw.tasa_efectiva(fs_calculado, fs)
+        if fmax > fs_efectiva / 2:
+            self.alerts.error(f"La frecuencia alta ({fmax:g} Hz) no puede superar {fs_efectiva / 2:g} Hz, "
+                              f"la mitad de la densidad efectiva ({fs_efectiva:g} Hz).")
             return
+        if abs(fs_efectiva - fs) > 1e-9:
+            self.alerts.info(f"La densidad de {fs:g} Hz no divide a los {fs_calculado:g} Hz del archivo; "
+                             f"se usará {fs_efectiva:.1f} Hz, la más cercana alcanzable.")
 
         # Un cálculo anterior de este plugin (por ejemplo, al reabrir un proyecto)
         # se cancela; sus señales tardías se ignoran porque ya no es la tarea vigente.

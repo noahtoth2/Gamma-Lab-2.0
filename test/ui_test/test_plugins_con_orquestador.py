@@ -1,4 +1,4 @@
-"""Comportamiento de interfaz de los plugins que usan el orquestador (Fase 3).
+"""Comportamiento de interfaz de los plugins que usan el orquestador (Fases 3 y 4).
 
 Cada archivo de escenarios corre en un proceso aparte: necesita una QApplication
 con widgets, y el resto de la suite crea QCoreApplication, que no se puede
@@ -31,6 +31,18 @@ def correr_escenarios(nombre):
     fallas = [f"{c[2]} ({c[3]})" for c in casos if c[1] != "OK"]
     assert not fallas, "fallaron estos escenarios:\n- " + "\n- ".join(fallas)
     return len(casos)
+
+
+def test_open_signal_en_la_interfaz():
+    assert correr_escenarios("escenarios_open_signal.py") >= 11
+
+
+def test_barra_de_progreso():
+    assert correr_escenarios("escenarios_progreso.py") >= 15
+
+
+def test_wavelet_en_la_interfaz():
+    assert correr_escenarios("escenarios_wavelet.py") >= 17
 
 
 def test_wavelet_average_en_la_interfaz():

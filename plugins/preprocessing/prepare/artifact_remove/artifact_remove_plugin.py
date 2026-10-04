@@ -294,7 +294,7 @@ class ArtifactRemovePlugin(IPlugin):
             )
             self._apply_handle = handle
             handle.progress.connect(partial(self._on_apply_progress, handle))
-            handle.finished.connect(partial(self._on_apply_finished, handle, prep, mode))
+            handle.finished.connect(partial(self._on_apply_finished, handle, prep, mode, point_a, point_b))
             handle.failed.connect(partial(self._on_apply_error, handle))
             handle.cancelled.connect(partial(self._on_apply_cancelled, handle))
 
@@ -809,7 +809,7 @@ class ArtifactRemovePlugin(IPlugin):
             return
         self._notify(f"Aplicando la modificación: {message} ({percent}%)")
 
-    def _on_apply_finished(self, handle, prep, mode, out_active):
+    def _on_apply_finished(self, handle, prep, mode, point_a, point_b, out_active):
         """El cálculo terminó: la escritura ocurre aquí, en el hilo de la interfaz."""
         if handle is not self._apply_handle:
             return
@@ -821,7 +821,10 @@ class ArtifactRemovePlugin(IPlugin):
             if out_active is None:
                 self.alerts.info("No se aplicó ninguna modificación.")
             else:
-                escribir_modificacion(self.kernel, prep, out_active, mode)
+                escribir_modificacion(self.kernel, prep, out_active, mode, point_a, point_b)
+                # Sin esto, cerrar después de modificar no avisa de cambios sin
+                # guardar y el trabajo se pierde en silencio (problema nº 21).
+                self.mark_project_dirty()
                 self.alerts.info("Cambios aplicados a todos los trials válidos.")
         except Exception as e:
             print(f"{LOGP} Error writing modification: {e}")

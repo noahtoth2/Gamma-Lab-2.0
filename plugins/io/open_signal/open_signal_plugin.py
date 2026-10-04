@@ -1,4 +1,5 @@
 # plugins/io/open_signal/open_signal_plugin.py
+from functools import partial
 from pathlib import Path
 from PyQt5.QtWidgets import QMessageBox
 import traceback
@@ -16,6 +17,7 @@ from core.services.settings_service import SettingsService
 from core.model.signal_dataset import SignalDataset
 from core.utils.adapters import dataset_to_vtk_table
 
+from plugins.io.open_signal import compute as co
 from plugins.io.open_signal.open_signal_ui import Ui_OpenSignal
 from core.filters.trials import cut_trials_single_channel
 
@@ -48,6 +50,9 @@ class OpenSignalPlugin(IPlugin):
         
         self._sync_callback = None
         self._is_syncing = False
+
+        self._load_handle = None
+        self._cargando = False
 
 
 
@@ -237,35 +242,87 @@ class OpenSignalPlugin(IPlugin):
             
 
         ext = Path(fname).suffix.lower()
-        try:
-            if ext == ".abf":
-                ds = fileio.load_abf(fname)
-            elif ext == ".edf":
-                ds = fileio.load_edf(fname)
-            elif ext == ".mat":
-                ds = fileio.load_mat(fname)
-            else:
-                if self.mainwin:
-                    self.mainwin.statusBar().showMessage(f"Unsupported format: {ext}", 4000)
-                return
-        except Exception as e:
-            QMessageBox.warning(self.ui, "Error", f"Error opening file {fname}\n{e}.")
-            self._log("open_file_dialog error:", e)
-            traceback.print_exc()
+        if ext not in co.EXTENSIONES:
+            if self.mainwin:
+                self.mainwin.statusBar().showMessage(f"Unsupported format: {ext}", 4000)
             return
 
+        tasks = self.kernel.get_service("TaskService") if self.kernel else None
+        if tasks is None:
+            self.alerts.error("El servicio de tareas no está disponible.")
+            return
 
-        key = store.add_signal(ds, ds.name)
-        self._log("Saved in DataStore:", key)
-        store.set_active_signal(key)
-        self.kernel.emit_event("signal_added", {"key": key})
+        # La lectura sale del hilo de la interfaz, como pide el Escenario de
+        # Calidad 2 del SAD. Lo que sigue —registrar en el DataStore, avisar a
+        # los plugins y dibujar— vuelve al hilo de la interfaz en el slot de
+        # `finished`, para que siga habiendo un unico escritor (R54).
+        tasks.cancel_all_from(self.meta.id)
+        self._terminar_carga()
 
-        self._set_dataset(ds)
-
-        self.vtk_menu.set_signal_name(ds.name)
-
+        self._cargando = True
         if self.mainwin:
-            self.mainwin.statusBar().showMessage(f"Loaded: {fname}", 4000)
+            self.mainwin.statusBar().showMessage(f"Leyendo {Path(fname).name}…")
+
+        handle = tasks.submit(
+            co.cargar_senal, owner=self.meta.id, ruta=fname, fileio=fileio)
+        self._load_handle = handle
+        handle.progress.connect(partial(self._on_load_progress, handle))
+        handle.finished.connect(partial(self._on_load_done, handle, fname))
+        handle.failed.connect(partial(self._on_load_failed, handle, fname))
+        handle.cancelled.connect(partial(self._on_load_cancelled, handle))
+
+    def _terminar_carga(self):
+        self._cargando = False
+        self._load_handle = None
+
+    def _on_load_progress(self, handle, percent, message):
+        if handle is not self._load_handle:
+            return
+        self._log(f"{message} ({percent}%)")
+
+    def _on_load_failed(self, handle, message):
+        if handle is not self._load_handle:
+            return
+        self._terminar_carga()
+        if self.ui is None:
+            return
+        QMessageBox.warning(self.ui, "Error", f"Error opening file\n{message}.")
+        self._log("open_file_dialog error:", message)
+
+    def _on_load_cancelled(self, handle):
+        if handle is not self._load_handle:
+            return
+        self._terminar_carga()
+
+    def _on_load_done(self, handle, fname, ds):
+        """El archivo ya se leyó; esto corre en el hilo de la interfaz."""
+        if handle is not self._load_handle:
+            return
+        self._terminar_carga()
+        # Si el proyecto se cerró mientras leia, ya no hay dónde mostrarlo.
+        if self.ui is None or ds is None:
+            return
+
+        store: DataStore | None = self.kernel.get_service("DataStore")
+        if store is None:
+            store = DataStore()
+            self.kernel.register_service("DataStore", store)
+
+        try:
+            key = store.add_signal(ds, ds.name)
+            self._log("Saved in DataStore:", key)
+            store.set_active_signal(key)
+            self.kernel.emit_event("signal_added", {"key": key})
+
+            self._set_dataset(ds)
+            self.vtk_menu.set_signal_name(ds.name)
+
+            if self.mainwin:
+                self.mainwin.statusBar().showMessage(f"Loaded: {fname}", 4000)
+        except Exception as e:
+            QMessageBox.warning(self.ui, "Error", f"Error opening file {fname}\n{e}.")
+            self._log("_on_load_done error:", e)
+            traceback.print_exc()
 
     def _set_dataset(self, ds: SignalDataset):
         self.current_ds = ds

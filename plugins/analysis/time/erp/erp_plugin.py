@@ -12,6 +12,7 @@ from core.plugins.meta import PluginMeta
 from core.utils.vtk_context_menu import VTKContextMenu
 from core.model.signal_dataset import SignalDataset
 from core.model.trial_dataset import TrialDataset
+from plugins.analysis.time.erp import compute as ce
 from plugins.analysis.time.erp.erp_plugin_ui import Ui_ErpPlot
 from core.utils.adapters import trials_matrix_to_vtk_table
 
@@ -350,65 +351,31 @@ class Erp_plugin(IPlugin):
         scene.ClearItems()
 
         # Data
-        X = np.asarray(sel, dtype=np.float32)
+        X, t, vmin, vmax, t0, t_end, dt, factor = ce.preparar_mapa_calor(t, sel)
         K, Tn = X.shape
-        print(f"\n=== DEBUG HEATMAP ===")
-        print(f"Original dimensions: K={K} trials, Tn={Tn} samples")
-        
-        # CRITICAL: Downsample if there are too many samples
-        MAX_SAMPLES = 2000  # Reasonable visualization limit
-        if Tn > MAX_SAMPLES:
-            factor = int(np.ceil(Tn / MAX_SAMPLES))
-            X = X[:, ::factor]
-            t = t[::factor]
-            Tn = X.shape[1]
-            print(f"DOWNSAMPLED by factor {factor}: new dimension Tn={Tn}")
-        
-        print(f"Data: min={np.nanmin(X):.3f}, max={np.nanmax(X):.3f}, mean={np.nanmean(X):.3f}")
-        
-        # Compute range for LUT (on original data)
-        finite = np.isfinite(X)
-        if finite.any():
-            p2, p98 = np.nanpercentile(X[finite], (2, 98))
-            if p98 <= p2:
-                vmin = float(X[finite].min())
-                vmax = float(X[finite].max()) if float(X[finite].max()) > vmin else (vmin + 1.0)
-            else:
-                vmin, vmax = float(p2), float(p98)
-        else:
-            vmin, vmax = 0.0, 1.0
-        
-        # Time parameters
-        t0 = float(t[0]) if t.size > 0 else 0.0
-        t_end = float(t[-1]) if t.size > 0 else 1.0
-        dt = (t_end - t0) / Tn if Tn > 0 else 1.0
-        
-        print(f"Time: t0={t0:.3f}s, t_end={t_end:.3f}s, dt={dt:.6f}s")
-        
+        self._log(f"Heatmap: {K} trials x {Tn} muestras, submuestreo x{factor}, "
+                  f"rango [{vmin:.3f}, {vmax:.3f}], t0={t0:.3f}s, dt={dt:.6f}s")
+
         # Create image with correct SPACING and ORIGIN
         img = vtk.vtkImageData()
         img.SetDimensions(Tn, K, 1)
         img.SetSpacing(dt, 1.0, 1.0)      # dt on X to map to time
         img.SetOrigin(t0, 0.0, 0.0)       # Starts at t0
-        img.AllocateScalars(vtk.VTK_FLOAT, 1)
-        
-        # Write ORIGINAL data (without normalization)
-        for j in range(K):
-            for i in range(Tn):
-                img.SetScalarComponentFromFloat(i, j, 0, 0, X[j, i])
-        
+
+        # X llega como (trials, muestras) y VTK espera la x primero, que aqui es
+        # el tiempo: raveling una matriz contigua por filas da ese mismo orden.
+        X_plano = np.ascontiguousarray(X, dtype=np.float32).ravel()
+        arr = numpy_support.numpy_to_vtk(X_plano, deep=True, array_type=vtk.VTK_FLOAT)
+        img.GetPointData().SetScalars(arr)
         img.Modified()
         
         # Verify
-        vtk_range = img.GetScalarRange()
-        print(f"VTK ScalarRange: {vtk_range}")
-        print(f"Image Spacing: {img.GetSpacing()}")
-        print(f"Image Origin: {img.GetOrigin()}")
-        
+        self._log(f"Heatmap VTK: rango={img.GetScalarRange()} "
+                  f"spacing={img.GetSpacing()} origen={img.GetOrigin()}")
+
         # Use LUT function
         lut = self._build_lut("blue", vmin, vmax)  # Change to "viridis" if preferred
-        print(f"LUT Range: {lut.GetRange()}")
-        
+
         # Chart
         chart = vtk.vtkChartHistogram2D()
         chart.SetInputData(img, 0)
@@ -428,9 +395,6 @@ class Erp_plugin(IPlugin):
         
         # Add to scene
         scene.AddItem(chart)
-        
-        print("Chart added to scene")
-        print("======================\n")
         
         try:
             self.vtk_menu_bot = VTKContextMenu(chart, self.vtk_top, self.active_signal.name,self.ch_name,self.meta.id, parent=self.widget)

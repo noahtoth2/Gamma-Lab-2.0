@@ -15,19 +15,43 @@ class FileIOService:
         channel_count = abf.channelCount
         print(f"Detected channel count: {channel_count}")
 
-        time_data = abf.sweepX.copy()
+        # pyabf ya tiene el archivo entero en memoria: `abf.data` es la matriz
+        # (canales, muestras) y `abf.sweepX` el eje de tiempo. Copiar ambos
+        # duplicaba los datos —medido: el working set crecia al doble del tamano
+        # de los arreglos (problema nº 12)—. Como el objeto `abf` muere al salir
+        # de aqui, basta con quedarse con sus arreglos en lugar de copiarlos:
+        # NumPy los mantiene vivos y nadie mas los referencia.
+        print("Reading channels:")
+        if abf.sweepCount == 1:
+            # Con una sola sweep, abf.data[ch] es exactamente la sweep 0 del canal.
+            signals = abf.data
+            for ch in range(channel_count):
+                print(f"  Channel {ch}: {signals.shape[1]} points")
+        else:
+            # Con varias sweeps hay que armar la matriz con la sweep 0 de cada
+            # canal, que no coincide con abf.data. Se escribe en un arreglo ya
+            # reservado para no apilar copias al final.
+            abf.setSweep(sweepNumber=0, channel=0)
+            primer_canal = abf.sweepY
+            n_muestras = len(primer_canal)
+            signals = np.empty((channel_count, n_muestras), dtype=primer_canal.dtype)
+            signals[0, :] = primer_canal
+            print(f"  Channel 0: {n_muestras} points")
+            for ch in range(1, channel_count):
+                abf.setSweep(sweepNumber=0, channel=ch)
+                y = abf.sweepY
+                if len(y) != n_muestras:
+                    raise ValueError(
+                        f"El canal {ch} tiene {len(y)} muestras y el canal 0 tiene {n_muestras}; "
+                        f"no se puede armar una matriz con canales de distinto largo.")
+                signals[ch, :] = y
+                print(f"  Channel {ch}: {len(y)} points")
+
+        # Se toma al final y sin copiar: ningun setSweep posterior lo altera.
+        abf.setSweep(sweepNumber=0, channel=0)
+        time_data = abf.sweepX
         print(f"Obtained time data, length: {len(time_data)}")
         print(f"Time range: {time_data[0]:.4f} - {time_data[-1]:.4f} s")
-
-        signal_rows = []
-        print("Reading channels:")
-        for ch in range(channel_count):
-            abf.setSweep(sweepNumber=0, channel=ch)
-            y = abf.sweepY.copy()
-            signal_rows.append(y)
-            print(f"  Channel {ch}: {len(y)} points")
-
-        signals = np.stack(signal_rows, axis=0)
 
         channel_names = [str(n) for n in abf.adcNames]
         units = list(abf.adcUnits)
@@ -67,34 +91,49 @@ class FileIOService:
             C = edf.signals_in_file
             print(f"Detected channel count: {C}")
 
-            signals_raw = []
+            # Primero solo la cabecera: nombres, unidades, frecuencias y largos.
+            # Asi se puede decidir la forma de la matriz y reservarla antes de
+            # leer datos. Antes se leian los C canales a una lista y se apilaban
+            # con np.stack, lo que dejaba la lista y la copia apilada vivas a la
+            # vez: el doble de memoria (problema nº 12). En el camino de
+            # remuestreo era peor, porque `signals_raw` seguia vivo mientras se
+            # construia `resampled`: hasta el triple.
             channel_names = []
             units = []
             fs_list = []
+            n_list = []
             durations = []
 
-            print("Reading channels:")
+            n_samples_cabecera = edf.getNSamples()
+            print("Reading channel headers:")
             for i in range(C):
-                sig = edf.readSignal(i)
                 fs_i = float(edf.samplefrequency(i))
                 name_i = edf.getLabel(i).strip() or f"ch{i}"
                 unit_i = edf.getPhysicalDimension(i).strip() or "uV"
+                n_i = int(n_samples_cabecera[i])
 
-                signals_raw.append(np.asarray(sig, dtype=np.float64))
                 channel_names.append(str(name_i))
                 units.append(str(unit_i))
                 fs_list.append(fs_i)
-                durations.append(len(sig) / fs_i)
-                print(f"  Channel {i}: {len(sig)} points, fs={fs_i}Hz, name={name_i}, unit={unit_i}")
+                n_list.append(n_i)
+                durations.append(n_i / fs_i)
+                print(f"  Channel {i}: {n_i} points, fs={fs_i}Hz, name={name_i}, unit={unit_i}")
 
             same_fs = all(abs(f - fs_list[0]) < 1e-9 for f in fs_list)
-            same_len = len({len(s) for s in signals_raw}) == 1
+            same_len = len(set(n_list)) == 1
 
             if same_fs and same_len:
                 sampling_rate = fs_list[0]
-                N = len(signals_raw[0])
+                N = n_list[0]
                 time = np.arange(N, dtype=np.float64) / sampling_rate
-                signals = np.stack(signals_raw, axis=0) 
+                signals = np.empty((C, N), dtype=np.float64)
+                for i in range(C):
+                    sig = edf.readSignal(i)
+                    if len(sig) != N:
+                        raise ValueError(
+                            f"El canal {i} declara {N} muestras en la cabecera pero entrega "
+                            f"{len(sig)}; el archivo EDF es inconsistente.")
+                    signals[i, :] = sig
                 print("EDF with uniform fs and length.")
             else:
                 print("Warning: Channels with different fs/lengths. Resampling…")
@@ -103,12 +142,13 @@ class FileIOService:
                 N = int(np.floor(T_common * sampling_rate))
                 time = np.arange(N, dtype=np.float64) / sampling_rate
 
-                resampled = []
-                for sig, fs_i in zip(signals_raw, fs_list):
-                    t_i = np.arange(sig.shape[0], dtype=np.float64) / fs_i
-                    y_i = np.interp(time, t_i, sig)
-                    resampled.append(y_i.astype(np.float64))
-                signals = np.stack(resampled, axis=0)
+                # Se interpola canal por canal directo en la fila que le toca,
+                # de modo que solo un canal crudo esta vivo a la vez.
+                signals = np.empty((C, N), dtype=np.float64)
+                for i in range(C):
+                    sig = edf.readSignal(i)
+                    t_i = np.arange(sig.shape[0], dtype=np.float64) / fs_list[i]
+                    signals[i, :] = np.interp(time, t_i, sig)
 
             print(f"Time data created: {len(time)} points")
             print(f"Time range: {time[0]:.4f} - {time[-1]:.4f} s")

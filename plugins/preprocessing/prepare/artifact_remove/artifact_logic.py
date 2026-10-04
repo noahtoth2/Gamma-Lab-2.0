@@ -13,7 +13,7 @@ from pathlib import Path
 
 import numpy as np
 
-from plugins.preprocessing.prepare.artifact_remove.compute import calcular_modificacion
+from plugins.preprocessing.prepare.artifact_remove.compute import calcular_modificacion, receta
 
 LOGL = "[ArtifactLogic]"
 
@@ -174,11 +174,16 @@ def preparar_modificacion(kernel):
                                  discarded=discarded, base_shape=td_base.trials.shape)
 
 
-def escribir_modificacion(kernel, prep: ModificacionPreparada, out_active: np.ndarray, mode: str):
+def escribir_modificacion(kernel, prep: ModificacionPreparada, out_active: np.ndarray, mode: str,
+                          point_a: float = 0.0, point_b: float = 0.0):
     """
     Paso 3, en el hilo de la interfaz: escribe las columnas modificadas en el
     TrialDataset base, invalida la caché de trials activos y avisa a los plugins.
     Antes comprueba que los trials no hayan cambiado desde que se leyeron.
+
+    `point_a` y `point_b` no se usan para calcular —eso ya se hizo— sino para
+    guardar la receta de la modificación, que es lo que el proyecto persiste
+    para poder reconstruirla al abrirlo (problema nº 21).
     """
     store = kernel.get_service("DataStore")
     sd = store.get_active_signal() if store else None
@@ -222,6 +227,15 @@ def escribir_modificacion(kernel, prep: ModificacionPreparada, out_active: np.nd
         td_base.metadata = getattr(td_base, "metadata", {}) or {}
         td_base.metadata["modified_trials"] = set(orig_indices)
 
+    # 6.5) Guardar la receta, en orden, para que el proyecto pueda reconstruirla.
+    # Sin esto las modificaciones se pierden al reabrir: el proyecto guarda cómo
+    # se generaron los trials, no sus valores (problema nº 21).
+    try:
+        td_base.metadata.setdefault("modificaciones", []).append(
+            receta(mode, point_a, point_b, prep.discarded))
+    except Exception as e:
+        print(f"{LOGL} No se pudo guardar la receta de la modificación: {e}")
+
     # 7) Notify the UI (if the pipeline uses it)
     if hasattr(kernel, "event"):
         try:
@@ -244,5 +258,5 @@ def apply_modification_to_all_valid(kernel, *, mode: str, point_a: float, point_
     out_active = calcular_modificacion(prep.t, prep.trials, mode=mode, point_a=point_a, point_b=point_b)
     if out_active is None:
         return None
-    escribir_modificacion(kernel, prep, out_active, mode)
+    escribir_modificacion(kernel, prep, out_active, mode, point_a, point_b)
     return True
