@@ -1,6 +1,0 @@
-\babel@toc {spanish}{}\relax 
-\contentsline {figure}{\numberline {1}{\ignorespaces Diagrama conceptual de la arquitectura microkernel de GammaLab 2.0, mostrando la relación entre el núcleo central, los servicios compartidos y los plugins especializados.}}{12}{figure.caption.1}%
-\contentsline {figure}{\numberline {2}{\ignorespaces Diagrama de casos de uso del sistema completo Gamma Lab 2.0 (23 CU en 5 subsistemas). Las relaciones \textit {include}/\textit {extend} se tomaron literalmente del campo ``Extensiones'' de cada ficha; ninguna es inferida por similitud tem\'atica.}}{18}{figure.caption.4}%
-\contentsline {figure}{\numberline {3}{\ignorespaces Diagrama de clases del sistema Gamma Lab 2.0. Los elementos en verde se encuentran implementados y los elementos en rojo están planificados.}}{21}{figure.caption.8}%
-\contentsline {figure}{\numberline {4}{\ignorespaces Flujo maestro de sesi\'on de Gamma Lab 2.0, con carriles Investigador/Sistema. Verde = ya existe, rojo = nuevo, blanco = mixto.}}{27}{figure.caption.27}%
-\contentsline {figure}{\numberline {5}{\ignorespaces Vista f\'isica de Gamma Lab 2.0: estaci\'on \'unica de escritorio y su superficie de E/S.}}{28}{figure.caption.28}%
