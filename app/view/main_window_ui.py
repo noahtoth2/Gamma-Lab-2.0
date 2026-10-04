@@ -64,7 +64,7 @@ class Ui_MainWindow(object):
         self.titleSeparatorLabel.setVisible(False)
         titleBarLayout.addWidget(self.titleSeparatorLabel)
 
-        self.titleProjectNameLabel = EditableLabel(self.titlegBar)
+        self.titleProjectNameLabel = EditableLabel(self.titleBar)
         self.titleProjectNameLabel.setObjectName("titleProjectNameLabel")
         self.titleProjectNameLabel.label.setObjectName("titleProjectNameLabelText")
         self.titleProjectNameLabel.edit.setObjectName("titleProjectNameLabelEdit")
