@@ -104,10 +104,34 @@
 \section{Introducci\'on}
 
 \subsection{Prop\'osito}
-El presente documento describe la arquitectura de referencia del sistema GammaLab 2.0 y establece los principios, decisiones y lineamientos que orientan su diseño arquitectónico evolutivo. Expone las diferentes vistas arquitectónicas bajo el modelo 4+1 y la representación de contexto del modelo C4, proporcionando una comprensión integral de la estructura modular, los componentes y sus integraciones dinámicas. Buscar servir como un contrato técnico entre los equipos de desarrollo, validación y demás stakeholders,  garantizando una base común para la toma de decisiones, la mitigación de errores y la futura evolución del sistema. Sin contar que define los criterios necesarios para asegurar que los atributos de calidad sean evaluados y cumplirse de manera medible.
+El presente documento tiene como propósito definir y documentar la arquitectura
+ de GammaLab v2.0, estableciendo los principios, decisiones y lineamientos que 
+ orientan su evolución respecto a GammaLab v1.0. Para ello, describe la estructura 
+ arquitectónica de la solución, sus componentes principales, las relaciones entre 
+ ellos y las decisiones que permiten soportar la incorporación de nuevas capacidades 
+ de análisis de señales EEG, mejorar el rendimiento del sistema y facilitar su evolución y 
+ extensibilidad. Asimismo, presenta las vistas arquitectónicas bajo el modelo 4+1 y establece 
+ los criterios necesarios para evaluar que la arquitectura propuesta responda a los atributos 
+ de calidad definidos para el sistema, manteniendo coherencia con los requerimientos y objetivos 
+ establecidos para GammaLab v2.0.
 
 \subsection{Alcance}
-Este documento abarca la definición de los principios y decisiones arquitectónicas que rigen la estructura de GammaLab v2.0, destacando el desacoplamiento de su interfaz de usuario mediante un kernel asíncrono y su extendibilidad mediante plugins. Asimismo, desarrolla las vistas lógicas, físicas, de desarrollo y de procesos del sistema, e identifica las estrategias de mitigación para riesgos críticos como el control de concurrencia en Python y el consumo acumulativo de memoria RAM. Finalmente, se definen los escenarios de calidad para la validación del sistema y su trazabilidad detallada con la especificación del SRS v2.0. Por fuera del alcance de este documento quedan las políticas de gobernanza del repositorio público de código abierto, el despliegue automatizado en entornos de integración continua (CI/CD) y las guías detalladas para el usuario final, las cuales se consolidan en el Manual de Usuario.
+Este documento abarca la definición de los principios y decisiones
+arquitectónicas que rigen la estructura de Gamma Lab v2.0. La arquitectura
+adopta un estilo Microkernel, compuesto por un núcleo de servicios
+esenciales y un conjunto de plugins que extienden las capacidades del
+sistema mediante componentes desacoplados. Asimismo, se describen las
+vistas arquitectónicas bajo el modelo 4+1, los componentes y sus relaciones,
+los atributos de calidad, las estrategias para alcanzarlos y las métricas
+utilizadas para su evaluación. Finalmente, se documentan los principales
+riesgos y decisiones arquitectónicas y su trazabilidad con el SRS de
+Gamma Lab.
+
+Fuera del alcance de este documento quedan los aspectos relacionados con
+la administración del proyecto, la implementación detallada de los
+componentes, los procedimientos de pruebas y las instrucciones de uso del
+sistema, los cuales se encuentran documentados en los artefactos
+correspondientes.
 
 \subsection{Definiciones y acr\'onimos}
 
