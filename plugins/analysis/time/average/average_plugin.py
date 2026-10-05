@@ -5,6 +5,7 @@ from core.utils.vtk_context_menu import VTKContextMenu
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QListWidgetItem
 
+from plugins.analysis.time.average import compute as ca
 from plugins.analysis.time.average.average_plugin_ui import Ui_Average
 from PyQt5.QtWidgets import QWidget, QVBoxLayout
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
@@ -91,7 +92,12 @@ class Average_plugin(IPlugin):
             return
 
         # Compute per-sample average across trials
-        av_data = np.mean(trials.trials, axis=1)
+        try:
+            av_data = ca.promedio_trials(trials.trials)
+        except Exception as e:
+            self._log("_on_calculate_average:", e)
+            self.alerts.error(f"No se pudo calcular el promedio: {e}")
+            return
         t = trials.time_rel
 
         self._notify(f"Average computed -> shape: {av_data.shape} with {trials.trials.shape[1]} trials used")

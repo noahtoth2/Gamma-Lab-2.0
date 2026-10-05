@@ -1,3 +1,4 @@
+from functools import partial
 from vtk.util import numpy_support as nps  # Safe import for VTK/NumPy
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel
@@ -13,8 +14,9 @@ from core.model.signal_dataset import SignalDataset
 from core.model.trial_dataset import TrialDataset
 
 from plugins.preprocessing.prepare.artifact_remove.artifact_remove_ui import Ui_ArtifactRemove
-# Import logic entry point
-from plugins.preprocessing.prepare.artifact_remove.artifact_logic import apply_modification_to_all_valid
+# Leer y escribir los trials (hilo de la interfaz) y calcular (orquestador)
+from plugins.preprocessing.prepare.artifact_remove.artifact_logic import preparar_modificacion, escribir_modificacion
+from plugins.preprocessing.prepare.artifact_remove.compute import calcular_modificacion
 
 # Optional import for custom context menu
 try:
@@ -23,32 +25,6 @@ except ImportError:
     VTKContextMenu = None
 
 LOGP = "[ArtifactRemovePlugin]"
-# --- Worker to run heavy logic in a background thread ---
-class _ApplyWorker(QtCore.QObject):
-    progress = QtCore.pyqtSignal(int)
-    finished = QtCore.pyqtSignal(object)   
-    error = QtCore.pyqtSignal(str)
-
-    def __init__(self, kernel, mode, point_a, point_b):
-        super().__init__()
-        self.kernel = kernel
-        self.mode = mode
-        self.point_a = point_a
-        self.point_b = point_b
-
-    @QtCore.pyqtSlot()
-    def run(self):
-        try:
-            from plugins.preprocessing.prepare.artifact_remove.artifact_logic import apply_modification_to_all_valid
-            td = apply_modification_to_all_valid(
-                kernel=self.kernel,
-                mode=self.mode,
-                point_a=self.point_a,
-                point_b=self.point_b
-            )
-            self.finished.emit(td)
-        except Exception as e:
-            self.error.emit(f"{type(e).__name__}: {e}")
 
 class _WidgetVisibilityFilter(QtCore.QObject):
     """Listens to show/hide events on the plugin widget to keep the plot in sync."""
@@ -77,8 +53,8 @@ class ArtifactRemovePlugin(IPlugin):
         self.chart: Optional[vtk.vtkChartXY] = None
         self.vtk_menu: Optional[VTKContextMenu] = None
 
-        self._apply_thread = None
-        self._apply_worker = None
+        # Tarea vigente en el orquestador mientras se aplica una modificación
+        self._apply_handle = None
 
         self._refresh_timer = QtCore.QTimer()
         self._refresh_timer.setSingleShot(True)
@@ -256,15 +232,31 @@ class ArtifactRemovePlugin(IPlugin):
             else:
                 self.ui.label_a.setText("Point A (s):")
 
+    @staticmethod
+    def _parse_point(text: str, name: str) -> float:
+        try:
+            return float(text)
+        except ValueError:
+            raise ValueError(f"El punto {name} debe ser un número (se recibió «{text}»).") from None
+
     def _on_apply_changes(self):
-        """Run modification in a thread to avoid blocking the UI."""
+        """Lee los trials aquí, calcula la modificación en el orquestador y la escribe al volver."""
         if not self.ui or not self.widget:
             return
 
-        panel = self.ui.paramsLayout
+        # El botón puede volver a habilitarse si llega un evento de datos a mitad del
+        # cálculo; esta guarda no depende del botón.
+        if self._apply_handle is not None:
+            self.alerts.info("Ya se está aplicando una modificación; espera a que termine.")
+            return
 
         if self.current_display_index != -1:
-            self.alerts.warning("Apply changes only from the 'Average' view (Index -1).", "Invalid Action")
+            self.alerts.warning("Aplica los cambios solo desde la vista del promedio.", "Acción no válida")
+            return
+
+        tasks = self.kernel.get_service("TaskService") if self.kernel else None
+        if tasks is None:
+            self.alerts.error("El servicio de tareas no está disponible.")
             return
 
         try:
@@ -274,8 +266,8 @@ class ArtifactRemovePlugin(IPlugin):
 
             point_a_str = self.ui.point_a.text().strip()
             if not point_a_str:
-                raise ValueError("Point A cannot be empty.")
-            point_a = float(point_a_str)
+                raise ValueError("El punto A no puede estar vacío.")
+            point_a = self._parse_point(point_a_str, "A")
 
             point_b = 0.0
             if mode == 'interpolate' or mode_text == "Blank Interval":  # interval operations require B
@@ -283,49 +275,38 @@ class ArtifactRemovePlugin(IPlugin):
                 if not point_b_str:
                     # In "Cut From The Start" B is optional; do not raise here
                     if mode_text != "Cut From The Start":
-                         raise ValueError("Point B cannot be empty for interval modification.")
+                         raise ValueError("El punto B no puede estar vacío para modificar un intervalo.")
                 else:
-                    point_b = float(point_b_str)
+                    point_b = self._parse_point(point_b_str, "B")
                     if point_a == point_b and mode_text != "Cut From The Start":
-                        raise ValueError("Points A and B cannot be the same.")
+                        raise ValueError("Los puntos A y B no pueden ser iguales.")
 
-            # --- Feedback and reentrancy guard
-            self.ui.apply_button.setEnabled(False)
-            self.ui.mode_combo.setEnabled(False)
-            self.ui.prev_button.setEnabled(False)
-            self.ui.next_button.setEnabled(False)
-            if self.vtk_interactor:
-                try:
-                    self.vtk_interactor.Disable()
-                except Exception:
-                    pass
+            # Lectura en el hilo de la interfaz: el cálculo recibe una copia de los
+            # trials activos y nunca toca los datos compartidos.
+            prep = preparar_modificacion(self.kernel)
+            if prep is None:
+                self.alerts.info("No se aplicó ninguna modificación.")
+                return
+
+            handle = tasks.submit(
+                calcular_modificacion, owner=self.meta.id,
+                t=prep.t, trials=prep.trials, mode=mode, point_a=point_a, point_b=point_b,
+            )
+            self._apply_handle = handle
+            handle.progress.connect(partial(self._on_apply_progress, handle))
+            handle.finished.connect(partial(self._on_apply_finished, handle, prep, mode, point_a, point_b))
+            handle.failed.connect(partial(self._on_apply_error, handle))
+            handle.cancelled.connect(partial(self._on_apply_cancelled, handle))
+
+            self._set_apply_busy(True)
             self._clear_render("")
 
-            # --- Create and start worker in a QThread
-            self._apply_thread = QtCore.QThread(self.widget)
-            self._apply_worker = _ApplyWorker(self.kernel, mode, point_a, point_b)
-            self._apply_worker.moveToThread(self._apply_thread)
-
-            # Connections
-            self._apply_thread.started.connect(self._apply_worker.run)
-            self._apply_worker.finished.connect(self._on_apply_finished) 
-            self._apply_worker.error.connect(self._on_apply_error)
-
-            # Auto cleanup
-            self._apply_worker.finished.connect(self._apply_thread.quit)
-            self._apply_worker.finished.connect(self._apply_worker.deleteLater)
-            self._apply_thread.finished.connect(self._apply_thread.deleteLater)
-            self._apply_worker.error.connect(self._apply_thread.quit)
-            self._apply_worker.error.connect(self._apply_worker.deleteLater)
-
-            self._apply_thread.start()
-
         except ValueError as ve:
-            self.alerts.error(str(ve), "Parameter Error")
+            self.alerts.error(str(ve), "Error en los parámetros")
         except RuntimeError as re:
-            self.alerts.error(str(re), "Data Error")
+            self.alerts.error(str(re), "Error en los datos")
         except Exception as e:
-            self.alerts.error(f"An unexpected error occurred: {e}")
+            self.alerts.error(f"Ocurrió un error inesperado: {e}")
             print(f"{LOGP} Error on apply: {e}")
 
     def _go_to_previous_trial(self):
@@ -377,9 +358,9 @@ class ArtifactRemovePlugin(IPlugin):
         
     def _get_current_channel_name(self, sd: SignalDataset) -> str:
         """Return channel name to use with get_active_trials."""
-        # 1) last TrialDataset
+        # 1) last TrialDataset (API pública; `sd.trials_dataset` no existe)
         try:
-            tds = getattr(sd, "trials_dataset", None)
+            tds = sd.get_all_trials_datasets()
             if tds and len(tds) > 0:
                 last_td = tds[-1]
                 ch = getattr(last_td, "channel_name", None)
@@ -509,7 +490,8 @@ class ArtifactRemovePlugin(IPlugin):
         self.total_original_trials = int(total_trials) 
 
         if self.ui:
-            self.ui.apply_button.setEnabled(self.current_display_index == -1 and Tact > 0)
+            self.ui.apply_button.setEnabled(self.current_display_index == -1 and Tact > 0
+                                            and self._apply_handle is None)
 
         if self.current_display_index == -1:
             y = np.nanmean(trials, axis=1)
@@ -819,51 +801,81 @@ class ArtifactRemovePlugin(IPlugin):
         except Exception as e:
             print(f"{LOGP} Error in _on_data_updated: {e}")
 
-    def _on_apply_finished(self, modified_td):
-        """Signal: worker finished successfully."""
-        print(f"{LOGP} finished received, type={type(modified_td)}")
-        try:
-            if modified_td:
-                self.alerts.info("Changes applied to all valid trials.")
-            else:
-                self.alerts.info("No modifications were applied.")
-        finally:
-            # Re-enable UI and refresh
-            try:
-                if self.vtk_interactor:
-                    try:
-                        self.vtk_interactor.Enable()
-                    except Exception:
-                        pass
-                panel = self.ui.paramsLayout
-                self.ui.apply_button.setEnabled(True)
-                self.ui.mode_combo.setEnabled(True)
-                self.ui.prev_button.setEnabled(True)
-                self.ui.next_button.setEnabled(True)
+    # --- Modificación en el orquestador ---
+    # Cada manejador ignora las señales de una tarea que ya no es la vigente.
 
-                # Recarga y render forzado
+    def _on_apply_progress(self, handle, percent, message):
+        if handle is not self._apply_handle:
+            return
+        self._notify(f"Aplicando la modificación: {message} ({percent}%)")
+
+    def _on_apply_finished(self, handle, prep, mode, point_a, point_b, out_active):
+        """El cálculo terminó: la escritura ocurre aquí, en el hilo de la interfaz."""
+        if handle is not self._apply_handle:
+            return
+        self._apply_handle = None
+        # Si el proyecto se cerró mientras calculaba, ya no hay dónde escribir ni dibujar.
+        if self.ui is None:
+            return
+        try:
+            if out_active is None:
+                self.alerts.info("No se aplicó ninguna modificación.")
+            else:
+                escribir_modificacion(self.kernel, prep, out_active, mode, point_a, point_b)
+                # Sin esto, cerrar después de modificar no avisa de cambios sin
+                # guardar y el trabajo se pierde en silencio (problema nº 21).
+                self.mark_project_dirty()
+                self.alerts.info("Cambios aplicados a todos los trials válidos.")
+        except Exception as e:
+            print(f"{LOGP} Error writing modification: {e}")
+            self.alerts.error(f"No se pudo aplicar la modificación: {e}", "Error al aplicar")
+        finally:
+            self._finish_apply()
+
+    def _on_apply_error(self, handle, message):
+        if handle is not self._apply_handle:
+            return
+        self._apply_handle = None
+        if self.ui is None:
+            return
+        try:
+            self.alerts.error(f"No se pudo aplicar la modificación: {message}", "Error al aplicar")
+        finally:
+            self._finish_apply()
+
+    def _on_apply_cancelled(self, handle):
+        """Se canceló (por ejemplo, al cambiar de sección): no se escribió nada."""
+        if handle is not self._apply_handle:
+            return
+        self._apply_handle = None
+        self._notify("La modificación se canceló; no se aplicó ningún cambio.")
+        if self.ui is not None:
+            self._finish_apply()
+
+    def _set_apply_busy(self, busy: bool):
+        """Bloquea o libera los controles mientras se aplica una modificación."""
+        if not self.ui:
+            return
+        for control in (self.ui.apply_button, self.ui.mode_combo, self.ui.prev_button, self.ui.next_button):
+            control.setEnabled(not busy)
+        if self.vtk_interactor:
+            try:
+                if busy:
+                    self.vtk_interactor.Disable()
+                elif self.widget is not None and self.widget.isVisible():
+                    self.vtk_interactor.Enable()
+            except Exception:
+                pass
+
+    def _finish_apply(self):
+        """Libera los controles y vuelve a dibujar los trials, modificados o no."""
+        try:
+            self._set_apply_busy(False)
+            # Oculto (el usuario cambió de sección) no se dibuja: al volver a
+            # mostrarse, _on_widget_shown recarga la vista.
+            if self.widget is not None and self.widget.isVisible():
                 self._reset_state()
                 self._load_and_display_trials()
                 QtCore.QTimer.singleShot(50, self._force_render)
-            except Exception as e:
-                print(f"{LOGP} _on_apply_finished UI restore error: {e}")
-
-    def _on_apply_error(self, msg):
-        """Signal: worker reported an error."""
-        try:
-            self.alerts.error(msg, "Apply Error")
-        finally:
-            try:
-                if self.vtk_interactor:
-                    try:
-                        self.vtk_interactor.Enable()
-                    except Exception:
-                        pass
-                panel = self.ui.paramsLayout
-                self.ui.apply_button.setEnabled(True)
-                self.ui.mode_combo.setEnabled(True)
-                self.ui.prev_button.setEnabled(True)
-                self.ui.next_button.setEnabled(True)
-                QtCore.QTimer.singleShot(50, self._force_render)
-            except Exception as e:
-                print(f"{LOGP} _on_apply_error UI restore error: {e}")
+        except Exception as e:
+            print(f"{LOGP} _finish_apply UI restore error: {e}")

@@ -7,6 +7,7 @@ from pathlib import Path
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
 from PyQt5.QtCore import QStandardPaths
 
+from core.filters.artifacts import reaplicar_modificaciones
 from core.filters.trials import cut_trials_single_channel
 
 SCHEMA_VERSION = "1.0"
@@ -183,6 +184,7 @@ class ProjectService:
                 "format": getattr(ds, "format", None),
                 "name": getattr(ds, "name", None),
                 "sampling_rate": getattr(ds, "sampling_rate", None),
+                "sampling_rate_source": getattr(ds, "sampling_rate_source", None),
             },
             "measurements": measurements_json,
             "trials": self._trials_to_json(ds),
@@ -222,7 +224,13 @@ class ProjectService:
             if not params:
                 continue  # generated before this feature existed, or by another path
             discarded = sorted(discards_map.get((ds.name, td.channel_name), set()))
-            entries.append({"generation_params": params, "discarded_indices": discarded})
+            entry = {"generation_params": params, "discarded_indices": discarded}
+            # Las modificaciones de artifact_remove se guardan como receta, no
+            # como datos: el proyecto guarda cómo se generó cada cosa (nº 21).
+            mods = (td.metadata or {}).get("modificaciones")
+            if mods:
+                entry["modifications"] = list(mods)
+            entries.append(entry)
         return entries
 
     def _copy_signal_into_project(self, ds):
@@ -270,6 +278,14 @@ class ProjectService:
             if signal_path.exists():
                 ds = self._load_signal_file(signal_path)
 
+        if ds is not None and sig_info.get("sampling_rate_source") == "manual":
+            saved_fs = sig_info.get("sampling_rate")
+            if saved_fs:
+                try:
+                    ds.set_sampling_rate(float(saved_fs))
+                except ValueError:
+                    pass
+
         if ds is not None:
             self._restore_trials(ds, manifest.get("trials") or [])
 
@@ -298,6 +314,8 @@ class ProjectService:
             ds = fileio.load_abf(str(path))
         elif ext == ".edf" and hasattr(fileio, "load_edf"):
             ds = fileio.load_edf(str(path))
+        elif ext == ".mat" and hasattr(fileio, "load_mat"):
+            ds = fileio.load_mat(str(path))
 
         if ds is not None:
             key = store.add_signal(ds, ds.name)
@@ -322,6 +340,14 @@ class ProjectService:
                 ds.add_trial_dataset(td)
                 for idx in entry.get("discarded_indices", []):
                     ds.discard_trial(ds.name, td.channel_name, idx)
+                # Después de los descartes, porque cada receta guarda los
+                # descartes que estaban vigentes cuando se aplicó (nº 21).
+                recetas = entry.get("modifications") or []
+                if recetas:
+                    n = reaplicar_modificaciones(td, recetas)
+                    if n != len(recetas):
+                        print(f"[ProjectService] Se reaplicaron {n} de {len(recetas)} "
+                              f"modificaciones de artefactos en el canal {td.channel_name}.")
             except Exception:
                 pass
 

@@ -35,6 +35,7 @@ from PyQt5.QtWidgets import QFrame
 
 from core.plugins.interfaces import IPlugin
 from core.utils.plugin_alerts import PluginAlerts
+from core.utils.task_progress import TaskProgressBar
 from core.services.project_service import ProjectService
 
 class MainWindow(QMainWindow):
@@ -70,6 +71,15 @@ class MainWindow(QMainWindow):
             # DataStore reference) so exports can default into the project folder.
             store.set("_project_service", self.project_service)
         self.ui.titleProjectNameLabel.renamed.connect(self._on_project_name_edited)
+
+        # Progreso de las tareas del orquestador: una sola barra en la barra de
+        # estado, enganchada al servicio. Cualquier plugin que use submit()
+        # obtiene porcentaje y boton Cancelar sin hacer nada (problema nº 9).
+        self.task_progress = TaskProgressBar(self)
+        self.statusBar().addPermanentWidget(self.task_progress)
+        tasks = self.kernel.get_service("TaskService")
+        if tasks is not None:
+            tasks.task_started.connect(self._on_task_started)
 
         self.current_section = "Home"
         self.active_plugin = None  # Currently active plugin
@@ -965,6 +975,26 @@ class MainWindow(QMainWindow):
         if not self._confirm_discard_unsaved_changes():
             return
         QApplication.instance().quit()
+
+    def _on_task_started(self, handle):
+        """Engancha la barra de progreso a la tarea que acaba de encolarse."""
+        try:
+            nombre = self._nombre_de_plugin(getattr(handle, "owner", ""))
+            self.task_progress.seguir(handle, f"{nombre}: calculando…" if nombre else "")
+        except Exception as e:
+            print("[MainWindow] no se pudo seguir la tarea:", e)
+
+    def _nombre_de_plugin(self, owner: str) -> str:
+        """El `owner` de una tarea es el id del plugin; para la interfaz se
+        prefiere su nombre visible."""
+        if not owner:
+            return ""
+        for name in self.kernel.get_plugins():
+            plugin = self.kernel.get_plugin(name)
+            meta = getattr(plugin, "meta", None)
+            if meta is not None and getattr(meta, "id", None) == owner:
+                return getattr(meta, "name", owner)
+        return owner
 
     def _cancel_all_tasks(self):
         tasks = self.kernel.get_service("TaskService")

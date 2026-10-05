@@ -42,6 +42,13 @@ class DummyABF:
     def sweepY(self):
         return self._data[self._ch]
 
+    @property
+    def data(self):
+        """La matriz completa (canales, muestras), que es como la expone pyabf.
+        Con una sola sweep el cargador se queda con ella en lugar de copiarla
+        canal por canal, para no duplicar la memoria (problema nº 12)."""
+        return self._data
+
 # ---------------------------------------------------------------------
 # Dummy variants for failure cases
 # ---------------------------------------------------------------------

@@ -514,12 +514,35 @@ El Kernel centraliza la ejecución de tareas, su cola, cancelación, seguimiento
 % ======================================================================
 \section{Vistas Arquitect\'onicas (4+1)}
 
-\subsection{Objetivo}
-Concretar \textbf{escenarios} que ejerciten decisiones y atributos de calidad de Gamma Lab 2.0. A diferencia de Gamma Lab 1.0 (sistema ya construido), Gamma Lab 2.0 documenta un sistema \textbf{parcialmente existente}: cada vista distingue expl\'icitamente qu\'e componentes \textbf{ya existen} en el c\'odigo actual y cu\'ales son \textbf{nuevos}, por construir a partir de los 23 casos de uso (CU-001 a CU-023) especificados en el documento ISTAR. Cada escenario se especifica con el formato: \textit{(Est\'imulo, Fuente, Entorno, Artefacto, Respuesta, Medida de respuesta)} y se vincula con los CU y requisitos (R-XX) que lo originan.
+
+% En el preámbulo (si aún no lo tienes):
+% \usepackage{float}
 
 \subsection{Vista de Escenarios}
 
-\begin{figure}[htbp]
+\subsubsection{Prop\'osito}
+
+El diagrama de casos de uso describe el comportamiento observable de Gamma Lab 2.0 desde la perspectiva de su usuario. Representa las funcionalidades que el sistema ofrece, el actor que las utiliza y las relaciones de dependencia, extensi\'on y especializaci\'on entre ellas. Cada caso de uso agrupa uno o m\'as requerimientos funcionales, por lo que el modelo vincula la especificaci\'on de requerimientos con la estructura de la arquitectura. Adem\'as, al organizar los casos de uso en subsistemas, el diagrama anticipa la descomposici\'on funcional del sistema y muestra c\'omo se distribuyen las responsabilidades entre sus componentes.
+
+\subsubsection{Notaci\'on}
+
+El diagrama sigue la notaci\'on de casos de uso definida en la especificaci\'on UML 2.5.1 del Object Management Group \cite{omg_uml}. El sistema se representa como un contenedor general con el estereotipo \guillemotleft system\guillemotright. Dentro de \'el, los casos de uso se agrupan en paquetes con el estereotipo \guillemotleft subsistema\guillemotright, cada uno asociado a un \'area de responsabilidad funcional. Las relaciones entre casos de uso son de tres tipos:
+
+\begin{itemize}
+    \item \textbf{Inclusi\'on (\guillemotleft include\guillemotright):} l\'inea punteada que va del caso base al caso incluido. Indica que el comportamiento incluido es obligatorio y forma parte de la ejecuci\'on del caso base.
+    \item \textbf{Extensi\'on (\guillemotleft extend\guillemotright):} l\'inea punteada que va del caso extensor al caso base. Indica un comportamiento opcional o condicional que ampl\'ia el flujo del caso base sin modificarlo.
+    \item \textbf{Generalizaci\'on:} l\'inea continua que va del caso especializado al caso general. Indica que el caso hijo hereda y especializa el comportamiento del padre.
+\end{itemize}
+
+Los casos de uso marcados con el estereotipo \guillemotleft abstract\guillemotright\ no se ejecutan directamente. Su funci\'on es definir un comportamiento com\'un que concretan sus especializaciones.
+
+\subsubsection{Visi\'on general del modelo}
+
+El diagrama sigue el flujo de interacci\'on de Gamma Lab 2.0, desde que el usuario inicia la aplicaci\'on hasta que obtiene sus resultados. El sistema tiene un \'unico actor, el Investigador, que interact\'ua exclusivamente con la capa de presentaci\'on. Esta capa es el \'unico punto de entrada al sistema y concentra la navegaci\'on entre m\'odulos y la visualizaci\'on de las se\~nales. Despu\'es de cargar una se\~nal o abrir un proyecto, el investigador puede acondicionarla con las operaciones de preprocesamiento y luego aplicarle los an\'alisis disponibles. La interfaz no ejecuta directamente ninguna de estas operaciones, sino que las delega en el orquestador del n\'ucleo. Este componente act\'ua como mediador entre la presentaci\'on y la l\'ogica de procesamiento: recibe las solicitudes de procesamiento pesado, administra su ciclo de ejecuci\'on y permite cancelarlas. Gracias a esta mediaci\'on, la interfaz queda desacoplada de los algoritmos de procesamiento, cada subsistema conserva una responsabilidad bien definida y el control de la ejecuci\'on queda centralizado en el n\'ucleo, como establece el estilo arquitect\'onico de microkernel. Al final del flujo, los resultados se persisten o se exportan, y el proyecto se cierra junto con la aplicaci\'on. Este recorrido se refleja en la organizaci\'on del modelo en cinco subsistemas: Interfaz y Usabilidad, N\'ucleo y Ciclo de Vida, Preprocesamiento, An\'alisis y Exportaci\'on.
+
+Las secciones siguientes describen cada uno. La Figura \ref{fig:vistacasosuso} presenta el diagrama de casos de uso del sistema.
+
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.95\linewidth]{diagrama_casos_de_uso_sistema_completo.png}
     \caption{Diagrama de casos de uso del sistema completo Gamma Lab 2.0 (23 CU en 5 subsistemas). Las relaciones \textit{include}/\textit{extend} se tomaron literalmente del campo ``Extensiones'' de cada ficha; ninguna es inferida por similitud tem\'atica.}
@@ -528,54 +551,10 @@ Concretar \textbf{escenarios} que ejerciten decisiones y atributos de calidad de
 
 La Figura \ref{fig:vistacasosuso} revela que el subsistema \textbf{N\'ucleo y Ciclo de Vida} --- en particular CU-020, el orquestador de tareas --- es el verdadero centro de gravedad arquitect\'onico: diez de los otros veintid\'os casos de uso lo incluyen expl\'icitamente. Esa centralidad se concreta a continuaci\'on en tres escenarios representativos.
 
-\begin{table}[H]
-\centering
-\caption{UC-01 --- Calcular acoplamiento fase-amplitud (PAC) de un canal}
-\begin{tabularx}{\linewidth}{@{}p{2.6cm}X@{}}
-\toprule
-\textbf{Est\'imulo} & El investigador configura banda de fase, rango de amplitud y trial \'unico/promedio, y pulsa ``Calcular PAC'' (CU-001). \\
-\textbf{Fuente} & Usuario final (investigador). \\
-\textbf{Entorno} & Existe un \texttt{TrialDataset} activo en \texttt{DataStore} (CU-004/CU-006 ya ejecutados); plugin \texttt{PACSingleChannelPlugin} activo, categor\'ia \textit{Analysis} \textbf{(nuevo)}. \\
-\textbf{Artefacto} & \texttt{PACSingleChannelPlugin} \textbf{(nuevo)}, \texttt{Task\-Orchestrator} \textbf{(nuevo)}, \texttt{DataStore} (ya existe), adaptadores VTK (ya existen). \\
-\textbf{Respuesta} & El plugin delega el c\'omputo de la transformada wavelet al orquestador del n\'ucleo en vez de instanciar hilos propios; al finalizar, publica el mapa fase-frecuencia, el histograma de fase y el vector de acoplamiento medio, y el resultado se renderiza en el m\'odulo solicitante. \\
-\textbf{Medida} & Indicador de progreso visible si el c\'omputo supera 1\,s (R04); tiempos de respuesta a eventos de entrada $\leq$0,3\,s durante todo el c\'omputo (R55); publicaci\'on del resultado mediante escritura sincronizada, con un \'unico propietario de escritura (R54). \\
-\bottomrule
-\end{tabularx}
-\end{table}
 
-\begin{table}[H]
-\centering
-\caption{UC-02 --- Cancelar un c\'omputo pesado en curso}
-\label{tab:uc02}
-\begin{tabularx}{\linewidth}{@{}p{2.6cm}X@{}}
-\toprule
-\textbf{Est\'imulo} & El investigador pulsa ``Cancelar'' mientras un an\'alisis PAC o Wavelet est\'a en curso (CU-014). \\
-\textbf{Fuente} & Usuario final. \\
-\textbf{Entorno} & Una tarea est\'a en ejecuci\'on dentro del \texttt{Task\-Orchestrator} \textbf{(nuevo)}; hoy \texttt{Kernel.execute()} existe en el c\'odigo pero est\'a comentado --- es un intento de despacho abandonado, no una base reutilizable. \\
-\textbf{Artefacto} & \texttt{Task\-Orchestrator} \textbf{(nuevo)}, hilo trabajador, \texttt{IPlugin.stop()} (ya existe como contrato, sin una implementaci\'on de cancelaci\'on real detr\'as). \\
-\textbf{Respuesta} & El orquestador propaga la se\~nal de terminaci\'on a la tarea en ejecuci\'on, garantiza el cierre y liberaci\'on del hilo trabajador aunque el c\'omputo siga en curso, descarta el resultado parcial sin escribirlo en el estado compartido y rehabilita la interfaz. \\
-\textbf{Medida} & Liberaci\'on del hilo garantizada incluso si el c\'omputo no termina por s\'i solo (R46); si el servicio de tareas no logra terminar el proceso, fuerza el cierre del plugin y libera los recursos (excepci\'on 2a, R70/R74). \\
-\bottomrule
-\end{tabularx}
-\end{table}
 
-\begin{table}[H]
-\centering
-\caption{UC-03 --- Guardar y reabrir un proyecto (.glab)}
-\begin{tabularx}{\linewidth}{@{}p{2.6cm}X@{}}
-\toprule
-\textbf{Est\'imulo} & El investigador solicita cerrar el proyecto activo y elige ``Guardar'' (CU-021), o abre posteriormente un archivo \texttt{.glab} (CU-023). \\
-\textbf{Fuente} & Usuario final. \\
-\textbf{Entorno} & Se\~nal activa con trials, an\'alisis y par\'ametros asociados en \texttt{DataStore}. Hoy existen \textbf{cero referencias} a ``.glab'' en todo el repositorio: la funcionalidad es enteramente nueva. \\
-\textbf{Artefacto} & \texttt{ProjectService} \textbf{(nuevo)}, \texttt{DataStore} (ya existe), \texttt{FileIOService} (ya existe, reutilizado para recargar la se\~nal referenciada). \\
-\textbf{Respuesta} & Al guardar, \texttt{ProjectService} persiste se\~nal, trials, an\'alisis y par\'ametros en un archivo \texttt{.glab} y libera la memoria de la se\~nal activa. Al abrir, lee el \texttt{.glab}, verifica que el archivo de se\~nal referenciado siga disponible, despacha su recarga al orquestador fuera del hilo de interfaz y restaura trials y an\'alisis mediante escritura sincronizada. \\
-\textbf{Medida} & Liberaci\'on de memoria en menos de 1\,s (R52); carga hasta el primer render en $\leq$2\,s (R47); si el archivo de se\~nal referenciado ya no existe, se informa la causa sin cerrar el proyecto activo (excepci\'on, R02). \\
-\bottomrule
-\end{tabularx}
-\end{table}
 
-\subsubsection*{Conclusi\'on de la vista}
-Los tres escenarios anclan los atributos de calidad de Gamma Lab 2.0 en situaciones verificables: rendimiento y capacidad de respuesta durante el c\'omputo (UC-01), robustez ante cancelaci\'on (UC-02) y persistencia confiable del estado de trabajo (UC-03). Los tres dependen de piezas que \textbf{no existen a\'un} en el c\'odigo (\texttt{Task\-Orchestrator}, \texttt{ProjectService}), lo que los convierte en criterios de aceptaci\'on directos para la implementaci\'on futura, no solo en documentaci\'on de un sistema ya construido.
+
 
 \subsection{Vista Lógica}
 \label{sec:vista_logica}

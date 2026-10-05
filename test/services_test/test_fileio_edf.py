@@ -13,6 +13,12 @@ class _EDFBase:
     def close(self):
         self._closed = True
 
+    def getNSamples(self):
+        """Los largos por canal, que la API real de pyedflib lee de la cabecera
+        sin tocar los datos. El cargador los usa para reservar la matriz antes de
+        leer, y asi no duplicar la memoria (problema nº 12)."""
+        return np.array([len(s) for s in getattr(self, "_sig", [])], dtype=int)
+
 class DummyEDF_Uniform(_EDFBase):
     """
     Valid EDF: 2 channels, same length, same fs (uniform).

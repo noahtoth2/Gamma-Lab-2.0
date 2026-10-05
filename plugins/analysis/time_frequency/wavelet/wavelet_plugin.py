@@ -1,21 +1,19 @@
+from functools import partial
+
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QVBoxLayout
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from vtkmodules.util import numpy_support
 import vtk
 import numpy as np
-import pywt
-from scipy.interpolate import interp1d
 
 from core.plugins.interfaces import IPlugin
 from core.plugins.meta import PluginMeta
 from core.utils.vtk_context_menu import VTKContextMenu
 from core.model.signal_dataset import SignalDataset
 from core.services.data_store import DataStore
+from plugins.analysis.time_frequency.wavelet import compute as cw
 from plugins.analysis.time_frequency.wavelet.wavelet_plugin_ui import Ui_Wavelet
-
-# Filas por octava del eje logarítmico (igual que en Wavelet Average).
-VOCES_POR_OCTAVA = 16
 
 
 class Wavelet_plugin(IPlugin):
@@ -29,6 +27,8 @@ class Wavelet_plugin(IPlugin):
         self.vtk_menu = None
         self._context_view = None
         self._vtk_renderer = None
+        self._handle = None
+        self._calculando = False
         self.params = {
             "sample_density_range": (0, 10000),
             "frequencies_range": (0, 10000),
@@ -110,6 +110,9 @@ class Wavelet_plugin(IPlugin):
     # end def
 
     def _on_clear_clicked(self):
+        if self._calculando:
+            self.alerts.info("Hay un cálculo de wavelet en curso; espera a que termine.")
+            return
         self.ui.sampleDensitySpinBox.setValue(self.params["sample_density_value"])
         self.ui.lowFrequencySpinBox.setValue(self.params["low_frequency_value"])
         self.ui.highFrequencySpinBox.setValue(self.params["high_frequency_value"])
@@ -165,6 +168,11 @@ class Wavelet_plugin(IPlugin):
     # =====================================================
     def on_create_wavelet(self):
         """ Load active signal, compute CWT wavelet and render scalogram in VTK """
+        tasks = self.kernel.get_service("TaskService") if self.kernel else None
+        if tasks is None:
+            self.alerts.error("El servicio de tareas no está disponible.")
+            return
+
         signal = self.get_active_signal()
         if signal is None:
             return
@@ -200,30 +208,92 @@ class Wavelet_plugin(IPlugin):
         if fmax <= fmin:
             self.alerts.error(f"La frecuencia alta ({fmax:g} Hz) debe ser mayor que la baja ({fmin:g} Hz).")
             return
-        if fmax > fs / 2:
-            self.alerts.error(f"La frecuencia alta ({fmax:g} Hz) no puede superar {fs / 2:g} Hz, "
-                              f"la mitad de la densidad de muestreo.")
+
+        # El factor de submuestreo es entero, asi que una densidad que no divida
+        # a la del archivo no se puede alcanzar. Se valida y se avisa contra la
+        # que de verdad se va a usar, no contra la pedida (problema nº 18).
+        fs_efectiva, _ = cw.tasa_efectiva(fs_calculado, fs)
+        if fmax > fs_efectiva / 2:
+            self.alerts.error(f"La frecuencia alta ({fmax:g} Hz) no puede superar {fs_efectiva / 2:g} Hz, "
+                              f"la mitad de la densidad efectiva ({fs_efectiva:g} Hz).")
             return
+        if abs(fs_efectiva - fs) > 1e-9:
+            self.alerts.info(f"La densidad de {fs:g} Hz no divide a los {fs_calculado:g} Hz del archivo; "
+                             f"se usará {fs_efectiva:.1f} Hz, la más cercana alcanzable.")
+
+        # Un cálculo anterior de este plugin (por ejemplo, al reabrir un proyecto)
+        # se cancela; sus señales tardías se ignoran porque ya no es la tarea vigente.
+        tasks.cancel_all_from(self.meta.id)
+        self._terminar_calculo()
+        self.stop()
+
+        self._calculando = True
+        self.ui.createWaveletButton.setEnabled(False)
+        self.ui.createWaveletButton.setText("Computing...")
 
         # Con escala logarítmica la CWT se calcula directamente sobre el eje
         # logarítmico, así que la normalización trabaja sobre filas reales.
-        try:
-            scalogram, times, freqs = self.compute_wavelet(
-                sig, fs_calculado, fs, fmin, fmax, cycles, escala_log=scaled, t0=float(t[0]))
-            if normalize:
-                scalogram = self.normalize_tf(scalogram, norm_method)
-        except Exception as e:
-            self._log("on_create_wavelet:", e)
-            self.alerts.error(f"No se pudo calcular la wavelet: {e}")
-            return
+        handle = tasks.submit(
+            cw.wavelet_individual, owner=self.meta.id,
+            sig=sig, fs_calculado=fs_calculado, fs=fs, fmin=fmin, fmax=fmax,
+            cycles=cycles, normalize=normalize, scaled=scaled,
+            norm_method=norm_method, t0=float(t[0]),
+        )
+        self._handle = handle
+        handle.progress.connect(partial(self._on_wavelet_progress, handle))
+        handle.finished.connect(partial(self._on_wavelet_done, handle))
+        handle.failed.connect(partial(self._on_wavelet_failed, handle))
+        handle.cancelled.connect(partial(self._on_wavelet_cancelled, handle))
+    # end def
 
+    def _terminar_calculo(self):
+        self._calculando = False
+        self._handle = None
+        if self.ui is not None:
+            self.ui.createWaveletButton.setEnabled(True)
+            self.ui.createWaveletButton.setText("Generate")
+    # end def
+
+    def _on_wavelet_progress(self, handle, percent, message):
+        if handle is not self._handle:
+            return
+        self._log(f"{message} ({percent}%)")
+        self._notify(f"{message} ({percent}%)")
+    # end def
+
+    def _on_wavelet_failed(self, handle, message):
+        if handle is not self._handle:
+            return
+        self._terminar_calculo()
+        self.alerts.error(f"No se pudo calcular la wavelet: {message}")
+    # end def
+
+    def _on_wavelet_cancelled(self, handle):
+        if handle is not self._handle:
+            return
+        self._terminar_calculo()
+    # end def
+
+    def _on_wavelet_done(self, handle, result):
+        """Se ejecuta ya en el hilo de la interfaz."""
+        if handle is not self._handle:
+            return
         try:
+            # Si el proyecto se cerró mientras calculaba, ya no hay dónde dibujar.
+            if self.ui is None:
+                return
+            times, freqs, scalogram, scaled = result
+
+            self.ensure_vtk()
+
             self.render_scalogram(times, freqs, scalogram, "Scalogram Wavelet (Morlet)", scaled)
+            self.mark_project_dirty()
         except Exception as e:
             self._log("render_scalogram:", e)
             self.alerts.error(f"No se pudo dibujar el escalograma: {e}")
-            return
-        self.mark_project_dirty()
+        finally:
+            self._terminar_calculo()
+            self.process("Done")
     # end def
 
     # =====================================================
@@ -263,85 +333,22 @@ class Wavelet_plugin(IPlugin):
     # === Wavelet Calculation
     # =====================================================
     def compute_wavelet(self, sig, fs_calculado, fs, fmin, fmax, num_cycles, escala_log=False, t0=0.0):
-        """Compute the Continuous Wavelet Transform (CWT) using Morlet wavelet.
+        return cw.compute_wavelet(sig, fs_calculado, fs, fmin, fmax, num_cycles,
+                                  escala_log=escala_log, t0=t0)
 
-        Eje lineal: descendente, 2 filas por Hz. Eje logarítmico: ascendente,
-        VOCES_POR_OCTAVA filas por octava.
-        """
-        factor = max(1, int(round(fs_calculado / fs)))
-        sig = sig[::factor]
-        if len(sig) < 4:
-            raise ValueError(
-                f"La señal tiene {len(sig)} muestras después del submuestreo; se necesitan al menos 4.")
-
-        if escala_log:
-            n = int(round(np.log2(fmax / fmin) * VOCES_POR_OCTAVA)) + 1
-            freq_axis = np.geomspace(fmin, fmax, max(n, 2))
-        else:
-            freq_axis = np.linspace(fmin, fmax, 2 * int(max(1, fmax - fmin)))[::-1]
-        wavelet = f"cmor{num_cycles}-1.0"
-        central_freq = pywt.central_frequency(wavelet)
-        scales = central_freq * fs / freq_axis
-
-        coef, _ = pywt.cwt(sig, scales, wavelet, sampling_period=1/fs)
-        scalogram = np.abs(coef)
-        time_axis = t0 + np.arange(len(sig)) / fs
-
-        return scalogram, time_axis, freq_axis
     # end def
 
     # =====================================================
     # === Normalization and Scaling
     # =====================================================
     def normalize_tf(self, tf, method="z-score"):
-        """Normalize the time-frequency map."""
-        base_mean = np.mean(tf, axis=1, keepdims=True)
-        base_std = np.std(tf, axis=1, ddof=0, keepdims=True)
-        base_min = np.min(tf)
-        base_max = np.max(tf)
+        return cw.normalize_tf(tf, method, log=self._log)
 
-        if method == "z-score":
-            return (tf - base_mean) / (base_std + 1e-12)
-
-        elif method == "percent change":
-            return ((tf - base_mean) / (base_mean + 1e-12)) * 100
-
-        elif method == "relative power":
-            return tf / (base_mean + 1e-12)
-
-        elif method == "min-max":
-            denom = (base_max - base_min) if (base_max - base_min) != 0 else 1.0
-            return (tf - base_min) / denom
-        else:
-            raise ValueError(f"Método de normalización no reconocido: {method}.")
     # end def
 
     def _scale_log(self, scalogram, freqs):
-        """Resample the scalogram so that rows are spaced logarithmically."""
-        freqs_numeric = np.asarray(freqs, dtype=np.float64)
-        
-        fmin = np.min(freqs_numeric[freqs_numeric > 0])
-        fmax = np.max(freqs_numeric)
-        
-        n_freqs_new = scalogram.shape[0] 
-        
-        log_fmin = np.log10(fmin)
-        log_fmax = np.log10(fmax)
-        
-        log_freqs_new = np.linspace(log_fmin, log_fmax, n_freqs_new)
-        freqs_new = 10**log_freqs_new 
-        
-        scalogram_new = np.zeros_like(scalogram)
-        
-        freqs_orig_sorted = np.sort(freqs_numeric)
-        
-        for i in range(scalogram.shape[1]):
-            data_col = np.flipud(scalogram[:, i]) 
-            
-            interp_func = interp1d(freqs_orig_sorted, data_col, kind='linear', fill_value='extrapolate')
-            scalogram_new[:, i] = interp_func(freqs_new)
+        return cw.scale_log(scalogram, freqs, log=self._log)
 
-        return scalogram_new, freqs_new
     # end def
 
     def _get_log_ticks_coords(self, f_min_log, f_max_log):

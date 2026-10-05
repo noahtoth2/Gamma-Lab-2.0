@@ -4,7 +4,7 @@
 
 > **Estado: fase completa.** Los tres pasos están hechos, medidos y verificados. El resumen de punta a punta está al final.
 >
-> **Actualización (26 de septiembre de 2026):** el paso 1.1 se revirtió. La wavelet volvió a usar **convolución directa** (`method='conv'`, el valor por defecto de PyWavelets). Los pasos 1.2 y 1.3 se mantienen.
+> **Actualización (1 de octubre de 2026):** el paso 1.1 quedó **fijado**. Las dos llamadas a `pywt.cwt` usan `method="fft"`. Entre el 26 y el 30 de septiembre la wavelet estuvo temporalmente de vuelta en convolución directa; esa marcha atrás se deshizo al re-medir con el código actual y comprobar que las pruebas no distinguen un modo del otro. Los pasos 1.2 y 1.3 se mantienen sin cambios.
 
 ---
 
@@ -22,19 +22,21 @@ El plan de implementación las puso primero por tres razones, y las dos primeras
 
 ---
 
-## 1.1 — `method='fft'` en la transformada wavelet (revertido)
+## 1.1 — `method='fft'` en la transformada wavelet
 
-> **Revertido el 26 de septiembre de 2026.** La wavelet volvió a la convolución directa. Esta sección queda como registro de lo que se probó y midió con FFT.
+> **Vigente desde el 1 de octubre de 2026.** Las dos llamadas a `pywt.cwt` llevan `method="fft"`. Las mediciones de abajo se re-verificaron contra el código actual; la sección de re-medición al final de este apartado trae las cifras nuevas.
 
-Código actual, sin `method` (PyWavelets usa `method='conv'` por defecto):
+Código original, sin `method` (PyWavelets usa `method='conv'` por defecto):
 
 ```python
-# plugins/analysis/time_frequency/wavelet/wavelet_plugin.py:210
+# plugins/analysis/time_frequency/wavelet/wavelet_plugin.py:286
 coef, _ = pywt.cwt(sig, scales, wavelet, sampling_period=1/fs)
 
-# plugins/analysis/time_frequency/wavelet_average/compute.py:32
-coef, _ = pywt.cwt(sig, scales, wavelet, sampling_period=1/fs if fs > 0 else 1.0)
+# plugins/analysis/time_frequency/wavelet_average/compute.py:44
+coef, _ = pywt.cwt(sig, scales, wavelet, sampling_period=1/fs)
 ```
+
+*(Líneas al 30 de septiembre de 2026. La guarda `if fs > 0 else 1.0` ya no hace falta en `compute.py`: la función rechaza antes una densidad de muestreo menor o igual a cero.)*
 
 ### Qué se probó
 
@@ -101,6 +103,32 @@ Coincidencia dígito por dígito. Si `fft` hubiera alterado algo, esas cifras se
 ### Expectativa, ajustada
 
 Son **1,74× y 2,05×**, no el salto de orden que sugería el documento de diseño al mencionar N·log N. Es una mejora sólida, pero `wavelet_average` sigue en ~2 s con 20 trials: **sigue necesitando salir del hilo de la interfaz**. Esta optimización no reemplaza al orquestador, lo complementa.
+
+### Re-medición con el código actual (1 de octubre de 2026)
+
+Las cifras de arriba son de antes de que la Fase 3 reescribiera el eje de frecuencias en `eje_frecuencias()`. Re-medido sobre el código de hoy, con 998 y 144 escalas sobre 3.051 muestras:
+
+| Eje | Escalas | `conv` | `fft` | Ganancia | 60 trials: `conv` → `fft` |
+|---|---|---|---|---|---|
+| Lineal (casilla sin marcar, el valor por defecto) | 998 | 244,6 ms | 133,1 ms | **1,84×** | 14,67 s → 7,98 s |
+| Logarítmico (casilla marcada) | 144 | 315,9 ms | 39,0 ms | **8,09×** | 18,95 s → 2,34 s |
+
+Lo llamativo es el eje logarítmico: tiene **menos** escalas que el lineal y aun así la convolución directa tarda **más**. La razón es que `geomspace` concentra los puntos en las frecuencias bajas, y frecuencia baja significa escala grande, o sea un wavelet largo. El costo de la convolución directa crece con el largo del wavelet, así que esas pocas escalas caras dominan el tiempo total. A la FFT el largo del kernel le es indiferente, y de ahí sale el 8×.
+
+**Equivalencia numérica, verificada de dos formas.** La diferencia entre los dos modos es de **2,587e-14** (eje lineal) y **3,486e-14** (logarítmico) en valor absoluto, sobre coeficientes de magnitud máxima 0,59 y 0,61. El `atol` más estricto de las pruebas es `1e-4`, o sea un margen de unos 3,9 × 10⁹. Y corriendo la suite completa con los dos modos sobre el mismo código, las cifras salen idénticas dígito por dígito:
+
+| | `conv` | `fft` |
+|---|---|---|
+| Individual, correlación mínima | 0,3857 | **0,3857** |
+| Individual, `passed` | 58999 / 3.044.898 | **58999 / 3.044.898** |
+| Individual, peor punto | (row=993, col=2046), app 0,594818 | **(row=993, col=2046), app 0,594818** |
+| Promedio, correlación mínima | 0,5212 | **0,5212** |
+| Promedio, `passed` | 62786 / 3.044.898 | **62786 / 3.044.898** |
+| Promedio, peor punto | (row=993, col=2383), app 0,447950 | **(row=993, col=2383), app 0,447950** |
+
+No hubo que ajustar ninguna tolerancia. Suite completa con `fft`: **134 pasan, 5 fallan**, que son los cinco fallos MATLAB ya conocidos y documentados en [`problemas-encontrados.md`](problemas-encontrados.md).
+
+**Sobre la comparación con Gamma Lab 1.0.** Con `fft` la igualdad con 1.0 deja de ser bit a bit y pasa a ser equivalencia dentro de la precisión de máquina (2,6e-14). Al redactar la tesis conviene usar esa segunda formulación, no la primera.
 
 ---
 
@@ -271,7 +299,7 @@ Los ~90 ms que quedan son el resto del trabajo de renderizado —entre otras cos
 
 Comparación completa: `v2_fase0_baseline` contra `v2_fase1_completa`.
 
-> **Con la convolución de vuelta**, las filas de `compute_wavelet` ya no aplican: ese cálculo volvió a ser el de la Fase 0 (~202 ms por trial, ~4,2 s con 20 trials). Las mejoras de render (1.3) y de memoria (1.2) no dependen del 1.1 y se mantienen.
+> **Con `fft` fijado (1 de octubre de 2026)**, las filas de `compute_wavelet` de esta tabla vuelven a aplicar. Entre el 26 y el 30 de septiembre, mientras la wavelet estuvo de vuelta en convolución, ese cálculo había regresado a las cifras de la Fase 0 (~202 ms por trial, ~4,2 s con 20 trials).
 
 | Operación | Fase 0 | Fase 1 | Mejora |
 |---|---:|---:|---:|
@@ -291,7 +319,23 @@ Sumando cálculo más dibujo, que es lo que transcurre entre pulsar el botón y 
 | Pico de memoria (30 trials) | 1.715 MB | **414 MB** | **4,1× menos** |
 | Pico de memoria (60 trials, el archivo real) | 3.107 MB | **414 MB** | **7,5× menos** |
 
-> **Con convolución** (estimado sumando mediciones ya hechas: cálculo de la Fase 0 + render de la Fase 1; la suite no se volvió a correr): un wavelet individual queda en ~300 ms (202,0 + 97,7), unas **3,1×** más rápido que antes. El promedio de 20 trials queda en ~4,29 s (4.213,6 + 80,4), unas **1,15×**. La memoria no cambia.
+> **Medición del 30 de septiembre de 2026, durante el regreso temporal a convolución** (suite completa en el mismo equipo, etiqueta `verif_2026-09-30`, guardada fuera de `perf_results.json`). Queda como registro de cuánto costaba el paso atrás:
+>
+> | Acción | Gamma Lab 1.0 (ago-16) | Fase 0 | Con convolución (30 sep) | |
+> |---|---:|---:|---:|---|
+> | Wavelet individual (cálculo + dibujo) | 940,9 ms | 918,5 ms | **271,6 ms** (190,8 + 80,8) | **3,5× más rápido que 1.0** |
+> | Wavelet promedio, 20 trials (cálculo + dibujo) | 4.931,8 ms | 4.945,7 ms | **3.973,9 ms** (3.880,7 + 93,2) | **1,24×** |
+>
+> Sin FFT la mejora venía casi toda del dibujo (1.3): el cálculo del promedio se quedaba en ~3,9 s. Ese fue el argumento para deshacer la marcha atrás. **Con `fft` fijado otra vez**, las cifras aplicables son las de la tabla de arriba: 2.158,3 ms para el promedio de 20 trials, o sea **2,3× sobre la Fase 0**. La memoria no cambia con el modo de cálculo (ver la verificación contra 1.0, más abajo).
+>
+> **Confirmado de punta a punta (1 de octubre de 2026).** Al correr la suite completa con `fft` de vuelta, la etiqueta `baseline` del JSON de rendimiento quedó con estas medianas:
+>
+> | Operación | Fase 0 (`conv`) | Fase 1 (`fft`) | 30 sep (`conv`) | **1 oct (`fft`)** |
+> |---|---:|---:|---:|---:|
+> | `wavelet.compute_wavelet` (1 trial) | 202,0 ms | 103,1 ms | 190,8 ms | **127,8 ms** |
+> | `wavelet_average.compute_wavelet` (20 trials) | 4.213,6 ms | 2.077,9 ms | 3.880,7 ms | **2.735,6 ms** |
+>
+> El cálculo del promedio baja de 3.880,7 ms a 2.735,6 ms, o sea **1,42× de punta a punta** sobre el estado con convolución. Queda por encima de los 2.077,9 ms de la Fase 1 porque estas cifras se tomaron durante una corrida de la suite completa, con el resto de las pruebas compitiendo por la CPU; son más ruidosas que una medición dedicada. Lo que importa para el plan es que **siguen muy por encima de 1 s**, así que el orquestador se justifica igual.
 
 ### El costo de todo esto
 
@@ -309,7 +353,34 @@ Ese último punto es el que conviene subrayar: **todo lo anterior se consiguió 
 
 De haber construido primero el orquestador, habría movido los ~200 ms de cómputo a un hilo trabajador y dejado **716 ms de renderizado congelando la ventana**, en `wavelet_average` justo *después* de que el hilo terminara — es decir, en el momento en que el usuario cree que ya acabó. La conclusión razonable habría sido "el orquestador no sirvió".
 
-Ahora el reparto es otro: el render está en ~80-98 ms, por debajo del umbral de percepción, y lo que queda por sacar del hilo de interfaz son los ~4,2 s del cómputo promedio con convolución (~2 s cuando se usaba FFT). Eso sí es trabajo para el orquestador.
+Ahora el reparto es otro: el render está en ~80-98 ms, por debajo del umbral de percepción, y lo que queda por sacar del hilo de interfaz son los ~2 s del cómputo promedio con FFT. Sigue muy por encima del segundo que fija R04, así que eso sí es trabajo para el orquestador.
+
+---
+
+## Verificación contra Gamma Lab 1.0 (30 de septiembre de 2026)
+
+Antes de pasar a la Fase 3 se repitió la comprobación, esta vez contra el código original de **Gamma Lab 1.0** (`gamma-lab-desktop-app`, rama `develop`) y no contra una versión intermedia de 2.0. Cada versión corrió en su propio proceso sobre el mismo archivo `17308005.abf`, con los parámetros por defecto (`fmin=1`, `fmax=500`, 2 ciclos, 1000 Hz, escala lineal). Gamma Lab 1.0 no se modificó.
+
+| Resultado | 1.0 contra 2.0 |
+|---|---|
+| Trials cortados (30.501 × 60) y su eje de tiempo | **Idénticos bit a bit** |
+| Wavelet de 1 trial (998 × 3051) y sus ejes | **Idénticos bit a bit** |
+| Wavelet promedio de 20 trials, sin normalizar y con z-score | **Idénticos bit a bit** |
+| Datos que recibe VTK al dibujar (3.044.898 valores) | **Idénticos bit a bit** |
+| Normalizaciones del wavelet individual (z-score, percent change, relative power) | Diferencia relativa ~1e-10, por la protección `+1e-12` contra división por cero agregada el 29 de septiembre |
+| Min-max y la interpolación logarítmica antigua | Idénticos bit a bit |
+
+Que el promedio salga idéntico a 1.0 confirma el acumulador (1.2) —sumar y dividir da los mismos bits que `np.stack` + `np.mean`— y que la función que hoy ejecuta el orquestador (`compute.wavelet_promedio`) calcula exactamente lo mismo que el `WaveletWorker` de 1.0.
+
+La memoria se volvió a medir con el mismo método (`PeakWorkingSetSize`, un proceso nuevo por medición):
+
+| Trials | Consumo del promedio en 1.0 | En 2.0 |
+|---:|---:|---:|
+| 10 | 491 MB | **90 MB** |
+| 30 | 1.422 MB | **91 MB** |
+| 60 *(el archivo real)* | 2.815 MB | **91 MB** |
+
+> **Lo que sí cambió a propósito después de la Fase 1** (29 de septiembre, fuera del alcance del orquestador): con la escala logarítmica activada el wavelet ya no interpola el eje lineal, sino que calcula directamente sobre frecuencias logarítmicas; el eje de tiempo empieza en el `time_rel` real (−0,05 s) en vez de 0; y los ejes del dibujo quedan fijos a los datos. Por eso la comparación de arriba se hizo en escala lineal y llamando al cálculo con `t0=0`. Detalle en [`problemas-encontrados.md`](problemas-encontrados.md), nº 16.
 
 ---
 
@@ -328,10 +399,10 @@ plugins/analysis/time_frequency/wavelet_average/wavelet_average_plugin.py | 36 +
 | # | Archivo | Línea | Paso | Qué |
 |---|---|---:|---|---|
 | 1 | `wavelet_plugin.py` | 4 | 1.3 | `import numpy_support` |
-| 2 | `wavelet_plugin.py` | 211 | 1.1 | `method="fft"` en `pywt.cwt` (revertido) |
+| 2 | `wavelet_plugin.py` | 289 | 1.1 | `method="fft"` en `pywt.cwt` |
 | 3 | `wavelet_plugin.py` | 334-341 | 1.3 | Llenado de VTK vectorizado |
 | 4 | `wavelet_average_plugin.py` | 4 | 1.3 | `import numpy_support` |
-| 5 | `wavelet_average_plugin.py` | 292 | 1.1 | `method="fft"` en `pywt.cwt` (revertido) |
+| 5 | `wavelet_average/compute.py` | 47 | 1.1 | `method="fft"` en `pywt.cwt` (movido ahí en la Fase 3) |
 | 6 | `wavelet_average_plugin.py` | 445-452 | 1.3 | Llenado de VTK vectorizado |
 | 7 | `wavelet_average_plugin.py` | 582-624 | 1.2 | Acumulador incremental |
 
@@ -344,9 +415,9 @@ plugins/analysis/time_frequency/wavelet_average/wavelet_average_plugin.py | 36 +
  import numpy as np
 ```
 
-### 2. `wavelet_plugin.py:211` — `method="fft"` (paso 1.1, revertido)
+### 2. `wavelet_plugin.py:289` — `method="fft"` (paso 1.1)
 
-Revertido: la línea volvió a su versión original, la que aparece con `-` en este diff.
+Vigente. El diff es el que se aplicó; el comentario de las tres líneas se reescribió el 1 de octubre con las cifras re-medidas (1,8× y 8,1×, diferencia de 2,6e-14).
 
 ```diff
 -        coef, _ = pywt.cwt(sig, scales, wavelet, sampling_period=1/fs)
@@ -394,7 +465,7 @@ Revertido: la línea volvió a su versión original, la que aparece con `-` en e
 
 Es el mismo cambio que en el plugin individual; la única diferencia es que aquí `sampling_period` lleva su guarda contra `fs = 0`, que ya estaba.
 
-El `method="fft"` también se revirtió aquí; el import de `numpy_support` se mantiene porque lo usa el paso 1.3.
+El `method="fft"` sigue vigente aquí. En la Fase 3 esta llamada se movió a `wavelet_average/compute.py:47`, dentro del módulo de cálculo puro; el import de `numpy_support` se quedó en el plugin porque lo usa el paso 1.3.
 
 ### 6. `wavelet_average_plugin.py:445-452` — llenado de VTK (paso 1.3)
 
@@ -473,7 +544,7 @@ Este es el único cambio que toca la lógica del bucle, y va en tres puntos dent
 
 | Paso | Estado |
 |---|---|
-| 1.1 `method='fft'` | Medido y verificado; **revertido**, se usa convolución |
+| 1.1 `method='fft'` | ✅ Hecho, medido, verificado; **vigente** |
 | 1.2 Acumulador incremental | ✅ Hecho, medido, verificado |
 | 1.3 Vectorizar VTK | ✅ Hecho, medido, verificado |
 

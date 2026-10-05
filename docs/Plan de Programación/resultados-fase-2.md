@@ -3,6 +3,8 @@
 *El orquestador mínimo*
 
 > **Estado: fase completa.** El servicio existe, está registrado en el arranque, y los cuatro criterios de salida se cumplieron con pruebas automatizadas.
+>
+> **Corrección (30 de septiembre de 2026):** una revisión con pruebas de estrés encontró que el servicio podía **cerrar la aplicación entera** al terminar una tarea. Ya está corregido y tiene su prueba. Detalle en [La corrección del 30 de septiembre](#la-corrección-del-30-de-septiembre-el-hilo-se-soltaba-antes-de-tiempo).
 
 ---
 
@@ -81,6 +83,8 @@ Arrancar un hilo cuesta microsegundos, así que un pool permanente no compra vel
 
 El servicio **no crea ningún hilo al arrancar**: se queda vivo y ocioso, como pedía el diseño.
 
+Cada hilo se libera recién cuando Qt avisa que salió de verdad (su señal `QThread.finished`), no cuando llega el resultado. Es la corrección del 30 de septiembre, explicada más abajo.
+
 ### La escritura única sale gratis
 
 Qt entrega las señales entre hilos **en el hilo del receptor**. Como el `TaskHandle` se crea en el hilo de interfaz, el slot conectado a `finished` corre siempre ahí.
@@ -109,9 +113,11 @@ Un `submit()` nuevo del mismo `owner` **descarta las que ese owner tenga en cola
 
 ## Verificación
 
-### 14 pruebas automatizadas, todas en verde
+### 18 pruebas automatizadas, todas en verde
 
-`test/services_test/test_task_service.py` — 12 pruebas unitarias:
+> Eran 14 al cerrar la fase (12 unitarias y 2 de integración). Desde entonces se sumaron las 2 de `test_cancelacion_al_cambiar_seccion.py` (29 de septiembre) y, el 30 de septiembre, la de estrés `muchas_tareas_cortas_no_tumban_la_aplicacion` y `systemexit_en_la_tarea_no_bloquea_la_cola`.
+
+`test/services_test/test_task_service.py` — 14 pruebas unitarias:
 
 | Prueba | Qué comprueba |
 |---|---|
@@ -127,12 +133,17 @@ Un `submit()` nuevo del mismo `owner` **descarta las que ese owner tenga en cola
 | `tarea_terca_se_desliga_y_devuelve_la_interfaz` | R46: el desligue |
 | `has_active_tasks` | El gancho para el cierre de la aplicación |
 | `sin_ctx_no_se_inyecta_nada` | Una función pura se llama tal cual |
+| `systemexit_en_la_tarea_no_bloquea_la_cola` | Una tarea que lanza `SystemExit` emite `failed` y la siguiente corre (30 de septiembre) |
+| `muchas_tareas_cortas_no_tumban_la_aplicacion` | 10.000 tareas seguidas en un proceso aparte: terminan todas y no queda ningún hilo sin liberar (30 de septiembre) |
 
 `test/services_test/test_task_service_integracion.py` — 2 pruebas de punta a punta con el kernel y el plugin reales.
 
+`test/services_test/test_cancelacion_al_cambiar_seccion.py` — 2 pruebas: cambiar de sección cancela las tareas del plugin y no toca las de otros.
+
 ```
-12 passed in 3.09s
+12 passed in 3.09s      (al cerrar la fase, 19 de septiembre)
  2 passed in 5.20s
+18 passed               (30 de septiembre, las tres suites juntas)
 ```
 
 ### Criterio 1 — sin costo en el arranque
@@ -197,6 +208,90 @@ Conjunto completo de pruebas (sin los benchmarks):
 
 Los 5 fallos son exactamente los mismos de validación contra MATLAB que ya estaban documentados **antes** de esta fase (4 del wavelet, 1 de `psd_average`). No apareció ninguno nuevo.
 
+Con la corrección del 30 de septiembre:
+
+```
+5 failed, 100 passed, 25 deselected
+```
+
+Son los mismos 5 fallos. La prueba número 100 es la de estrés nueva.
+
+---
+
+## La corrección del 30 de septiembre: el hilo se soltaba antes de tiempo
+
+### Qué pasaba
+
+Cada tarea corre en un `QThread`. Cuando la función termina, el hilo emite la señal interna `done` desde **dentro** de `run()`, y el servicio la recibe en el hilo de interfaz, en `_on_worker_done`. Hasta el 30 de septiembre, ese mismo slot soltaba el hilo:
+
+```python
+task.worker.deleteLater()
+task.worker = None      # la última referencia de Python al QThread
+```
+
+Al perder la última referencia, PyQt destruye el objeto de C++ en ese mismo instante; el `deleteLater()` no llega a actuar. Pero cuando llega `done`, al hilo todavía le falta volver de `run()` y cerrarse. Son microsegundos. Si el hilo de interfaz ganaba esa carrera, Qt se encontraba destruyendo un hilo que seguía corriendo y **abortaba el proceso entero**:
+
+```
+QThread: Destroyed while thread is still running
+```
+
+Sin traceback, sin aviso, sin la opción de guardar: la aplicación se cerraba. En Windows ese mensaje ni siquiera sale por consola, salvo con `QT_FORCE_STDERR_LOGGING=1`. Los hilos desligados del R46 tenían el mismo problema cuando llegaba su resultado tardío.
+
+### Por qué no lo detectaron las pruebas
+
+La carrera ocurre una vez por tarea, en el instante en que termina. Las pruebas unitarias lanzan entre 1 y 4 tareas cada una: pocas oportunidades. Con volumen apareció enseguida:
+
+| 3.000 tareas cortas seguidas | Corridas | Se cayó |
+|---|---:|---:|
+| Antes de la corrección | 20 | **13** |
+| Después | 20 | **0** |
+
+En uso normal el riesgo por tarea es pequeño, pero cuando ocurre se pierde lo que no estaba guardado. Y la Fase 3 va a mandar más trabajo por el orquestador.
+
+### El cambio
+
+Tres puntos, todos en `core/services/task_service.py`:
+
+```python
+# 1. El servicio guarda cada hilo vivo
+self._threads = set()
+
+# 2. Al arrancar una tarea: se guarda el hilo y se conecta a la señal propia
+#    de Qt ANTES de start()
+self._threads.add(worker)
+worker.done.connect(self._on_worker_done)
+worker.finished.connect(self._release_thread)
+worker.start()
+
+def _release_thread(self) -> None:
+    worker = self.sender()
+    self._threads.discard(worker)
+    worker.deleteLater()
+
+# 3. _on_worker_done ya no suelta el hilo: solo entrega el resultado
+```
+
+**Por qué esto lo resuelve.** `QThread.finished` la emite el propio Qt cuando el hilo ya salió de `run()` y está en su etapa de cierre, que es donde el destructor de `QThread` sabe esperar. Liberar a partir de ahí es seguro.
+
+**Por qué la conexión va antes de `start()`.** Una tarea muy corta puede terminar antes de que se alcance a conectar después, y su hilo quedaría retenido para siempre. Pasó en el primer prototipo de esta corrección.
+
+**Qué no cambió.** El contrato con los plugins es el mismo (`submit`, las cuatro señales, `cancel`), y el resultado llega por el mismo camino. Ningún plugin se tocó.
+
+### Cómo se verificó
+
+| Comprobación | Resultado |
+|---|---|
+| Prueba nueva `muchas_tareas_cortas_no_tumban_la_aplicacion` (10.000 tareas en un proceso aparte) con el código **anterior**, tomado de git | Falla 10 de 10 veces: la prueba sí detecta el problema |
+| La misma prueba con el código corregido | Pasa 10 de 10 |
+| 20 corridas de 3.000 tareas con el código del repositorio | 0 caídas |
+| 150 tareas que ignoran la cancelación (desligue del R46) | Todas emiten una sola señal final y no queda ningún hilo retenido |
+| 1.500 operaciones al azar (`submit`, `cancel`, `cancel_all_from`, reemplazo) con otro hilo acaparando el GIL | Cada una de las 838 tareas emitió **una sola** señal final |
+| Durante un promedio real de 20 trials, un temporizador de 10 ms en el hilo de interfaz | Hueco máximo 34 ms, p99 19 ms (R55: ≤ 300 ms) |
+| Cerrar la aplicación a mitad de un Wavelet Average, en 10 momentos distintos | Salida limpia las 10 veces |
+| Suite completa sin benchmarks | 100 pasan; fallan las mismas 5 comparaciones con MATLAB |
+
+> **También corregido el 30 de septiembre:** si una tarea lanzaba `SystemExit` (hereda de `BaseException`, no de `Exception`), el hilo no emitía ninguna señal y la cola quedaba bloqueada. Ahora `_Worker.run` atrapa `BaseException` y la tarea emite `failed`. Nº 19 de [`problemas-encontrados.md`](problemas-encontrados.md).
+
 ---
 
 ## Apéndice: qué código se cambió
@@ -205,8 +300,8 @@ Los 5 fallos son exactamente los mismos de validación contra MATLAB que ya esta
 
 | Archivo | Líneas (al 27 de septiembre de 2026) | Qué es |
 |---|---:|---|
-| `core/services/task_service.py` | 207 | El servicio |
-| `test/services_test/test_task_service.py` | 235 | 12 pruebas unitarias |
+| `core/services/task_service.py` | 207 (218 tras la corrección del 30 de septiembre) | El servicio |
+| `test/services_test/test_task_service.py` | 235 (273 con la prueba de estrés) | 12 pruebas unitarias (14 desde el 30 de septiembre) |
 | `test/services_test/test_task_service_integracion.py` | 129 | 2 pruebas de punta a punta |
 
 ### Archivo modificado: `main.py`
@@ -245,7 +340,11 @@ El orden importa: `register_plugin()` llama a `initialize(kernel)`, y desde ese 
 
 **`IPlugin.stop()` todavía no llama a `cancel_all_from()`.** La conexión está diseñada y el servicio ya la soporta, pero conectarla es parte de la Fase 3 — y es lo que arreglará el hilo colgado del problema nº 4.
 
+> **Resuelto el 29 de septiembre de 2026, por otro camino:** la cancelación la hace `MainWindow.clear_plugin_area` al cambiar de sección, antes del `stop()` del plugin (nº 4).
+
 **El cierre de la aplicación no consulta `has_active_tasks()`.** El método existe para eso; falta usarlo en `_on_app_about_to_quit`, donde hoy hay además una rama muerta (problema nº 5).
+
+> **Resuelto el 29 de septiembre de 2026:** el aviso de «Cálculo en curso» al cerrar consulta `has_active_tasks()`, `_on_app_about_to_quit` cancela las tareas de todos los plugins, y la rama muerta ya no existe (nº 5).
 
 ---
 
@@ -258,5 +357,6 @@ El orden importa: `register_plugin()` llama a `initialize(kernel)`, y desde ese 
 | 2.3 Escritura única, reemplazo, cancelación cooperativa | ✅ |
 | 2.4 Salida de emergencia del R46 | ✅ |
 | 2.5 Registrado en `main.py` | ✅ |
+| Corrección del hilo que se soltaba antes de tiempo | ✅ 30 de septiembre |
 
-Sigue la **Fase 3**: migrar `wavelet_average` y `artifact_remove` al orquestador, y conectar `IPlugin.stop()`.
+Sigue la **Fase 3**, ya completa en lo que es de código: [`resultados-fase-3.md`](resultados-fase-3.md).
