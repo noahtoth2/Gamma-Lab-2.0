@@ -552,8 +552,164 @@ Las secciones siguientes describen cada uno. La Figura \ref{fig:vistacasosuso} p
 La Figura \ref{fig:vistacasosuso} revela que el subsistema \textbf{N\'ucleo y Ciclo de Vida} --- en particular CU-020, el orquestador de tareas --- es el verdadero centro de gravedad arquitect\'onico: diez de los otros veintid\'os casos de uso lo incluyen expl\'icitamente. Esa centralidad se concreta a continuaci\'on en tres escenarios representativos.
 
 
+\subsubsection{Subsistema Interfaz y Usabilidad}
 
+El subsistema \textbf{Interfaz y Usabilidad} agrupa los casos de uso que definen c\'omo interact\'ua el Investigador con Gamma Lab 2.0 a trav\'es de la capa de presentaci\'on. Su responsabilidad no es procesar se\~nales, sino garantizar que la interacci\'on sea comprensible, fluida y estable en el uso de recursos. Por eso concentra principalmente requerimientos no funcionales de usabilidad, rendimiento y confiabilidad, junto con algunos requerimientos funcionales de visualizaci\'on. El Cuadro \ref{tab:cu_interfaz} resume los casos de uso que lo componen.
 
+\begin{table}[H]
+    \centering
+    \caption{Casos de uso del subsistema Interfaz y Usabilidad}
+    \label{tab:cu_interfaz}
+    \begin{tabular}{|p{0.14\linewidth}|p{0.26\linewidth}|p{0.50\linewidth}|}
+        \hline
+        \textbf{Caso de uso} & \textbf{Nombre} & \textbf{Descripci\'on} \\
+        \hline
+        CU-008 & Navegar y cambiar de m\'odulo & Permite desplazarse entre los m\'odulos funcionales del sistema, liberando los recursos del m\'odulo saliente y conservando la se\~nal activa en memoria. \\
+        \hline
+        CU-009 & Limpiar formulario (Clear) & Restablece a sus valores por defecto los par\'ametros de una funcionalidad, sin modificar los resultados ya presentados. \\
+        \hline
+        CU-010 & Consultar ayuda contextual & Muestra una descripci\'on emergente del prop\'osito de cada control de la interfaz. \\
+        \hline
+        CU-012 & Interactuar visualmente con la se\~nal & Permite explorar se\~nales y resultados mediante zoom, lectura de coordenadas y vista Butterfly, sin alterar los datos. \\
+        \hline
+        CU-019 & Optimizar renderizado (submuestreo) & Reduce la densidad de la representaci\'on gr\'afica para mantener la fluidez del renderizado, sin modificar los datos en memoria. \\
+        \hline
+    \end{tabular}
+\end{table}
+
+El subsistema se organiza alrededor de CU-008, que funciona como eje de la interacci\'on y como \'unico punto de conexi\'on con el subsistema N\'ucleo y Ciclo de Vida. Esta posici\'on se debe a que el cambio de m\'odulo es una transici\'on en el ciclo de vida de las extensiones. Al desactivarse, cada m\'odulo debe liberar sus recursos gr\'aficos y sus detectores de eventos de forma determinista. Al activarse, el m\'odulo destino debe reutilizar los componentes ya construidos, sin recargar la se\~nal desde disco. Los dem\'as casos de uso del subsistema se vinculan con este eje. CU-010 lo extiende como un comportamiento opcional, activado por el usuario, que no altera el estado del sistema. CU-019 se relaciona con la navegaci\'on porque la optimizaci\'on del renderizado condiciona la fluidez de cualquier vista presentada.
+
+El diagrama tambi\'en muestra un segundo agrupamiento, formado por CU-012 y CU-019. CU-012 incluye a CU-019, lo que expresa que toda interacci\'on visual sobre una se\~nal pasa obligatoriamente por la estrategia de submuestreo de representaci\'on. Esta relaci\'on materializa la separaci\'on entre el modelo de datos y la vista: el zoom, el desplazamiento y la lectura de coordenadas modifican solo la representaci\'on, mientras que los datos en memoria permanecen intactos.
+
+Por \'ultimo, CU-009 aparece en el diagrama vinculado con CU-019 mediante una relaci\'on de extensi\'on. Este caso de uso representa una operaci\'on sobre el estado del formulario de cada funcionalidad: restablece los par\'ametros a sus valores por defecto sin modificar los resultados ya presentados ni los datos en memoria. Su ejecuci\'on est\'a condicionada a que no exista un c\'omputo en curso lanzado desde ese formulario, lo que mantiene la coherencia entre los par\'ametros mostrados y la tarea en ejecuci\'on.
+
+En conjunto, el subsistema resuelve dentro de la capa de presentaci\'on los atributos de calidad m\'as sensibles para el usuario: la capacidad de respuesta, la fluidez del renderizado y el consumo acotado de memoria y recursos gr\'aficos. Al concentrar su conexi\'on con el resto del sistema en CU-008, mantiene la l\'ogica de interacci\'on desacoplada de la l\'ogica de procesamiento y delega la ejecuci\'on de las operaciones pesadas en el orquestador del n\'ucleo.
+
+\subsubsection{Subsistema N\'ucleo y Ciclo de Vida}
+
+El subsistema \textbf{N\'ucleo y Ciclo de Vida} materializa el estilo arquitect\'onico de microkernel. En \'el se registran los servicios compartidos, se descubren las extensiones y se centraliza la ejecuci\'on de las operaciones pesadas, por lo que concentra requerimientos de rendimiento, confiabilidad y soporte. El Cuadro \ref{tab:cu_nucleo} resume los casos de uso que lo componen.
+
+\begin{table}[H]
+    \centering
+    \caption{Casos de uso del subsistema N\'ucleo y Ciclo de Vida}
+    \label{tab:cu_nucleo}
+    \begin{tabular}{|p{0.14\linewidth}|p{0.26\linewidth}|p{0.50\linewidth}|}
+        \hline
+        \textbf{Caso de uso} & \textbf{Nombre} & \textbf{Descripci\'on} \\
+        \hline
+        CU-011 & Iniciar la aplicaci\'on & Arranca el sistema, registra en el n\'ucleo los servicios compartidos y descubre las extensiones disponibles. \\
+        \hline
+        CU-022 & Cerrar la aplicaci\'on & Finaliza la ejecuci\'on liberando hilos, extensiones, recursos gr\'aficos y memoria. \\
+        \hline
+        CU-023 & Abrir un proyecto & Restaura un proyecto guardado, con su se\~nal de origen y el trabajo registrado sobre ella. \\
+        \hline
+        CU-003 & Cargar se\~nal (con gesti\'on de memoria) & Carga un archivo de se\~nal como nuevo proyecto activo, liberando previamente la memoria del proyecto anterior. \\
+        \hline
+        CU-021 & Cerrar un proyecto & Cierra el proyecto activo, ofrece guardarlo y libera la memoria asociada a la se\~nal y sus derivados. \\
+        \hline
+        CU-020 & Orquestador del n\'ucleo (ejecutar an\'alisis pesado) & Recibe, encola y ejecuta fuera del hilo de la interfaz las operaciones de c\'omputo pesado y publica sus resultados en el estado compartido. \\
+        \hline
+        CU-014 & Cancelar procesamiento pesado & Interrumpe una tarea en curso, libera su hilo trabajador y descarta el resultado parcial. \\
+        \hline
+    \end{tabular}
+\end{table}
+
+El diagrama organiza estos casos de uso en tres agrupamientos que corresponden a tres ciclos de vida distintos. El primero es el ciclo de vida de la aplicaci\'on, formado por CU-011 y CU-022. CU-011 deja disponibles los servicios del n\'ucleo mediante inversi\'on de control, de modo que ninguna extensi\'on los instancia por su cuenta, y registra las extensiones sin que sea necesario modificar el n\'ucleo ni las ya existentes. CU-022 es su contraparte: garantiza que al terminar la ejecuci\'on no queden hilos, procesos ni contextos gr\'aficos activos.
+
+El segundo agrupamiento corresponde al ciclo de vida del proyecto y lo forman CU-023, CU-003 y CU-021. En el diagrama, CU-021 recibe relaciones de inclusi\'on desde CU-023, CU-003 y CU-022. Esto lo convierte en el punto \'unico de cierre del proyecto: toda operaci\'on que reemplace o termine el proyecto activo reutiliza el mismo comportamiento para ofrecer el guardado y liberar la memoria. A su vez, CU-023 incluye a CU-011 y a CU-003, lo que expresa que abrir un proyecto puede implicar iniciar la aplicaci\'on y que la restauraci\'on de la se\~nal se apoya en el mismo mecanismo de carga. CU-021 tambi\'en se relaciona con el subsistema Exportaci\'on mediante la inclusi\'on de CU-005, del que obtiene la persistencia del proyecto.
+
+El tercer agrupamiento corresponde al ciclo de vida de las tareas de c\'omputo y lo forman CU-020 y CU-014. CU-020 es el elemento central del subsistema y del modelo completo, ya que recibe las relaciones de inclusi\'on de los casos de uso de Preprocesamiento y An\'alisis, adem\'as de la de CU-003. Su funci\'on es desacoplar a las extensiones de la gesti\'on de la concurrencia. Las extensiones no administran hilos propios, sino que solicitan la ejecuci\'on al n\'ucleo. El orquestador encola las solicitudes y las ejecuta en hilos trabajadores, mantiene la interfaz responsiva durante el c\'omputo y publica los resultados en el estado compartido mediante escritura sincronizada con un \'unico propietario. CU-014 extiende a CU-020 como un comportamiento opcional, activado por el usuario, que propaga la cancelaci\'on a la tarea en ejecuci\'on y garantiza la liberaci\'on de su hilo trabajador, aunque el c\'omputo no haya terminado.
+
+En conjunto, el subsistema concentra las responsabilidades transversales del sistema: la administraci\'on de servicios y extensiones, la gesti\'on de memoria entre proyectos y el control de la ejecuci\'on concurrente. Al centralizar estas responsabilidades en el n\'ucleo, los dem\'as subsistemas pueden limitarse a su l\'ogica funcional, y la incorporaci\'on de nuevas extensiones se reduce a registrarlas en el n\'ucleo y conectarlas al orquestador.
+
+\subsubsection{Subsistema Preprocesamiento}
+
+El subsistema \textbf{Preprocesamiento} agrupa las operaciones que acondicionan la se\~nal antes de su an\'alisis. Su responsabilidad es transformar la se\~nal y sus segmentaciones sin comprometer la integridad de los datos originales, por lo que concentra requerimientos funcionales de transformaci\'on y requerimientos de soporte orientados al encapsulamiento del modelo de datos. El Cuadro \ref{tab:cu_preproc} resume los casos de uso que lo componen.
+
+\begin{table}[H]
+    \centering
+    \caption{Casos de uso del subsistema Preprocesamiento}
+    \label{tab:cu_preproc}
+    \begin{tabular}{|p{0.14\linewidth}|p{0.26\linewidth}|p{0.50\linewidth}|}
+        \hline
+        \textbf{Caso de uso} & \textbf{Nombre} & \textbf{Descripci\'on} \\
+        \hline
+        CU-004 & Generar y modificar trials & Segmenta la se\~nal en ensayos a partir de un canal de est\'imulo y permite editar o descartar trials ya generados. \\
+        \hline
+        CU-018 & Ajustar frecuencia de muestreo & Corrige la frecuencia de muestreo de la se\~nal activa y recalcula su eje temporal. \\
+        \hline
+        CU-016 & Aplicar filtros digitales & Aplica un filtro Butterworth pasa-banda de fase cero y registra el resultado como una se\~nal derivada. \\
+        \hline
+        CU-007 & Remover artefacto con medidas & Elimina artefactos de estimulaci\'on en los trials, mostrando antes las medidas del segmento afectado. \\
+        \hline
+        CU-006 & Seleccionar trials para an\'alisis & Define el subconjunto de trials que participa en un an\'alisis y deja constancia de cu\'ales se usaron. \\
+        \hline
+    \end{tabular}
+\end{table}
+
+En el diagrama, todos los casos de uso del subsistema, con excepci\'on de CU-018, mantienen una relaci\'on de inclusi\'on con el orquestador del n\'ucleo (CU-020). Esto expresa que ninguna transformaci\'on se ejecuta en el hilo de la interfaz: el subsistema define qu\'e operaci\'on se aplica sobre la se\~nal, y el n\'ucleo determina c\'omo y cu\'ando se ejecuta. As\'i, las extensiones de preprocesamiento contienen solo su l\'ogica de transformaci\'on y quedan desacopladas de la gesti\'on de la concurrencia.
+
+La \'unica relaci\'on interna del subsistema es la inclusi\'on de CU-004 por parte de CU-018. Como los trials se segmentan sobre el eje temporal de la se\~nal, un cambio en la frecuencia de muestreo deja desactualizadas las segmentaciones existentes, y el sistema ofrece regenerarlas con el mismo mecanismo de corte. Por esta v\'ia, CU-018 llega al orquestador de forma indirecta, a trav\'es de CU-004.
+
+M\'as all\'a de las relaciones representadas, los casos de uso del subsistema comparten un mismo principio de dise\~no: los datos originales no se modifican. Cada transformaci\'on se registra como un conjunto derivado de la se\~nal o de los trials, y el acceso al modelo se hace siempre a trav\'es de su API p\'ublica, sin que ninguna extensi\'on manipule su estructura interna. Cuando un cambio afecta a datos ya representados o analizados, el sistema invalida las cach\'es dependientes y advierte qu\'e resultados quedaron desactualizados. Con este principio se conserva la trazabilidad entre la se\~nal original y cada una de sus transformaciones, y se reduce el acoplamiento entre las extensiones y el modelo de datos.
+
+En conjunto, el subsistema act\'ua como la etapa de acondicionamiento previa al an\'alisis. Combina la delegaci\'on de la ejecuci\'on en el n\'ucleo con la preservaci\'on de los datos originales, de modo que el investigador puede probar distintas transformaciones sin perder la se\~nal de partida.
+
+\subsubsection{Subsistema An\'alisis}
+
+El subsistema \textbf{An\'alisis} agrupa los c\'omputos que extraen informaci\'on de la se\~nal acondicionada, como el acoplamiento entre bandas de frecuencia, la representaci\'on tiempo-frecuencia y el promedio de ensayos. Concentra requerimientos funcionales de c\'alculo y visualizaci\'on de resultados, junto con requerimientos de rendimiento que acotan el tiempo de los c\'omputos m\'as costosos. El Cuadro \ref{tab:cu_analisis} resume los casos de uso que lo componen.
+
+\begin{table}[H]
+    \centering
+    \caption{Casos de uso del subsistema An\'alisis}
+    \label{tab:cu_analisis}
+    \begin{tabular}{|p{0.14\linewidth}|p{0.26\linewidth}|p{0.50\linewidth}|}
+        \hline
+        \textbf{Caso de uso} & \textbf{Nombre} & \textbf{Descripci\'on} \\
+        \hline
+        CU-001 & An\'alisis PAC de un canal & Calcula el acoplamiento fase-amplitud entre dos bandas de frecuencia de un mismo canal, sobre un trial \'unico o el promedio de trials. \\
+        \hline
+        CU-002 & An\'alisis PAC de dos canales / PPC & Calcula el acoplamiento fase-amplitud entre dos canales distintos, o la coherencia de fase entre ellos. \\
+        \hline
+        CU-013 & Calcular Wavelet & Calcula la transformada wavelet de la se\~nal con normalizaci\'on y escala configurables, y presenta el escalograma tiempo-frecuencia. \\
+        \hline
+        CU-015 & C\'alculo de promedio de trials & Promedia todos los trials o un subconjunto seleccionado para reducir el ruido de la se\~nal. \\
+        \hline
+    \end{tabular}
+\end{table}
+
+En el diagrama, todos los casos de uso concretos del subsistema mantienen una relaci\'on de inclusi\'on con el orquestador del n\'ucleo (CU-020). Esto es consecuente con la naturaleza del subsistema, que re\'une los c\'omputos m\'as costosos del sistema. Delegar su ejecuci\'on en el n\'ucleo permite que la interfaz siga respondiendo durante el c\'alculo, que el usuario pueda cancelarlo y que los resultados se publiquen en el estado compartido de forma sincronizada. Cada extensi\'on de an\'alisis queda as\'i limitada a su l\'ogica de c\'alculo, sin intervenir en la gesti\'on de la concurrencia.
+
+La relaci\'on interna del subsistema es una generalizaci\'on: CU-001 y CU-002 especializan el caso de uso abstracto Ejecutar an\'alisis PAC / PPC, que define el procedimiento com\'un de c\'alculo del acoplamiento fase-amplitud y sus visualizaciones. Las especializaciones se distinguen por el origen de los datos. CU-001 toma la fase y la amplitud de un mismo canal, y CU-002 las toma de canales distintos y a\~nade la coherencia de fase. Esta estructura permite reutilizar el comportamiento com\'un y agregar nuevas variantes de acoplamiento sin modificar las existentes.
+
+CU-013 y CU-015 no participan en esta jerarqu\'ia y se representan como an\'alisis independientes. CU-013 produce la representaci\'on tiempo-frecuencia de la se\~nal y tiene un tiempo m\'aximo de c\'omputo definido. CU-015 produce la serie promediada de los trials y opera sobre el subconjunto seleccionado en el subsistema Preprocesamiento.
+
+En conjunto, el subsistema consume los datos acondicionados por el preprocesamiento y produce los resultados que despu\'es se visualizan y exportan. Al delegar la ejecuci\'on en el n\'ucleo y organizar los an\'alisis de acoplamiento mediante generalizaci\'on, el subsistema puede crecer con nuevos an\'alisis sin afectar la estabilidad de la interfaz ni la estructura de los an\'alisis existentes.
+
+\subsubsection{Subsistema Exportaci\'on}
+
+El subsistema \textbf{Exportaci\'on} agrupa los casos de uso que trasladan el trabajo realizado en Gamma Lab 2.0 al sistema de archivos local. Su responsabilidad es la persistencia del proyecto y la exportaci\'on de resultados num\'ericos y gr\'aficos, por lo que concentra requerimientos funcionales de formato y nomenclatura de archivos, junto con requerimientos de rendimiento que acotan el tiempo de cada exportaci\'on. El Cuadro \ref{tab:cu_exportacion} resume los casos de uso que lo componen.
+
+\begin{table}[H]
+    \centering
+    \caption{Casos de uso del subsistema Exportaci\'on}
+    \label{tab:cu_exportacion}
+    \begin{tabular}{|p{0.14\linewidth}|p{0.26\linewidth}|p{0.50\linewidth}|}
+        \hline
+        \textbf{Caso de uso} & \textbf{Nombre} & \textbf{Descripci\'on} \\
+        \hline
+        CU-005 & Guardado y exportaci\'on de datos & Guarda el proyecto en formato .glab o exporta los resultados del an\'alisis activo en formatos tabulares (Excel, CSV, JSON) o de imagen rasterizada (JPEG, PNG). \\
+        \hline
+        CU-017 & Exportaci\'on gr\'afica vectorial (EMF) & Exporta las visualizaciones de los an\'alisis en formato vectorial, conservando sus ejes y escalas para uso en publicaciones. \\
+        \hline
+    \end{tabular}
+\end{table}
+
+En el diagrama, el subsistema se conecta con el resto del sistema mediante una \'unica relaci\'on: la inclusi\'on de CU-005 por parte de CU-021, Cerrar un proyecto, del subsistema N\'ucleo y Ciclo de Vida. Esta relaci\'on expresa que el guardado del proyecto no es una operaci\'on aislada, sino una parte obligatoria del ciclo de vida del proyecto: toda operaci\'on que cierre o reemplace el proyecto activo pasa por el mismo mecanismo de persistencia. El archivo de proyecto almacena una referencia a la se\~nal de origen junto con los trials, los an\'alisis y sus par\'ametros, sin duplicar los datos de la se\~nal. As\'i, el proyecto se mantiene liviano y puede restaurarse a partir del archivo original.
+
+CU-017 se representa sin relaciones con otros casos de uso, porque es una operaci\'on que el usuario invoca directamente sobre una visualizaci\'on ya generada. Complementa a CU-005 con un formato vectorial que conserva cada elemento gr\'afico por separado, en lugar de una imagen plana. Los dos casos de uso comparten las mismas convenciones de salida: el nombre sugerido del archivo incluye el nombre de la se\~nal original y los tiempos de exportaci\'on est\'an acotados seg\'un el tipo de contenido.
+
+En conjunto, el subsistema cierra el flujo de trabajo del sistema, ya que convierte los resultados producidos por los subsistemas Preprocesamiento y An\'alisis en artefactos persistentes y reutilizables fuera de la aplicaci\'on. Al integrarse con el n\'ucleo a trav\'es del cierre del proyecto, el sistema asegura que el trabajo del investigador pueda conservarse antes de liberar los recursos de la sesi\'on.
 
 
 \subsection{Vista Lógica}
@@ -1340,6 +1496,8 @@ Este anexo resume dicha relaci\'on:
 \bibitem{nunez} P. L. Nunez, R. Srinivasan. \textit{Electric Fields of the Brain: The Neurophysics of EEG} (2nd ed.). Oxford University Press, 2006.
 
 \bibitem{sad} Equipo Gamma Lab. \textit{Software Architecture Document (SAD), v1.0}. Este documento.
+
+\bibitem{omg_uml} Object Management Group. \textit{OMG Unified Modeling Language (OMG UML), Version 2.5.1}. OMG Doc. formal/17-12-05, dic. 2017. Disponible en: \url{https://www.omg.org/spec/UML/2.5.1/}.
 
 \end{thebibliography}
 
