@@ -198,7 +198,10 @@ class MainWindow(QMainWindow):
             subcategories[plugin.subcategory()].append(name)
 
         # Fixed display order for specific subcategories (registration order isn't reliable)
-        explicit_order = {"Measurements": ["Slope Results", "Amplitude Results"]}
+        explicit_order = {
+            "Measurements": ["Slope Results", "Amplitude Results"],
+            "Time-Frequency": ["PAC", "Modulation Index", "Wavelet", "Wavelet Average"],
+        }
         for subcat, order in explicit_order.items():
             if subcat in subcategories:
                 subcategories[subcat].sort(
@@ -226,6 +229,9 @@ class MainWindow(QMainWindow):
                 btn = self.add_plugin_button(name)
                 if section == "Preprocessing":
                     btn.setText(name.lower())
+                if section == "Analysis":
+                    btn.setIconSize(QSize(36, 36))
+                    btn.setFixedHeight(70)
                 row.addWidget(btn, 0, Qt.AlignBottom)
 
             contenedor.addWidget(group_box, 0, Qt.AlignVCenter)
