@@ -33,6 +33,14 @@ def correr_escenarios(nombre):
     return len(casos)
 
 
+def test_modulation_index_en_la_interfaz():
+    assert correr_escenarios("escenarios_modulation_index.py") >= 30
+
+
+def test_pac_en_la_interfaz():
+    assert correr_escenarios("escenarios_pac.py") >= 28
+
+
 def test_open_signal_en_la_interfaz():
     assert correr_escenarios("escenarios_open_signal.py") >= 11
 

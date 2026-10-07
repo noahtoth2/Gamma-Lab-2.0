@@ -84,6 +84,18 @@ class Ui_ModulationIndex(object):
 
         self.splitter.widget(1).setMaximumWidth(300)
 
+        # --- Sample frequency ---
+        # MI la necesita: f_PAC_sing recibe `srt` y hace downsample(v_Data, srt).
+        # En MATLAB la lee de `ResampleFr`, que vive en el panel Frequency y vale
+        # 1000 —no del campo de 2000 que esta dibujado justo al lado del boton MI,
+        # que es el de PAC—. Aqui lleva el suyo propio: un plugin no lee los
+        # widgets de otro.
+        self.sampleSection = self._section_layout("sampleFqLabel")
+        self.sampleFqLabel = self.sampleSection.title
+        self.sampleFqRowLabel, self.sampleFqSpinBox, self.sampleFqHzLabel = \
+            self._add_spin_row(self.sampleSection, "sampleFq", QtWidgets.QSpinBox)
+        self.paramsLayout.addLayout(self.sampleSection)
+
         # --- Phase band ---
         self.phaseSection = self._section_layout("phaseBandLabel")
         self.phaseBandLabel = self.phaseSection.title
@@ -99,6 +111,16 @@ class Ui_ModulationIndex(object):
         self.fqA2Label, self.fqA2SpinBox, self.fqA2HzLabel = self._add_spin_row(self.amplitudeSection, "fqA2")
         self.aStepLabel, self.aStepSpinBox, self.aStepHzLabel = self._add_spin_row(self.amplitudeSection, "aStep")
         self.paramsLayout.addLayout(self.amplitudeSection)
+
+        # --- Trial ---
+        # f_PAC_sing hace v_Data(:,Tr): trabaja sobre UN trial, como PAC. En
+        # MATLAB es una casilla numerica global; aqui lleva ademas flechas,
+        # porque la directora pidio poder navegar entre los trials.
+        self.trialSection = self._section_layout("trialLabel")
+        self.trialLabel = self.trialSection.title
+        self.prevTrialButton, self.trialSpinBox, self.nextTrialButton, self.trialTotalLabel = \
+            self._add_trial_row(self.trialSection)
+        self.paramsLayout.addLayout(self.trialSection)
 
         # --- Spacer ---
         self.paramsLayout.addStretch(1)
@@ -151,12 +173,52 @@ class Ui_ModulationIndex(object):
         section.addLayout(row)
         return label, spin, hz_label
 
+    def _add_trial_row(self, section):
+        """La fila del trial: flecha, casilla, flecha y el «de N»."""
+        row = QtWidgets.QHBoxLayout()
+        row.setObjectName("trialLayout")
+
+        anterior = QtWidgets.QToolButton(self.layoutWidget)
+        anterior.setObjectName("prevTrialButton")
+        anterior.setCursor(QtCore.Qt.PointingHandCursor)
+        row.addWidget(anterior)
+
+        # Muestra 1 para el primer trial, como MATLAB; el plugin resta uno al
+        # indexar, porque Python cuenta desde cero.
+        spin = QtWidgets.QSpinBox(self.layoutWidget)
+        spin.setAlignment(QtCore.Qt.AlignCenter)
+        spin.setMinimum(1)
+        spin.setObjectName("trialSpinBox")
+        row.addWidget(spin)
+
+        siguiente = QtWidgets.QToolButton(self.layoutWidget)
+        siguiente.setObjectName("nextTrialButton")
+        siguiente.setCursor(QtCore.Qt.PointingHandCursor)
+        row.addWidget(siguiente)
+
+        total = QtWidgets.QLabel(self.layoutWidget)
+        total.setObjectName("trialTotalLabel")
+        total.setProperty("variant", "input")
+        row.addWidget(total)
+
+        section.addLayout(row)
+        return anterior, spin, siguiente, total
+
     def retranslateUi(self, ModulationIndex):
         _translate = QtCore.QCoreApplication.translate
         ModulationIndex.setWindowTitle(_translate("ModulationIndex", "Modulation Index"))
 
         self.parametersLabel.setText(_translate("ModulationIndex", "Parameters"))
         self.generateButton.setText(_translate("ModulationIndex", "Generate"))
+
+        self.sampleFqLabel.setText(_translate("ModulationIndex", "Sample frequency"))
+        self.sampleFqRowLabel.setText(_translate("ModulationIndex", ""))
+        self.sampleFqHzLabel.setText(_translate("ModulationIndex", "Hz"))
+
+        self.trialLabel.setText(_translate("ModulationIndex", "Trial"))
+        self.prevTrialButton.setText(_translate("ModulationIndex", "◄"))
+        self.nextTrialButton.setText(_translate("ModulationIndex", "►"))
+        self.trialTotalLabel.setText(_translate("ModulationIndex", "de 0"))
 
         self.phaseBandLabel.setText(_translate("ModulationIndex", "Phase Band"))
         self.fqP1Label.setText(_translate("ModulationIndex", "Fq P1"))

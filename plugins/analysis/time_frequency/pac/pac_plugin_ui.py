@@ -272,7 +272,52 @@ class Ui_Pac(object):
         self.AmplitudeBandLayout.addLayout(self.ampFrequencyLayout)
         self.paramsLayout.addLayout(self.AmplitudeBandLayout)
 
+        # --- Trial ---
+        # MATLAB solo tiene una casilla numerica ("Single Trial"), global para
+        # toda la aplicacion. Aqui ademas van flechas, porque la directora pidio
+        # poder navegar entre los trials, y el selector es propio del plugin.
+        self.trialLayout = QtWidgets.QVBoxLayout()
+        self.trialLayout.setObjectName("trialLayout")
 
+        self.trialLabel = QtWidgets.QLabel(self.layoutWidget)
+        self.trialLabel.setObjectName("trialLabel")
+        self.trialLabel.setProperty("variant", "subtitle")
+        self.trialLayout.addWidget(self.trialLabel)
+
+        self.trialLine = QtWidgets.QFrame(self.layoutWidget)
+        self.trialLine.setFrameShape(QtWidgets.QFrame.HLine)
+        self.trialLine.setObjectName("trialLine")
+        self.trialLine.setProperty("role", "divider")
+        self.trialLayout.addWidget(self.trialLine)
+
+        self.trialInput = QtWidgets.QHBoxLayout()
+        self.trialInput.setObjectName("trialInput")
+
+        self.prevTrialButton = QtWidgets.QToolButton(self.layoutWidget)
+        self.prevTrialButton.setObjectName("prevTrialButton")
+        self.prevTrialButton.setCursor(QtCore.Qt.PointingHandCursor)
+        self.trialInput.addWidget(self.prevTrialButton)
+
+        # Muestra 1 para el primer trial, como MATLAB; el plugin resta uno al
+        # indexar, porque Python cuenta desde cero.
+        self.trialSpinBox = QtWidgets.QSpinBox(self.layoutWidget)
+        self.trialSpinBox.setAlignment(QtCore.Qt.AlignCenter)
+        self.trialSpinBox.setMinimum(1)
+        self.trialSpinBox.setObjectName("trialSpinBox")
+        self.trialInput.addWidget(self.trialSpinBox)
+
+        self.nextTrialButton = QtWidgets.QToolButton(self.layoutWidget)
+        self.nextTrialButton.setObjectName("nextTrialButton")
+        self.nextTrialButton.setCursor(QtCore.Qt.PointingHandCursor)
+        self.trialInput.addWidget(self.nextTrialButton)
+
+        self.trialTotalLabel = QtWidgets.QLabel(self.layoutWidget)
+        self.trialTotalLabel.setObjectName("trialTotalLabel")
+        self.trialTotalLabel.setProperty("variant", "input")
+        self.trialInput.addWidget(self.trialTotalLabel)
+
+        self.trialLayout.addLayout(self.trialInput)
+        self.paramsLayout.addLayout(self.trialLayout)
 
         # --- Spacer ---
         self.paramsLayout.addStretch(1)
@@ -304,4 +349,8 @@ class Ui_Pac(object):
         self.hzAmpLowFreqLabel.setText(_translate("PAC", "Hz"))
         self.ampHighLabel.setText(_translate("PAC", "A2"))
         self.hzAmpHighFreqLabel.setText(_translate("PAC", "Hz"))
+        self.trialLabel.setText(_translate("PAC", "Trial"))
+        self.prevTrialButton.setText(_translate("PAC", "◄"))
+        self.nextTrialButton.setText(_translate("PAC", "►"))
+        self.trialTotalLabel.setText(_translate("PAC", "de 0"))
         self.createPacButton.setText(_translate("PAC", "Generate"))
