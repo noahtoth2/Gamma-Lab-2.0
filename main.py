@@ -9,6 +9,7 @@ import resources_rc
 
 from core.kernel import Kernel
 from app.view.main_window import MainWindow
+from app.view.splash_screen import SplashScreen
 from core.plugins.manager import PluginManager
 from core.services.data_store import DataStore
 from core.services.fileio_service import FileIOService
@@ -41,23 +42,31 @@ def main():
     
     app.setFont(QFont(default_family, 10))
     app.setStyleSheet(loadStyleSheet())
-    
+
+    splash = SplashScreen()
+    splash.show()
+    splash.set_progress(5, "Initializing core...")
+
     kernel = Kernel()
 
     # 1) Core services
     # Van antes del descubrimiento de plugins: register_plugin() llama a
     # initialize(kernel), y desde ahi un plugin ya puede pedir cualquier
     # servicio. Si estas lineas se mueven despues, recibiria None.
+    splash.set_progress(10, "Registering services...")
     kernel.register_service("DataStore", DataStore())
     kernel.register_service("FileIO", FileIOService())
     kernel.register_service("TaskService", TaskService())
 
     # 2) Discover and instantiate plugins
     plugins_dir = Path(__file__).resolve().parent / "plugins"
+    splash.set_progress(20, "Discovering plugins...")
     pm = PluginManager(plugins_dir)
-    pm.load_all()
+    pm.load_all(on_progress=lambda i, n, name: splash.set_progress(
+        30 + int(40 * i / n), f"Loading plugin: {name}"))
 
     # 3) Register plugins in the kernel BY NAME (from properties.yml)
+    splash.set_progress(75, "Registering plugins...")
     for meta, plugin in pm.all():
         try:
             kernel.register_plugin(meta.name, plugin)
@@ -65,13 +74,16 @@ def main():
             print(f"Could not register '{meta.name}':", e)
 
     # 4) Main window (after registering plugins)
+    splash.set_progress(85, "Building interface...")
     main_win = MainWindow(kernel)
     kernel.register_service("MainWindow", main_win)
+    splash.set_progress(100, "Ready")
 
     def show_startup_window():
         # Restore from minimized state and maximize while keeping window chrome visible
         main_win.setWindowState((main_win.windowState() & ~Qt.WindowMinimized) | Qt.WindowMaximized)
         main_win.show()
+        splash.finish(main_win)
         main_win.raise_()
         main_win.activateWindow()
 
