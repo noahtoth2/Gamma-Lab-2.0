@@ -65,7 +65,7 @@ class Ui_ErpPlot(QtWidgets.QWidget):
         self.clearButton.setObjectName("clearButton")
         icon_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "assets", "iconos", "clear.png")
         self.clearButton.setIcon(QtGui.QIcon(icon_path))
-        self.clearButton.setIconSize(QtCore.QSize(20, 20))
+        self.clearButton.setIconSize(QtCore.QSize(28, 28))
         self.clearButton.setAutoRaise(True)
         self.clearButton.setToolTip("Clear parameters")
         self.headerLayout.addWidget(self.clearButton)

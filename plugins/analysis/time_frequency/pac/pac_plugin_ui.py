@@ -46,7 +46,7 @@ class Ui_Pac(object):
         self.clearButton.setObjectName("clearButton")
         icon_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "assets", "iconos", "clear.png")
         self.clearButton.setIcon(QtGui.QIcon(icon_path))
-        self.clearButton.setIconSize(QtCore.QSize(20, 20))
+        self.clearButton.setIconSize(QtCore.QSize(28, 28))
         self.clearButton.setAutoRaise(True)
         self.clearButton.setToolTip("Clear parameters")
         self.headerLayout.addWidget(self.clearButton)
@@ -84,7 +84,28 @@ class Ui_Pac(object):
 
         self.splitter.widget(1).setMaximumWidth(300)
 
-        # --- Sample density ---
+        # --- PAC type ---
+        self.pacTypeLayout = QtWidgets.QVBoxLayout()
+        self.pacTypeLayout.setObjectName("pacTypeLayout")
+
+        self.pacTypeLabel = QtWidgets.QLabel(self.layoutWidget)
+        self.pacTypeLabel.setObjectName("pacTypeLabel")
+        self.pacTypeLabel.setProperty("variant", "subtitle")
+        self.pacTypeLayout.addWidget(self.pacTypeLabel)
+
+        self.pacTypeLine = QtWidgets.QFrame(self.layoutWidget)
+        self.pacTypeLine.setFrameShape(QtWidgets.QFrame.HLine)
+        self.pacTypeLine.setObjectName("pacTypeLine")
+        self.pacTypeLine.setProperty("role", "divider")
+        self.pacTypeLayout.addWidget(self.pacTypeLine)
+
+        self.pacTypeComboBox = QtWidgets.QComboBox(self.layoutWidget)
+        self.pacTypeComboBox.setObjectName("pacTypeComboBox")
+        self.pacTypeComboBox.setProperty("variant", "input")
+        self.pacTypeLayout.addWidget(self.pacTypeComboBox)
+        self.paramsLayout.addLayout(self.pacTypeLayout)
+
+        # --- Sample frequency ---
         self.sampleDensity = QtWidgets.QVBoxLayout()
         self.sampleDensity.setObjectName("sampleDensity")
 
@@ -183,33 +204,120 @@ class Ui_Pac(object):
         self.PhaseBandLayout.addLayout(self.frequencyLayout)
         self.paramsLayout.addLayout(self.PhaseBandLayout)
 
-        # --- Trial Mode ---
-        self.trialModeLayout = QtWidgets.QVBoxLayout()
-        self.trialModeLayout.setObjectName("trialModeLayout")
+        # --- Amplitude band ---
+        self.AmplitudeBandLayout = QtWidgets.QVBoxLayout()
+        self.AmplitudeBandLayout.setObjectName("AmplitudeBandLayout")
 
-        self.trialModeLabel = QtWidgets.QLabel(self.layoutWidget)
-        self.trialModeLabel.setObjectName("trialModeLabel")
-        self.trialModeLabel.setProperty("variant", "subtitle")
-        self.trialModeLayout.addWidget(self.trialModeLabel)
+        self.AmplitudeBandLabel = QtWidgets.QLabel(self.layoutWidget)
+        self.AmplitudeBandLabel.setObjectName("AmplitudeBandLabel")
+        self.AmplitudeBandLabel.setProperty("variant", "subtitle")
+        self.AmplitudeBandLayout.addWidget(self.AmplitudeBandLabel)
 
-        self.trialModeLine = QtWidgets.QFrame(self.layoutWidget)
-        self.trialModeLine.setFrameShape(QtWidgets.QFrame.HLine)
-        self.trialModeLine.setObjectName("trialModeLine")
-        self.trialModeLine.setProperty("role", "divider")
-        self.trialModeLayout.addWidget(self.trialModeLine)
+        self.AmplitudeBandLine = QtWidgets.QFrame(self.layoutWidget)
+        self.AmplitudeBandLine.setFrameShape(QtWidgets.QFrame.HLine)
+        self.AmplitudeBandLine.setObjectName("AmplitudeBandLine")
+        self.AmplitudeBandLine.setProperty("role", "divider")
+        self.AmplitudeBandLayout.addWidget(self.AmplitudeBandLine)
 
-        self.trialModeInput = QtWidgets.QHBoxLayout()
-        self.trialModeInput.setObjectName("trialModeInput")
+        self.ampFrequencyLayout = QtWidgets.QVBoxLayout()
+        self.ampFrequencyLayout.setObjectName("ampFrequencyLayout")
 
-        self.trialModeComboBox = QtWidgets.QComboBox(self.layoutWidget)
-        self.trialModeComboBox.setObjectName("trialModeComboBox")
-        self.trialModeComboBox.setProperty("variant", "input")
-        self.trialModeInput.addWidget(self.trialModeComboBox)
+        self.ampFrequencyLabel = QtWidgets.QLabel(self.layoutWidget)
+        self.ampFrequencyLabel.setObjectName("ampFrequencyLabel")
+        self.ampFrequencyLabel.setProperty("variant", "input")
+        self.ampFrequencyLayout.addWidget(self.ampFrequencyLabel)
 
-        self.trialModeLayout.addLayout(self.trialModeInput)
-        self.paramsLayout.addLayout(self.trialModeLayout)
+        # --- Fq a1 ---
+        self.ampLowFqLayout = QtWidgets.QHBoxLayout()
+        self.ampLowFqLayout.setObjectName("ampLowFqLayout")
 
+        self.ampLowLabel = QtWidgets.QLabel(self.layoutWidget)
+        self.ampLowLabel.setObjectName("ampLowLabel")
+        self.ampLowLabel.setProperty("variant", "input")
+        self.ampLowFqLayout.addWidget(self.ampLowLabel)
 
+        self.ampLowFrequencySpinBox = QtWidgets.QDoubleSpinBox(self.layoutWidget)
+        self.ampLowFrequencySpinBox.setAlignment(QtCore.Qt.AlignCenter)
+        self.ampLowFrequencySpinBox.setObjectName("ampLowFrequencySpinBox")
+        self.ampLowFqLayout.addWidget(self.ampLowFrequencySpinBox)
+
+        self.hzAmpLowFreqLabel = QtWidgets.QLabel(self.layoutWidget)
+        self.hzAmpLowFreqLabel.setObjectName("hzAmpLowFreqLabel")
+        self.hzAmpLowFreqLabel.setProperty("variant", "input")
+        self.ampLowFqLayout.addWidget(self.hzAmpLowFreqLabel)
+
+        self.ampFrequencyLayout.addLayout(self.ampLowFqLayout)
+
+        # --- Fq a2 ---
+        self.ampHighFqLayout = QtWidgets.QHBoxLayout()
+        self.ampHighFqLayout.setObjectName("ampHighFqLayout")
+
+        self.ampHighLabel = QtWidgets.QLabel(self.layoutWidget)
+        self.ampHighLabel.setObjectName("ampHighLabel")
+        self.ampHighLabel.setProperty("variant", "input")
+        self.ampHighFqLayout.addWidget(self.ampHighLabel)
+
+        self.ampHighFrequencySpinBox = QtWidgets.QDoubleSpinBox(self.layoutWidget)
+        self.ampHighFrequencySpinBox.setAlignment(QtCore.Qt.AlignCenter)
+        self.ampHighFrequencySpinBox.setObjectName("ampHighFrequencySpinBox")
+        self.ampHighFqLayout.addWidget(self.ampHighFrequencySpinBox)
+
+        self.hzAmpHighFreqLabel = QtWidgets.QLabel(self.layoutWidget)
+        self.hzAmpHighFreqLabel.setObjectName("hzAmpHighFreqLabel")
+        self.hzAmpHighFreqLabel.setProperty("variant", "input")
+        self.ampHighFqLayout.addWidget(self.hzAmpHighFreqLabel)
+
+        self.ampFrequencyLayout.addLayout(self.ampHighFqLayout)
+
+        self.AmplitudeBandLayout.addLayout(self.ampFrequencyLayout)
+        self.paramsLayout.addLayout(self.AmplitudeBandLayout)
+
+        # --- Trial ---
+        # MATLAB solo tiene una casilla numerica ("Single Trial"), global para
+        # toda la aplicacion. Aqui ademas van flechas, porque la directora pidio
+        # poder navegar entre los trials, y el selector es propio del plugin.
+        self.trialLayout = QtWidgets.QVBoxLayout()
+        self.trialLayout.setObjectName("trialLayout")
+
+        self.trialLabel = QtWidgets.QLabel(self.layoutWidget)
+        self.trialLabel.setObjectName("trialLabel")
+        self.trialLabel.setProperty("variant", "subtitle")
+        self.trialLayout.addWidget(self.trialLabel)
+
+        self.trialLine = QtWidgets.QFrame(self.layoutWidget)
+        self.trialLine.setFrameShape(QtWidgets.QFrame.HLine)
+        self.trialLine.setObjectName("trialLine")
+        self.trialLine.setProperty("role", "divider")
+        self.trialLayout.addWidget(self.trialLine)
+
+        self.trialInput = QtWidgets.QHBoxLayout()
+        self.trialInput.setObjectName("trialInput")
+
+        self.prevTrialButton = QtWidgets.QToolButton(self.layoutWidget)
+        self.prevTrialButton.setObjectName("prevTrialButton")
+        self.prevTrialButton.setCursor(QtCore.Qt.PointingHandCursor)
+        self.trialInput.addWidget(self.prevTrialButton)
+
+        # Muestra 1 para el primer trial, como MATLAB; el plugin resta uno al
+        # indexar, porque Python cuenta desde cero.
+        self.trialSpinBox = QtWidgets.QSpinBox(self.layoutWidget)
+        self.trialSpinBox.setAlignment(QtCore.Qt.AlignCenter)
+        self.trialSpinBox.setMinimum(1)
+        self.trialSpinBox.setObjectName("trialSpinBox")
+        self.trialInput.addWidget(self.trialSpinBox)
+
+        self.nextTrialButton = QtWidgets.QToolButton(self.layoutWidget)
+        self.nextTrialButton.setObjectName("nextTrialButton")
+        self.nextTrialButton.setCursor(QtCore.Qt.PointingHandCursor)
+        self.trialInput.addWidget(self.nextTrialButton)
+
+        self.trialTotalLabel = QtWidgets.QLabel(self.layoutWidget)
+        self.trialTotalLabel.setObjectName("trialTotalLabel")
+        self.trialTotalLabel.setProperty("variant", "input")
+        self.trialInput.addWidget(self.trialTotalLabel)
+
+        self.trialLayout.addLayout(self.trialInput)
+        self.paramsLayout.addLayout(self.trialLayout)
 
         # --- Spacer ---
         self.paramsLayout.addStretch(1)
@@ -226,13 +334,23 @@ class Ui_Pac(object):
         PAC.setWindowTitle(_translate("PAC", "PAC"))
 
         self.parametersLabel.setText(_translate("PAC", "Parameters"))
-        self.sampleDensityLabel.setText(_translate("PAC", "Sample density"))
+        self.sampleDensityLabel.setText(_translate("PAC", "Sample frequency"))
         self.hzLabel.setText(_translate("PAC", "Hz"))
         self.PhaseBandLabel.setText(_translate("PAC", "Phase Band"))
         self.frequencyLabel.setText(_translate("PAC", "Frequency (Hz)"))
-        self.highLabel.setText(_translate("PAC", "F2"))
+        self.highLabel.setText(_translate("PAC", "P2"))
         self.hzHighFreqLabel.setText(_translate("PAC", "Hz"))
-        self.lowLabel.setText(_translate("PAC", "F1"))
+        self.lowLabel.setText(_translate("PAC", "P1"))
         self.hzLowFreqLabel.setText(_translate("PAC", "Hz"))
-        self.trialModeLabel.setText(_translate("PAC", "Trial Mode"))
+        self.pacTypeLabel.setText(_translate("PAC", "PAC Type"))
+        self.AmplitudeBandLabel.setText(_translate("PAC", "Amplitude Band"))
+        self.ampFrequencyLabel.setText(_translate("PAC", "Frequency (Hz)"))
+        self.ampLowLabel.setText(_translate("PAC", "A1"))
+        self.hzAmpLowFreqLabel.setText(_translate("PAC", "Hz"))
+        self.ampHighLabel.setText(_translate("PAC", "A2"))
+        self.hzAmpHighFreqLabel.setText(_translate("PAC", "Hz"))
+        self.trialLabel.setText(_translate("PAC", "Trial"))
+        self.prevTrialButton.setText(_translate("PAC", "◄"))
+        self.nextTrialButton.setText(_translate("PAC", "►"))
+        self.trialTotalLabel.setText(_translate("PAC", "de 0"))
         self.createPacButton.setText(_translate("PAC", "Generate"))

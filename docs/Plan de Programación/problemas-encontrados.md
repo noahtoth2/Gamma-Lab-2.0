@@ -638,6 +638,71 @@ La Fase 1.3 solo tocó los dos plugins de wavelet porque eran los que se habían
 
 ---
 
+## 24. GammaLab se cierra al dibujar el comodulograma de MI ⬜ ABIERTO — intermitente
+
+**Gravedad: alta.** La aplicación muere sin aviso y el usuario pierde el trabajo de la sesión.
+
+**Cómo apareció.** Probando el plugin de MI recién terminado, el 7 de octubre de 2026.
+
+**Qué se sabe con certeza.** El registro de eventos de Windows lo clasifica así:
+
+```
+Faulting application name: python.exe
+Exception code: 0xc0000005        <- violacion de acceso
+Faulting module name: unknown
+Fault offset: 0x0000000000000000  <- salto a direccion nula
+Event Name: BEX64
+```
+
+El código de salida `5` que reporta el intérprete es la cola de `0xC0000005`. **No es una excepción de Python**: es una caída nativa, y `main.py:80` solo devuelve lo que entrega `app.exec_()`.
+
+**El cálculo no tiene nada que ver.** El log llega entero hasta `Amplitud 171/178` → `Cruzando fase y amplitud` → `Listo (100%)`. Lo que falla es el dibujo.
+
+**Dónde, acotado.** En `_on_mi_done`, dentro de `render_resultado` (la línea justo anterior al aviso). Se puede afirmar porque `PluginAlerts.__show_message` **registra siempre** antes de abrir el diálogo (`core/utils/plugin_alerts.py:16`) y en toda la sesión que cayó no hay ni una línea de `[PluginAlerts]`.
+
+**Qué se descartó**, con pruebas y no con suposiciones:
+
+| Hipótesis | Resultado |
+|---|---|
+| `NaN` llegando a los escalares de VTK | No llegaba ninguno: se rellenaban con `vmin` |
+| El comodulograma en sí (981 × 17, 803 filas vacías) | Dibuja bien en aislamiento |
+| Dos contextos OpenGL conviviendo (`Trials` + MI) | No cae |
+| El plugin real completo, con su UI y su VTK | Termina bien y hasta muestra el aviso |
+| Rectángulo de gráfico con Y negativa (`alto − 14 − 420`) | Sobrevive incluso con la ventana en 0 × 0 |
+
+**Por qué cuesta.** Es intermitente. En la sesión siguiente se repitió el mismo recorrido —con los mismos parámetros que lo tumbaron— y se completaron **tres cálculos seguidos sin caer**. Eso descarta que dependa solo de los datos o de los parámetros.
+
+**Qué hacer.** Dejar la aplicación corriendo con `PYTHONFAULTHANDLER=1` y `PYTHONUNBUFFERED=1` hasta que vuelva a pasar. Lo primero da la traza de Python con la línea exacta; lo segundo evita que las últimas líneas del log se queden en el búfer y se pierdan justo al morir. Sin esa traza, cualquier arreglo sería a ciegas.
+
+La pista que queda por explorar: `ensure_vtk()` crea el `QVTKRenderWindowInteractor` **dentro del slot de finalización** (`modulation_index_plugin.py:217`), no al construir el widget, y llama a `Initialize()`, `Start()` y `Render()` seguidos sobre un widget recién creado que aún no ha pasado por el ciclo de eventos de Qt. Un salto a dirección nula encaja con llamar a un puntero de función de OpenGL sin inicializar.
+
+---
+
+## 25. El dibujo de VTK de PAC y MI no se ejecuta en ninguna prueba ⬜ ABIERTO
+
+**Gravedad: media.** No es un fallo en sí, es el hueco que dejó pasar el nº 24 y la guarda de Nyquist de MI.
+
+**Dónde.** `test/ui_test/escenarios_pac.py` y `escenarios_modulation_index.py`:
+
+```python
+plug.render_resultado = lambda r, indice=0: DIBUJOS.append((indice, r))
+```
+
+**Por qué está así.** Los escenarios corren con `QT_QPA_PLATFORM=offscreen`, y sin pantalla no hay contexto OpenGL. La sustitución era la única forma de probar el orquestador sin pantalla.
+
+**La consecuencia.** De los 31 escenarios de MI y los 28 de PAC, **ninguno ejecutaba una sola línea del dibujo**. El nº 24 vive exactamente ahí.
+
+**Qué se hizo de momento.** Las secciones J y K de los escenarios de MI prueban la parte del dibujo que **no necesita OpenGL**: capturan los objetos de VTK que el plugin construye —la tabla de color y el `vtkImageData`— y comprueban su configuración sin llegar a renderizar. Cubre la transparencia de los `NaN`, pero no el `Render()`.
+
+**Qué falta.** Una prueba que renderice de verdad. Las opciones:
+
+- Un escenario aparte que corra **con ventana real**, fuera de la suite normal, para la máquina de desarrollo
+- `vtkOffscreenRenderWindow` con software de respaldo (Mesa), si se puede instalar sin complicar el entorno
+
+Lo mismo aplica a PAC, que tiene seis gráficos apilados y la brújula dibujada a mano.
+
+---
+
 ## Cómo agrupar esto en trabajo real
 
 **Frente de correctitud científica** *(el más urgente, y no es del orquestador)*
@@ -666,6 +731,10 @@ Son cuestiones de si los números que entrega la herramienta son correctos. Mere
 **Huecos de instrumentación** *(sin esto no se puede demostrar el trabajo)*
 - nº 11 — medir memoria en los benchmarks
 - nº 12 — probar con un archivo grande de verdad
+
+**La aplicación se cierra sola** *(lo más urgente)*
+- nº 24 — caída nativa al dibujar el comodulograma de MI, intermitente; hace falta capturar la traza con `PYTHONFAULTHANDLER=1`
+- nº 25 — el hueco de pruebas que la dejó pasar: el dibujo de VTK de PAC y MI nunca se ejecuta
 
 **Sin clasificar**
 - nº 13 — el error del menú contextual

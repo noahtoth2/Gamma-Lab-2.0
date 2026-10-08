@@ -1,4 +1,5 @@
 from collections import defaultdict
+import html
 import os
 import shutil
 from pathlib import Path
@@ -198,7 +199,10 @@ class MainWindow(QMainWindow):
             subcategories[plugin.subcategory()].append(name)
 
         # Fixed display order for specific subcategories (registration order isn't reliable)
-        explicit_order = {"Measurements": ["Slope Results", "Amplitude Results"]}
+        explicit_order = {
+            "Measurements": ["Slope Results", "Amplitude Results"],
+            "Time-Frequency": ["PAC", "Modulation Index", "Wavelet", "Wavelet Average"],
+        }
         for subcat, order in explicit_order.items():
             if subcat in subcategories:
                 subcategories[subcat].sort(
@@ -226,6 +230,9 @@ class MainWindow(QMainWindow):
                 btn = self.add_plugin_button(name)
                 if section == "Preprocessing":
                     btn.setText(name.lower())
+                if section == "Analysis":
+                    btn.setIconSize(QSize(36, 36))
+                    btn.setFixedHeight(70)
                 row.addWidget(btn, 0, Qt.AlignBottom)
 
             contenedor.addWidget(group_box, 0, Qt.AlignVCenter)
@@ -276,10 +283,21 @@ class MainWindow(QMainWindow):
             print("Icon not available for plugin", name, "->", e)
 
         btn.setText(plugin.name())
-        btn.setToolTip(plugin.description() or plugin.name())
+        btn.setToolTip(self._plugin_tooltip(plugin))
 
         btn.clicked.connect(lambda _, n=name: self.on_button_click(n))
         return btn
+
+    @staticmethod
+    def _plugin_tooltip(plugin) -> str:
+        """Rich-text tooltip: bold plugin name, description wrapped into a narrow column."""
+        title = html.escape(plugin.name())
+        desc = html.escape(plugin.description() or "")
+        body = f"<b>{title}</b>"
+        if desc:
+            body += f"<br>{desc}"
+        # Fixed-width table forces Qt to wrap the text into lines instead of one wide row
+        return f"<table width='260'><tr><td>{body}</td></tr></table>"
 
     def _update_plugin_button_selection(self):
         """Check only the ribbon button of the active plugin (outlined via QSS)."""
@@ -356,7 +374,7 @@ class MainWindow(QMainWindow):
                 icon_btn.setFixedSize(icon_size, icon_size)
         except Exception as e:
             print("Icon not available for plugin", name, "->", e)
-        icon_btn.setToolTip(plugin.description() or plugin.name())
+        icon_btn.setToolTip(self._plugin_tooltip(plugin))
         icon_btn.clicked.connect(lambda _, mt=measure_type: self._start_measurement(mt))
 
         if menu_items:
