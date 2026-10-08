@@ -177,11 +177,65 @@ Este SAD se alinea con:
 Las referencias t\'ecnicas externas (PyQt, VTK, NumPy, EDF/ABF, YAML).
 
 % ======================================================================
-\section{Contexto del sistema}
+\subsection{Visión General}
 
-\subsection{Visi\'on general}
-GammaLab v2.0 está estructurado como una aplicación de escritorio tipo standalone diseñada para ser ejecutada de forma local, sin requerir conectividad de red. Su arquitectura se basa en un patrón modular de microkernel, donde un núcleo central asíncrono (desarrollado en Python con el framework gráfico PySide6 y la librería de visualización científica VTK) orquesta la ejecución y comunicación de plugins independientes a través de un almacén de datos en memoria (DataStore). 
-La evolución fundamental de esta segunda iteración se muestra una evolución de los hilos únicos de Python, mediante la incorporación de estrategias de paralelización basadas en multiprocesamiento y multithreading en el kernel. Esto permite que el sistema distribuya las tareas pesadas (como la transformada Wavelet y el acoplamiento cruzado de frecuencias) sin congelar la interfaz de usuario.
+Gamma Lab está construido sobre una arquitectura de microkernel, en la que un núcleo mínimo (Kernel) coordina la aplicación y la funcionalidad de dominio se delega en plugins independientes. El núcleo actúa como registro de servicios y de extensiones, y ofrece además un canal de eventos para comunicar los componentes. Los 16 plugins actuales se descubren automáticamente durante el arranque a partir de un descriptor declarativo (\texttt{properties.yml}). Cada uno implementa el contrato común \texttt{IPlugin}, y todos acceden al estado de la aplicación a través de un servicio compartido, el \texttt{DataStore}.
+
+Teniendo en cuenta que Gamma Lab 2.0 parte de una base funcional y arquitectónica ya construida, se llevó a cabo un diagnóstico de la arquitectura inicial con el propósito de evaluar su estado actual, identificar las limitaciones de la implementación existente y reconocer oportunidades de mejora. Los resultados de este análisis se presentan en las siguientes secciones.
+
+\subsection{Núcleo con pocas responsabilidades y contratos débiles}
+
+En Gamma Lab 1.0 el núcleo se limita a ser un registro pasivo: mantiene dos diccionarios, uno de plugins y otro de servicios, y un canal de eventos genérico. No asume responsabilidades propias del estilo microkernel, como gestionar el ciclo de vida de las extensiones, mediar su comunicación o verificar sus dependencias. El resultado es un \textit{anemic kernel}: el núcleo existe estructuralmente, pero no gobierna el comportamiento del sistema en tiempo de ejecución.
+
+La carencia más visible es la ausencia de gestión del ciclo de vida. Aunque \texttt{Kernel} dispone de \texttt{stop\_plugins()}, ningún componente lo invoca y no existen estados ni transiciones que permitan controlar las extensiones. En consecuencia, el cierre de la aplicación no garantiza la liberación ordenada de recursos como contextos gráficos e hilos en ejecución, ni es posible descargar o recargar una extensión sin reiniciar el sistema.
+
+La comunicación presenta una limitación similar. El núcleo ofrece un canal de eventos basado en señales de Qt, pero su firma genérica (\texttt{str, object}) permite tópicos arbitrarios y cargas útiles sin tipo definido. Además, solo transporta dos eventos, por lo que la coordinación restante se resuelve mediante referencias directas entre componentes. El mecanismo de eventos, que debería contribuir al desacoplamiento, termina teniendo un papel marginal.
+
+En cuanto a los contratos, \texttt{IPlugin} concentra la lógica de procesamiento, la construcción de la interfaz gráfica y el acceso a los datos, violando el principio de responsabilidad única. Al quedar el cálculo ligado a objetos de presentación, no puede probarse ni ejecutarse de forma aislada, por ejemplo en un hilo de trabajo o proceso independiente.
+
+Finalmente, los servicios se obtienen mediante un \textit{service locator} basado en cadenas literales (\texttt{get\_service("DataStore")}), por lo que las dependencias quedan ocultas en la implementación y no se verifican durante la carga. Un error tipográfico o un servicio ausente se manifiesta únicamente en tiempo de ejecución. De forma similar, registrar un plugin con un nombre existente sobrescribe silenciosamente al anterior, permitiendo que errores de configuración permanezcan ocultos hasta que se utiliza la funcionalidad afectada.
+
+\subsection{Estado y memoria}
+
+El estado de la aplicación reside en el \texttt{DataStore}, un diccionario global y mutable al que cualquier plugin puede acceder y modificar. Como ningún componente es responsable del ciclo de vida, cada archivo abierto permanece en memoria hasta el cierre de la aplicación, junto con sus datos derivados. En consecuencia, el consumo de memoria crece de forma monótona durante la sesión, y el usuario, tras abrir varios archivos o repetir segmentaciones, percibe un deterioro progresivo del rendimiento que solo se resuelve reiniciando el programa.
+
+A esta retención se suma la replicación de los datos. Las señales se cargan completas en memoria, sin acceso parcial ni bajo demanda, y buena parte del flujo opera en doble precisión (\texttt{float64}). Sobre esa base se generan copias adicionales:
+
+\begin{itemize}
+    \item La conversión a una tabla de VTK para la visualización realiza una copia profunda de la señal y la conserva asociada al conjunto de datos.
+    
+    \item La caché de ensayos filtrados crea una nueva matriz cada vez que se descartan ensayos, aunque el código asume lo contrario.
+    
+    \item La lectura de archivos EDF con frecuencias de muestreo heterogéneas remuestrea cada canal sobre un nuevo arreglo.
+\end{itemize}
+
+Esta mutabilidad sin control compromete la consistencia del estado. El proceso de remoción de artefactos modifica la matriz de ensayos en el mismo lugar (\textit{in-place}), desde un hilo secundario y accediendo a un atributo privado de \texttt{SignalDataset}, lo que rompe su encapsulamiento. Como la caché de ensayos filtrados solo se invalida cuando cambia el conjunto de descartes, puede seguir entregando una copia anterior a la corrección. En ese caso, los análisis posteriores operarían sobre datos que ya no corresponden a los que el usuario corrigió, sin que nada lo advierta. Además, como la modificación es destructiva y no conserva versiones previas, el usuario no puede deshacerla.
+
+Por último, los recursos gráficos siguen la misma lógica de retención. Cada plugin crea su propia ventana de renderizado VTK sobre un contexto OpenGL compartido, y la ventana principal conserva todos los widgets instanciados hasta el cierre de la aplicación. Al desactivarse, un plugin solo deshabilita la interacción de su vista y no libera los buffers gráficos ni las tablas de datos asociadas, por lo que cada análisis que el usuario abre aumenta de forma permanente el consumo de memoria de video y de sistema.
+
+\subsection{Concurrencia y procesos pesados}
+
+GammaLab 1.0 no define un modelo de concurrencia a nivel arquitectónico. Por defecto, todo el procesamiento se ejecuta de forma síncrona en el hilo principal, el mismo que atiende el bucle de eventos de la interfaz gráfica. Por lo que, ante operaciones de varios segundos o minutos, el usuario no puede distinguir un procesamiento en curso de un fallo.
+
+La concurrencia aparece solo como una decisión local de cada plugin. De los 16 plugins, únicamente dos delegan su cálculo en un hilo secundario, y cada uno lo hace con un patrón distinto:
+
+\begin{itemize}
+    \item El promedio de \textit{wavelets} hereda de \texttt{QThread}.
+    
+    \item La remoción de artefactos traslada un objeto de trabajo con \texttt{moveToThread}.
+\end{itemize}
+
+No existe una abstracción común para ejecutar tareas, ni un orquestador que las encole o limite cuántas se ejecutan simultáneamente. El sistema no impide que el usuario lance en paralelo varios procesos costosos desde distintos plugins. Cuando eso ocurre, compiten por los mismos núcleos de CPU y sus picos de memoria se suman, lo que agrava las condiciones de agotamiento descritas en la sección anterior.
+
+La cancelación está igualmente limitada. Solo el promedio de \textit{wavelets} la contempla, de forma cooperativa y entre un ensayo y el siguiente. Su rutina de limpieza invoca \texttt{quit()}, que no tiene efecto sobre un hilo sin bucle de eventos propio, y luego \texttt{wait()} desde el hilo principal, lo que congela la interfaz hasta que termine el ensayo en curso. Además, esa rutina está deshabilitada en el método de detención del plugin. Si el usuario cierra el plugin o la aplicación durante el cálculo, el hilo sigue ejecutándose sobre objetos que pueden estar siendo destruidos, y el cierre puede terminar en un error en lugar de una finalización ordenada.
+
+Por último, el sistema carece de control de admisión. Antes de ejecutar un proceso no se estima su costo en tiempo ni en memoria, lo que puede generar que una configuración que excede los recursos del equipo no se rechace ni se advierta. Se ejecuta hasta congelar la aplicación o hasta fallar por falta de memoria, a veces tras varios minutos de cálculo cuyo resultado se pierde por completo.
+
+\subsection{Tolerancia a fallos y Observabilidad}
+
+Gamma Lab se ejecuta en un único proceso sin fronteras de aislamiento entre ellos. Un error nativo en VTK, un \texttt{MemoryError} o una excepción no capturada dentro de un \textit{slot} de Qt terminan con la aplicación completa, porque no existe un manejador global (\texttt{sys.excepthook}) que lo impida. El usuario pierde así todas las señales, segmentaciones y correcciones de la sesión. El cargador omite en silencio los plugins que fallan al importarse, y el núcleo mantiene registrados aquellos cuya inicialización falló. Los errores no se corrigen, solo se ocultan: el sistema continúa en un estado inconsistente y el usuario se encuentra con funcionalidades ausentes o con comportamientos erráticos, sin una explicación.
+
+Estas fallas son difíciles de diagnosticar por la ausencia de observabilidad. El sistema no utiliza un mecanismo de registro estructurado. La información se emite con llamadas a \texttt{print}, sin niveles de severidad, marcas de tiempo ni identificación del componente de origen. Además, como la aplicación se ejecuta desde una consola, esa salida no se persiste y se pierde justamente cuando ocurre un cierre inesperado. Ante un fallo reportado no existe un registro que permita reconstruir qué operación se ejecutaba ni en qué estado estaba el sistema, por lo que el diagnóstico depende de reproducir manualmente el error.
 
 \subsection{L\'imites del sistema}
 
