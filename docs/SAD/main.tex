@@ -184,6 +184,7 @@ Gamma Lab está construido sobre una arquitectura de microkernel, en la que un n
 Teniendo en cuenta que Gamma Lab 2.0 parte de una base funcional y arquitectónica ya construida, se llevó a cabo un diagnóstico de la arquitectura inicial con el propósito de evaluar su estado actual, identificar las limitaciones de la implementación existente y reconocer oportunidades de mejora. Los resultados de este análisis se presentan en las siguientes secciones.
 
 \subsection{Núcleo con pocas responsabilidades y contratos débiles}
+\label{sec:diag_nucleo}
 
 En Gamma Lab 1.0 el núcleo se limita a ser un registro pasivo: mantiene dos diccionarios, uno de plugins y otro de servicios, y un canal de eventos genérico. No asume responsabilidades propias del estilo microkernel, como gestionar el ciclo de vida de las extensiones, mediar su comunicación o verificar sus dependencias. El resultado es un \textit{anemic kernel}: el núcleo existe estructuralmente, pero no gobierna el comportamiento del sistema en tiempo de ejecución.
 
@@ -196,6 +197,7 @@ En cuanto a los contratos, \texttt{IPlugin} concentra la lógica de procesamient
 Finalmente, los servicios se obtienen mediante un \textit{service locator} basado en cadenas literales (\texttt{get\_service("DataStore")}), por lo que las dependencias quedan ocultas en la implementación y no se verifican durante la carga. Un error tipográfico o un servicio ausente se manifiesta únicamente en tiempo de ejecución. De forma similar, registrar un plugin con un nombre existente sobrescribe silenciosamente al anterior, permitiendo que errores de configuración permanezcan ocultos hasta que se utiliza la funcionalidad afectada.
 
 \subsection{Estado y memoria}
+\label{sec:diag_estado}
 
 El estado de la aplicación reside en el \texttt{DataStore}, un diccionario global y mutable al que cualquier plugin puede acceder y modificar. Como ningún componente es responsable del ciclo de vida, cada archivo abierto permanece en memoria hasta el cierre de la aplicación, junto con sus datos derivados. En consecuencia, el consumo de memoria crece de forma monótona durante la sesión, y el usuario, tras abrir varios archivos o repetir segmentaciones, percibe un deterioro progresivo del rendimiento que solo se resuelve reiniciando el programa.
 
@@ -214,6 +216,7 @@ Esta mutabilidad sin control compromete la consistencia del estado. El proceso d
 Por último, los recursos gráficos siguen la misma lógica de retención. Cada plugin crea su propia ventana de renderizado VTK sobre un contexto OpenGL compartido, y la ventana principal conserva todos los widgets instanciados hasta el cierre de la aplicación. Al desactivarse, un plugin solo deshabilita la interacción de su vista y no libera los buffers gráficos ni las tablas de datos asociadas, por lo que cada análisis que el usuario abre aumenta de forma permanente el consumo de memoria de video y de sistema.
 
 \subsection{Concurrencia y procesos pesados}
+\label{sec:diag_concurrencia}
 
 GammaLab 1.0 no define un modelo de concurrencia a nivel arquitectónico. Por defecto, todo el procesamiento se ejecuta de forma síncrona en el hilo principal, el mismo que atiende el bucle de eventos de la interfaz gráfica. Por lo que, ante operaciones de varios segundos o minutos, el usuario no puede distinguir un procesamiento en curso de un fallo.
 
@@ -232,6 +235,7 @@ La cancelación está igualmente limitada. Solo el promedio de \textit{wavelets}
 Por último, el sistema carece de control de admisión. Antes de ejecutar un proceso no se estima su costo en tiempo ni en memoria, lo que puede generar que una configuración que excede los recursos del equipo no se rechace ni se advierta. Se ejecuta hasta congelar la aplicación o hasta fallar por falta de memoria, a veces tras varios minutos de cálculo cuyo resultado se pierde por completo.
 
 \subsection{Tolerancia a fallos y Observabilidad}
+\label{sec:diag_fallos}
 
 Gamma Lab se ejecuta en un único proceso sin fronteras de aislamiento entre ellos. Un error nativo en VTK, un \texttt{MemoryError} o una excepción no capturada dentro de un \textit{slot} de Qt terminan con la aplicación completa, porque no existe un manejador global (\texttt{sys.excepthook}) que lo impida. El usuario pierde así todas las señales, segmentaciones y correcciones de la sesión. El cargador omite en silencio los plugins que fallan al importarse, y el núcleo mantiene registrados aquellos cuya inicialización falló. Los errores no se corrigen, solo se ocultan: el sistema continúa en un estado inconsistente y el usuario se encuentra con funcionalidades ausentes o con comportamientos erráticos, sin una explicación.
 
@@ -396,198 +400,281 @@ A continuaci\'on se presentan los supuestos y limitaciones considerados durante 
 
 % ======================================================================
 \section{Principios y decisiones arquitect\'onicas}
+\label{sec:principios}
 
-\subsection{Estilo base}
+La arquitectura de Gamma Lab 2.0 no parte de cero. Conserva el estilo microkernel de la versión 1.0, pero corrige las limitaciones identificadas en el diagnóstico de las secciones anteriores. Por esta razón, los principios y las decisiones de esta sección se formulan como respuesta a problemas concretos y no como aspiraciones generales. La siguente tabla sintetiza esos problemas y les asigna un identificador, de D1 a D15, que se utiliza en el resto de la sección para trazar cada principio y cada decisión hasta su origen.
 
-La arquitectura de GammaLab 2.0 adopta un estilo microkernel, en el que el sistema central o \textit{core system} proporciona los servicios esenciales de comunicación, gestión de plugins, registro de eventos, coordinación de tareas y manejo de datos. Este núcleo actúa como mediador entre los distintos módulos funcionales del sistema, permitiendo que cada plugin se conecte e interactúe mediante una interfaz común, sin acoplarse directamente a la lógica interna del sistema.
+\begin{center}
+\small
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.06\textwidth}|>{\raggedright\arraybackslash}p{0.66\textwidth}|>{\raggedright\arraybackslash}p{0.16\textwidth}|}
+\hline
+\textbf{ID} & \textbf{Problema} \\
+\hline
+\endfirsthead
+\hline
+\textbf{ID} & \textbf{Problema} \\
+\hline
+\endhead
+D1 & El núcleo es un registro pasivo: no gestiona el ciclo de vida de las extensiones, \texttt{stop\_plugins()} nunca se invoca y no es posible descargar ni recargar una extensión. \\
+\hline
+D2 & El canal de eventos tiene una firma genérica (\texttt{str, object}), transporta solo dos eventos y la coordinación restante se resuelve con referencias directas entre componentes.  \\
+\hline
+D3 & \texttt{IPlugin} concentra procesamiento, interfaz gráfica y acceso a datos, por lo que el cálculo no puede probarse ni ejecutarse de forma aislada. \\
+\hline
+D4 & Los servicios se obtienen con un \textit{service locator} basado en cadenas literales: las dependencias quedan ocultas, no se verifican en la carga y un registro duplicado sobrescribe al anterior. \\
+\hline
+D5 & El \texttt{DataStore} es un diccionario global y mutable sin un responsable de su ciclo de vida, por lo que la memoria crece de forma monótona durante la sesión. \\
+\hline
+D6 & Los datos se replican: carga completa en \texttt{float64}, copia profunda hacia VTK, nuevas matrices en la caché de ensayos y remuestreo de canales EDF.  \\
+\hline
+D7 & La remoción de artefactos modifica los ensayos \textit{in-place} desde un hilo secundario, rompe el encapsulamiento de \texttt{SignalDataset}, deja cachés obsoletas y no permite deshacer.  \\
+\hline
+D8 & Cada plugin conserva su ventana de renderizado VTK y sus tablas; al desactivarse no libera los recursos gráficos.  \\
+\hline
+D9 & No existe un modelo de concurrencia: el procesamiento se ejecuta en el hilo de la interfaz y el usuario no distingue un cálculo en curso de un fallo.  \\
+\hline
+D10 & La concurrencia es una decisión local de cada plugin, con patrones distintos y sin un orquestador que limite las tareas simultáneas.  \\
+\hline
+D11 & La cancelación es parcial y defectuosa: bloquea la interfaz y el hilo puede seguir ejecutándose sobre objetos destruidos.\\
+\hline
+D12 & No hay control de admisión: no se estima el costo en tiempo ni en memoria antes de ejecutar un proceso.  \\
+\hline
+D13 & Todo se ejecuta en un único proceso sin manejador global de excepciones: un error no capturado termina la aplicación y se pierde la sesión.  \\
+\hline
+D14 & Los errores se ocultan: el cargador omite los plugins que fallan al importarse y el núcleo mantiene registrados los que fallaron al inicializarse.  \\
+\hline
+D15 & No hay registro estructurado: la información se emite con \texttt{print}, sin niveles, sin marcas de tiempo y sin persistencia.  \\
+\hline
+\caption{Síntesis del diagnóstico de Gamma Lab 1.0} \label{tab:sintesis_diagnostico} \\
+\end{longtable}
+\end{center}
 
-El \textit{Kernel} es el componente central de esta arquitectura y desempeña la función de orquestador principal. Su responsabilidad consiste en coordinar la ejecución de tareas, gestionar la cola de trabajos, supervisar el estado de cada operación, controlar la cancelación de procesos en ejecución y administrar la sincronización entre la interfaz gráfica y los módulos de análisis. De esta forma, la capa de presentación permanece responsiva mientras el procesamiento de señales y cálculos estadísticos se ejecutan en segundo plano.
 
-La separación entre la lógica estable del sistema y la funcionalidad específica de análisis es una de las decisiones más relevantes del diseño. El \textit{core} encapsula los servicios transversales de la aplicación, como el almacenamiento de datos, la gestión de eventos, la carga de archivos, la exportación de resultados y la configuración del entorno operativo. Por su parte, los plugins especializados implementan las distintas capacidades del sistema, como FFT, PSD, Wavelet, ERP, PAC y otras herramientas de análisis.
+% ----------------------------------------------------------------------
+\subsection{Estilo arquitectónico: microkernel con núcleo activo}
 
-Esta estructura favorece la extensibilidad del sistema, ya que permite incorporar nuevos módulos funcionales sin modificar la lógica del núcleo. Además, reduce el acoplamiento entre componentes y mejora la mantenibilidad del proyecto a lo largo de su evolución. La relación entre el \textit{core} y los plugins se establece a través de una API de integración basada en la interfaz \textit{IPlugin}, la cual define el contrato que cada módulo debe cumplir para incorporarse al ecosistema de GammaLab 2.0.
+Gamma Lab 2.0 mantiene el estilo microkernel: un núcleo estable ofrece los servicios transversales y un conjunto de extensiones independientes implementa la funcionalidad de dominio, como el filtrado, la segmentación en ensayos, la FFT, la PSD, la transformada wavelet, el ERP y el PAC. El diagnóstico muestra que las limitaciones de la versión 1.0 no provienen del estilo, sino de su implementación: el núcleo existe estructuralmente, pero no gobierna el comportamiento del sistema (D1). Por ello, la decisión central de esta versión no es cambiar de estilo, sino asignar al núcleo las responsabilidades que el estilo le atribuye:
 
-En este sentido, la arquitectura del sistema se organiza en tres capas principales: la capa de presentación, donde se encuentra la interfaz gráfica desarrollada con PySide6 y Qt; la capa de coordinación, representada por el Kernel y los servicios compartidos del core; y la capa funcional, conformada por los plugins que implementan los distintos análisis y visualizaciones.
-\begin{figure}
+\begin{itemize}
+    \item Gobernar el ciclo de vida de las extensiones, desde su descubrimiento hasta su detención.
+    \item Mediar la comunicación entre extensiones mediante eventos declarados.
+    \item Centralizar la ejecución de los cómputos pesados fuera del hilo de la interfaz.
+    \item Validar las extensiones y sus dependencias durante la carga.
+\end{itemize}
+
+Se consideraron dos alternativas. Reescribir el sistema como un monolito en capas habría simplificado el control del flujo, pero obligaba a reescribir las dieciséis extensiones existentes y sacrificaba la extensibilidad, que es una necesidad explícita del laboratorio. Un estilo de tuberías y filtros se ajusta bien al procesamiento de señales, pero no a una aplicación interactiva en la que el usuario navega entre módulos que comparten el mismo estado. El microkernel permite conservar las extensiones existentes y, al mismo tiempo, concentrar en el núcleo el control que hoy está disperso.
+
+El núcleo no asume todas estas responsabilidades por sí mismo, sino que las distribuye entre un conjunto de servicios que no son reemplazables por extensiones:
+
+\begin{itemize}
+    \item \textbf{Kernel}: mantiene el registro de extensiones y servicios, gobierna el ciclo de vida de las extensiones y ofrece el canal de eventos.
+    \item \textbf{PluginManager}: descubre las extensiones a partir de su descriptor \texttt{properties.yml} y valida sus metadatos, la versión del contrato y sus dependencias antes de registrarlas.
+    \item \textbf{TaskOrchestrator} (implementado como \texttt{TaskService}): encola y ejecuta los cómputos pesados fuera del hilo de la interfaz, informa el progreso, gestiona la cancelación y es el único componente que escribe en el estado compartido.
+    \item \textbf{DataStore}: mantiene el estado compartido de la sesión, es decir, las señales, la señal activa, sus derivados y los resultados.
+    \item \textbf{FileIOService}: adapta los formatos de archivo soportados al modelo de datos interno (\texttt{SignalDataset}).
+    \item \textbf{ExportService}: exporta visualizaciones y resultados tabulares a formatos externos.
+    \item \textbf{SettingsService}: gestiona la configuración persistente de la aplicación.
+    \item \textbf{ProjectService}: persiste el espacio de trabajo en archivos \texttt{.glab} y es responsable del ciclo de vida del proyecto activo.
+\end{itemize}
+
+Alrededor del núcleo se organizan otras tres agrupaciones, coherentes con la vista lógica (Sección~\ref{sec:vista_logica}): la capa de presentación, construida con PyQt5 y VTK, que contiene la ventana principal y los elementos de interacción con las visualizaciones, como el menú contextual y el servicio de mediciones asociado a cada vista; las extensiones, que realizan el contrato \texttt{IPlugin}; y el modelo de datos, formado por \texttt{SignalDataset}, \texttt{TrialDataset} y la estructura del proyecto. La Figura~\ref{fig:estilo_base_microkernel} presenta esta organización.
+
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.95\linewidth]{DiagramaEstiloBase.jpg}
-    \caption{Diagrama conceptual de la arquitectura microkernel de GammaLab 2.0, mostrando la relación entre el núcleo central, los servicios compartidos y los plugins especializados.}
+    \caption{Arquitectura microkernel de Gamma Lab 2.0: el núcleo y sus servicios, la capa de presentación y las extensiones conectadas mediante el contrato \texttt{IPlugin}.}
     \label{fig:estilo_base_microkernel}
 \end{figure}
 
-\subsubsection{Orquestador del sistema}
+% ----------------------------------------------------------------------
+\subsection{Principios arquitectónicos}
+\label{sec:principios_lista}
 
-El Kernel de GammaLab 2.0 se define como el orquestador central del sistema. Su principal función es coordinar la ejecución de tareas complejas y garantizar que las operaciones intensivas de cómputo no bloqueen la interfaz gráfica. Esta decisión es clave para el rendimiento del sistema, ya que el análisis de señales EEG implica el manejo de datos de alta resolución, filtros, transformadas, estimaciones de potencia y análisis de acoplamiento cruzado de frecuencias.
+Los principios se agrupan en las mismas cuatro áreas del diagnóstico. Cada uno se enuncia como una regla que el diseño debe cumplir e indica los problemas de la Tabla~\ref{tab:sintesis_diagnostico} a los que responde.
 
-Entre las funciones del orquestador se encuentran:
-
+\subsubsection{Núcleo y contratos}
 \begin{itemize}
-    \item Registro y descubrimiento de plugins.
-    \item Gestión de la cola de tareas y priorización de ejecución.
-    \item Distribución de tareas entre hilos o procesos según su complejidad.
-    \item Control del estado de cada operación: pendiente, ejecutándose, completada o cancelada.
-    \item Supervisión del progreso de los análisis.
-    \item Coordinación con los servicios del core.
-    \item Entrega de resultados hacia la capa visual.
-    \item Gestión de errores y alertas a la interfaz de usuario.
-\end{itemize}
-
-El orquestador actúa como el punto de integración entre la capa de presentación, los servicios del sistema y los módulos especializados. Cuando el usuario solicita ejecutar un análisis, la interfaz no invoca directamente la lógica del plugin; en cambio, la solicitud se envía al Kernel, quien valida el contexto, identifica el módulo apropiado, crea la tarea y la ejecuta de forma controlada. Esta estructura evita duplicación de lógica, reduce fallos de sincronización y mejora la trazabilidad de las operaciones.
-
-En términos arquitectónicos, el Kernel también centraliza la administración de recursos del sistema. Esto incluye la gestión de la memoria compartida, la preparación de datos para análisis y la actualización del estado global del entorno. En un sistema orientado a señales neurofisiológicas, donde los volúmenes de información pueden ser elevados, esta coordinación es crítica para asegurar estabilidad, eficiencia y capacidad de respuesta.
-
-\subsubsection{Componentes del núcleo}
-
-El núcleo de GammaLab 2.0 está conformado por una serie de componentes que permiten la operación global del sistema. Estos módulos no son reemplazables por plugins, sino que constituyen la base funcional sobre la cual todo el entorno opera.
-
-Los principales componentes del core son:
-
-\begin{itemize}
-    \item \textbf{Kernel}: responsable de la orquestación y coordinación de tareas.
-    \item \textbf{PluginManager}: encargado de registrar, validar y cargar los plugins disponibles.
-    \item \textbf{DataStore}: almacena señales, resultados intermedios, metadatos, configuraciones y sesión activa.
-    \item \textbf{FileIOService}: gestiona la lectura y validación de archivos EEG en formatos como ABF, EDF, BDF y MAT.
-    \item \textbf{MeasurementService}: administra métricas, cálculos y resultados derivados del análisis.
-    \item \textbf{SettingsService}: maneja la configuración general del sistema y preferencias del usuario.
-    \item \textbf{ExportService}: se encarga de la exportación de resultados en formatos compatibles con análisis e informes.
-    \item \textbf{ProjectSession}: gestiona la persistencia del espacio de trabajo mediante archivos de proyecto \texttt{.glab}, guardando y restaurando la señal activa, los trials, los análisis y los parámetros de la sesión.
-\end{itemize}
-
-El diseño del núcleo sigue un principio de servicio compartido, donde los plugins no crean instancias aisladas de cada funcionalidad, sino que acceden a los servicios del sistema mediante interfaces controladas por el Kernel. Este enfoque reduce el acoplamiento entre módulos y facilita la evolución del sistema sin afectar la lógica base.
-
-\subsubsection{Arquitectura basada en plugins}
-
-GammaLab 2.0 implementa una arquitectura modular basada en plugins, con el objetivo de ampliar la funcionalidad del sistema sin modificar el núcleo central. Cada plugin encapsula una capacidad específica de análisis o visualización, y se integra con la aplicación mediante un contrato común definido por la interfaz \textit{IPlugin}.
-
-Un plugin de GammaLab 2.0 puede contener:
-
-\begin{itemize}
-    \item lógica de procesamiento,
-    \item componentes de interfaz gráfica,
-    \item configuraciones específicas del análisis,
-    \item metadatos de identificación,
-    \item conexión con el DataStore y el Kernel.
-\end{itemize}
-
-El \textit{PluginManager} realiza el descubrimiento dinámico de nuevos módulos, validando la presencia de metadatos y registrando cada extensión dentro del ecosistema del sistema. Esta estructura permite que el sistema evolucione de forma incremental: cada nuevo módulo puede añadirse a la aplicación sin recompilar el núcleo ni modificar la lógica general del software.
-
-
-
-\subsubsection{Principio de desacoplamiento y extensibilidad}
-
-La arquitectura de GammaLab 2.0 se fundamenta en el principio de desacoplamiento funcional. La capa de presentación, el Kernel y los plugins mantienen una separación clara de responsabilidades. Esta decisión permite que cada módulo evolucione de forma independiente sin comprometer la estabilidad general del sistema. Por ejemplo, una modificación en la interfaz de usuario no exige cambiar la lógica del análisis; un nuevo módulo de procesamiento puede agregarse sin alterar la estructura del núcleo; y una actualización en la gestión de archivos no afecta directamente a la visualización de resultados.
-
-La extensibilidad también se ve reforzada por un conjunto de mecanismos bien definidos:
-
-\begin{itemize}
-    \item Registro dinámico de plugins.
-    \item Contrato de integración mediante IPlugin.
-    \item Gestión centralizada de datos mediante DataStore.
-    \item Coordinación de tareas mediante el Kernel.
-    \item Desacoplamiento entre lógica funcional y visualización.
+    \item \textbf{El núcleo gobierna el ciclo de vida de las extensiones:} Cada extensión pasa por estados explícitos: descubierta, inicializada, activa, inactiva, detenida o fallida. Solo el núcleo ejecuta las transiciones entre ellos. El cierre de la aplicación (CU-022) recorre las extensiones e invoca su detención, y una extensión cuya inicialización falla queda en estado fallida y visible para el usuario, en lugar de permanecer registrada como si funcionara. \textit{Responde a: D1, D14.}
+    \item \textbf{Las extensiones se comunican mediante eventos declarados:} Las extensiones no se referencian entre sí. Se coordinan a través de un catálogo cerrado de eventos del núcleo, por ejemplo, señal cargada, ensayos generados, conjunto derivado creado o tarea finalizada, y cada evento tiene una carga útil de estructura definida. Un evento que no pertenece al catálogo se rechaza al emitirse. Así, el canal de eventos deja de tener un papel marginal y se convierte en el mecanismo de desacoplamiento que el estilo prevé. \textit{Responde a: D2.}
+    \item \textbf{El cómputo se separa de la presentación:} El cálculo de cada extensión se implementa como una función sin dependencias de Qt ni de VTK, que recibe arreglos y parámetros y retorna un resultado. La extensión conserva la construcción de su vista y la solicitud de ejecución al orquestador. Esta separación permite probar el cálculo de forma aislada contra las referencias de MATLAB y ejecutarlo en un hilo o en un proceso trabajador sin arrastrar objetos de presentación. \textit{Responde a: D3.}
+    \item \textbf{Las dependencias se declaran y se verifican durante la carga:} Cada extensión declara en su \texttt{properties.yml} la versión del contrato \texttt{IPlugin} con la que fue escrita y los servicios que requiere. Durante el arranque, el PluginManager verifica que la versión sea compatible, que los servicios existan y que el identificador no esté repetido. Si alguna condición no se cumple, la extensión no se carga y el usuario recibe la causa. Las claves de los servicios se definen en un único lugar, en vez de repetirse como cadenas literales. El \textit{service locator} se conserva, pero sus errores pasan del tiempo de ejecución al arranque. \textit{Responde a: D4, D14.}
 \end{itemize}
 
 
-\subsubsection{Justificación}
+\subsubsection{Estado y memoria}
 
-La arquitectura adoptada para GammaLab 2.0 corresponde a un estilo microkernel, en el que el núcleo central del sistema es el core y, dentro de este, el Kernel cumple la función de orquestador principal. Esta decisión permite separar la lógica estable del sistema de las funcionalidades específicas de análisis, manteniendo un diseño modular, extensible y de bajo acoplamiento.
+\begin{itemize}
+    \item \textbf{El estado tiene un dueño y los datos originales no se modifican:} El \texttt{DataStore} tiene un único escritor, el TaskOrchestrator (R54): las extensiones lo consultan, pero no lo modifican directamente. Las transformaciones de preprocesamiento no alteran la señal ni los ensayos de origen, sino que producen conjuntos derivados que referencian a su fuente. Para que esta regla no multiplique el consumo de memoria, un derivado materializa solo lo que cambia; por ejemplo, el descarte de ensayos se representa con una máscara de índices y no con una nueva matriz. Cada conjunto tiene una versión, y las cachés que dependen de él se invalidan cuando esta cambia. Por último, el ProjectService es el responsable del ciclo de vida del proyecto, de modo que al cerrarlo o reemplazarlo (CU-021, CU-003) se liberan la señal y todos sus derivados. \textit{Responde a: D5, D7.}
+    \item \textbf{Ningún componente copia la señal sin necesidad:} La visualización trabaja sobre una representación submuestreada de la señal (CU-019) y no sobre una copia profunda completa. La selección de ensayos se resuelve con índices o vistas de NumPy. El tipo numérico se elige por etapa: se usa precisión simple donde la diferencia frente a las referencias de MATLAB está dentro de la tolerancia aceptada y precisión doble donde no lo está. \textit{Responde a: D6.}
+    \item \textbf{Los recursos se liberan de forma determinista:} Al desactivarse una extensión, por ejemplo al cambiar de módulo (CU-008), esta libera su ventana de renderizado, sus observadores y sus tablas de VTK, y su vista se reconstruye bajo demanda cuando el usuario regresa. Al cerrar el proyecto o la aplicación (CU-021, CU-022) no quedan hilos, procesos ni contextos gráficos activos. \textit{Responde a: D5, D8.}
+\end{itemize}
 
-El Kernel centraliza la coordinación de tareas, la gestión de la cola de ejecución, la supervisión del estado de cada operación y la delegación de la lógica funcional a los plugins. Esta decisión es necesaria porque el procesamiento de señales EEG requiere operaciones computacionalmente intensivas, como PAC, FFT, PSD y Wavelet, que no deben ejecutarse directamente en la interfaz gráfica. Además, al separar la lógica de coordinación del procesamiento funcional, el sistema mantiene un mejor control del flujo de trabajo, facilita la gestión de errores y cancelaciones, y permite una ejecución más ordenada de tareas en segundo plano. Esto mejora la experiencia del usuario, reduce la carga operativa del sistema y favorece la extensibilidad del proyecto, ya que nuevos plugins pueden añadirse sin afectar el funcionamiento del núcleo ni la interfaz.
+\subsubsection{Concurrencia}
 
-Esta organización facilita la incorporación de nuevos módulos sin modificar el núcleo, reduce la dependencia entre componentes y permite un mejor control del flujo de datos y de los resultados. La integración con servicios compartidos como DataStore, FileIOService, MeasurementService y ExportService garantiza un manejo más ordenado de la información, la persistencia y la visualización de resultados.
+\begin{itemize}
+    \item \textbf{La ejecución de los cómputos pesados está centralizada y es cancelable:} Ninguna extensión crea hilos ni procesos. Toda operación de cómputo pesado se solicita al TaskOrchestrator, que la encola, la ejecuta fuera del hilo de la interfaz y de a una a la vez (R70), presenta un indicador de progreso cuando supera un segundo y permite cancelarla (CU-014). La cancelación es cooperativa: el cómputo consulta periódicamente una señal de cancelación. Si no responde dentro de un tiempo acotado, el orquestador fuerza su terminación. \textit{Responde a: D9, D10, D11.}
+    \item \textbf{Antes de ejecutar se estima el costo:} El orquestador estima la memoria que requiere un cómputo a partir de las dimensiones de la entrada y de sus parámetros, por ejemplo, el número de canales, muestras y frecuencias de una transformada wavelet o de un análisis PAC, y la compara con la memoria disponible. Si la estimación supera lo disponible, el sistema advierte al usuario y le propone reducir los parámetros; si la ejecución es claramente inviable, la rechaza antes de iniciarla. \textit{Responde a: D12.}
+\end{itemize}
 
-
-
-\subsubsection{Decisiones arquitectónicas}
-
-Conforme evolucionaba el proyecto, también lo hacían las decisiones arquitectónicas necesarias para alcanzar el estado final de la implementación. Los problemas, restricciones y hallazgos identificados durante el proceso guiaron la selección y el ajuste de cada componente del diseño. A continuación se listan las decisiones arquitectónicas con mayor impacto dentro del proyecto:
-
-\begin{table}[H]
-    \centering
-    \caption{ADRs resumidas: decisión, motivación y consecuencias.}
-    \begin{tabular}{|p{0.14\textwidth}|p{0.26\textwidth}|p{0.24\textwidth}|p{0.28\textwidth}|}
-        \hline
-        \textbf{ID} & \textbf{Decisión} & \textbf{Motivación} & \textbf{Consecuencias} \\
-        \hline
-        ADR-01 & Estilo arquitectónico de microkernel. & Permitir la incorporación de nuevas funcionalidades al sistema, incluso en tiempo de ejecución. & Sistema modular, ampliable y con bajo acoplamiento; mayor complejidad inicial. \\
-        \hline
-        ADR-02 & Separación entre core, plugins y app. & Organizar responsabilidades y mantener claridad modular. & Facilita la comprensión, el mantenimiento y el desarrollo incremental. \\
-        \hline
-        ADR-03 & Interfaz IPlugin. & Aplicar inversión de control para que los plugins definan únicamente su lógica. & Menor acoplamiento. \\
-        \hline
-        ADR-04 & Carga dinámica de plugins. & Permitir la incorporación de módulos sin recompilar. & Mejor extensibilidad y colaboración entre equipos. \\
-        \hline
-        ADR-05 & Uso de Python, PySide6 y VTK. & Utilizar librerías maduras para visualización científica y GUI. & Base sólida para análisis; requiere control cuidadoso de rendimiento y memoria. \\
-        \hline
-        ADR-06 & Uso de DataStore. & Evitar duplicaciones y permitir la propagación reactiva de cambios. & Coherencia global y ahorro de memoria; requiere un diseño cuidadoso. \\
-        \hline
-        ADR-07 & Kernel como orquestador central. & Ejecutar tareas pesadas sin bloquear la interfaz ni acoplar cada módulo al core. & Mayor control de concurrencia, cancelación, prioridad y trazabilidad. \\
-        \hline
-        ADR-08 & Estructura estándar del plugin. & Unificar lógica, interfaz gráfica, metadatos y configuración. & Mejor mantenibilidad y estandarización. \\
-        \hline
-        ADR-09 & Soporte explícito para PAC y análisis de acoplamiento. & Incorporar análisis avanzados de señales neurofisiológicas. & Mayor alcance funcional y nuevas dependencias especializadas. \\
-        \hline
-    \end{tabular}
-\end{table}
-
-\subsubsection{Patrones utilizados}
-
-A continuación se presenta un resumen de los patrones arquitectónicos aplicados en el diseño de GammaLab 2.0, alineados con el estilo microkernel, el mecanismo de plugins y los servicios internos del sistema:
+\subsubsection{Tolerancia a fallos y observabilidad}
+\begin{itemize}
+    \item \textbf{Los fallos se contienen y se hacen visibles:} Un fallo no debe terminar la aplicación ni pasar inadvertido. Un manejador global captura las excepciones no controladas del hilo principal y de los \textit{slots} de Qt. Las excepciones de un cómputo se capturan en el trabajador y llegan a la interfaz como un resultado fallido. Los cómputos con riesgo de agotar la memoria o de fallar en código nativo se ejecutan en un proceso aislado, de modo que su caída no arrastra a la aplicación. En todos los casos el usuario recibe un mensaje comprensible y la sesión se conserva. \textit{Responde a: D13, D14.}
+    \item \textbf{El sistema es observable:} Todos los componentes registran sus eventos con nivel de severidad, marca de tiempo, componente de origen e identificador de la tarea cuando aplica. El registro se persiste en un archivo rotativo en el directorio del usuario, por lo que sobrevive a un cierre inesperado y permite reconstruir qué operación se ejecutaba cuando ocurrió un fallo. \textit{Responde a: D15.}
+\end{itemize}
 
 
+% ----------------------------------------------------------------------
+\subsection{Decisiones arquitectónicas}
+\label{sec:adrs}
+
+La Tabla~\ref{tab:adrs} resume las decisiones arquitectónicas que materializan los principios anteriores. Para cada una se indica el problema del diagnóstico al que responde, la alternativa que se descartó, sus consecuencias y su estado: \textit{implementada}, si ya está presente en el código; \textit{parcial}, si existe una parte; o \textit{planificada}, si debe construirse en esta versión.
+
+\begin{center}
+\small
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.06\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.06\textwidth}|>{\raggedright\arraybackslash}p{0.17\textwidth}|>{\raggedright\arraybackslash}p{0.20\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|}
+\hline
+\textbf{ID} & \textbf{Decisión} & \textbf{D} & \textbf{Alternativa descartada} & \textbf{Consecuencias} \\
+\hline
+\endfirsthead
+\hline
+\textbf{ID} & \textbf{Decisión} & \textbf{D} & \textbf{Alternativa descartada} & \textbf{Consecuencias} \\
+\hline
+\endhead
+\hline
+\multicolumn{6}{r}{\textit{Continúa en la siguiente página}} \\
+\endfoot
+\hline
+\endlastfoot
+
+ADR-01 & Mantener el estilo microkernel y asignar al núcleo responsabilidades propias. & D1 & Monolito en capas; tuberías y filtros. & Se conservan las extensiones y el contrato existentes. El núcleo pasa a ser un componente crítico que requiere pruebas propias. \\
+\hline
+ADR-02 & Ciclo de vida de las extensiones como máquina de estados gobernada por el Kernel. & D1, D14 & Que cada extensión gestione su propia activación, como en 1.0. & Cierre ordenado y extensiones fallidas visibles. Exige que toda extensión implemente una detención completa.\\
+\hline
+ADR-03 & Catálogo de eventos con carga útil tipada. & D2 & Canal genérico (\texttt{str, object}) y referencias directas. & Los errores de tópico se detectan al emitir. El catálogo se convierte en un contrato que debe versionarse. \\
+\hline
+ADR-04 & Separar el cómputo de cada extensión en un módulo \texttt{compute} sin dependencias de Qt ni VTK. & D3 & \texttt{IPlugin} único con lógica, vista y datos. & El cálculo es comprobable y ejecutable en un trabajador. Cada extensión pasa a tener dos módulos. \\
+\hline
+ADR-05 & Descubrimiento declarativo validado: \texttt{properties.yml} con versión del contrato, dependencias y unicidad. & D4, D14 & Contenedor de inyección de dependencias, por el costo de migrar todas las extensiones. & Los errores de configuración se detectan en el arranque. Se amplía el esquema del descriptor. \\
+\hline
+ADR-06 & \texttt{DataStore} con escritor único y conjuntos derivados inmutables. & D5, D7 & Escritura libre protegida con exclusión mutua; modificación \textit{in-place}. & Estado consistente, trazable y con posibilidad de deshacer. Los derivados deben materializar solo lo que cambia. \\
+\hline
+ADR-07 & Estrategia de memoria: representación submuestreada, sin copia profunda hacia VTK y tipo numérico por etapa. & D6 & Carga perezosa o memoria mapeada, que depende del formato de cada archivo. & Menor consumo de memoria. La precisión debe validarse contra las referencias de MATLAB. \\
+\hline
+ADR-08 & Liberación determinista de recursos al desactivar una extensión, cambiar de módulo y cerrar. & D5, D8 & Conservar en caché todas las vistas instanciadas. & Consumo acotado de memoria de video y de sistema. Reconstruir una vista al regresar tiene un costo de tiempo. \\
+\hline
+ADR-09 & TaskOrchestrator híbrido: hilos por defecto y proceso trabajador para los cómputos aislables (Sección~\ref{sec:adr_concurrencia}). & D9--D11, D13 & Solo hilos; solo multiprocesamiento. & Interfaz responsiva, cancelación forzada real y aislamiento de fallos. Costo de serializar arreglos grandes. \\
+\hline
+ADR-10 & Control de admisión mediante la estimación del costo de cada cómputo. & D12 & Ejecutar sin estimar, como en 1.0. & Se evitan congelamientos y cálculos perdidos. Cada extensión debe proveer su estimación. \\
+\hline
+ADR-11 & Manejador global de excepciones y captura en los trabajadores con notificación a la interfaz. & D13, D14 & Manejo local en cada extensión. & La sesión se conserva ante fallos. Los mensajes deben ser comprensibles para el usuario. \\
+\hline
+ADR-12 & Registro estructurado con el módulo \texttt{logging} y archivo rotativo. & D15 & Mensajes con \texttt{print} en consola. & Diagnóstico posterior a un fallo sin reproducirlo. Deben reemplazarse las llamadas existentes a \texttt{print}. \\
+\hline
+ADR-13 & Python, PyQt5 y VTK como base tecnológica. & --- & Migrar a PySide6. & Base madura para cálculo y visualización científica. La licencia GPL de PyQt5 condiciona la distribución, y VTK solo puede renderizar en el hilo principal.\\
+\hline
+\caption{Decisiones arquitectónicas de Gamma Lab 2.0} \label{tab:sintesis_diagnostico} \\
+\end{longtable}
+\end{center}
+
+\subsubsection{Modelo de concurrencia del TaskOrchestrator}
+\label{sec:adr_concurrencia}
+
+La decisión ADR-09 merece una explicación adicional, porque es la que más condiciona la respuesta del sistema. El \texttt{TaskService} actual ya resuelve buena parte de D9 y D10: mantiene una cola de tareas, ejecuta una sola a la vez en un hilo trabajador, descarta las tareas pendientes de una extensión cuando esta solicita una nueva y ofrece a cada cómputo una señal de cancelación cooperativa. Cuando el usuario cancela una tarea que no responde en dos segundos, el servicio deja de esperarla y descarta su resultado, pero no puede detenerla. Esta limitación es propia de los hilos de Python, que no pueden terminarse de forma segura desde fuera: el hilo desacoplado sigue consumiendo CPU y memoria hasta terminar, y un \texttt{MemoryError} o un error nativo dentro de él sigue afectando a toda la aplicación.
+
+Por ello, la terminación forzada que exige CU-014 y el aislamiento de fallos de P10 solo pueden lograrse con un proceso trabajador, que sí puede terminarse sin comprometer el proceso principal. Se adopta un modelo híbrido:
+
+\begin{itemize}
+    \item \textbf{Hilo trabajador} para los cómputos breves o de bajo consumo de memoria, como el filtrado, la segmentación o el promedio de ensayos, donde el costo de crear un proceso y de transferir los datos superaría el beneficio.
+    \item \textbf{Proceso trabajador} para los cómputos intensivos y aislables, como el PAC, la transformada wavelet y el índice de modulación, cuya duración y consumo de memoria justifican poder terminarlos y aislar su posible falla.
+\end{itemize}
+
+El modelo tiene dos costos que el diseño debe atender. El primero es la transferencia de arreglos grandes entre procesos, que se mitiga con memoria compartida en lugar de serialización completa y con un proceso trabajador persistente que evita el costo de arranque en cada tarea. El segundo es que el resultado siempre debe volver al hilo principal, porque VTK solo puede renderizar en él. En ambos casos, la extensión no conoce el mecanismo utilizado: entrega una función de cómputo (P3) y el orquestador decide cómo ejecutarla.
+
+% ----------------------------------------------------------------------
+\subsection{Patrones aplicados}
+
+La Tabla anterior resume los patrones que materializan los principios y las decisiones anteriores.
 
 \begin{table}[H]
 \centering
-\caption{Patrones arquitectónicos aplicados en GammaLab 2.0.}
 \label{tab:patrones_arquitectonicos}
+\small
 \renewcommand{\arraystretch}{1.15}
-\begin{tabularx}{\columnwidth}{|p{0.20\columnwidth}|p{0.27\columnwidth}|X|}
+\begin{tabularx}{\linewidth}{|>{\raggedright\arraybackslash}p{0.19\linewidth}|>{\raggedright\arraybackslash}p{0.27\linewidth}|X|}
 \hline
-\textbf{Patrón} &
-\textbf{Problema que resuelve} &
-\textbf{Aplicación en GammaLab 2.0} \\
+\textbf{Patrón} & \textbf{Problema que resuelve} & \textbf{Aplicación en Gamma Lab 2.0} \\
 \hline
-
-Plugin &
-Agregar capacidades sin modificar el núcleo del sistema. &
-Cada plugin define un archivo \texttt{properties.yaml} y una clase que implementa \texttt{IPlugin}. El Kernel los descubre dinámicamente y los vincula en tiempo de ejecución. \\
+Microkernel / Plugin & Agregar capacidades sin modificar el núcleo. & Cada extensión declara un \texttt{properties.yml} y una clase que realiza \texttt{IPlugin}; el PluginManager la descubre y la registra en el Kernel. \\
 \hline
-
-IoC / Service Locator (Kernel) &
-Reducir el acoplamiento y centralizar los servicios compartidos. &
-El Kernel registra y expone servicios como \textit{DataStore}, \textit{FileIOService}, \textit{ExportService}, \textit{MeasurementService} y \textit{SettingsService}. Los plugins acceden a estos servicios sin crear instancias propias. \\
+State & Gobernar el ciclo de vida de las extensiones (D1). & El Kernel mantiene el estado de cada extensión y solo permite las transiciones definidas (P1, ADR-02). \\
 \hline
-
-Adapter (NumPy a VTK) &
-Integrar estructuras científicas con componentes de visualización. &
-El módulo \textit{vtk adapters} convierte arrays de NumPy en \textit{vtkTable} o estructuras compatibles para su uso en \textit{vtkChartXY} y otros componentes VTK. \\
+Service Locator & Ofrecer servicios compartidos sin que las extensiones los instancien (D4). & El Kernel expone los servicios por clave. Sus dependencias se declaran y se verifican en la carga para mitigar sus riesgos (P4, ADR-05). \\
 \hline
-
-MVP / MVC en interfaz &
-Separar la vista de la lógica de interacción. &
-\textit{MainWindow} gestiona la navegación y composición; cada plugin proporciona su interfaz mediante \texttt{get\_widget()}, mientras que la lógica reside en \texttt{process()}, \texttt{start()} y \texttt{stop()}. \\
+Observer & Comunicar cambios sin referencias directas (D2). & El canal de eventos del Kernel, basado en señales de Qt, notifica a los suscriptores los eventos del catálogo (P2, ADR-03). \\
 \hline
-
-Caching (datos y widgets) &
-Reducir la latencia y la recomputación innecesaria. &
-Se almacenan en caché datos, resultados intermedios y widgets de plugins previamente inicializados. \\
+Command con señal de cancelación & Ejecutar, seguir y cancelar cómputos de forma uniforme (D10, D11). & Cada cómputo se encapsula como una tarea con su \texttt{TaskHandle} (progreso, finalización, fallo, cancelación) y su \texttt{TaskContext} (señal de cancelación cooperativa). \\
 \hline
-
-Template Method (ciclo de vida) &
-Definir puntos de extensión uniformes. &
-\texttt{IPlugin} establece métodos clave (\texttt{initialize}, \texttt{start}, \texttt{process}, \texttt{stop} y \texttt{get\_widget}) que todo plugin debe implementar. \\
+Single Writer & Mantener la consistencia del estado compartido (D5, D7). & Solo el TaskOrchestrator escribe en el \texttt{DataStore} (P5, ADR-06). \\
 \hline
-
-Task orchestration / Executor pattern &
-Gestionar cálculos pesados sin bloquear la interfaz. &
-El Kernel centraliza la ejecución de tareas, su cola, cancelación, seguimiento del progreso y entrega de resultados. \\
+Adapter & Integrar representaciones incompatibles. & El \texttt{FileIOService} adapta los formatos ABF, EDF y MAT a \texttt{SignalDataset}; los adaptadores de VTK convierten arreglos de NumPy en estructuras de visualización. \\
 \hline
-
+Strategy & Intercambiar extensiones detrás de un mismo contrato. & El núcleo y la ventana principal operan sobre \texttt{IPlugin} sin conocer la extensión concreta. \\
+\hline
+Template Method & Reutilizar el procedimiento común de los análisis de acoplamiento. & \texttt{PACAnalysisPlugin} define el cálculo del mapa de fase y frecuencia, y sus especializaciones de uno y dos canales completan los pasos propios. \\
+\hline
 \end{tabularx}
+\caption{Patrones arquitectónicos aplicados en Gamma Lab 2.0.}
 \end{table}
 
+% ----------------------------------------------------------------------
+\subsection{Trazabilidad entre el diagnóstico y las decisiones}
 
+La Tabla~\ref{tab:traza_diagnostico} cierra la sección relacionando cada problema del diagnóstico con el principio y la decisión que lo atienden, y con los casos de uso de la vista de escenarios y los escenarios de calidad en los que se verifica su solución.
 
+\begin{center}
+\small
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.07\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|>{\raggedright\arraybackslash}p{0.2\textwidth}|>{\raggedright\arraybackslash}p{0.43\textwidth}|}
+\hline
+\textbf{D} & \textbf{Principio} & \textbf{Decisión} & \textbf{Verificación (caso de uso / escenario)} \\
+\hline
+\endfirsthead
+\hline
+\textbf{D} & \textbf{Principio} & \textbf{Decisión} & \textbf{Verificación (caso de uso / escenario)} \\
+\hline
+\endhead
+D1 & P1 & ADR-01, ADR-02 & CU-011, CU-022 \\
+\hline
+D2 & P2 & ADR-03 & CU-003, CU-004 \\
+\hline
+D3 & P3 & ADR-04 & Escenario 1; métrica de mantenibilidad (cobertura) \\
+\hline
+D4 & P4 & ADR-05 & CU-011; Escenario 1 \\
+\hline
+D5 & P5, P7 & ADR-06, ADR-08 & CU-003, CU-021; Escenario 6 \\
+\hline
+D6 & P6 & ADR-07 & CU-019; Escenarios 2 y 6 \\
+\hline
+D7 & P5 & ADR-06 & CU-007, CU-016; Escenario 8 \\
+\hline
+D8 & P7 & ADR-08 & CU-008, CU-022 \\
+\hline
+D9 & P8 & ADR-09 & CU-020; Escenario 2 \\
+\hline
+D10 & P8 & ADR-09 & CU-020 \\
+\hline
+D11 & P8 & ADR-09 & CU-014; métrica de robustez ante cancelación \\
+\hline
+D12 & P9 & ADR-10 & CU-020; Escenario 2 \\
+\hline
+D13 & P10 & ADR-09, ADR-11 & Escenarios 3 y 7 \\
+\hline
+D14 & P1, P4, P10 & ADR-02, ADR-05, ADR-11 & CU-011; Escenarios 1 y 3 \\
+\hline
+D15 & P11 & ADR-12 & Escenario 3 \\
+\hline
+\caption{Trazabilidad entre el diagnóstico, los principios y las decisiones} \label{tab:traza_diagnostico} \\
+\end{longtable}
+\end{center}
 
 % ======================================================================
 \section{Vistas Arquitect\'onicas (4+1)}
