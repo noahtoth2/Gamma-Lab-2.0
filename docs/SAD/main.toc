@@ -1,0 +1,94 @@
+\babel@toc {spanish}{}\relax 
+\contentsline {section}{\numberline {1}Introducci\'on}{6}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Prop\'osito}{6}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Alcance}{6}{subsection.1.2}%
+\contentsline {subsection}{\numberline {1.3}Definiciones y acr\'onimos}{6}{subsection.1.3}%
+\contentsline {subsection}{\numberline {1.4}Audiencia}{7}{subsection.1.4}%
+\contentsline {subsection}{\numberline {1.5}Referencias relacionadas}{7}{subsection.1.5}%
+\contentsline {subsection}{\numberline {1.6}Visión General}{7}{subsection.1.6}%
+\contentsline {subsection}{\numberline {1.7}Núcleo con pocas responsabilidades y contratos débiles}{7}{subsection.1.7}%
+\contentsline {subsection}{\numberline {1.8}Estado y memoria}{8}{subsection.1.8}%
+\contentsline {subsection}{\numberline {1.9}Concurrencia y procesos pesados}{9}{subsection.1.9}%
+\contentsline {subsection}{\numberline {1.10}Tolerancia a fallos y Observabilidad}{9}{subsection.1.10}%
+\contentsline {subsection}{\numberline {1.11}L\'imites del sistema}{10}{subsection.1.11}%
+\contentsline {subsubsection}{\numberline {1.11.1}Dentro del alcance}{10}{subsubsection.1.11.1}%
+\contentsline {subsubsection}{\numberline {1.11.2}Fuera del alcance}{10}{subsubsection.1.11.2}%
+\contentsline {subsubsection}{\numberline {1.11.3}Entradas externas}{10}{subsubsection.1.11.3}%
+\contentsline {subsubsection}{\numberline {1.11.4}Salidas externas}{11}{subsubsection.1.11.4}%
+\contentsline {section}{\numberline {2}Metas y Restricciones de la Arquitectura}{11}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Requisitos de los Stakeholders}{11}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Atributos de Calidad}{12}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Supuestos y limitaciones derivadas}{13}{subsection.2.3}%
+\contentsline {subsubsection}{\numberline {2.3.1}Restricciones de arquitectura}{13}{subsubsection.2.3.1}%
+\contentsline {subsubsection}{\numberline {2.3.2}Supuestos de operación (Evolución de v1.0)}{13}{subsubsection.2.3.2}%
+\contentsline {section}{\numberline {3}Principios y decisiones arquitect\'onicas}{14}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Estilo arquitectónico: microkernel con núcleo activo}{15}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Principios arquitectónicos}{16}{subsection.3.2}%
+\contentsline {subsubsection}{\numberline {3.2.1}Núcleo y contratos}{16}{subsubsection.3.2.1}%
+\contentsline {subsubsection}{\numberline {3.2.2}Estado y memoria}{17}{subsubsection.3.2.2}%
+\contentsline {subsubsection}{\numberline {3.2.3}Concurrencia}{17}{subsubsection.3.2.3}%
+\contentsline {subsubsection}{\numberline {3.2.4}Tolerancia a fallos y observabilidad}{18}{subsubsection.3.2.4}%
+\contentsline {subsection}{\numberline {3.3}Decisiones arquitectónicas}{18}{subsection.3.3}%
+\contentsline {subsubsection}{\numberline {3.3.1}Modelo de concurrencia del TaskOrchestrator}{20}{subsubsection.3.3.1}%
+\contentsline {subsection}{\numberline {3.4}Patrones aplicados}{21}{subsection.3.4}%
+\contentsline {subsection}{\numberline {3.5}Trazabilidad entre el diagnóstico y las decisiones}{21}{subsection.3.5}%
+\contentsline {section}{\numberline {4}Vistas Arquitect\'onicas (4+1)}{22}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Vista de Escenarios}{22}{subsection.4.1}%
+\contentsline {subsubsection}{\numberline {4.1.1}Prop\'osito}{22}{subsubsection.4.1.1}%
+\contentsline {subsubsection}{\numberline {4.1.2}Notaci\'on}{22}{subsubsection.4.1.2}%
+\contentsline {subsubsection}{\numberline {4.1.3}Visi\'on general del modelo}{23}{subsubsection.4.1.3}%
+\contentsline {subsubsection}{\numberline {4.1.4}Subsistema Interfaz y Usabilidad}{24}{subsubsection.4.1.4}%
+\contentsline {subsubsection}{\numberline {4.1.5}Subsistema N\'ucleo y Ciclo de Vida}{25}{subsubsection.4.1.5}%
+\contentsline {subsubsection}{\numberline {4.1.6}Subsistema Preprocesamiento}{26}{subsubsection.4.1.6}%
+\contentsline {subsubsection}{\numberline {4.1.7}Subsistema An\'alisis}{27}{subsubsection.4.1.7}%
+\contentsline {subsubsection}{\numberline {4.1.8}Subsistema Exportaci\'on}{28}{subsubsection.4.1.8}%
+\contentsline {subsection}{\numberline {4.2}Vista Lógica}{29}{subsection.4.2}%
+\contentsline {subsubsection}{\numberline {4.2.1}Propósito}{29}{subsubsection.4.2.1}%
+\contentsline {subsubsection}{\numberline {4.2.2}Notación}{29}{subsubsection.4.2.2}%
+\contentsline {subsubsection}{\numberline {4.2.3}Visión general del modelo}{29}{subsubsection.4.2.3}%
+\contentsline {subsubsection}{\numberline {4.2.4}Elementos del núcleo}{30}{subsubsection.4.2.4}%
+\contentsline {paragraph}{Kernel}{30}{paragraph*.10}%
+\contentsline {paragraph}{PluginManager}{30}{paragraph*.11}%
+\contentsline {subsubsection}{\numberline {4.2.5}Servicios del sistema}{30}{subsubsection.4.2.5}%
+\contentsline {paragraph}{SettingsService}{30}{paragraph*.12}%
+\contentsline {paragraph}{FileIOService}{31}{paragraph*.13}%
+\contentsline {paragraph}{ExportService}{31}{paragraph*.14}%
+\contentsline {paragraph}{DataStore}{31}{paragraph*.15}%
+\contentsline {paragraph}{TaskOrchestrator}{31}{paragraph*.16}%
+\contentsline {paragraph}{ProjectService}{31}{paragraph*.17}%
+\contentsline {subsubsection}{\numberline {4.2.6}Elementos de presentación}{32}{subsubsection.4.2.6}%
+\contentsline {paragraph}{MainWindow}{32}{paragraph*.18}%
+\contentsline {paragraph}{VTKContextMenu}{32}{paragraph*.19}%
+\contentsline {paragraph}{TooltipHelper}{32}{paragraph*.20}%
+\contentsline {subsubsection}{\numberline {4.2.7}Contrato de extensión}{32}{subsubsection.4.2.7}%
+\contentsline {paragraph}{IPlugin}{32}{paragraph*.21}%
+\contentsline {subsubsection}{\numberline {4.2.8}Extensiones}{33}{subsubsection.4.2.8}%
+\contentsline {subsubsection}{\numberline {4.2.9}Modelo de datos}{33}{subsubsection.4.2.9}%
+\contentsline {paragraph}{SignalDataset}{33}{paragraph*.23}%
+\contentsline {paragraph}{TrialDataset}{33}{paragraph*.24}%
+\contentsline {paragraph}{ProjectData}{33}{paragraph*.25}%
+\contentsline {subsubsection}{\numberline {4.2.10}Relaciones estructurales}{34}{subsubsection.4.2.10}%
+\contentsline {subsubsection}{\numberline {4.2.11}Justificación de las decisiones}{34}{subsubsection.4.2.11}%
+\contentsline {subsubsection}{\numberline {4.2.12}Trazabilidad con los requerimientos}{35}{subsubsection.4.2.12}%
+\contentsline {subsection}{\numberline {4.3}Vista de Procesos}{35}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}Vista F\'isica}{37}{subsection.4.4}%
+\contentsline {section}{\numberline {5}Atributos de calidad}{38}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Escenarios de calidad}{38}{subsection.5.1}%
+\contentsline {subsubsection}{\numberline {5.1.1}Escenario de Calidad 1: Integración de un Plugin Externo}{38}{subsubsection.5.1.1}%
+\contentsline {subsubsection}{\numberline {5.1.2}Escenario de Calidad 2: Carga de Señal de Gran Tamaño}{39}{subsubsection.5.1.2}%
+\contentsline {subsubsection}{\numberline {5.1.3}Escenario de Calidad 3: Manejo de Errores en Tiempo de Ejecución}{39}{subsubsection.5.1.3}%
+\contentsline {subsubsection}{\numberline {5.1.4}Escenario de Calidad 4: Exportación de Datos o Gráficas}{40}{subsubsection.5.1.4}%
+\contentsline {subsubsection}{\numberline {5.1.5}Escenario de Calidad 5: Uso del Sistema sin Experiencia Técnica}{40}{subsubsection.5.1.5}%
+\contentsline {subsubsection}{\numberline {5.1.6}Escenario de Calidad 6: Rendimiento con Múltiples Señales Cargadas}{41}{subsubsection.5.1.6}%
+\contentsline {subsubsection}{\numberline {5.1.7}Escenario de Calidad 7: Resiliencia ante Archivos Corruptos o Incompatibles}{41}{subsubsection.5.1.7}%
+\contentsline {subsubsection}{\numberline {5.1.8}Escenario de Calidad 8: Consistencia entre Datos Ingresados y Gráficas Generadas}{42}{subsubsection.5.1.8}%
+\contentsline {subsection}{\numberline {5.2}Reglas de compatibilidad y versionado}{42}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}M\'etricas y plan de verificaci\'on}{43}{subsection.5.3}%
+\contentsline {subsection}{\numberline {5.4}Plan de evidencia}{44}{subsection.5.4}%
+\contentsline {subsection}{\numberline {5.5}Conclusi\'on}{44}{subsection.5.5}%
+\contentsline {section}{\numberline {6}Anexos}{45}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Anexo A --- Relaci\'on con el SRS}{45}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Anexo B --- Relaci\'on con el SDD}{45}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Anexo C --- Trazabilidad global de artefactos}{45}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.4}Anexo D --- Diagramas y tablas de referencia}{45}{subsection.6.4}%
+\contentsline {section}{\numberline {7}Referencias}{45}{section.7}%
