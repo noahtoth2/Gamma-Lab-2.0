@@ -11,12 +11,12 @@ El análisis del algoritmo está en [`analisis-pac.md`](analisis-pac.md). Este d
 > | **1 — Piezas de cálculo** | ✅ **Hecha.** `core/filters/iir.py` y `plugins/.../pac/compute.py`. 41 pruebas |
 > | **2 — PAC** | ✅ **Hecha.** `pac_un_trial`, los ocho pasos |
 > | **3 — PAC Average** | ✅ **Hecha.** `pac_promedio`, con acumulador |
-> | **4 — MI (comodulograma)** | ✅ **Hecha.** Cálculo, interfaz completa y plugin. 23 escenarios. El `178` se replicó tal cual, a la espera de la decisión |
-> | **5 — PAC Psel** | ⬜ **Falta.** La más grande: Gabor y detección de picos |
+> | **4 — MI (comodulograma)** | ✅ **Hecha.** Cálculo, interfaz completa y plugin. 34 escenarios. El `178` se quitó (ver más abajo) |
+> | **5 — PAC Psel** | ✅ **Hecha.** Gabor, detección de ciclos, `pac_psel` y los 13 paneles. 40 escenarios |
 > | **6 — Integración con el orquestador** | ✅ **Hecha.** Selector de trial con flechas, `submit()` + 4 slots, 4 salidas apiladas y deslizables. 28 escenarios |
-> | **7 — Verificación** | ⬜ **Bloqueada** por la referencia de MATLAB (sección 8 bis) |
+> | **7 — Verificación** | ⬜ **Bloqueada** por la referencia de MATLAB (sección 8 bis). **Es lo único que queda** |
 >
-> Suite completa: **262 pasan, 5 fallan** (los cinco fallos MATLAB ya conocidos, ajenos a PAC).
+> Suite completa al 12 de octubre: **347 pasan, 5 fallan** (los cinco fallos MATLAB ya conocidos, ajenos a PAC).
 >
 > **Lo que se decidió sobre el dibujo**, al compararlo con lo que produce MATLAB:
 >
@@ -376,6 +376,39 @@ Esto es un **añadido nuestro**: MATLAB no comprueba nada y entrega un comodulog
 Cubierto por 8 pruebas nuevas de núcleo y 7 escenarios de interfaz (secciones J y K).
 
 
+### El `178` se quitó (7 de octubre de 2026)
+
+**El comodulograma se calcula entero.** El tope de 178 ya no se aplica.
+
+Llegó a existir una casilla «All bands» para elegir, con el argumento de que la fase 7 necesitaba poder reproducir MATLAB exactamente. **Ese argumento era falso**, y se comprobó midiendo: las primeras 178 filas salen **idénticas bit a bit** se calcule el barrido corto o el largo.
+
+El motivo es la forma del cálculo. Cada fila sale de **su** banda de amplitud y de ninguna otra:
+
+```
+S[ca, cp] = Σₙ m_amp[n, ca] · e^{i·m_fase[n, cp]}
+```
+
+La fila `ca` no toca ninguna otra columna de `m_amp`, así que calcular más bandas no puede cambiarla. Para comparar contra la referencia basta con mirar las primeras 178 filas del comodulograma completo: no hace falta recortar nada, y por tanto tampoco hacía falta la casilla.
+
+El parámetro sigue existiendo en el cálculo —`comodulograma(..., limite_matlab=True)`— pero **la interfaz no lo usa**: está para las pruebas que reproducen la referencia, incluidas sus filas vacías.
+
+**Lo que cuesta.** Sobre un trial de 3.050 muestras con `A 10:1:400` (391 bandas): 0,6 s con el tope, **1,2 s sin él**. Medio segundo.
+
+**Lo que no era trivial.** Quitarlo no era poner `LIMITE_BANDAS_AMPLITUD = None`, como decía el comentario del código. Las bandas de amplitud miden 10 Hz, así que las de arriba del barrido chocan con el Nyquist y **no admiten filtro**: con el barrido por defecto —`10 : 0,5 : 500` sobre 1.000 Hz— solo **959 de las 981** son calculables.
+
+Abortar el cálculo entero por esas 22 sería tirar trabajo útil, así que se recortan y quedan en `NaN`. El mensaje dice **cuál de los dos motivos** fue, porque llevan a acciones distintas; el de Nyquist obliga a bajar `Fq A2` o subir el muestreo.
+
+Para saber dónde recortar hace falta el tope real del diseño del filtro, que lo da `core/filters/iir.py::tope_banda_alta`. No es una estimación: una prueba comprueba que coincide exactamente con lo que `filtro_iir` acepta y rechaza, porque si se separaran el recorte dejaría bandas sin calcular o reventaría.
+
+### Los avisos dejaron de ser ventanas modales
+
+El aviso del trial corto y el de las bandas recortadas **ya no abren ningún diálogo**: van al log.
+
+Salían en cada cálculo y estorbaban. Y hay un motivo técnico de peso: un `QMessageBox` modal abre un bucle de eventos anidado, y dentro de él sigue disparando el temporizador de `QVTKRenderWindowInteractor`, que es exactamente donde caen las tres violaciones de acceso registradas ese día (nº 24 de `problemas-encontrados.md`). La última cayó **justo después** de mostrar ese diálogo.
+
+Un fallo de verdad sí sigue abriendo diálogo: eso va por `_on_mi_failed`, que es otro camino.
+
+
 Las dos merecen ir a la conversación con la directora junto al `178`: la pregunta de fondo es si el ancho de 10 Hz debería ser configurable, y si conviene avisar al usuario cuando los parámetros caen fuera de lo que el algoritmo puede resolver.
 
 ---
@@ -394,6 +427,84 @@ Lo que lo distingue:
 - [ ] Varias figuras, muchas comentadas en el original
 
 > **Dos cosas del original que no hay que replicar.** Antes del `horzcat` hay un `A = 0`, así que la señal concatenada arranca con una muestra espuria en cero. Y la línea 41 llama a `fvtool(st_Filtg)`, que abre la ventana de análisis de filtros de MATLAB: es depuración que quedó en el código.
+
+
+### Estado del porte (12 de octubre de 2026)
+
+**Las cuatro piezas están hechas.** El cálculo en `plugins/analysis/time_frequency/pac/compute.py` y el dibujo en `pac_plugin.py`.
+
+| | Pieza | Estado |
+|---:|---|---|
+| 1 | `gabor_tf` — la transformada | ✅ |
+| 2 | `detectar_extremos`, `cruces_por_cero`, `seleccionar_valles`, `ventanas_por_valle` | ✅ |
+| 3 | `pac_psel` — el mapa, el histograma y los vectores | ✅ |
+| 4 | Los 13 paneles y el plugin | ✅ |
+
+**Cómo se verificó la Gabor.** Se escribió aparte una traducción línea por línea del `.m`, sin optimizar, y se comparó contra el porte real: coinciden hasta **2,4 × 10⁻¹³** en tres configuraciones. Eso descarta que los atajos —escribir fila a fila, normalizar sobre el mismo arreglo— cambien el número.
+
+**Cómo se verificó el conjunto.** Con un acoplamiento sintético y un control sin acoplamiento, idénticos salvo por la envolvente:
+
+| | Magnitud del vector medio | Ángulo |
+|---|---:|---|
+| Con acoplamiento | **1,6875** | +3,110 rad ≈ π |
+| Control | **0,0064** | aleatorio |
+
+El ángulo cae donde se construyó el acoplamiento —el valle del ritmo lento, que es la fase ±π— y la magnitud se separa por un factor de 264.
+
+> **El mapa en z no sirve para esta comprobación**, y conviene saberlo antes de interpretarlo: el z-score normaliza **cada fila** a desviación 1, así que todas las frecuencias acaban pareciéndose y «qué fila varía más» deja de tener respuesta. Lo que discrimina es el vector medio, que además es la salida que el algoritmo reporta.
+
+### Un fallo que apareció al portar esto, y que afectaba a las fases 2 y 3
+
+`f_Mat_to_zscore` y el z-score en línea de `f_Phase_PAC` usan `std(m, [], 2)`, y **el valor por omisión de `std` en MATLAB normaliza por N−1**. El porte usaba `ddof=0`, o sea por N.
+
+La diferencia es un factor `sqrt(N/(N−1))`: con los 100 bins de fase es **1,005 — un 0,5 % en todo el mapa**. Pequeño, pero sistemático, y habría aparecido en cuanto se comparara contra la referencia de MATLAB. Corregido en `zscore_por_fila`, con prueba que lo fija.
+
+Pasó desapercibido porque **ninguna prueba comparaba todavía contra MATLAB**: es exactamente el hueco que la fase 7 viene a cerrar.
+
+### Tres sitios donde el MATLAB se cae con datos reales
+
+Ninguno es hipotético; los tres salen de leer el código, y en los tres el porte se desvía a propósito.
+
+| Dónde | Qué pasa en MATLAB | Qué hace el porte |
+|---|---|---|
+| Recorte de ventanas (línea 231) | Recorta sin mirar los bordes. Con los valores por defecto el semiancho son **666 muestras**, así que un ciclo cerca del principio o del final da un error de índice | Omite esos ciclos e informa de cuántos en `ciclos_descartados` |
+| `_recorte_por_valles` (líneas 303-315) | Si el promedio no tiene valles, `ct1` y `ct2` se quedan **sin asignar** y la línea siguiente falla | Devuelve el tramo entero, que es lo que el propio MATLAB hace con 1 y con 2 valles |
+| `l2_av(1):l2_av(2)` (línea 358) | Si el promedio no tiene **dos** máximos, el índice se sale | Lanza un error en español explicando que la banda de fase es muy estrecha o hay pocos ciclos |
+
+### Dos rarezas del original que sí se replicaron
+
+**`v_angles` mezcla acumulados.** Dentro del bucle de ciclos, MATLAB divide `m_phase` —que lleva **todos** los ciclos acumulados— entre `v_num_temp`, que es la cuenta de **ese** ciclo nada más. El valor crece con el índice del ciclo. Se replica porque alimenta el segundo compás; no entra en el mapa.
+
+**Los cruces por cero dan la vuelta.** `circshift(v, [-1 0])` mueve el primer elemento al final, así que la última muestra se compara con la primera y puede marcar un cruce que no existe.
+
+### Variables muertas que no se portaron
+
+Calculadas en el `.m` y nunca usadas: `f_ini`/`f_fin` (líneas 18-19, el rango lo gobierna `ps_MinFreqHz`), `av_gamma` (línea 237, la figura dibuja `av`), `Min_Vpp` (línea 95, su condición quedó comentada) y `abs_ang2` (línea 497).
+
+
+### Los 13 paneles (pieza 4)
+
+MATLAB abre **12 ventanas sueltas**, varias con dos `subplot` dentro: unos 15 paneles repartidos por la pantalla. Aquí van en **una sola columna deslizable**, como ya se hizo con las 4 ventanas de PAC — doce ventanas flotantes en una aplicación con pestañas no tienen sentido.
+
+Se quitaron **dos duplicados exactos**: la figura de la línea 252 es copia literal de la 245 (mismos datos, mismo color, mismo grosor) y la de la 506 repite el mapa de la 398 sin el coseno de abajo.
+
+| | Panel | Alto |
+|---:|---|---:|
+| 1-2 | Señal concatenada y su banda de fase | 150 ×2 |
+| 3-5 | Las tres pilas de ciclos con su promedio | 180 ×3 |
+| 6 | **Mapa fase/frecuencia, eje logarítmico** | 300 |
+| 7 | Coseno de referencia | 150 |
+| 8-9 | Tiempo/frecuencia promedio y el ritmo lento debajo | 300 + 150 |
+| 10 | Histograma | 170 |
+| 11 | Brújula del vector medio | 320 |
+| 12 | Promedio sin filtrar | 150 |
+| 13 | Brújula con los 16 vectores por grupo | 320 |
+
+**El mapa logarítmico no puede usar el código del mapa de PAC.** Aquel reparte las filas a intervalos iguales, que es lo que hace `imagesc` y lo correcto para el eje lineal de PAC. Pdetect pasa por `pcolor` **y** convierte el eje a `log10`, así que las filas van a alturas desiguales. Se resuelve remuestreando a una rejilla uniforme en logaritmo (`remuestrear_en_log`) con **vecino más cercano**, no interpolación: `pcolor` pinta cada celda de un color plano (`shading flat`), así que interpolar inventaría valores que la referencia no muestra. Las marcas del eje son las del original —1,5, 2 y 2,5 en logaritmo, etiquetadas 32, 100 y 316 Hz— y solo se ponen las que caen dentro del rango.
+
+> **Un tope que no está en MATLAB.** Las pilas de ciclos dibujan como mucho **100 trazas**, repartidas por toda la pila. Con datos reales —60 trials de 3 s y un ritmo de 5 Hz— salen unos 900 ciclos, y 900 series en un `vtkChartXY` dejan la interfaz inservible. El promedio, que es lo que se lee, se calcula **sobre todos**, y el número real aparece en el título.
+
+Al reparte de alturas se le quitó la deducción por identidad (`chart is self._mapa_chart`), que bastaba con los seis gráficos de PAC pero no con trece, donde hay dos mapas y dos brújulas: ahora quien dibuja declara la altura de cada uno.
 
 ---
 

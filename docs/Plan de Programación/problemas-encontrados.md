@@ -638,7 +638,7 @@ La Fase 1.3 solo tocó los dos plugins de wavelet porque eran los que se habían
 
 ---
 
-## 24. GammaLab se cierra al dibujar el comodulograma de MI ⬜ ABIERTO — intermitente
+## 24. GammaLab se cierra al cambiar de pestaña ✅ RESUELTO
 
 **Gravedad: alta.** La aplicación muere sin aviso y el usuario pierde el trabajo de la sesión.
 
@@ -672,9 +672,37 @@ El código de salida `5` que reporta el intérprete es la cola de `0xC0000005`. 
 
 **Por qué cuesta.** Es intermitente. En la sesión siguiente se repitió el mismo recorrido —con los mismos parámetros que lo tumbaron— y se completaron **tres cálculos seguidos sin caer**. Eso descarta que dependa solo de los datos o de los parámetros.
 
-**Qué hacer.** Dejar la aplicación corriendo con `PYTHONFAULTHANDLER=1` y `PYTHONUNBUFFERED=1` hasta que vuelva a pasar. Lo primero da la traza de Python con la línea exacta; lo segundo evita que las últimas líneas del log se queden en el búfer y se pierdan justo al morir. Sin esa traza, cualquier arreglo sería a ciegas.
+> **La traza, capturada el 7 de octubre.** Con `PYTHONFAULTHANDLER=1` y `PYTHONUNBUFFERED=1` la aplicación volvió a caer dos veces, y las dos dieron lo mismo:
+>
+> ```
+> Windows fatal exception: access violation
+>   File "vtkmodules\qt\QVTKRenderWindowInteractor.py", line 436 in TimerEvent
+>   File "main.py", line 92 in main
+> ```
+>
+> **No es el dibujo de MI.** La acotación anterior —«cae dentro de `render_resultado`, porque no aparece la línea de `PluginAlerts`»— **estaba equivocada**: sin `PYTHONUNBUFFERED` las últimas líneas del log se quedaban en el búfer y se perdían al morir el proceso. Con el búfer desactivado se ve que MI terminó, **mostró su aviso**, y la caída vino después.
+>
+> El fallo está en el temporizador de VTK:
+>
+> ```python
+> def TimerEvent(self):
+>     self._Iren.TimerEvent()      # sin comprobar que _Iren siga vivo
+> ```
+>
+> `CreateTimer` arranca un `QTimer` que se repite cada 10 ms. Cada plugin crea su propio `QVTKRenderWindowInteractor`, y al cambiar de pestaña `Kernel.stop_plugins()` solo llama a `Disable()`: **el temporizador sigue corriendo**. Un salto a dirección nula encaja con llamar a un puntero de función de OpenGL de un contexto que ya no está.
+>
+> **Las dos caídas ocurrieron justo después de abrir un diálogo modal.** Un `QMessageBox` abre un bucle de eventos anidado y el temporizador sigue disparando dentro de él. Por eso los avisos de MI pasaron de ventana modal a línea de log: no es solo comodidad, quita el disparador más probable. Queda por confirmar si con eso basta — si vuelve a caer sin ningún modal de por medio, el arreglo tiene que ir en `stop()`, parando el temporizador en vez de solo desactivar el interactor.
 
-La pista que queda por explorar: `ensure_vtk()` crea el `QVTKRenderWindowInteractor` **dentro del slot de finalización** (`modulation_index_plugin.py:217`), no al construir el widget, y llama a `Initialize()`, `Start()` y `Render()` seguidos sobre un widget recién creado que aún no ha pasado por el ciclo de eventos de Qt. Un salto a dirección nula encaja con llamar a un puntero de función de OpenGL sin inicializar.
+
+
+> **Resuelto el 12 de octubre de 2026.** La caída se repitió **tres veces** con la misma traza, y la última **sin ningún diálogo modal de por medio**, lo que descartó la hipótesis de que los modales fueran la causa.
+>
+> Lo que falta es una guarda dentro del propio `TimerEvent`. Cada plugin crea **su** interactor —son quince— y `Kernel.stop_plugins()` solo llama a `Disable()`: el `QTimer` del plugin que ya no está en pantalla sigue entrando en VTK sobre un widget oculto cuyo contexto de OpenGL no está activo.
+>
+> El arreglo está en `core/utils/vtk_temporizador.py`: reemplaza `QVTKRenderWindowInteractor.TimerEvent` **una sola vez**, al arrancar, por una versión que se salta el aviso cuando el widget no está visible, no tiene interactor o ya se destruyó. Se hace en un sitio y no en los quince `stop()` porque repetirlo quince veces deja el fallo a un plugin de distancia: basta con que alguien añada uno nuevo y se olvide.
+>
+> Cubierto por `test/ui_test/escenarios_vtk_temporizador.py`, **11 comprobaciones**: que la instalación sea idempotente, que el aviso llegue con el widget visible y **no** llegue con el plugin fuera de pantalla, y que un widget ya destruido no propague el `RuntimeError` de PyQt.
+
 
 ---
 
@@ -700,6 +728,114 @@ plug.render_resultado = lambda r, indice=0: DIBUJOS.append((indice, r))
 - `vtkOffscreenRenderWindow` con software de respaldo (Mesa), si se puede instalar sin complicar el entorno
 
 Lo mismo aplica a PAC, que tiene seis gráficos apilados y la brújula dibujada a mano.
+
+---
+
+## 26. Auditoría de PAC contra el MATLAB (12 de octubre de 2026)
+
+**Gravedad: media.** Ninguno de los hallazgos afecta al **cálculo** —el mapa, el histograma y el vector medio son correctos—, pero cuatro afectan a lo que se **dibuja**, y uno de ellos nace de un defecto del propio MATLAB.
+
+Repaso línea por línea de `f_Phase_PAC`, `f_Phase_PAC_Average`, `f_Phase_PAC_Pdetect`, `f_IIRBiFilter`, `f_MorseAWTransformMatlab`, `f_GaborAWTransformMatlab` y `f_Mat_to_zscore` contra el porte.
+
+### Lo que se comprobó y está bien
+
+| Pieza | Comprobación |
+|---|---|
+| `bifiltro` | `f_IIRBiFilter` usa `flipud`: filtrado bidireccional de verdad. Replicado |
+| `agrupar_por_fase` | `>= borde_izq & < borde_der`, así que una fase de exactamente π no cae en ningún bin, igual que el `find()` del original |
+| Histograma | `sum` en PAC y PAC Average, `mean` en Psel. Son distintos en el MATLAB y están distintos aquí |
+| Eje de fase | `index_pi = index(1:nbins)` son los **bordes izquierdos**, no los centros. `centros_bins` devuelve eso pese al nombre, y `vector_medio` los usa |
+| `pac_promedio` | Acumula suma y cuenta sobre todos los trials y divide **una sola vez** al final |
+| Ventana de la Morse | La normalización `v_WinFFT.*s_SqrtLen./norm(...)` está **comentada** en el `.m`, y el coeficiente no se divide por `sqrt(s_StDevSec)`. El porte tampoco lo hace |
+| Ventana de la Gabor | Esa misma normalización sí está activa, y sí divide por `sqrt(s_StDevSec)`. El porte lo replica |
+| Densidad de frecuencias | `4·(A2−A1)` en PAC y PAC Average, `2·(A2−A1)` en Psel |
+| Submuestreo | `downsample(x, n)` = `x[::n]`, y `srate/srt` = la tasa efectiva |
+
+### Lo que se corrigió
+
+**El z-score normalizaba por N en vez de por N−1.** `std(m, [], 2)` de MATLAB usa N−1 por omisión. Son `sqrt(100/99) = 1,005`, un **0,5 % en todo el mapa** de PAC y PAC Average. Corregido.
+
+**`pac_psel` repartía los bins con otra lógica que el resto.** Usaba `searchsorted` + `clip`, y el `clip` metía una fase de exactamente π en el último bin, cuando MATLAB —y nuestro propio `agrupar_por_fase`— la dejan fuera. Ahora reutiliza `agrupar_por_fase`, así que no puede volver a separarse.
+
+### Lo que se decidió (12 de octubre)
+
+**1. Los filtros de dibujo: MATLAB filtra dos veces hacia delante.** → **no se replica**
+
+```matlab
+v_h_Filt_P = filter(h_FiltP, v_Data);
+v_h_Filt_P = filter(h_FiltP, fliplr(v_h_Filt_P));   % <- fliplr
+v_h_Filt_P = fliplr(v_h_Filt_P);
+```
+
+`v_Data` es un vector **columna** (N×1) y `fliplr` voltea *columnas*: sobre una sola columna **no hace nada**. El autor quería `flipud` —es lo que usa en `f_IIRBiFilter`— pero escribió `fliplr`, así que la señal se filtra dos veces hacia delante y acumula el retardo en vez de cancelarlo.
+
+Medido sobre 4 s a 2.000 Hz en la banda 3-8 Hz: correlación **+0,9136** y un desfase de **13 ms**, que a 5 Hz son **23°**.
+
+**2. Los paneles 2 y 3 usan la señal equivocada.** → **no se replica** MATLAB dibuja `v_h_Filt_P`, el **Butterworth**, y calcula `phase_sig = angle(hilbert(v_h_Filt_P))` a partir de él. El porte dibuja la señal del **Chebyshev**, que es la que usa el cálculo. Diferencia de fase medida: **−24°** de mediana.
+
+Nota: el cálculo del mapa sí usa el Chebyshev en los dos, así que **esto solo afecta a los paneles**.
+
+**3. PAC Average dibuja paneles que MATLAB no dibuja.** → **corregido** `f_Phase_PAC_Average` saca mapa + `plot(cos(index_pi))` + histograma + brújula, y **ninguna señal**. El porte saca los cuatro paneles de señal —que además son los del **primer trial**, no del promedio— y no saca el coseno de referencia.
+
+**4. El Nyquist: MATLAB recorta, el porte avisa.** → **se avisa en los dos sitios** Las dos transformadas del `.m` hacen `if ps_MaxFreqHz > ps_SampleRate/2 -> ps_MaxFreqHz = ps_SampleRate/2`, en silencio. `gabor_tf` lo replica; `_preparar` en cambio lanza un error antes de llegar a `morse_tf`. Las dos conductas no pueden ser las dos correctas.
+
+
+### El criterio con el que se decidió
+
+> *«Si MATLAB tiene problemas que no tienen sentido replicar, porque quedaría mal el análisis, no lo hagas.»*
+
+Aplicado una por una:
+
+| | Decisión | Por qué |
+|---|---|---|
+| 1 | **No replicar.** Se mantiene el filtrado bidireccional | El mapa **sí** usa el filtrado correcto (`f_IIRBiFilter`, con `flipud`). Un panel desfasado 23° contradiría al mapa que tiene justo encima |
+| 2 | **No replicar.** Los paneles 2 y 3 siguen mostrando el Chebyshev | Es la señal que de verdad produjo el mapa, así que panel y mapa cuentan lo mismo. El panel 4 sí usa Butterworth, porque allí MATLAB no tiene alternativa: el Chebyshev degenera en la banda ancha de amplitud |
+| 3 | **Corregido**, siguiendo a MATLAB | Aquí el equivocado era el porte: mostraba los cuatro paneles del **primer trial** bajo un título que decía «promedio». Ahora sale el `cos(index_pi)` de referencia, como el original |
+| 4 | **Avisar en los dos sitios** | Recortar en silencio es justo lo que estropea el análisis: quien pide hasta 1.500 Hz y recibe hasta 1.000 lo lee como si cubriera lo que pidió. `gabor_tf` recortaba como MATLAB y ahora avisa, igual que `_preparar` |
+
+Las dos divergencias que se mantienen están explicadas **en el código**, al lado de la línea que las produce, para que nadie las «arregle» al revés creyendo que son un descuido.
+
+---
+
+## 27. El diseño de los filtros IIR se repetía en cada cálculo ✅ RESUELTO
+
+**Gravedad: media.** Era la mayor parte del tiempo del índice de modulación, y se pagaba entera cada vez que el usuario pulsaba la flecha del trial.
+
+**Cómo apareció.** Buscando dónde cabría paralelismo dentro de los plugins, el 12 de octubre de 2026.
+
+**La medición que lo destapó.** Sobre las 178 bandas de amplitud de MI:
+
+| | Tiempo | Proporción |
+|---|---:|---:|
+| **Diseñar** los filtros (`cheb2ord` + `cheby2`) | 450 ms | **86 %** |
+| Aplicarlos (`sosfilt` + `hilbert`) | 74 ms | 14 % |
+
+**Por qué importa.** El diseño **no depende de la señal**: solo de `(fs, f1, f2)`. Pero el plugin tiene selector de trial, así que cada flecha rediseñaba los mismos 278 filtros —100 de fase y 178 de amplitud— desde cero, para después aplicarlos a otra señal. PAC Psel hace lo mismo con los suyos en cada cálculo.
+
+**El camino que no era.** Primero se probaron hilos, que es lo que se había ido a buscar. Salió al revés:
+
+| | Tiempo | Ganancia |
+|---|---:|---:|
+| En serie | 534 ms | 1,00× |
+| 2 hilos | 721 ms | **0,74×** |
+| 8 hilos | 827 ms | **0,65×** |
+
+Los hilos lo dejan **más lento**: la FFT suelta el GIL, pero el diseño de filtros no, así que solo añaden contención. Vale la pena anotarlo porque es contraintuitivo y alguien podría volver a intentarlo.
+
+> **Resuelto el 12 de octubre de 2026.** `core/filters/iir.py` memoriza el diseño con `lru_cache`. Va ahí y no en un plugin porque el módulo ya lo comparten `pac` y `modulation_index`: es una propiedad de la función, no de quien la llama.
+>
+> Medido sobre el ABF real, recalculando el comodulograma al cambiar de trial:
+>
+> | | Tiempo |
+> |---|---:|
+> | Primer trial (diseña los filtros) | 1 237 ms |
+> | Trials siguientes | **171 ms** |
+>
+> **7,25× más rápido**, con el resultado idéntico.
+>
+> Dos detalles que no son adorno: se devuelve una **copia** del `sos`, para que nadie pueda modificar la matriz guardada y envenenar la caché de todos los que vengan después —el fallo aparecería en otro plugin y en otro momento—; y los parámetros inválidos siguen avisando **siempre**, porque `lru_cache` no guarda excepciones.
+>
+> Cubierto por 8 pruebas, incluida una que comprueba que un segundo trial **no diseña ni un filtro nuevo**, que es donde está la ganancia real.
 
 ---
 
@@ -733,8 +869,14 @@ Son cuestiones de si los números que entrega la herramienta son correctos. Mere
 - nº 12 — probar con un archivo grande de verdad
 
 **La aplicación se cierra sola** *(lo más urgente)*
-- nº 24 — caída nativa al dibujar el comodulograma de MI, intermitente; hace falta capturar la traza con `PYTHONFAULTHANDLER=1`
+- ~~nº 24 — la caída nativa~~ (resuelta: le faltaba una guarda al temporizador de VTK)
 - nº 25 — el hueco de pruebas que la dejó pasar: el dibujo de VTK de PAC y MI nunca se ejecuta
+
+**Rendimiento**
+- ~~nº 27 — el diseño de los filtros IIR se repetía en cada cálculo~~ (resuelto: 7,25× al cambiar de trial)
+
+**Paridad con MATLAB** *(decisiones, no fallos)*
+- nº 26 — cuatro divergencias de dibujo entre PAC y el MATLAB; el cálculo está bien
 
 **Sin clasificar**
 - nº 13 — el error del menú contextual

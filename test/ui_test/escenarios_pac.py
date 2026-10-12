@@ -19,6 +19,7 @@ sys.path.insert(0, str(REPO))
 os.chdir(REPO)
 
 import numpy as np
+import vtk
 from PyQt5.QtWidgets import QApplication
 
 app = QApplication([])
@@ -77,6 +78,7 @@ kernel.register_plugin(meta.name, plug)
 DIBUJOS, AVISOS = [], []
 plug.ensure_vtk = lambda: None
 plug.render_resultado = lambda r, titulo="PAC": DIBUJOS.append((titulo, r))
+plug.render_psel = lambda r: DIBUJOS.append(("PAC Psel", r))
 for tipo in ("info", "error", "warning"):
     setattr(plug.alerts, tipo, lambda msg, *a, _t=tipo: AVISOS.append((_t, msg)))
 plug.get_active_signal = lambda silent=False: senal
@@ -164,12 +166,63 @@ caso("E. el promedio usa los cuatro trials",
      f"n_trials={DIBUJOS[-1][1].n_trials}")
 plug.ui.pacTypeComboBox.setCurrentIndex(0)
 
-# F. PAC Psel todavía no existe y lo dice
+# F. PAC Psel: concatena los trials, detecta ciclos y dibuja sus 13 paneles
 AVISOS.clear()
 plug.ui.pacTypeComboBox.setCurrentIndex(2)
+caso("F. con Psel el selector de trial se deshabilita",
+     not plug.ui.trialSpinBox.isEnabled(), plug.ui.trialTotalLabel.text())
+# Barrido corto a proposito: con el de fabrica son 950 filas y el escenario
+# tardaria demasiado. Lo que se prueba aqui es el camino, no el barrido.
+plug.ui.ampLowFrequencySpinBox.setValue(25.0)
+plug.ui.ampHighFrequencySpinBox.setValue(60.0)
+n = len(DIBUJOS)
 plug.on_create_pac()
-caso("F. Psel avisa que no esta implementado y no encola",
-     any("no está implementado" in m for _, m in AVISOS) and reposo(), str(AVISOS[:1]))
+caso("F. Psel calcula y vuelve a reposo",
+     esperar(lambda: len(DIBUJOS) == n + 1 and reposo(), t=180) and DIBUJOS[-1][0] == "PAC Psel",
+     f"ultimo dibujo = {DIBUJOS[-1][0]!r}")
+caso("F. no abrio ninguna ventana de aviso", not AVISOS, str([m[:50] for _, m in AVISOS]))
+
+rp = DIBUJOS[-1][1]
+caso("F. detecto ciclos en la senal concatenada",
+     rp.n_ciclos > 5, f"{rp.n_ciclos} ciclos, {rp.ciclos_descartados} descartados")
+caso("F. el mapa tiene una fila por frecuencia y 100 bins de fase",
+     rp.mapa.shape == (rp.frecuencias.size, 100), str(rp.mapa.shape))
+caso("F. usa dos filas por Hz, no cuatro como PAC",
+     rp.frecuencias.size == int(cp.FILAS_POR_HZ_PSEL * (60.0 - 25.0)), str(rp.frecuencias.size))
+caso("F. devuelve los 16 vectores por grupo de bins",
+     rp.vectores_por_grupo.shape == (16,), str(rp.vectores_por_grupo.shape))
+caso("F. encuentra acoplamiento", abs(rp.vector) > 0.1 and np.isfinite(abs(rp.vector)),
+     f"magnitud {abs(rp.vector):.4f}, fase {np.angle(rp.vector):+.3f} rad")
+
+# F bis. Los graficos propios de Psel. No se renderiza —sin pantalla no hay
+# OpenGL—, pero construirlos ya comprueba ejes, marcas y numero de trazas.
+mapa_log = plug._grafico_mapa_log(rp.mapa, rp.frecuencias, rp.fases, "prueba", "Fase (rad)")
+eje_y = mapa_log.GetAxis(vtk.vtkAxis.LEFT)
+caso("F bis. el mapa de Psel lleva el eje en logaritmo",
+     abs(eje_y.GetMinimum() - np.log10(25.0)) < 1e-9
+     and abs(eje_y.GetMaximum() - np.log10(60.0)) < 1e-9,
+     f"{eje_y.GetMinimum():.4f} a {eje_y.GetMaximum():.4f}")
+_pos, _lab = eje_y.GetTickPositions(), eje_y.GetTickLabels()
+_marcas = [(_pos.GetValue(i), _lab.GetValue(i)) for i in range(_pos.GetNumberOfTuples())]
+caso("F bis. con las marcas de MATLAB, etiquetadas en Hz",
+     _marcas == [(1.5, "32")], str(_marcas))
+
+_pila = plug._grafico_ciclos(rp.ciclos_theta, rp.promedio_theta, "ciclos", (200, 30, 30))
+caso("F bis. la pila de ciclos dibuja cada ciclo mas el promedio",
+     _pila.GetNumberOfPlots() == rp.n_ciclos + 1,
+     f"{_pila.GetNumberOfPlots()} trazas para {rp.n_ciclos} ciclos")
+_muchos = np.zeros((50, 900))
+caso("F bis. y se limita cuando hay cientos de ciclos",
+     plug._grafico_ciclos(_muchos, _muchos.mean(axis=1), "x", (0, 0, 0)).GetNumberOfPlots()
+     == plug.MAX_TRAZAS_CICLOS + 1)
+
+_b2 = plug._grafico_brujula(rp, extra=rp.vectores_por_grupo)
+caso("F bis. la segunda brujula suma los 16 vectores por grupo",
+     _b2.GetNumberOfPlots() == plug._grafico_brujula(rp).GetNumberOfPlots() + 16,
+     str(_b2.GetNumberOfPlots()))
+
+plug.ui.ampLowFrequencySpinBox.setValue(25.0)
+plug.ui.ampHighFrequencySpinBox.setValue(500.0)
 plug.ui.pacTypeComboBox.setCurrentIndex(0)
 
 # G. Parametros invalidos: avisa en español, no revienta
@@ -213,6 +266,7 @@ caso("I. resultado tardio sin interfaz: se descarta sin errores",
 plug.get_widget(None)
 plug.ensure_vtk = lambda: None
 plug.render_resultado = lambda r, titulo="PAC": DIBUJOS.append((titulo, r))
+plug.render_psel = lambda r: DIBUJOS.append(("PAC Psel", r))
 plug.ui.sampleDensitySpinBox.setValue(1000)
 plug.ui.ampHighFrequencySpinBox.setValue(100.0)
 plug.ui.trialSpinBox.setValue(3)
