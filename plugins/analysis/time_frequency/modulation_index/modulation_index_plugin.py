@@ -230,28 +230,43 @@ class Modulation_index_plugin(IPlugin):
             self.process("Done")
 
     def _avisar_de_los_limites(self, r):
-        """Un solo diálogo con todo lo que el usuario necesita saber del gráfico.
+        """Deja constancia en el log de lo que condiciona la lectura del gráfico.
 
-        Son dos avisos distintos y encadenar dos ventanas modales seguidas
-        molesta, así que se juntan. Si hay alguno grave el diálogo sube a
-        advertencia; si no, queda en informativo.
+        **No abre ninguna ventana.** Antes salía un diálogo modal en cada
+        cálculo y estorbaba más de lo que ayudaba. Hay además un motivo técnico:
+        un modal abre un bucle de eventos anidado y el temporizador de
+        `QVTKRenderWindowInteractor` sigue disparando dentro de él; las caídas
+        registradas el 7 de octubre apuntan ahí (nº 24 de
+        `docs/Plan de Programación/problemas-encontrados.md`).
+
+        Un fallo de verdad sí sigue abriendo diálogo, pero eso lo hace
+        `_on_mi_failed`, que es otro camino.
         """
-        avisos, grave = [], False
+        avisos = []
 
         sin_datos = r.frecuencias_amplitud.size - r.bandas_calculadas
         if sin_datos > 0:
-            # No es un fallo: es el limite fijo de 178 que trae f_PAC_sing.
-            avisos.append(
-                f"El cálculo solo cubre las primeras {r.bandas_calculadas} "
-                f"frecuencias de amplitud, hasta "
-                f"{r.frecuencias_amplitud[r.bandas_calculadas - 1]:g} Hz. "
-                f"Las otras {sin_datos} quedan sin datos: es el límite fijo que trae "
-                f"el cálculo original de MATLAB. En el gráfico salen en blanco.")
+            hasta = r.frecuencias_amplitud[r.bandas_calculadas - 1]
+            if r.limite_matlab:
+                # El tope de 178 de f_PAC_sing. La interfaz ya no lo usa: solo
+                # llega aqui desde las pruebas que reproducen la referencia.
+                avisos.append(
+                    f"Solo se calcularon las primeras {r.bandas_calculadas} "
+                    f"frecuencias de amplitud, hasta {hasta:g} Hz; las otras "
+                    f"{sin_datos} quedan sin datos. Es el límite fijo de MATLAB.")
+            else:
+                # Aqui el recorte no es de MATLAB: esas bandas no admiten filtro.
+                avisos.append(
+                    f"Se calcularon {r.bandas_calculadas} de las "
+                    f"{r.frecuencias_amplitud.size} frecuencias de amplitud, hasta "
+                    f"{hasta:g} Hz. Las otras {sin_datos} quedan sin datos porque su "
+                    f"banda llegaría al Nyquist efectivo ({r.fs_efectiva / 2:g} Hz) y "
+                    f"ahí no se puede diseñar el filtro. Baja «Fq A2» o sube la "
+                    f"frecuencia de muestreo.")
 
         if r.ciclos_banda_lenta < cm.CICLOS_MINIMOS_FASE:
-            # MATLAB no avisa de esto; es un anadido para no leer ruido como
+            # MATLAB no comprueba esto; es un anadido para no leer ruido como
             # acoplamiento. El calculo no cambia.
-            grave = True
             p_minima = cm.CICLOS_MINIMOS_FASE / r.duracion_s if r.duracion_s > 0 else 0.0
             avisos.append(
                 f"El trial dura {r.duracion_s:.2f} s y la frecuencia de fase más baja "
@@ -261,12 +276,8 @@ class Modulation_index_plugin(IPlugin):
                 f"de eso sale alto por azar y aparenta un acoplamiento que no existe. "
                 f"Sube «Fq P1» a {p_minima:.1f} Hz o usa trials más largos.")
 
-        if avisos:
-            texto = '\n\n'.join(avisos)
-            if grave:
-                self.alerts.warning(texto)
-            else:
-                self.alerts.info(texto)
+        for aviso in avisos:
+            self._log(aviso)
 
     # =====================================================
     # === VTK

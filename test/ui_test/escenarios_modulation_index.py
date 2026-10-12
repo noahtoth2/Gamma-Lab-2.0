@@ -150,15 +150,16 @@ caso("B. el comodulograma tiene la forma correcta",
      f"{r.mi_norm.shape} con {r.frecuencias_amplitud.size} amplitudes "
      f"y {r.frecuencias_fase.size} fases")
 
-# C. El limite de 178, replicado de MATLAB
-caso("C. solo calcula 178 bandas de amplitud",
-     r.bandas_calculadas == 178 and r.frecuencias_amplitud.size == 181,
+# C. El tope de 178 de MATLAB ya no se aplica
+caso("C. calcula el barrido entero, sin el tope de 178",
+     r.bandas_calculadas == r.frecuencias_amplitud.size == 181,
      f"{r.bandas_calculadas} de {r.frecuencias_amplitud.size}")
-caso("C. las bandas no calculadas quedan en NaN, como MATLAB",
-     int(np.all(np.isnan(r.mi_norm), axis=1).sum()) == 3,
+caso("C. no queda ninguna fila vacia",
+     not np.isnan(r.mi_norm).any(),
      f"{int(np.all(np.isnan(r.mi_norm), axis=1).sum())} filas en NaN")
-caso("C. avisa al usuario de ese limite",
-     any("límite fijo" in m for _, m in AVISOS), str([m for _, m in AVISOS][:1]))
+caso("C. el resultado deja claro que no se uso el tope", r.limite_matlab is False)
+caso("C. y no abre ninguna ventana al terminar",
+     not AVISOS, str([m[:50] for _, m in AVISOS]))
 
 # D. Encuentra el acoplamiento donde se construyo
 m = np.nan_to_num(r.mi_norm)
@@ -184,15 +185,16 @@ caso("E. en el ultimo no se pasa de rango",
      plug.ui.trialSpinBox.value() == N_TRIALS and len(DIBUJOS) == n)
 plug.ui.trialSpinBox.setValue(1)
 
-# F. Un barrido demasiado corto avisa en vez de reventar
+# F. Un barrido corto, que con el tope de MATLAB era un error
 AVISOS.clear()
+n = len(DIBUJOS)
 plug.ui.fqA2SpinBox.setValue(50.0)      # de 30 a 50 con paso 0,5 son 41 bandas
 plug.on_create_mi()
-esperar(lambda: any(t == "error" for t, _ in AVISOS))
-errores = [m for t, m in AVISOS if t == "error"]
-caso("F. un barrido con menos de 178 bandas avisa en espanol",
-     bool(errores) and "178" in errores[0], errores[0] if errores else "sin aviso")
-caso("F. y vuelve a reposo", esperar(reposo))
+caso("F. un barrido de 41 bandas ya es valido", esperar(lambda: len(DIBUJOS) == n + 1 and reposo()))
+rc = DIBUJOS[-1][1]
+caso("F. y se calcula entero, sin errores",
+     rc.bandas_calculadas == rc.frecuencias_amplitud.size == 41 and not AVISOS,
+     f"{rc.bandas_calculadas} de {rc.frecuencias_amplitud.size}, avisos={len(AVISOS)}")
 plug.ui.fqA2SpinBox.setValue(120.0)
 
 # G. Clear durante el cálculo
@@ -244,12 +246,18 @@ import dataclasses
 import vtk as _vtk
 from vtkmodules.util import numpy_support as _ns
 
+# El barrido entero ya no deja NaN, asi que se fabrica uno que si los tenga:
+# es el caso real cuando el Nyquist recorta las bandas de arriba.
+_mi = r.mi_norm.copy()
+_mi[-3:] = np.nan
+_con_nan = dataclasses.replace(r, mi_norm=_mi, bandas_calculadas=r.bandas_calculadas - 3)
+
 CAPTURA = {}
 _lut_real, _img_real = _vtk.vtkColorTransferFunction, _vtk.vtkImageData
 _vtk.vtkColorTransferFunction = lambda: CAPTURA.setdefault("lut", _lut_real())
 _vtk.vtkImageData = lambda: CAPTURA.setdefault("img", _img_real())
 try:
-    plug._grafico_comodulograma(r, 0)
+    plug._grafico_comodulograma(_con_nan, 0)
 finally:
     _vtk.vtkColorTransferFunction, _vtk.vtkImageData = _lut_real, _img_real
 
@@ -264,25 +272,41 @@ caso("J. la matriz que llega a VTK conserva los NaN",
      int(np.isnan(_px).sum()) == 3 * r.frecuencias_fase.size,
      f"{int(np.isnan(_px).sum())} NaN de {_px.size} celdas")
 
-# K. Aviso cuando el trial es demasiado corto para la frecuencia de fase
-AVISOS.clear()
-plug._avisar_de_los_limites(r)
-caso("K. con 16 ciclos no avisa de ciclos",
-     not any("ciclos" in m for _, m in AVISOS), str([m[:60] for _, m in AVISOS]))
-caso("K. pero si del limite de 178, y en un solo dialogo",
-     len(AVISOS) == 1 and "límite fijo" in AVISOS[0][1], str(len(AVISOS)))
+# K. Lo que condiciona la lectura va al log, no a una ventana
+# Un modal en cada calculo estorbaba, y ademas abre un bucle de eventos anidado
+# dentro del cual sigue disparando el temporizador de VTK: las caidas del 7 de
+# octubre apuntan ahi (nº 24 de problemas-encontrados.md).
+REGISTRO = []
+plug._log = lambda *a: REGISTRO.append(" ".join(str(x) for x in a))
 
-AVISOS.clear()
-corto = dataclasses.replace(r, duracion_s=3.05, ciclos_banda_lenta=0.305)
-plug._avisar_de_los_limites(corto)
-tipos = [t for t, _ in AVISOS]
-textos = [m for _, m in AVISOS]
-caso("K. con 0,3 ciclos avisa, y como advertencia",
-     tipos == ["warning"] and "ciclos" in textos[0], str(tipos))
-caso("K. dice cuanto subir Fq P1 en vez de solo quejarse",
-     "2.0 Hz" in textos[0], textos[0][-90:] if textos else "sin aviso")
-caso("K. junta los dos avisos en una sola ventana",
-     len(AVISOS) == 1 and "límite fijo" in textos[0] and "ciclos" in textos[0],
-     f"{len(AVISOS)} dialogo(s)")
+AVISOS.clear(); REGISTRO.clear()
+plug._avisar_de_los_limites(r)
+caso("K. con 16 ciclos y todo calculado no dice nada",
+     not REGISTRO and not AVISOS, str(REGISTRO[:1]))
+
+AVISOS.clear(); REGISTRO.clear()
+plug._avisar_de_los_limites(dataclasses.replace(r, duracion_s=3.05, ciclos_banda_lenta=0.305))
+caso("K. con 0,3 ciclos lo registra", any("ciclos" in m for m in REGISTRO), str(len(REGISTRO)))
+caso("K. y dice cuanto subir Fq P1 en vez de solo quejarse",
+     any("2.0 Hz" in m for m in REGISTRO), REGISTRO[0][-80:] if REGISTRO else "nada")
+caso("K. sin abrir ninguna ventana", not AVISOS, str([m[:40] for _, m in AVISOS]))
+
+AVISOS.clear(); REGISTRO.clear()
+plug._avisar_de_los_limites(dataclasses.replace(
+    r, bandas_calculadas=120, limite_matlab=False, ciclos_banda_lenta=99.0))
+caso("K. si faltan bandas por Nyquist lo dice, y no culpa a MATLAB",
+     len(REGISTRO) == 1 and "Nyquist" in REGISTRO[0] and "MATLAB" not in REGISTRO[0],
+     REGISTRO[0][:95] if REGISTRO else "nada")
+
+AVISOS.clear(); REGISTRO.clear()
+plug._avisar_de_los_limites(dataclasses.replace(
+    r, bandas_calculadas=178, limite_matlab=True, ciclos_banda_lenta=99.0))
+caso("K. y si alguien pide el tope de MATLAB, lo distingue",
+     len(REGISTRO) == 1 and "MATLAB" in REGISTRO[0] and "Nyquist" not in REGISTRO[0],
+     REGISTRO[0][:95] if REGISTRO else "nada")
+
+caso("L. la casilla «All bands» ya no existe: el barrido entero es lo normal",
+     not hasattr(plug.ui, "allBandsCheckBox")
+     and "todas_las_bandas" not in plug.get_analysis_params())
 
 caso("sin excepciones en los slots", not ERRORES, " | ".join(ERRORES)[:400])

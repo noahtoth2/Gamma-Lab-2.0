@@ -9,6 +9,8 @@ enteró. De ahí este archivo.
 import numpy as np
 import pytest
 
+from core.filters.iir import filtro_iir, tope_banda_alta
+
 from plugins.analysis.time_frequency.modulation_index.compute import (
     ANCHO_BANDA_AMPLITUD, CICLOS_MINIMOS_FASE, LIMITE_BANDAS_AMPLITUD, comodulograma,
     eje_barrido)
@@ -75,7 +77,7 @@ def test_los_valores_por_defecto_del_panel_calculan():
     La guarda miraba `rango_amplitud[-1]` en vez de la última banda realmente
     calculada y tumbaba el caso por defecto con un error de Nyquist.
     """
-    r = comodulograma(Ctx(), senal(), FS, FS, **POR_DEFECTO)
+    r = comodulograma(Ctx(), senal(), FS, FS, limite_matlab=True, **POR_DEFECTO)
     assert r is not None
     assert r.bandas_calculadas == LIMITE_BANDAS_AMPLITUD
     tope = r.frecuencias_amplitud[r.bandas_calculadas - 1] + ANCHO_BANDA_AMPLITUD
@@ -87,7 +89,7 @@ def test_avisa_cuando_la_banda_178_si_se_pasa_de_nyquist():
     sí llega por encima del Nyquist, y ahí el filtro reventaría."""
     with pytest.raises(ValueError, match="Nyquist"):
         comodulograma(Ctx(), senal(), FS, FS, p_ini=2.0, p_fin=8.0, pstep=1.0,
-                      a_ini=10.0, a_fin=1000.0, astep=3.0)
+                      a_ini=10.0, a_fin=1000.0, astep=3.0, limite_matlab=True)
 
 
 def test_el_mensaje_de_nyquist_nombra_la_banda_que_se_calcula():
@@ -95,7 +97,7 @@ def test_el_mensaje_de_nyquist_nombra_la_banda_que_se_calcula():
     número que no es el que manda."""
     with pytest.raises(ValueError) as e:
         comodulograma(Ctx(), senal(), FS, FS, p_ini=2.0, p_fin=8.0, pstep=1.0,
-                      a_ini=10.0, a_fin=1000.0, astep=3.0)
+                      a_ini=10.0, a_fin=1000.0, astep=3.0, limite_matlab=True)
     assert "551" in str(e.value), "10 + 177*3 + 10 = 551 Hz, la banda 178"
 
 
@@ -103,7 +105,7 @@ def test_el_mensaje_de_nyquist_nombra_la_banda_que_se_calcula():
 
 def test_solo_calcula_178_bandas_y_el_resto_queda_en_nan():
     r = comodulograma(Ctx(), senal(), FS, FS, p_ini=2.0, p_fin=8.0, pstep=1.0,
-                      a_ini=30.0, a_fin=120.0, astep=0.5)
+                      a_ini=30.0, a_fin=120.0, astep=0.5, limite_matlab=True)
     assert r.frecuencias_amplitud.size == 181
     assert r.bandas_calculadas == 178
     filas_vacias = np.all(np.isnan(r.mi_norm), axis=1)
@@ -112,10 +114,10 @@ def test_solo_calcula_178_bandas_y_el_resto_queda_en_nan():
 
 
 def test_un_barrido_con_menos_de_178_bandas_avisa_en_vez_de_reventar():
-    """En MATLAB esto es un error de índice fuera de rango."""
+    """Solo al reproducir MATLAB, donde es un error de índice fuera de rango."""
     with pytest.raises(ValueError, match="178"):
         comodulograma(Ctx(), senal(), FS, FS, p_ini=2.0, p_fin=8.0, pstep=1.0,
-                      a_ini=30.0, a_fin=50.0, astep=0.5)
+                      a_ini=30.0, a_fin=50.0, astep=0.5, limite_matlab=True)
 
 
 # ----------------------------------------------------------------- validación
@@ -190,3 +192,86 @@ def test_los_valores_por_defecto_caen_muy_por_debajo_del_minimo():
 def test_el_umbral_de_ciclos_es_el_que_se_midio():
     """Si alguien lo cambia sin medir de nuevo, que al menos falle una prueba."""
     assert CICLOS_MINIMOS_FASE == 6.0
+
+
+# ------------------------------------------------- calcular todas las bandas
+
+def test_el_comodulograma_sale_lleno():
+    """Si todas las bandas caben, no queda ni una fila vacía."""
+    r = comodulograma(Ctx(), senal(), FS, FS, p_ini=2.0, p_fin=8.0, pstep=2.0,
+                      a_ini=30.0, a_fin=120.0, astep=0.5, limite_matlab=False)
+    assert r.bandas_calculadas == r.frecuencias_amplitud.size == 181
+    assert not np.isnan(r.mi_norm).any()
+    assert r.limite_matlab is False
+
+
+def test_por_omision_se_calcula_todo_y_no_el_tope_de_matlab():
+    """El tope de 178 dejó de ser el comportamiento normal: hay que pedirlo."""
+    r = comodulograma(Ctx(), senal(), FS, FS, p_ini=2.0, p_fin=8.0, pstep=2.0,
+                      a_ini=30.0, a_fin=120.0, astep=0.5)
+    assert r.bandas_calculadas == r.frecuencias_amplitud.size == 181
+    assert r.limite_matlab is False
+
+
+def test_se_puede_pedir_el_tope_de_matlab_para_comparar():
+    r = comodulograma(Ctx(), senal(), FS, FS, p_ini=2.0, p_fin=8.0, pstep=2.0,
+                      a_ini=30.0, a_fin=120.0, astep=0.5, limite_matlab=True)
+    assert r.bandas_calculadas == LIMITE_BANDAS_AMPLITUD
+    assert r.limite_matlab is True
+
+
+def test_calcular_de_mas_no_cambia_las_primeras_178_filas():
+    """Lo que hacía innecesaria la casilla que llegó a existir.
+
+    Cada fila del comodulograma sale de **su** banda de amplitud y de ninguna
+    otra: `S[ca, cp] = Σ m_amp[n, ca]·e^{i·m_fase[n, cp]}`. Así que reproducir
+    la referencia de MATLAB no exige recortar el barrido — basta con mirar las
+    primeras 178 filas del comodulograma completo.
+    """
+    args = dict(p_ini=2.0, p_fin=8.0, pstep=2.0, a_ini=30.0, a_fin=120.0, astep=0.5)
+    sig = senal()
+    recortado = comodulograma(Ctx(), sig, FS, FS, limite_matlab=True, **args)
+    completo = comodulograma(Ctx(), sig, FS, FS, **args)
+    n = LIMITE_BANDAS_AMPLITUD
+    assert np.array_equal(recortado.mi_norm[:n], completo.mi_norm[:n])
+    assert np.array_equal(recortado.mi[:n], completo.mi[:n])
+
+
+def test_admite_barridos_de_menos_de_178():
+    """Un barrido corto ya no es un error: se calcula entero."""
+    r = comodulograma(Ctx(), senal(), FS, FS, p_ini=2.0, p_fin=8.0, pstep=2.0,
+                      a_ini=30.0, a_fin=50.0, astep=0.5, limite_matlab=False)
+    assert r.bandas_calculadas == 41
+    assert not np.isnan(r.mi_norm).any()
+
+
+def test_recorta_en_nyquist_en_vez_de_abortar():
+    """Las bandas que no admiten filtro se quedan en NaN; el resto se calcula.
+
+    Abortar el barrido entero por las de arriba sería tirar trabajo útil.
+    """
+    r = comodulograma(Ctx(), senal(), FS, FS, p_ini=2.0, p_fin=8.0, pstep=2.0,
+                      a_ini=10.0, a_fin=600.0, astep=1.0, limite_matlab=False)
+    assert r.frecuencias_amplitud.size == 591
+    assert r.bandas_calculadas == 480, "la 480 llega a 499 Hz; la 481 ya tocaría 500"
+    assert np.all(np.isnan(r.mi_norm[480:]))
+    assert not np.isnan(r.mi_norm[:480]).any()
+
+
+def test_avisa_si_ni_la_primera_banda_cabe():
+    with pytest.raises(ValueError, match="Ninguna banda"):
+        comodulograma(Ctx(), senal(), FS, FS, p_ini=2.0, p_fin=8.0, pstep=2.0,
+                      a_ini=495.0, a_fin=600.0, astep=1.0, limite_matlab=False)
+
+
+def test_el_tope_de_filtro_coincide_con_lo_que_acepta_filtro_iir():
+    """`tope_banda_alta` no puede ser una estimación: si se separa de lo que
+    `filtro_iir` admite de verdad, el recorte deja bandas sin calcular o revienta."""
+    tope = tope_banda_alta(FS)
+    for f2, cabe in ((tope - 0.5, True), (tope - 0.01, True), (tope, False), (tope + 1, False)):
+        try:
+            filtro_iir(FS, f2 - 10.0, f2)
+            pudo = True
+        except ValueError:
+            pudo = False
+        assert pudo is cabe, f"f2={f2:g}: filtro_iir dice {pudo}, el tope decía {cabe}"

@@ -26,6 +26,8 @@ class Pac_plugin(IPlugin):
         self.vtk_widget = None
         self._context_view = None
         self._charts = []
+        self._altos = []          # la altura de cada grafico, en el mismo orden
+        self._cuadrados = []      # los que hay que dibujar cuadrados (las brujulas)
         self._brujula = None
         self._mapa_chart = None
         self._histograma_chart = None
@@ -171,10 +173,6 @@ class Pac_plugin(IPlugin):
         a2 = float(self.ui.ampHighFrequencySpinBox.value())
         tipo = self.ui.pacTypeComboBox.currentText()
 
-        if tipo == "PAC Psel":
-            self.alerts.info("PAC Psel todavía no está implementado.")
-            return
-
         # La casilla muestra 1 para el primer trial, como MATLAB; aquí se resta
         # uno porque Python indexa desde cero.
         indice = self.ui.trialSpinBox.value() - 1
@@ -191,7 +189,10 @@ class Pac_plugin(IPlugin):
         self.ui.createPacButton.setText("Computing...")
 
         comun = dict(fs_calculado=fs_calculado, fs=fs, p1=p1, p2=p2, a1=a1, a2=a2)
-        if self._usa_un_solo_trial():
+        if tipo == "PAC Psel":
+            # Psel concatena todos los trials, asi que recibe la matriz entera
+            handle = tasks.submit(cp.pac_psel, owner=self.meta.id, data=datos, **comun)
+        elif self._usa_un_solo_trial():
             handle = tasks.submit(cp.pac_un_trial, owner=self.meta.id,
                                   sig=datos[:, indice], **comun)
         else:
@@ -236,11 +237,18 @@ class Pac_plugin(IPlugin):
             if self.ui is None or resultado is None:
                 return
             self.ensure_vtk()
-            self.render_resultado(resultado, tipo)
+            if tipo == "PAC Psel":
+                self.render_psel(resultado)
+                detalle = f"{resultado.n_ciclos} ciclo(s)"
+                if resultado.ciclos_descartados:
+                    detalle += (f", {resultado.ciclos_descartados} omitido(s) por "
+                                f"quedar pegados al borde de la señal")
+            else:
+                self.render_resultado(resultado, tipo)
+                detalle = f"{resultado.n_trials} trial(s)"
             self._notify(
                 f"{tipo}: acoplamiento {abs(resultado.vector):.4f} "
-                f"en la fase {np.angle(resultado.vector):+.3f} rad "
-                f"({resultado.n_trials} trial(s))")
+                f"en la fase {np.angle(resultado.vector):+.3f} rad ({detalle})")
             self.mark_project_dirty()
         except Exception as e:
             self._log("render_resultado:", e)
@@ -258,7 +266,16 @@ class Pac_plugin(IPlugin):
     ALTO_HISTOGRAMA = 170
     LADO_BRUJULA = 320        # cuadrado: si no, los circulos salen elipses
     ALTO_SENAL = 150
+    ALTO_CICLOS = 180         # las pilas de ciclos de PAC Psel
     HUECO = 52
+    # Cuantas trazas individuales se dibujan en las pilas de ciclos. Con datos
+    # reales salen cientos y un vtkChartXY con cientos de series deja la
+    # interfaz inservible; el promedio se calcula sobre todas.
+    MAX_TRAZAS_CICLOS = 100
+    # Las marcas del eje logaritmico, las mismas del MATLAB: `v_YTick = [1.5,
+    # 2, 2.5]` etiquetadas con `round(10.^v_YTick)` -> 32, 100 y 316 Hz.
+    MARCAS_LOG = (1.5, 2.0, 2.5)
+    FONDO = (0.98, 0.98, 0.98)
 
     def ensure_vtk(self):
         if self.vtk_widget is not None and self._context_view is not None:
@@ -290,7 +307,7 @@ class Pac_plugin(IPlugin):
 
         self._context_view = vtk.vtkContextView()
         self._context_view.SetRenderWindow(self.vtk_widget.GetRenderWindow())
-        self._context_view.GetRenderer().SetBackground(0.98, 0.98, 0.98)
+        self._context_view.GetRenderer().SetBackground(*self.FONDO)
         self.vtk_widget.AddObserver(vtk.vtkCommand.EndInteractionEvent,
                                     self._sincronizar_eje_de_tiempo)
         self.vtk_widget.Initialize()
@@ -333,24 +350,242 @@ class Pac_plugin(IPlugin):
         self._histograma_chart = self._grafico_histograma(r)
         self._brujula = self._grafico_brujula(r)
         self._charts = [self._mapa_chart, self._histograma_chart, self._brujula]
+        self._altos = [self.ALTO_MAPA, self.ALTO_HISTOGRAMA, self.LADO_BRUJULA]
+        self._cuadrados = [self._brujula]
 
-        # Los cuatro paneles de senal comparten el eje de tiempo, como el
-        # `linkaxes(ax,'x')` de MATLAB: al hacer zoom en uno se mueven todos.
         self._charts_senal = []
-        for etiqueta, unidad, serie in (
-                ("Original", "Amplitud", r.senal),
-                ("Filtrada en fase", "Amplitud", r.banda_fase),
-                ("Fase instantánea", "rad", r.fase),
-                ("Filtrada en amplitud", "Amplitud", r.banda_amplitud)):
-            chart = self._grafico_senal(r.tiempo, serie, etiqueta, unidad)
-            self._charts_senal.append(chart)
+        if r.n_trials > 1:
+            # PAC Average: `f_Phase_PAC_Average` pone bajo el mapa un
+            # `plot(cos(index_pi))` como referencia de fase, y **no dibuja
+            # ninguna senal**. Antes aqui salian los cuatro paneles del PRIMER
+            # trial bajo un titulo que decia "promedio", lo que invita a leer
+            # como promediado algo que no lo es.
+            chart = self._grafico_senal(r.fases, np.cos(r.fases),
+                                        "Referencia: cos(fase)", "rad")
             self._charts.append(chart)
+            self._altos.append(self.ALTO_SENAL)
+        else:
+            # PAC de un trial: los cuatro paneles comparten el eje de tiempo,
+            # como el `linkaxes(ax,'x')` de MATLAB.
+            for etiqueta, unidad, serie in (
+                    ("Original", "Amplitud", r.senal),
+                    ("Filtrada en fase", "Amplitud", r.banda_fase),
+                    ("Fase instantánea", "rad", r.fase),
+                    ("Filtrada en amplitud", "Amplitud", r.banda_amplitud)):
+                chart = self._grafico_senal(r.tiempo, serie, etiqueta, unidad)
+                self._charts_senal.append(chart)
+                self._charts.append(chart)
+                self._altos.append(self.ALTO_SENAL)
 
         for chart in self._charts:
             escena.AddItem(chart)
         self._ajustar_alto_del_lienzo()
         self._reacomodar()
         self._context_view.GetRenderWindow().Render()
+
+    def render_psel(self, r):
+        """Los 13 paneles de PAC Psel, apilados y deslizables.
+
+        MATLAB abre **12 ventanas sueltas**, varias con dos `subplot` dentro —
+        unos 15 paneles repartidos por la pantalla—. Aquí van en una sola
+        columna, igual que ya se hizo con las 4 ventanas de PAC: doce ventanas
+        flotantes en una aplicación con pestañas no tienen sentido.
+
+        De los 15 paneles del original se quitan **dos duplicados exactos**: la
+        figura de la línea 252 es copia literal de la 245 (mismos datos, mismo
+        color, mismo grosor) y la de la 506 repite el mapa de la 398 sin el
+        coseno de abajo. Dibujar dos veces lo mismo no aporta nada.
+        """
+        escena = self._context_view.GetScene()
+        escena.ClearItems()
+        self._charts, self._altos, self._cuadrados = [], [], []
+        self._charts_senal = []
+        self._mapa_chart = self._histograma_chart = self._brujula = None
+
+        def agregar(chart, alto, cuadrado=False, es_senal=False):
+            self._charts.append(chart)
+            self._altos.append(alto)
+            if cuadrado:
+                self._cuadrados.append(chart)
+            if es_senal:
+                self._charts_senal.append(chart)
+            return chart
+
+        # 1-2. La señal concatenada y su banda de fase, con el eje compartido
+        for etiqueta, serie in (("Original", r.senal),
+                                ("Filtrada en fase", r.senal_filtrada)):
+            agregar(self._grafico_senal(r.tiempo, serie, etiqueta),
+                    self.ALTO_SENAL, es_senal=True)
+
+        # 3-5. Las tres pilas de ciclos con su promedio encima
+        for etiqueta, pila, promedio, color in (
+                ("Ciclos en la banda de fase", r.ciclos_theta, r.promedio_theta, (200, 30, 30)),
+                ("Ciclos sin filtrar", r.ciclos_full, r.promedio_full, (200, 30, 30)),
+                ("Ciclos en gamma (25-129 Hz)", r.ciclos_gamma, None, (20, 20, 20))):
+            agregar(self._grafico_ciclos(pila, promedio, etiqueta, color), self.ALTO_CICLOS)
+
+        # 6-7. El mapa fase/frecuencia en escala logarítmica, y debajo el coseno
+        # de referencia que el MATLAB dibuja para situar la fase
+        self._mapa_chart = agregar(
+            self._grafico_mapa_log(r.mapa, r.frecuencias, r.fases,
+                                   "PAC Psel — mapa fase/frecuencia", "Fase (rad)"),
+            self.ALTO_MAPA)
+        agregar(self._grafico_senal(r.fases, np.cos(r.fases), "Referencia: cos(fase)", "rad"),
+                self.ALTO_SENAL)
+
+        # 8-9. El tiempo-frecuencia promedio y el promedio del ritmo lento debajo
+        agregar(self._grafico_mapa_log(r.mapa_tf, r.frecuencias, r.tiempo_tf,
+                                       "Tiempo/frecuencia promedio", "Tiempo (s)"),
+                self.ALTO_MAPA)
+        agregar(self._grafico_senal(r.tiempo_tf, r.promedio_theta,
+                                    "Promedio del ritmo lento"), self.ALTO_SENAL)
+
+        # 10. El histograma
+        self._histograma_chart = agregar(self._grafico_histograma(r), self.ALTO_HISTOGRAMA)
+
+        # 11. La brújula del vector medio
+        self._brujula = agregar(self._grafico_brujula(r), self.LADO_BRUJULA, cuadrado=True)
+
+        # 12. El promedio sin filtrar, que el MATLAB dibuja aparte
+        agregar(self._grafico_senal(np.arange(r.promedio_full.size) / r.fs_efectiva,
+                                    r.promedio_full, "Promedio sin filtrar"),
+                self.ALTO_SENAL)
+
+        # 13. La brújula con los 16 vectores por grupo de bins, más el medio
+        agregar(self._grafico_brujula(r, extra=r.vectores_por_grupo),
+                self.LADO_BRUJULA, cuadrado=True)
+
+        for chart in self._charts:
+            escena.AddItem(chart)
+        self._ajustar_alto_del_lienzo()
+        self._reacomodar()
+        self._context_view.GetRenderWindow().Render()
+
+    def _grafico_ciclos(self, pila, promedio, etiqueta, color_promedio):
+        """Los ciclos detectados, uno encima de otro, con su promedio marcado.
+
+        Réplica de los `plot(m_lows_*)` con el `hold on` y el promedio grueso.
+
+        > **Se dibujan como mucho `MAX_TRAZAS_CICLOS` ciclos**, repartidos por
+        > toda la pila. Con datos reales —60 trials de 3 s y un ritmo de 5 Hz—
+        > salen unos 900 ciclos, y 900 series en un `vtkChartXY` dejan la
+        > interfaz inservible. El promedio, que es lo que se lee, se calcula
+        > **sobre todos**; el número real aparece en el título.
+        """
+        pila = np.asarray(pila, dtype=np.float64)
+        n_muestras, n_ciclos = pila.shape if pila.ndim == 2 else (pila.size, 0)
+        chart = vtk.vtkChartXY()
+        chart.SetShowLegend(False)
+        if n_ciclos == 0:
+            chart.SetTitle(f"{etiqueta} — sin ciclos")
+            return chart
+
+        x = np.arange(n_muestras, dtype=np.float64)
+        if n_ciclos <= self.MAX_TRAZAS_CICLOS:
+            columnas = np.arange(n_ciclos)
+        else:
+            columnas = np.unique(np.linspace(0, n_ciclos - 1,
+                                             self.MAX_TRAZAS_CICLOS).astype(int))
+
+        for c in columnas:
+            tabla = vtk.vtkTable()
+            tabla.AddColumn(self._columna(x, "Muestra"))
+            tabla.AddColumn(self._columna(np.nan_to_num(pila[:, c]), f"c{c}"))
+            linea = chart.AddPlot(vtk.vtkChart.LINE)
+            linea.SetInputData(tabla, 0, 1)
+            linea.SetWidth(0.6)
+            linea.SetColor(150, 170, 200, 70)      # tenue: son el fondo
+            linea.LegendVisibilityOff()
+
+        if promedio is not None:
+            prom = np.nan_to_num(np.asarray(promedio, dtype=np.float64))
+            tabla = vtk.vtkTable()
+            tabla.AddColumn(self._columna(np.arange(prom.size, dtype=np.float64), "Muestra"))
+            tabla.AddColumn(self._columna(prom, "Promedio"))
+            linea = chart.AddPlot(vtk.vtkChart.LINE)
+            linea.SetInputData(tabla, 0, 1)
+            linea.SetWidth(2.5)
+            linea.SetColor(*color_promedio, 255)
+            linea.LegendVisibilityOff()
+
+        mostrados = len(columnas)
+        sufijo = "" if mostrados == n_ciclos else f", se dibujan {mostrados}"
+        chart.SetTitle(f"{etiqueta} — {n_ciclos} ciclos{sufijo}")
+        chart.GetAxis(vtk.vtkAxis.BOTTOM).SetTitle("Muestra dentro de la ventana")
+        chart.GetAxis(vtk.vtkAxis.LEFT).SetTitle("Amplitud")
+        return chart
+
+    def _grafico_mapa_log(self, matriz, frecuencias, eje_x, titulo, etiqueta_x):
+        """Un mapa con el eje de frecuencias en escala logarítmica.
+
+        **No puede usar el mismo código que `_grafico_mapa`.** Aquel reparte las
+        filas a intervalos iguales, que es lo que hace `imagesc` y lo correcto
+        para el eje lineal de PAC. Aquí el MATLAB pasa por `pcolor` y además
+        convierte el eje a `log10`, así que las filas van a alturas desiguales:
+        hay que remuestrear primero (`remuestrear_en_log`).
+
+        Las marcas del eje son las del original —1,5, 2 y 2,5 en logaritmo,
+        etiquetadas con `round(10^v)`: 32, 100 y 316 Hz— y solo se ponen las que
+        caen dentro del rango.
+        """
+        datos, log_min, log_max = cp.remuestrear_en_log(
+            np.nan_to_num(np.asarray(matriz, dtype=np.float64),
+                          nan=0.0, posinf=0.0, neginf=0.0),
+            frecuencias)
+        datos = datos.astype(np.float32)
+        n_freq, n_x = datos.shape
+
+        x = np.asarray(eje_x, dtype=np.float64)
+        paso_x = (x[-1] - x[0]) / max(1, n_x - 1)
+        paso_y = (log_max - log_min) / max(1, n_freq - 1)
+
+        img = vtk.vtkImageData()
+        img.SetDimensions(n_x, n_freq, 1)
+        img.SetSpacing(paso_x, paso_y, 1.0)
+        img.SetOrigin(float(x[0]), log_min, 0.0)
+        # `remuestrear_en_log` ya devuelve la fila 0 en la frecuencia mas baja,
+        # que es como VTK dibuja hacia arriba: aqui no hay que voltear nada.
+        img.GetPointData().SetScalars(numpy_support.numpy_to_vtk(
+            np.ascontiguousarray(datos).ravel(), deep=True, array_type=vtk.VTK_FLOAT))
+        img.Modified()
+
+        finitos = datos[np.isfinite(datos)]
+        vmin, vmax = (float(finitos.min()), float(finitos.max())) if finitos.size else (0.0, 1.0)
+        if vmax <= vmin:
+            vmax = vmin + 1.0
+
+        lut = vtk.vtkColorTransferFunction()
+        for fraccion, (rr, gg, bb) in zip(
+                (0.0, 0.125, 0.375, 0.625, 0.875, 1.0),
+                ((0.0, 0.0, 0.5), (0.0, 0.0, 1.0), (0.0, 1.0, 1.0),
+                 (1.0, 1.0, 0.0), (1.0, 0.0, 0.0), (0.5, 0.0, 0.0))):
+            lut.AddRGBPoint(vmin + fraccion * (vmax - vmin), rr, gg, bb)
+        lut.SetNanColor(*self.FONDO)
+        lut.SetNanOpacity(0.0)
+
+        chart = vtk.vtkChartHistogram2D()
+        chart.SetInputData(img, 0)
+        chart.SetTransferFunction(lut)
+        chart.SetTitle(titulo)
+        eje_horizontal = chart.GetAxis(vtk.vtkAxis.BOTTOM)
+        eje_horizontal.SetTitle(etiqueta_x)
+        eje_horizontal.SetBehavior(vtk.vtkAxis.FIXED)
+        eje_horizontal.SetRange(float(x[0]), float(x[-1] + paso_x))
+
+        eje_y = chart.GetAxis(vtk.vtkAxis.LEFT)
+        eje_y.SetTitle("Frecuencia (Hz) — log")
+        eje_y.SetBehavior(vtk.vtkAxis.FIXED)
+        eje_y.SetRange(log_min, log_max)
+
+        posiciones = vtk.vtkDoubleArray()
+        etiquetas = vtk.vtkStringArray()
+        for v in self.MARCAS_LOG:
+            if log_min <= v <= log_max:
+                posiciones.InsertNextValue(v)
+                etiquetas.InsertNextValue(str(int(round(10 ** v))))
+        if posiciones.GetNumberOfTuples():
+            eje_y.SetCustomTickPositions(posiciones, etiquetas)
+        return chart
 
     def _grafico_mapa(self, r, titulo):
         """El mapa fase-frecuencia, con el mismo patrón vectorizado del wavelet."""
@@ -437,8 +672,12 @@ class Pac_plugin(IPlugin):
         chart.GetAxis(vtk.vtkAxis.LEFT).SetTitle("Energía")
         return chart
 
-    def _grafico_brujula(self, r):
+    def _grafico_brujula(self, r, extra=None):
         """El vector medio de acoplamiento, como la `compass` de MATLAB.
+
+        Con `extra` dibuja además esos vectores en azul claro detrás del
+        principal: es el segundo `compass` de `f_Phase_PAC_Pdetect`, que
+        superpone los 16 vectores por grupo de bins y encima el vector medio.
 
         VTK no trae gráfico polar, así que se dibuja a mano sobre un chart
         normal: dos círculos de referencia, la cruz de los ejes y la flecha.
@@ -450,12 +689,17 @@ class Pac_plugin(IPlugin):
         gráfico un recuadro **cuadrado**, no una franja del ancho completo.
         """
         v = r.vector
-        radio = max(abs(v.real), abs(v.imag))
+        otros = np.asarray(extra, dtype=np.complex128).ravel() if extra is not None             else np.empty(0, dtype=np.complex128)
+        candidatos = [abs(v.real), abs(v.imag)]
+        if otros.size:
+            candidatos += [float(np.abs(otros.real).max()), float(np.abs(otros.imag).max())]
+        radio = max(candidatos)
         if not np.isfinite(radio) or radio <= 0:
             radio = 1.0
 
         chart = vtk.vtkChartXY()
-        chart.SetTitle(f"Vector medio — magnitud {abs(v):.4f}, "
+        sufijo = f" + {otros.size} por grupo" if otros.size else ""
+        chart.SetTitle(f"Vector medio{sufijo} — magnitud {abs(v):.4f}, "
                        f"fase {np.angle(v):+.3f} rad")
 
         def traza(xs, ys, color, grosor):
@@ -477,6 +721,11 @@ class Pac_plugin(IPlugin):
         # La cruz de los ejes
         traza([-radio, radio], [0.0, 0.0], (170, 170, 170, 255), 1.0)
         traza([0.0, 0.0], [-radio, radio], (170, 170, 170, 255), 1.0)
+
+        # Los vectores del segundo compas, detras y mas tenues
+        for w in otros:
+            if np.isfinite(w.real) and np.isfinite(w.imag):
+                traza([0.0, w.real], [0.0, w.imag], (90, 150, 230, 160), 1.4)
 
         # La flecha, con su punta
         traza([0.0, v.real], [0.0, v.imag], (40, 90, 190, 255), 2.5)
@@ -521,18 +770,16 @@ class Pac_plugin(IPlugin):
         return arr
 
     def _alturas(self):
-        """La altura en píxeles de cada gráfico, en el orden en que se apilan."""
-        alturas = []
-        for chart in self._charts:
-            if chart is self._mapa_chart:
-                alturas.append(self.ALTO_MAPA)
-            elif chart is self._histograma_chart:
-                alturas.append(self.ALTO_HISTOGRAMA)
-            elif chart is self._brujula:
-                alturas.append(self.LADO_BRUJULA)
-            else:
-                alturas.append(self.ALTO_SENAL)
-        return alturas
+        """La altura en píxeles de cada gráfico, en el orden en que se apilan.
+
+        La lista la llena quien dibuja. Antes se deducía comparando cada gráfico
+        contra `self._mapa_chart` y compañía, lo que bastaba con los seis de PAC
+        pero no con los trece de Psel, donde hay dos mapas, dos brújulas y tres
+        pilas de ciclos.
+        """
+        if len(self._altos) == len(self._charts):
+            return list(self._altos)
+        return [self.ALTO_SENAL] * len(self._charts)
 
     def _ajustar_alto_del_lienzo(self):
         """Hace el lienzo tan alto como la pila necesite; el resto lo desliza
@@ -563,7 +810,7 @@ class Pac_plugin(IPlugin):
         for chart, h in zip(self._charts, self._alturas()):
             y -= h
             chart.SetAutoSize(False)
-            if chart is self._brujula:
+            if chart in self._cuadrados:
                 # Cuadrada y centrada: con el ancho completo los circulos
                 # saldrian como elipses y la flecha apuntaria a un angulo falso.
                 lado = float(min(h, ancho - 2 * margen_x))

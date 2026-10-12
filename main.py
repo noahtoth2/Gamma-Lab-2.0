@@ -14,11 +14,16 @@ from core.plugins.manager import PluginManager
 from core.services.data_store import DataStore
 from core.services.fileio_service import FileIOService
 from core.services.task_service import TaskService
+from core.utils import vtk_temporizador
 
 
 
 
 def main():
+    # Antes de crear ningun widget de VTK: le pone al temporizador de
+    # QVTKRenderWindowInteractor la guarda que le falta, que es lo que
+    # cerraba la aplicacion al cambiar de pestana (nº 24).
+    vtk_temporizador.instalar()
     # On Windows, set AppUserModelID so the taskbar uses our icon
     if sys.platform == 'win32':
         try:

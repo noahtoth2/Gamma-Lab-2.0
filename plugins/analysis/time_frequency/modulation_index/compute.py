@@ -12,7 +12,7 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.signal import hilbert
 
-from core.filters.iir import bifiltro, filtro_iir
+from core.filters.iir import bifiltro, filtro_iir, tope_banda_alta
 from core.filters.wavelet import tasa_efectiva
 
 ANCHO_BANDA_FASE = 1.0        # f_PAC_sing filtra [f, f+1] para la fase
@@ -57,6 +57,8 @@ class ResultadoMI:
     fs_efectiva: float
     duracion_s: float         # cuánto dura el trial ya submuestreado
     ciclos_banda_lenta: float # cuántos ciclos de `p_ini` caben en esa duración
+    limite_matlab: bool       # si se aplicó el tope de 178; si no, lo que falte es
+                              # por Nyquist, y el aviso al usuario tiene que decir cuál
 
 
 def eje_barrido(inicio, fin, paso):
@@ -67,7 +69,8 @@ def eje_barrido(inicio, fin, paso):
     return inicio + paso * np.arange(max(n, 0), dtype=np.float64)
 
 
-def comodulograma(ctx, sig, fs_calculado, fs, p_ini, p_fin, pstep, a_ini, a_fin, astep):
+def comodulograma(ctx, sig, fs_calculado, fs, p_ini, p_fin, pstep, a_ini, a_fin, astep,
+                  limite_matlab=False):
     """El comodulograma de `f_PAC_sing`.
 
     Para cada frecuencia de fase extrae la fase instantánea de una banda de
@@ -80,6 +83,15 @@ def comodulograma(ctx, sig, fs_calculado, fs, p_ini, p_fin, pstep, a_ini, a_fin,
     Los anchos de banda son **fijos**: `pstep` y `astep` solo mueven dónde se
     centra cada banda, no cuán ancha es. Si `astep < 10` las bandas de amplitud
     se solapan, y lo mismo con `pstep < 1` en la fase.
+
+    Por omisión se calcula **el barrido entero**, salvo las bandas de arriba
+    que no admiten filtro por quedar pegadas al Nyquist, que se quedan en `NaN`.
+
+    `limite_matlab=True` reproduce en cambio el tope de 178 de `f_PAC_sing`. No
+    lo usa la interfaz: está para las pruebas que comparan contra la referencia.
+    Da igual para esa comparación —las primeras 178 filas salen idénticas bit a
+    bit de las dos formas, porque cada fila depende solo de su banda de amplitud
+    y de ninguna otra—, pero permite reproducir también las filas vacías.
     """
     if ctx is not None and ctx.cancelled:
         return None
@@ -99,10 +111,25 @@ def comodulograma(ctx, sig, fs_calculado, fs, p_ini, p_fin, pstep, a_ini, a_fin,
     if rango_fase.size == 0 or rango_amplitud.size == 0:
         raise ValueError("Los rangos de barrido quedaron vacíos; revisa los pasos.")
 
-    # Cuántas bandas de amplitud se filtran de verdad
+    # --- Cuántas bandas de amplitud se filtran de verdad
     n_amp_total = rango_amplitud.size
-    if LIMITE_BANDAS_AMPLITUD is None:
-        n_calculadas = n_amp_total
+
+    # Las que admiten filtro. Son siempre las primeras, porque el barrido crece
+    # y lo que estorba es el Nyquist por arriba.
+    limite_filtro = tope_banda_alta(fs_efectiva)
+    n_filtrables = int(np.count_nonzero(
+        rango_amplitud + ANCHO_BANDA_AMPLITUD < limite_filtro))
+
+    if not limite_matlab:
+        # El barrido entero, menos lo que el Nyquist impida. No se aborta por
+        # esas: se dejan en NaN y se avisa, que es más útil que no calcular nada.
+        n_calculadas = n_filtrables
+        if n_calculadas == 0:
+            raise ValueError(
+                f"Ninguna banda de amplitud cabe por debajo del Nyquist efectivo "
+                f"({fs_efectiva / 2.0:g} Hz): la primera ya llegaría a "
+                f"{rango_amplitud[0] + ANCHO_BANDA_AMPLITUD:g} Hz. Baja la frecuencia "
+                f"inicial de amplitud o sube la frecuencia de muestreo.")
     else:
         if n_amp_total < LIMITE_BANDAS_AMPLITUD:
             raise ValueError(
@@ -111,20 +138,19 @@ def comodulograma(ctx, sig, fs_calculado, fs, p_ini, p_fin, pstep, a_ini, a_fin,
                 f"hace falta que (fin − inicio) ≥ {LIMITE_BANDAS_AMPLITUD - 1} × paso.")
         n_calculadas = min(LIMITE_BANDAS_AMPLITUD, n_amp_total)
 
-    # El Nyquist se comprueba sobre la banda más alta que se filtra **de verdad**,
-    # no sobre el final del barrido: las frecuencias que el límite de 178 deja
-    # fuera nunca llegan a tener filtro, ni aquí ni en MATLAB, así que no importa
-    # a qué altura queden. Con los valores por defecto —10 : 0,5 : 500 sobre
-    # 1.000 Hz— el barrido termina en 500 Hz, pero la banda 178 es la de
-    # 98,5-108,5 Hz y cabe de sobra. Mirar el final del barrido rechazaba por
-    # Nyquist justo el caso por defecto, que en MATLAB corre sin problema.
-    tope = rango_amplitud[n_calculadas - 1] + ANCHO_BANDA_AMPLITUD
-    nyquist = fs_efectiva / 2.0
-    if tope >= nyquist:
-        raise ValueError(
-            f"La banda de amplitud más alta que se calcula llegaría a {tope:g} Hz y el "
-            f"Nyquist efectivo es {nyquist:g} Hz. Baja la frecuencia final de amplitud, "
-            f"reduce el paso de amplitud o sube la frecuencia de muestreo.")
+        # El Nyquist se comprueba sobre la banda más alta que se filtra **de
+        # verdad**, no sobre el final del barrido: las frecuencias que el tope de
+        # 178 deja fuera nunca llegan a tener filtro, ni aquí ni en MATLAB, así
+        # que da igual a qué altura queden. Con los valores por defecto —10 : 0,5
+        # : 500 sobre 1.000 Hz— el barrido termina en 500 Hz, pero la banda 178 es
+        # la de 98,5-108,5 Hz y cabe de sobra. Mirar el final del barrido
+        # rechazaba justo el caso por defecto, que en MATLAB corre sin problema.
+        if n_calculadas > n_filtrables:
+            tope = rango_amplitud[n_calculadas - 1] + ANCHO_BANDA_AMPLITUD
+            raise ValueError(
+                f"La banda de amplitud más alta que se calcula llegaría a {tope:g} Hz y el "
+                f"Nyquist efectivo es {fs_efectiva / 2.0:g} Hz. Baja la frecuencia final de "
+                f"amplitud, reduce el paso de amplitud o sube la frecuencia de muestreo.")
 
     x = np.nan_to_num(np.asarray(sig, dtype=np.float64).ravel(),
                       nan=0.0, posinf=0.0, neginf=0.0)[::factor]
@@ -181,4 +207,5 @@ def comodulograma(ctx, sig, fs_calculado, fs, p_ini, p_fin, pstep, a_ini, a_fin,
         mi_norm=mi_norm, mi=mi,
         frecuencias_fase=rango_fase, frecuencias_amplitud=rango_amplitud,
         bandas_calculadas=n_calculadas, fs_efectiva=fs_efectiva,
-        duracion_s=duracion, ciclos_banda_lenta=duracion * p_ini)
+        duracion_s=duracion, ciclos_banda_lenta=duracion * p_ini,
+        limite_matlab=limite_matlab)
