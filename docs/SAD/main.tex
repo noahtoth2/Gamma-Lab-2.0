@@ -237,39 +237,40 @@ Gamma Lab se ejecuta en un único proceso sin fronteras de aislamiento entre ell
 
 Estas fallas son difíciles de diagnosticar por la ausencia de observabilidad. El sistema no utiliza un mecanismo de registro estructurado. La información se emite con llamadas a \texttt{print}, sin niveles de severidad, marcas de tiempo ni identificación del componente de origen. Además, como la aplicación se ejecuta desde una consola, esa salida no se persiste y se pierde justamente cuando ocurre un cierre inesperado. Ante un fallo reportado no existe un registro que permita reconstruir qué operación se ejecutaba ni en qué estado estaba el sistema, por lo que el diagnóstico depende de reproducir manualmente el error.
 
-\subsection{L\'imites del sistema}
+\subsection{Limitaciones del sistema}
 
-\subsubsection{Dentro del alcance}
+\subsubsection{Software}
+Las siguientes condiciones tecnológicas forman parte del punto de partida del sistema:
 \begin{itemize}[nosep]
-    \item \textbf{Ingreso y lectura:} Carga nativa de registros electroencefalográficos (EEG) almacenados localmente en formatos estándares .edf, .abf, .bdf y .mat.
-    \item \textbf{Procesamiento y segmentación:} Aplicación de filtros digitales de corte, remoción de artefactos de estimulación y segmentación de señales en ensayos (trials) mediante umbrales en mV u operaciones de intervalo interestímulo (ISI).
-    \item \textbf{Procesamiento espectral y tiempo-frecuencia:} Cálculo de promedios de Potenciales Relacionados a Eventos (ERP) con visualización de Butterfly plot bajo demanda, análisis de Transformada Rápida de Fourier (FFT), Densidad Espectral de Potencia (PSD) y Transformada Wavelet Continua con normalización y escalas personalizables.
-    \item \textbf{Análisis de conectividad y acoplamiento avanzado:} Ejecución del análisis de acoplamiento fase-amplitud (PAC) tanto de un canal como cruzado intercanal.
-    \item \textbf{Persistencia del espacio de trabajo:} Guardado y restauración del estado de la sesión analítica mediante archivos de proyecto local con extensión personalizada .glab.
-    \item \textbf{Exportación de resultados:} Generación de archivos de datos numéricos estructurados (CSV con ejes X simplificados, Excel, JSON) y representaciones gráficas de alta resolución, incluyendo formato de imagen estándar (PNG, JPG, TIFF) e imagen vectorial científica (EMF).
+    \item GammaLab está desarrollado en Python y se ejecuta sobre CPython, su intérprete de referencia.
+    \item La interfaz gráfica está construida con el \textit{framework} Qt, mediante su enlace oficial para Python, PySide6.
+    \item La visualización de señales y resultados se realiza con la librería VTK, que utiliza OpenGL como motor de renderizado.
+    \item La arquitectura base del sistema es un microkernel, en el que un núcleo central coordina un conjunto de plugins.
+    \item Los plugins existentes se rigen por un contrato común de extensión, la interfaz \texttt{IPlugin}.
+    \item La aplicación se distribuye como un instalador independiente exclusivo para Windows de 64 bits. No contempla versiones web, móviles ni para sistemas Unix o macOS.
+    \item La aplicación es de uso individual. No incorpora control de acceso multiusuario, autenticación en red ni mecanismos de colaboración simultánea.
 \end{itemize}
 
-\subsubsection{Fuera del alcance}
+\subsubsection{Hardware}
+El sistema debe operar sobre la infraestructura con la que hoy cuenta el laboratorio:
 \begin{itemize}[nosep]
-    \item La comunicación o adquisición de señales EEG en tiempo real mediante conexiones directas a equipos de amplificación, electrodos o diademas inalámbricas.
-    \item La persistencia de proyectos en bases de datos centralizadas, servicios en la nube, servidores remotos o API web distribuidas; toda la persistencia es local e individual.
-    \item El soporte operativo para plataformas web, sistemas móviles o sistemas operativos Unix/macOS en distribución comercial nativa (el instalador standalone se restringe a Windows de 64 bits).
-    \item Mecanismos de control de acceso multiusuario, autenticación de seguridad en red, cifrado de datos clínicos o sincronización colaborativa síncrona.
+    \item Los equipos disponen de una capacidad de memoria RAM limitada.
+    \item Los equipos cuentan con un número limitado de núcleos de procesamiento.
+    \item La aceleración gráfica depende de la GPU y de los controladores OpenGL instalados en cada equipo.
+    \item La aplicación no se conecta con equipos de adquisición, como amplificadores, electrodos o diademas inalámbricas.
 \end{itemize}
 
-\subsubsection{Entradas externas}
+\subsubsection{Datos}
+Las características de los datos que procesa el sistema también condicionan su diseño:
 \begin{itemize}[nosep]
-    \item  Señales neurofisiológicas digitalizadas en formatos binarios compatibles (.edf, .abf, .bdf, .mat).
-    \item Configuración alfanumérica de entrada por el usuario clínico (frecuencias de muestreo, umbrales de trial en mV, bandas de frecuencia de fase/amplitud para PAC/PLV y ciclos de wavelet).
-    \item Eventos de interacción directa del investigador con la GUI mediante teclado y ratón para realizar zoom multidireccional, desplazamiento temporal (pan) y selección de puntos específicos sobre las gráficas para la toma de medidas.
-\end{itemize}
-
-\subsubsection{Salidas externas}
-\begin{itemize}[nosep]
-    \item Gráficas 2D renderizadas mediante VTK embebido en PySide6, tales como comodulogramas de PAC, mapas de calor de coherencia temporal-frecuencial y espectrogramas Wavelet.
-    \item Archivos con metadatos y estados serializados .glab que contienen los análisis intermedios, rutas absolutas y configuraciones del proyecto.
-    \item Tablas de resultados analíticos en formato Excel (.xlsx), JSON y archivos CSV optimizados para evitar redundancia de ejes temporales.
-    \item Archivos de imagen estándar (PNG/JPG/TIFF) y gráficos vectoriales de alta precisión (EMF) para uso directo en publicaciones indexadas.
+    \item El sistema trabaja exclusivamente con señales previamente registradas. No adquiere ni procesa señales EEG en tiempo real.
+    \item Las señales neurofisiológicas se reciben en formatos binarios ABF, EDF, BDF y MAT.
+    \item Cada señal se carga completa en memoria al momento de abrirse.
+    \item Los datos numéricos se representan en doble precisión (\texttt{float64}).
+    \item Los registros EDF pueden contener canales con frecuencias de muestreo distintas entre sí.
+    \item El estado de la aplicación se conserva en un repositorio compartido en memoria, el \texttt{DataStore}.
+    \item La persistencia de los proyectos es local e individual, en el equipo del usuario. No se utilizan bases de datos centralizadas, servicios en la nube ni servidores remotos.
+    \item Los datos de las señales se almacenan sin mecanismos de cifrado.
 \end{itemize}
 
 % ======================================================================
