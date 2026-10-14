@@ -1,0 +1,28 @@
+\babel@toc {spanish}{}\relax 
+\contentsline {table}{\numberline {1}{\ignorespaces Acr\'onimos y t\'erminos utilizados en el documento}}{6}{table.1}%
+\contentsline {table}{\numberline {2}{\ignorespaces Stakeholders de GammaLab v2.0, rol según el PMP y necesidades que condicionan la arquitectura}}{10}{table.2}%
+\contentsline {table}{\numberline {3}{\ignorespaces Matriz de interés de los stakeholders por atributo de calidad}}{11}{table.caption.1}%
+\contentsline {table}{\numberline {4}{\ignorespaces Criterios de éxito del PMP con impacto arquitectónico}}{11}{table.4}%
+\contentsline {table}{\numberline {5}{\ignorespaces Resumen de los atributos de calidad de GammaLab v2.0}}{12}{table.5}%
+\contentsline {table}{\numberline {6}{\ignorespaces Compromisos entre atributos de calidad y decisión adoptada}}{15}{table.6}%
+\contentsline {table}{\numberline {7}{\ignorespaces Supuestos de GammaLab v2.0, su fuente y su impacto}}{16}{table.7}%
+\contentsline {table}{\numberline {8}{\ignorespaces ADRs resumidas: decisión, motivación y consecuencias.}}{22}{table.caption.3}%
+\contentsline {table}{\numberline {9}{\ignorespaces Patrones arquitectónicos aplicados en GammaLab 2.0.}}{23}{table.caption.4}%
+\contentsline {table}{\numberline {10}{\ignorespaces Casos de uso del subsistema Interfaz y Usabilidad}}{26}{table.caption.6}%
+\contentsline {table}{\numberline {11}{\ignorespaces Casos de uso del subsistema N\'ucleo y Ciclo de Vida}}{27}{table.caption.7}%
+\contentsline {table}{\numberline {12}{\ignorespaces Casos de uso del subsistema Preprocesamiento}}{28}{table.caption.8}%
+\contentsline {table}{\numberline {13}{\ignorespaces Casos de uso del subsistema An\'alisis}}{29}{table.caption.9}%
+\contentsline {table}{\numberline {14}{\ignorespaces Casos de uso del subsistema Exportaci\'on}}{30}{table.caption.10}%
+\contentsline {table}{\numberline {15}{\ignorespaces Extensiones representadas en la vista lógica.}}{34}{table.caption.24}%
+\contentsline {table}{\numberline {16}{\ignorespaces Relaciones estructurales de la vista lógica.}}{36}{table.caption.28}%
+\contentsline {table}{\numberline {17}{\ignorespaces Trazabilidad entre elementos de la vista lógica y requerimientos.}}{37}{table.caption.29}%
+\contentsline {table}{\numberline {18}{\ignorespaces Escenario de calidad 1 --- Integración de un plugin externo}}{40}{table.caption.32}%
+\contentsline {table}{\numberline {19}{\ignorespaces Escenario de calidad 2 --- Carga de señal de gran tamaño}}{40}{table.caption.33}%
+\contentsline {table}{\numberline {20}{\ignorespaces Escenario de calidad 3 --- Manejo de errores en tiempo de ejecución}}{41}{table.caption.34}%
+\contentsline {table}{\numberline {21}{\ignorespaces Escenario de calidad 4 --- Exportación de datos o gráficas}}{41}{table.caption.35}%
+\contentsline {table}{\numberline {22}{\ignorespaces Escenario de calidad 5 --- Operación por un usuario sin experiencia técnica}}{42}{table.caption.36}%
+\contentsline {table}{\numberline {23}{\ignorespaces Escenario de calidad 6 --- Rendimiento con múltiples señales cargadas}}{42}{table.caption.37}%
+\contentsline {table}{\numberline {24}{\ignorespaces Escenario de calidad 7 --- Resiliencia ante archivos corruptos o incompatibles}}{43}{table.caption.38}%
+\contentsline {table}{\numberline {25}{\ignorespaces Escenario de calidad 8 --- Consistencia entre datos ingresados y gráficas generadas}}{43}{table.caption.39}%
+\contentsline {table}{\numberline {26}{\ignorespaces Versiones de dependencias externas ancladas en \texttt {requirements.txt}}}{44}{table.26}%
+\contentsline {table}{\numberline {27}{\ignorespaces M\'etricas, m\'etodo de verificaci\'on y criterio de aceptaci\'on por atributo de calidad}}{45}{table.27}%
