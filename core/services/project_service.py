@@ -12,10 +12,9 @@ from core.filters.trials import cut_trials_single_channel
 
 SCHEMA_VERSION = "1.0"
 
-# PAC excluded: no working compute method yet.
 ANALYSIS_PLUGIN_NAMES = [
     "FFT", "FFT Average", "PSD", "PSD Average", "Relative PSD",
-    "Average", "Event Related Potential", "Wavelet", "Wavelet Average",
+    "Average", "Event Related Potential", "Wavelet", "Wavelet Average", "PAC",
 ]
 
 

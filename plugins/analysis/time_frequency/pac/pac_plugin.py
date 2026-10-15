@@ -7,6 +7,7 @@ from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from vtkmodules.util import numpy_support
 
 from core.plugins.interfaces import IPlugin
+from core.utils.vtk_context_menu import VTKContextMenu
 from plugins.analysis.time_frequency.pac import compute as cp
 from plugins.analysis.time_frequency.pac.pac_plugin_ui import Ui_Pac
 
@@ -36,6 +37,11 @@ class Pac_plugin(IPlugin):
         self._scroll = None
         self._handle = None
         self._calculando = False
+        self.vtk_menu = None
+        self._params_en_curso = None
+        self._restaurando = False        # apply_analysis_params recalcula al abrir un proyecto
+        self._corrida_restaura = False   # la ejecucion en curso viene de una restauracion
+        self._ultimo = None      # parametros + resultado de la ultima ejecucion
 
     # =====================================================
     # === Ciclo de vida
@@ -139,6 +145,7 @@ class Pac_plugin(IPlugin):
     # === Lógica principal
     # =====================================================
     def on_create_pac(self):
+        self._corrida_restaura, self._restaurando = self._restaurando, False
         tasks = self.kernel.get_service("TaskService") if self.kernel else None
         if tasks is None:
             self.alerts.error("El servicio de tareas no está disponible.")
@@ -179,6 +186,17 @@ class Pac_plugin(IPlugin):
         if self._usa_un_solo_trial() and not (0 <= indice < datos.shape[1]):
             self.alerts.error(f"El trial {indice + 1} no existe; hay {datos.shape[1]}.")
             return
+
+        senal = self.get_active_signal()
+        self._params_en_curso = {
+            "señal": getattr(senal, "name", ""),
+            "canal": getattr(trials, "channel_name", ""),
+            "tipo": tipo,
+            "sample_fq_hz": fs,
+            "p1_hz": p1, "p2_hz": p2,
+            "a1_hz": a1, "a2_hz": a2,
+            "trial": (indice + 1) if self._usa_un_solo_trial() else "todos",
+        }
 
         tasks.cancel_all_from(self.meta.id)
         self._terminar_calculo()
@@ -246,10 +264,13 @@ class Pac_plugin(IPlugin):
             else:
                 self.render_resultado(resultado, tipo)
                 detalle = f"{resultado.n_trials} trial(s)"
+            self._ultimo = {"parametros": self._params_en_curso, "resultado": resultado}
+            self._actualizar_menu()
             self._notify(
                 f"{tipo}: acoplamiento {abs(resultado.vector):.4f} "
                 f"en la fase {np.angle(resultado.vector):+.3f} rad ({detalle})")
-            self.mark_project_dirty()
+            if not self._corrida_restaura:
+                self.mark_project_dirty()
         except Exception as e:
             self._log("render_resultado:", e)
             self.alerts.error(f"No se pudo dibujar PAC: {e}")
@@ -312,6 +333,13 @@ class Pac_plugin(IPlugin):
                                     self._sincronizar_eje_de_tiempo)
         self.vtk_widget.Initialize()
         self.vtk_widget.Start()
+
+        self.vtk_menu = VTKContextMenu(
+            chart=[], vtk_widget=self.vtk_widget, plugin_name="PAC",
+            measurements_enabled=False, parent=self.widget)
+        self.vtk_menu.set_datastore(self.kernel.get_service("DataStore"))
+        for fmt in ("csv", "xlsx", "json"):
+            self.vtk_menu.add_action(f"Export PAC results ({fmt})", partial(self.exportar_resultados, fmt))
 
     def _sincronizar_eje_de_tiempo(self, *_):
         """Hace que los cuatro paneles de señal compartan el eje de tiempo.
@@ -821,6 +849,57 @@ class Pac_plugin(IPlugin):
             y -= self.HUECO
 
     # =====================================================
+    # === Exportación
+    # =====================================================
+    def _actualizar_menu(self):
+        """Apunta el menú contextual a los gráficos y al canal actuales."""
+        if self.vtk_menu is None:
+            return
+        self.vtk_menu.set_chart(list(self._charts))
+        params = (self._ultimo or {}).get("parametros") or {}
+        self.vtk_menu.set_signal_name(params.get("señal") or "signal")
+        self.vtk_menu.set_channel_name(params.get("canal") or None)
+
+    @staticmethod
+    def _num(x):
+        """float para exportar; NaN e infinitos salen vacíos (JSON no los admite)."""
+        x = float(x)
+        return x if np.isfinite(x) else None
+
+    def _secciones_resultado(self) -> dict:
+        """Parámetros, resumen, histograma de fase y mapa de la última ejecución."""
+        r = self._ultimo["resultado"]
+        p = self._ultimo["parametros"]
+        n = self._num
+
+        resumen = [["magnitud_vector_medio", n(abs(r.vector))],
+                   ["angulo_vector_medio_rad", n(np.angle(r.vector))],
+                   ["fs_efectiva_hz", n(r.fs_efectiva)]]
+        if hasattr(r, "n_ciclos"):
+            resumen += [["n_ciclos", int(r.n_ciclos)],
+                        ["ciclos_descartados", int(r.ciclos_descartados)],
+                        ["vpp", n(r.vpp)], ["vpp_full", n(r.vpp_full)], ["vrms", n(r.vrms)]]
+        else:
+            resumen += [["n_trials", int(r.n_trials)]]
+
+        encabezado_mapa = ["frecuencia_hz"] + [f"fase_{f:.4f}" for f in r.fases]
+        filas_mapa = [[n(fr)] + [n(v) for v in fila] for fr, fila in zip(r.frecuencias, r.mapa)]
+        return {
+            "Parametros": (["parametro", "valor"], [[k, v] for k, v in p.items()]),
+            "Resumen": (["medida", "valor"], resumen),
+            "Histograma": (["fase_rad", "valor"],
+                           [[n(f), n(v)] for f, v in zip(r.fases, r.histograma)]),
+            "Mapa": (encabezado_mapa, filas_mapa),
+        }
+
+    def exportar_resultados(self, fmt: str):
+        """Exporta los números de la última ejecución, con los parámetros que la produjeron."""
+        if not self._ultimo or self.vtk_menu is None:
+            self.alerts.info("Primero ejecuta un análisis PAC para poder exportar sus resultados.")
+            return
+        self.vtk_menu.export_service.export_sections(self._secciones_resultado(), fmt)
+
+    # =====================================================
     # === Guardar y restaurar el análisis en el proyecto
     # =====================================================
     def get_analysis_params(self) -> dict:
@@ -846,4 +925,5 @@ class Pac_plugin(IPlugin):
         self.ui.ampHighFrequencySpinBox.setValue(params.get("a2", d["a2"]))
         self._actualizar_selector_trial()
         self.ui.trialSpinBox.setValue(params.get("trial", 1))
+        self._restaurando = True
         self.on_create_pac()
