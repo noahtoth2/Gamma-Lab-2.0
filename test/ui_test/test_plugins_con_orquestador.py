@@ -33,6 +33,14 @@ def correr_escenarios(nombre):
     return len(casos)
 
 
+def test_modulation_index_en_la_interfaz():
+    assert correr_escenarios("escenarios_modulation_index.py") >= 34
+
+
+def test_pac_en_la_interfaz():
+    assert correr_escenarios("escenarios_pac.py") >= 40
+
+
 def test_open_signal_en_la_interfaz():
     assert correr_escenarios("escenarios_open_signal.py") >= 11
 
@@ -51,3 +59,7 @@ def test_wavelet_average_en_la_interfaz():
 
 def test_artifact_remove_en_la_interfaz():
     assert correr_escenarios("escenarios_artifact_remove.py") >= 22
+
+
+def test_guarda_del_temporizador_de_vtk():
+    assert correr_escenarios("escenarios_vtk_temporizador.py") >= 11

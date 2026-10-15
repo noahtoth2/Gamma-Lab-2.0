@@ -33,7 +33,7 @@ Las tres son de un día cada una y son independientes entre sí y del orquestado
 | **2** | Orquestador mínimo | ~2 semanas | Fase 0 |
 | **3** | Migrar los dos plugins que ya usan hilos | ~1 semana | Fase 2 |
 | **4** | Extender a los plugins síncronos que lo ameriten | ~1 semana | Fase 3 |
-| **5** | PAC nace ya orquestado | en paralelo | Fase 2 |
+| **5** | PAC nace ya orquestado ✅ | en paralelo | Fase 2 |
 | **6** | Memoria y paralelismo interno — **solo si sobra tiempo** | — | Fase 0, 1 |
 
 Las fases 1 y 2 pueden correr **en paralelo** si hay dos personas: no se tocan entre sí. La Fase 1 toca plugins; la Fase 2 crea un archivo nuevo en `core/`.
@@ -435,6 +435,24 @@ La parte mecánica: mover cada `_compute_*` a un `compute.py` y partir el botón
 ## Fase 5 — PAC nace ya orquestado
 
 *En paralelo con el frente de PAC, no después.*
+
+> **Estado al 12 de octubre de 2026: ✅ cerrada.** Resultados en [`resultados-fase-5.md`](resultados-fase-5.md).
+>
+> Las tres exigencias se cumplieron: la lógica es función pura en `compute.py` —solo `numpy`, `scipy` y `core.filters`, **ni Qt ni VTK**—, el plugin solo hace `submit()` y dibuja en el slot de `finished` con sus cuatro guardas, y no hay ni un `QThread` propio.
+>
+> Y la fase entregó más de lo que pedía: **cuatro** operaciones orquestadas en vez de una —PAC, PAC Average, PAC Psel y el índice de modulación—, con avance y cancelación de verdad.
+>
+> **Lo que justifica la fase, medido** sobre el ABF de prueba con 20 trials de 3 s y los parámetros por defecto:
+>
+> | Operación | Tiempo | Umbral (100 ms) |
+> |---|---:|---|
+> | PAC, un trial | 836 ms | 8× |
+> | **PAC Average, 20 trials** | **16 881 ms** | **169×** |
+> | PAC Psel, 20 trials | 1 684 ms | 17× |
+>
+> Los 17 segundos son con 20 trials; el archivo real da 60, o sea unos **50 segundos** de ventana congelada sin la cola. Es el argumento más claro que ha dado el proyecto a favor del orquestador — para comparar, lo que motivó la Fase 2 fueron los 216 ms del wavelet individual.
+>
+> El texto de abajo es el plan original, de cuando `pac_plugin.py` tenía 17 líneas.
 
 Hoy `plugins/analysis/time_frequency/pac/` tiene la interfaz completa (`pac_plugin_ui.py`, 223 líneas) y un `pac_plugin.py` de **17 líneas** con `process()` y `stop()` en `pass`. O sea: el esqueleto y la UI están; la lógica no existe.
 
