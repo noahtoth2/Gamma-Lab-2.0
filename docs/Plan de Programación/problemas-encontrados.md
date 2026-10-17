@@ -839,6 +839,51 @@ Los hilos lo dejan **más lento**: la FFT suelta el GIL, pero el diseño de filt
 
 ---
 
+## 28. Regenerar los trials no cambiaba lo que leían los análisis ✅ RESUELTO
+
+**Gravedad: alta.** Hacía creer que el cálculo estaba roto cuando lo que estaba mal era la entrada, y afectaba a **todos** los plugins que leen trials, no solo a PAC.
+
+**Cómo apareció.** Comparando la brújula de PAC contra la de MATLAB, el 14 de octubre de 2026. El usuario tenía los canales cruzados —analizaba `IN 7`, que es el del estímulo, en vez de `CA1`—, lo corrigió, volvió a generar los trials… y la brújula siguió marcando **exactamente 0,9631 a 343,0°**. Hasta el cuarto decimal.
+
+Esa cifra idéntica es lo que delató el fallo: ninguna señal distinta da el mismo resultado con esa precisión.
+
+**La causa, en dos líneas de `core/model/signal_dataset.py`:**
+
+```python
+self.__trials_dataset.append(trial)          # cada Generate ACUMULA
+
+channel_name = self.__trials_dataset[-1].channel_name    # el canal del ULTIMO
+td = next((t for t in self.__trials_dataset              # ...pero el PRIMERO
+           if ... and t.channel_name == channel_name), None)
+```
+
+Toma el nombre del canal del juego más reciente, pero devuelve el **primer** juego que lo tenga. Si ya se habían generado trials de ese canal, devolvía **aquellos**.
+
+Reproducido con la secuencia del usuario:
+
+| | Generado | |
+|---|---|---|
+| 1 | CA1, ventana −0,1 a 3,0 → 31.000 muestras | |
+| 2 | IN 7, ventana −0,05 a 4,0 → 92 trials | |
+| 3 | CA1, ventana −0,05 a 4,0 → 40.500 muestras | ← el que pidió |
+| | **Lo que entregaba `get_active_trials`** | **el nº 1** |
+
+Había un tercer punto, menos visible: `__filtered_cache` está indexada por `(archivo, canal)`, así que aunque la búsqueda devolviera el juego nuevo, la caché seguía sirviendo el viejo.
+
+> **Resuelto el 14 de octubre de 2026.** Tres cambios:
+>
+> 1. `add_trial_dataset` **reemplaza** el juego anterior del mismo `(archivo, canal)` en vez de acumular.
+> 2. El juego nuevo se añade **al final** aunque sustituya a otro. Suena a detalle y no lo es: `get_active_trials` mira el último de la lista para saber qué canal está activo, así que sustituir en el sitio haría que regenerar el canal A dejara al canal B como activo.
+> 3. Se tiran los descartes y las cachés de ese canal, porque sus índices apuntaban a los trials viejos. Es el mismo motivo por el que `replace_trial_datasets` ya los limpiaba.
+>
+> La búsqueda devuelve además el **último** que coincida y no el primero, por si un proyecto antiguo trae duplicados.
+>
+> Cargar un proyecto no se rompe: `_restore_trials` añade el juego **antes** de reponer los descartes guardados.
+>
+> Cubierto por 9 pruebas en `test/services_test/test_trials_no_se_acumulan.py`. Se comprobó que **cazan el fallo**: restaurando el comportamiento viejo, 6 de las 9 fallan.
+
+---
+
 ## Cómo agrupar esto en trabajo real
 
 **Frente de correctitud científica** *(el más urgente, y no es del orquestador)*
@@ -871,6 +916,9 @@ Son cuestiones de si los números que entrega la herramienta son correctos. Mere
 **La aplicación se cierra sola** *(lo más urgente)*
 - ~~nº 24 — la caída nativa~~ (resuelta: le faltaba una guarda al temporizador de VTK)
 - nº 25 — el hueco de pruebas que la dejó pasar: el dibujo de VTK de PAC y MI nunca se ejecuta
+
+**Pérdida de trabajo del usuario**
+- ~~nº 28 — regenerar los trials no cambiaba lo que leían los análisis~~ (resuelto: `add_trial_dataset` acumulaba y la búsqueda devolvía el más viejo)
 
 **Rendimiento**
 - ~~nº 27 — el diseño de los filtros IIR se repetía en cada cálculo~~ (resuelto: 7,25× al cambiar de trial)

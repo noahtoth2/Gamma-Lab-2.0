@@ -37,9 +37,41 @@ class SignalDataset:
 
     # Add a trial_dataset to the trials list
     def add_trial_dataset(self, trial: "TrialDataset"):
+        """Guarda un juego de trials, **reemplazando** el anterior del mismo canal.
+
+        Antes acumulaba: cada *Generate* añadía uno más a la lista y
+        `get_active_trials` devolvía el **primero** que coincidiera en canal, o
+        sea el más viejo. El efecto era que regenerar los trials con otros
+        parámetros no cambiaba nada: los análisis seguían leyendo los de la
+        primera vez, y el resultado salía idéntico hasta el último decimal.
+
+        El juego nuevo se añade **al final** aunque reemplace a otro, porque
+        `get_active_trials` toma el último de la lista para saber qué canal está
+        activo. Si se sustituyera en su sitio, regenerar el canal A dejaría como
+        activo al canal B.
+
+        Se tiran también los descartes y la caché de ese canal: sus índices
+        apuntaban a los trials viejos y en los nuevos señalarían a otros. Es el
+        mismo motivo por el que `replace_trial_datasets` los limpia.
+        """
         if not isinstance(trial, TrialDataset):
             raise ValueError("trial must be of type TrialDataset")
+
+        archivo = Path(trial.source).name
+        for i, existente in enumerate(self.__trials_dataset):
+            if (Path(existente.source).name == archivo
+                    and existente.channel_name == trial.channel_name):
+                del self.__trials_dataset[i]
+                break
         self.__trials_dataset.append(trial)
+        self.__olvidar_derivados(trial.channel_name)
+
+    def __olvidar_derivados(self, channel_name: str):
+        """Descartes y cachés de un canal, fuera: ya no corresponden a nada."""
+        for diccionario in (self.__discarded_trials, self.__filtered_cache,
+                            self.__discard_versions):
+            for clave in [k for k in diccionario if k[1] == channel_name]:
+                diccionario.pop(clave, None)
 
     def replace_trial_datasets(self, new_trials: List["TrialDataset"]):
         """Swap out all TrialDatasets at once (e.g. after regenerating them
@@ -106,12 +138,15 @@ class SignalDataset:
 
         key = (file_name, channel_name)
 
-        # Find the corresponding dataset
-        td = next(
-            (t for t in self.__trials_dataset 
-             if Path(t.source).name == file_name and t.channel_name == channel_name),
-            None
-        )
+        # El ULTIMO que coincida, no el primero. `add_trial_dataset` ya se
+        # encarga de que haya uno solo por (archivo, canal), pero cargar un
+        # proyecto antiguo puede traer duplicados: quedarse con el primero
+        # devolveria el mas viejo.
+        coincidencias = [
+            t for t in self.__trials_dataset
+            if Path(t.source).name == file_name and t.channel_name == channel_name
+        ]
+        td = coincidencias[-1] if coincidencias else None
 
         if td is None:
             print(f"[SignalDataset] No dataset found for {key}")

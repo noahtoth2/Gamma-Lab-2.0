@@ -159,19 +159,35 @@ El documento está dirigido a los integrantes del equipo de desarrollo, a la dir
  
 \subsubsection{Propósito}
  
-Expandir las capacidades de GammaLab 1.0 mediante nuevas funcionalidades, optimización del rendimiento y corrección de limitaciones identificadas en su primera iteración, facilitando el análisis avanzado de señales EEG para investigadores sin experiencia en programación.
+Expandir las capacidades de GammaLab 1.0 mediante nuevas funcionalidades, optimización del rendimiento y corrección de limitaciones identificadas en su primera iteración.
+
+El propósito atiende a dos actores con necesidades distintas, que conviene no confundir:
+
+\begin{itemize}
+    \item \textbf{El investigador}, usuario final del sistema: debe poder realizar análisis avanzados de señales EEG \textbf{sin experiencia en programación}. Su único punto de contacto con el sistema es la interfaz gráfica, desde la cual se ejecutan todas las operaciones de carga, análisis y visualización.
+
+    \item \textbf{El desarrollador}, responsable de extender el sistema en el futuro: debe poder incorporar nuevos análisis como módulos independientes sobre la arquitectura microkernel, sin modificar el núcleo. Esta extensibilidad \textbf{sí exige conocimientos de programación} y queda fuera del trabajo del investigador.
+\end{itemize}
+
+La distinción importa porque la facilidad de uso y la escalabilidad son atributos dirigidos a públicos diferentes, y se evalúan de forma distinta: el primero, en la experiencia del investigador frente a la interfaz; el segundo, en el esfuerzo que le representa a un programador añadir una funcionalidad nueva.
  
 \subsubsection{Alcance}
  
-El alcance del proyecto GammaLab 2.0 comprende los siguientes elementos:
+El alcance del proyecto GammaLab 2.0 comprende los siguientes elementos, enumerados en el orden en que se abordaron durante la ejecución:
  
-\begin{itemize}
-    \item Integración de nuevos métodos de análisis de señales (especialmente \textit{amplitude coupling})
-    \item Paralelización del procesamiento para mejorar rendimiento
-    \item Mejora sustancial de la interfaz gráfica y experiencia de usuario
-    \item Corrección de errores y limitaciones de la versión 1.0
-    \item Documentación completa y manual de usuario
-\end{itemize}
+\begin{enumerate}
+    \item \textbf{Rediseño de la interfaz gráfica y la experiencia de usuario}: reorganización de la navegación, unificación visual de los paneles de parámetros y de las vistas de resultados.
+
+    \item \textbf{Corrección de errores y limitaciones de la versión 1.0}: subsanación de los defectos priorizados tras el análisis de brechas de la Fase~1, junto con los detectados durante el propio desarrollo.
+
+    \item \textbf{Paralelización del procesamiento}: incorporación de un orquestador de tareas que ejecuta los cálculos fuera del hilo de la interfaz, con informe de avance y cancelación, de modo que la aplicación no se bloquee durante los análisis prolongados.
+
+    \item \textbf{Integración de nuevos métodos de análisis de señales}: implementación del acoplamiento fase-amplitud (\textit{phase-amplitude coupling}) en sus modalidades PAC, PAC Average y PAC Psel, junto con el índice de modulación.
+
+    \item \textbf{Documentación completa y manual de usuario}: elaborada de forma transversal a lo largo del proyecto y consolidada en el cierre.
+\end{enumerate}
+ 
+El orden no es arbitrario. Los nuevos métodos de análisis se abordaron en último lugar porque dependen de la infraestructura de ejecución asíncrona construida en el punto anterior: así nacieron ya integrados al orquestador, en lugar de requerir una migración posterior.
  
 \subsubsection{Objetivo General}
  
@@ -197,7 +213,7 @@ El proyecto se fundamenta en los siguientes supuestos:
 \begin{itemize}
     \item La institución (Universidad Nacional de Colombia) proporcionará acceso a bases de datos de señales EEG para validación y pruebas
     \item El equipo de desarrollo tendrá disponibilidad de tiempo dedicado durante el período del proyecto
-    \item La arquitectura microkernel de GammaLab 1.0 es adecuada y escalable para la integración de nuevas funcionalidades
+    \item El equipo de GammaLab 1.0 facilitará el acceso al material original del proyecto —código fuente, documentación técnica y de gestión, el programa en MATLAB (\textit{BOARD\_FTD\_PACC}) que sirvió de referencia a la versión 1.0, y las señales EEG empleadas en su validación— y atenderá consultas sobre las decisiones de diseño que no quedaron documentadas. GammaLab 2.0 parte de ese material como línea base
     \item Los investigadores del laboratorio participarán activamente en pruebas, validación y retroalimentación del sistema
     \item Los estándares de calidad establecidos (ISO/IEC, IEEE, PMI) serán aplicables al contexto académico del proyecto
 \end{itemize}
