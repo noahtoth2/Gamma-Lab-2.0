@@ -242,6 +242,7 @@ Gamma Lab se ejecuta en un único proceso sin fronteras de aislamiento entre ell
 Estas fallas son difíciles de diagnosticar por la ausencia de observabilidad. El sistema no utiliza un mecanismo de registro estructurado. La información se emite con llamadas a \texttt{print}, sin niveles de severidad, marcas de tiempo ni identificación del componente de origen. Además, como la aplicación se ejecuta desde una consola, esa salida no se persiste y se pierde justamente cuando ocurre un cierre inesperado. Ante un fallo reportado no existe un registro que permita reconstruir qué operación se ejecutaba ni en qué estado estaba el sistema, por lo que el diagnóstico depende de reproducir manualmente el error.
 
 \subsection{Limitaciones del sistema}
+\label{sec:limitaciones}
 
 \subsubsection{Software}
 Las siguientes condiciones tecnológicas forman parte del punto de partida del sistema:
@@ -278,126 +279,531 @@ Las características de los datos que procesa el sistema también condicionan su
 \end{itemize}
 
 % ======================================================================
-\section{Metas y Restricciones de la Arquitectura}
+\section{Requisitos y atributos de calidad}
+\label{sec:requisitos_calidad}
 
+Una arquitectura no se justifica por sí misma, sino por las necesidades que debe satisfacer. Este capítulo establece ese punto de partida: identifica a las personas y entidades con interés en GammaLab v2.0 y traduce sus expectativas en requisitos que condicionan la estructura del sistema (Sección~\ref{sec:stakeholders}), define las cualidades que la solución debe exhibir y cómo se miden (Sección~\ref{sec:atributos_calidad}) y declara las condiciones que se dan por ciertas durante el diseño (Sección~\ref{sec:supuestos}).
+
+Los stakeholders y sus roles provienen del Plan de Administración del Proyecto (PMP), mientras que los requisitos no funcionales provienen de la Especificación de Requisitos de Software (SRS). Así, cada decisión descrita en los capítulos siguientes puede rastrearse hasta una necesidad concreta de un interesado.
+
+% ----------------------------------------------------------------------
 \subsection{Requisitos de los Stakeholders}
+\label{sec:stakeholders}
 
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.2cm}
-                  >{\raggedright\arraybackslash}p{2.5cm}
-                  >{\raggedright\arraybackslash}p{8.8cm}@{}}
+\subsubsection{Identificación de los interesados}
 
-\caption{Stakeholders principales y expectativas} \\
+Un \textit{stakeholder} es toda persona o entidad que afecta el desarrollo de GammaLab v2.0 o se ve afectada por él. La identificación que se presenta a continuación es coherente con la estructura organizacional y la distribución de roles definidas en el PMP: el Laboratorio de Electrofisiología de la Universidad Nacional de Colombia actúa como cliente, usuario final y validador; la directora del proyecto actúa como \textit{Product Owner} y puente entre el cliente y el equipo; y el equipo de desarrollo, conformado por cuatro estudiantes con un integrante que asume funciones equivalentes a \textit{Scrum Master}, ejecuta el trabajo técnico. A ellos se suman los revisores académicos del trabajo de grado, que evalúan el producto final, y la comunidad científica, beneficiaria indirecta por la naturaleza de código abierto del sistema (licencia MIT).
+
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.3cm}
+                  >{\raggedright\arraybackslash}p{2.7cm}
+                  >{\raggedright\arraybackslash}p{5.7cm}
+                  >{\raggedright\arraybackslash}p{3.0cm}@{}}
+
+\caption{Stakeholders de GammaLab v2.0, rol según el PMP y necesidades que condicionan la arquitectura} \label{tab:stakeholders} \\
 \toprule
-
 \textbf{Stakeholder} &
-\textbf{Tipo} &
-\textbf{Necesidades / Intereses} \\
-
+\textbf{Rol en el proyecto} &
+\textbf{Necesidades e intereses} &
+\textbf{Atributos de calidad asociados} \\
 \midrule
 \endfirsthead
 
 \toprule
 \textbf{Stakeholder} &
-\textbf{Tipo} &
-\textbf{Necesidades / Intereses} \\
+\textbf{Rol en el proyecto} &
+\textbf{Necesidades e intereses} &
+\textbf{Atributos de calidad asociados} \\
 \midrule
 \endhead
 
-Laboratorio de Electrofisiología de la Universidad de Colombia
-&
-Usuario final
-&
-Su interés principal es contar con una herramienta robusta, intuitiva y libre de licencias que simplifique el análisis complejo por medio de PAC, sin necesitar habilidades de programación.
-\\[0.3cm]
-
-Equipo de desarrollo
-&
-Interno
-&
-Implementar una arquitectura extensible (microkernel + plugins), reestructurar el diseño de las pantallas aplicando estándares de codificación limpia y utilizar paralelización asíncrona.
-\\[0.3cm]
-
-Directora de tesis
-&
-Interno
-&
-Validar la rigurosidad científica de los algoritmos de frecuencia y supervisar el cumplimiento del alcance metodológico.
-\\[0.3cm]
-
-Evaluadores académicos
-&
-Externo / Validador
-&
-Verificar el cumplimiento de requerimientos, funciones y metodología aplicada desde la ingeniería de sistemas e ingeniería electrónica, demostrando cuantitativamente la mejora de rendimiento con respecto a GammaLab v1.0.
-\\[0.3cm]
-
-Comunidad científica
-&
-Externo / Colaborador
-&
-Posibilidad de reutilizar y mejorar el código abierto; transparencia metodológica y reproducibilidad de resultados; estandarización de flujos de trabajo y formatos de análisis EEG.
-\\
-
 \bottomrule
+\endlastfoot
+
+\textbf{Laboratorio de Electrofisiología} (Universidad Nacional de Colombia)
+&
+Cliente, usuario final y validador. Participa en las Fases~1, 2 y 4.
+&
+Una herramienta gratuita e intuitiva que no exija conocimientos de programación; abrir sus registros (\texttt{.abf}, \texttt{.edf}, \texttt{.mat}) y ejecutar análisis de frecuencia, tiempo-frecuencia y acoplamiento fase-amplitud (PAC) sin bloquear la interfaz; resultados precisos y confiables; poder guardar y retomar su trabajo; y documentación clara.
+&
+Usabilidad, Rendimiento, Confiabilidad.
+\\[0.3cm]
+
+\textbf{Directora del proyecto}
+&
+\textit{Product Owner}. Representa al cliente y prioriza el \textit{Product Backlog}.
+&
+Rigor científico de los algoritmos de análisis, cumplimiento de los estándares de calidad y alineación del producto con los objetivos del proyecto; retroalimentación oportuna sobre diseño, código y documentación, y supervisión técnica y académica.
+&
+Confiabilidad, Soporte.
+\\[0.3cm]
+
+\textbf{Equipo de desarrollo} (cuatro \textit{Scrum Developers}, uno con funciones de \textit{Scrum Master})
+&
+Diseña, implementa, integra, prueba y documenta el sistema.
+&
+Una arquitectura extensible (microkernel y plugins) que permita incorporar nuevos análisis sin modificar el núcleo; comprender y reutilizar el código heredado de la versión~1.0; procesamiento en segundo plano; y código verificable mediante pruebas automatizadas.
+&
+Soporte, Rendimiento.
+\\[0.3cm]
+
+\textbf{Revisores académicos} del trabajo de grado
+&
+Evalúan el cumplimiento de los entregables y de los objetivos.
+&
+Verificar el cumplimiento de los requisitos y de la metodología, y poder constatar con evidencia cuantitativa la mejora de GammaLab v2.0 respecto a la versión~1.0.
+&
+Rendimiento, Confiabilidad (verificabilidad).
+\\[0.3cm]
+
+\textbf{Comunidad científica} y usuarios de software libre
+&
+Beneficiario indirecto (derivado de la licencia MIT definida en el PMP).
+&
+Reutilizar, adaptar y extender el código abierto; reproducibilidad de los resultados y transparencia metodológica.
+&
+Soporte, Confiabilidad.
+\\
 
 \end{longtable}
 
-\subsection{Atributos de Calidad}
+\subsubsection{Cómo se interpreta el cuadro}
 
+La distinción entre el Laboratorio y la directora es deliberada. El Laboratorio es quien usa el sistema y valida los resultados; la directora, en su rol de \textit{Product Owner}, canaliza y prioriza esas necesidades ante el equipo. Por ello, los requisitos del Laboratorio se tratan como \textbf{requisitos primarios}, mientras que los de los demás interesados cumplen una función de gobierno (directora y revisores) o de sostenibilidad (equipo y comunidad). El equipo de desarrollo es, además, quien convive con las consecuencias de la arquitectura a largo plazo, razón por la cual su interés en la extensibilidad y la mantenibilidad pesa tanto como el del usuario final en la usabilidad.
+
+La Cuadro~\ref{tab:stakeholders_calidad} resume qué atributos de calidad importan a cada interesado. Un círculo lleno ($\bullet$) indica un interés principal, derivado directamente de sus necesidades; un círculo vacío ($\circ$) indica un interés secundario.
+
+\begin{table}[H]
+\centering
+\caption{Matriz de interés de los stakeholders por atributo de calidad}
+\label{tab:stakeholders_calidad}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.2cm}cccc@{}}
+\toprule
+\textbf{Stakeholder} & \textbf{Usabilidad} & \textbf{Rendimiento} & \textbf{Confiabilidad} & \textbf{Soporte} \\
+\midrule
+Laboratorio de Electrofisiología & $\bullet$ & $\bullet$ & $\bullet$ & $\circ$ \\
+Directora del proyecto (\textit{Product Owner}) & $\circ$ & $\circ$ & $\bullet$ & $\bullet$ \\
+Equipo de desarrollo & $\circ$ & $\bullet$ & $\circ$ & $\bullet$ \\
+Revisores académicos & $\circ$ & $\bullet$ & $\bullet$ & $\circ$ \\
+Comunidad científica & $\circ$ & --- & $\circ$ & $\bullet$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Criterios de éxito del PMP y su implicación arquitectónica}
+
+El PMP define criterios de éxito cuantificables para el proyecto. No todos son de naturaleza arquitectónica (por ejemplo, la entrega en la fecha acordada o la completitud de la documentación son compromisos de gestión), pero cuatro de ellos imponen condiciones directas sobre el diseño del sistema y se recogen en la Cuadro~\ref{tab:criterios_exito}.
+
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{5.2cm}
+                  >{\raggedright\arraybackslash}p{2.6cm}
+                  >{\raggedright\arraybackslash}p{6.9cm}@{}}
+
+\caption{Criterios de éxito del PMP con impacto arquitectónico} \label{tab:criterios_exito} \\
+\toprule
+\textbf{Criterio de éxito (PMP)} &
+\textbf{Atributo} &
+\textbf{Implicación para la arquitectura} \\
+\midrule
+\endfirsthead
+
+\toprule
+\textbf{Criterio de éxito (PMP)} &
+\textbf{Atributo} &
+\textbf{Implicación para la arquitectura} \\
+\midrule
+\endhead
+
+\bottomrule
+\endlastfoot
+
+Mejora de al menos 20--30\,\% en los tiempos de procesamiento respecto a GammaLab v1.0, derivada de la paralelización.
+&
+Rendimiento
+&
+Las operaciones de cómputo deben ejecutarse fuera del hilo de la interfaz, a través de un servicio de tareas central (NFR-P-14, NFR-S-04), de modo que el trabajo pesado no compita con la interacción.
+\\[0.2cm]
+
+El módulo de acoplamiento fase-amplitud (PAC) opera sin errores críticos y produce resultados reproducibles y validables.
+&
+Confiabilidad
+&
+El análisis PAC se ejecuta como tarea cancelable (NFR-P-16) y el procesamiento no altera la señal ni los trials de origen (NFR-R-05), lo que permite repetir un análisis y obtener el mismo resultado.
+\\[0.2cm]
+
+Los problemas de la versión~1.0 priorizados con el cliente quedan corregidos y validados por él.
+&
+Confiabilidad, Soporte
+&
+La liberación de recursos al salir de un módulo (NFR-P-02), la terminación de hilos (NFR-R-01) y el acceso único al estado compartido (NFR-R-02) atacan la inestabilidad heredada, mientras que una vía pública para modificar los trials (NFR-S-02) evita que el problema reaparezca por acoplamiento.
+\\[0.2cm]
+
+El usuario final confirma en la Fase~4 que el sistema es intuitivo, que los resultados son precisos y que las funcionalidades responden a sus necesidades.
+&
+Usabilidad, Confiabilidad
+&
+Se requiere retroalimentación visual del progreso, mensajes diferenciados por severidad, ayudas contextuales y resultados mostrados en la misma pantalla en que se solicitaron (NFR-U-01 a NFR-U-09).
+\\[0.2cm]
+
+Cobertura de pruebas unitarias de al menos 80\,\%.
+&
+Soporte
+&
+La lógica de negocio debe poder verificarse sin la interfaz gráfica: servicios compartidos con una única instancia inyectada desde el núcleo (NFR-S-03) y plugins que no acceden a estructuras internas de otros módulos (NFR-S-02).
+\\
+
+\end{longtable}
+
+% ----------------------------------------------------------------------
+\subsection{Atributos de Calidad}
 \label{sec:atributos_calidad}
 
-La arquitectura de \textbf{GammaLab 2.0} fue diseñada pensando principalmente en las necesidades manifestadas en el laboratorio de electrofisiología, entendiendo sus flujos de trabajo y los requerimientos propios de la ejecución de análisis experimentales. Al mismo tiempo, 
-se proyecta como un software adaptable a distintos contextos y paradigmas de investigación, por lo que resulta fundamental considerar el impacto de los siguientes atributos de calidad en esta segunda versión:
+\subsubsection{Marco de clasificación}
 
-\begin{enumerate}
-    \item \textbf{Extensibilidad:} Dado que el sistema debe adaptarse tanto a diferentes tipos de experimentos como a diversos entornos de investigación, la extensibilidad se concibe como una capacidad primordial. El diseño permite agregar nuevos módulos personalizados, 
-    completamente programables por cada laboratorio o usuario, y ofrece una interfaz clara para integrarlos de manera sencilla dentro del sistema. En \textbf{GammaLab 2.0}, esta capacidad se optimiza al desacoplar los plugins del núcleo mediante un contenedor de
-     \textbf{Inversión de Control (IoC)}, registrando servicios comunes (como \texttt{ExportService}, \texttt{MeasurementService} y \texttt{SettingsService}) que evitan importaciones directas o acoplamientos rígidos. Asimismo, la entidad \texttt{SignalDataset} expone una 
-     API pública de comunicación estricta que encapsula la manipulación de trials, garantizando que futuras extensiones no alteren la integridad de los datos en memoria.
-    
-    \item \textbf{Usabilidad:} GammaLab se privilegia de un diseño de interfaz de usuario pensado para ser lo más sencillo y entendible posible en cada funcionalidad implementada. Lo anterior resulta especialmente importante en el caso de los plugins, donde se manejan procesos 
-    conceptualmente complejos. En esta nueva versión, se eliminan las barreras técnicas de uso mediante ayudas contextuales integradas (\textit{tooltips}) para todos los parámetros, menús unificados de edición en la vista principal (\textit{Home}) y la representación 
-    explícita de gráficas complejas como el \textit{Butterfly plot}. Adicionalmente, el sistema asegura la retroalimentación constante del estado del sistema mediante barras de progreso no bloqueantes para operaciones superiores a 1 segundo, garantizando un flujo intuitivo y controlado.
-    
-    \item \textbf{Mantenibilidad:} La arquitectura propuesta favorece la modularidad y el ordenamiento claro del código, buscando que el sistema siga principios como el de Abierto/Cerrado dentro del marco SOLID: abierto a extensiones y cerrado a modificaciones innecesarias. El sistema realiza una separación
-     rigurosa entre la interfaz gráfica (PySide6) y la lógica matemática en hilos de cómputo independientes, facilitando la depuración del código. Además, la mantenibilidad y la robustez técnica se garantizan mediante el apego estricto a las directrices de estilo \textbf{PEP8} y un estándar mínimo del 
-     \textbf{80\% de cobertura de pruebas unitarias automatizadas} utilizando el framework \textbf{Pytest}.
-    
-    \item \textbf{Rendimiento:} El contexto de uso del programa exige un rendimiento estable y un consumo controlado de recursos, especialmente dada la naturaleza de los datos involucrados, que suelen tener alta densidad de información. Para dar soporte estable a señales de hasta 600~MB en memoria, \textbf{GammaLab 2.0} 
-    incorpora una estrategia de paralelización en el Kernel. Las tareas pesadas de procesamiento (PAC, Wavelet, PSD) se distribuyen de forma asíncrona mediante multiprocesamiento (\texttt{multiprocessing}), impidiendo que la interfaz gráfica se bloquee durante los análisis (manteniendo la responsividad $\le$ 0.3~s). Adicionalmente, 
-    se introduce el submuestreo dinámico visual a un límite de 2000 puntos por serie en los widgets de VTK para conservar una navegación fluida ($\ge$ 24~FPS) sin degradar la data cruda, acompañado de rutinas explícitas de liberación de memoria de GPU y RAM en cada plugin al cambiar de módulo.
-    
-    \item \textbf{Portabilidad:} El sistema debe asegurar su correcta ejecución en diversos entornos locales sin requerir la intervención técnica continua del equipo desarrollador. \textbf{GammaLab 2.0} centraliza su portabilidad local en sistemas Windows 10/11 de 64 bits. Este atributo se consolida al empaquetar la aplicación de manera autónoma
-     en un \textbf{ejecutable standalone (.exe)} a través de PyInstaller. Esto permite que el personal clínico e investigadores ejecuten análisis avanzados localmente con un doble clic, omitiendo por completo la configuración o instalación manual de librerías científicas y consolas de Python en sus estaciones de trabajo.
-    
-    \item \textbf{Robustez y Fiabilidad:} El sistema debe mantener la estabilidad operativa en sesiones continuas y tolerar errores imprevistos en tiempo de ejecución. Ante excepciones internas generadas por plugins de terceros o formatos de archivo corruptos, el sistema captura los fallos de manera centralizada sin interrumpir la sesión del usuario ni provocar la
-     caída de la aplicación. Adicionalmente, el sistema implementa exclusiones mutuas para accesos concurrentes al almacén de datos centralizado (\textit{DataStore}), asegura la correcta liberación de observadores y callbacks VTK y proporciona terminaciones controladas (\textit{cleanup}) de hilos de procesamiento de datos ante solicitudes explícitas de cancelación.
-    
-    \item \textbf{Trazabilidad y Persistencia:} El sistema incorpora en cada análisis la información contextual y los metadatos necesarios para asegurar la reproducibilidad y trazabilidad de los resultados. \textbf{GammaLab 2.0} materializa esta capacidad de forma completa mediante el módulo \textbf{PJ (Project Session)}, el cual introduce la persistencia local 
-    del estado completo del espacio de trabajo (rutas de señales, trials configurados y análisis procesados) en archivos con extensión de proyecto \textbf{.glab} o \textbf{.glws}. Asimismo, la trazabilidad científica externa se respalda al exportar resultados consistentes en formatos tabulares (CSV sin redundancia de ejes temporales, Excel, JSON) 
-    y gráficos de alta calidad vectorial en formato \textbf{EMF}.
-\end{enumerate}
+Los atributos de calidad describen \textit{cómo} debe comportarse el sistema, a diferencia de los requisitos funcionales, que describen \textit{qué} debe hacer. Son relevantes para este documento porque, de todos los requisitos, son los que más condicionan la arquitectura: la manera de ejecutar un cálculo pesado, de aislar una extensión defectuosa o de representar una señal de gran tamaño no se resuelve con código local, sino con decisiones estructurales.
 
+La clasificación sigue el modelo FURPS+ adoptado por el SRS, donde cada requisito no funcional se identifica con el código \textbf{NFR-X-YY} (\textit{X} es la categoría y \textit{YY} el consecutivo). En esta iteración se especificaron 36 requisitos no funcionales distribuidos en cuatro categorías, que constituyen los atributos de calidad del sistema: Usabilidad (9), Rendimiento (17), Confiabilidad (5) y Soporte (5). La Cuadro~\ref{tab:resumen_atributos} los sintetiza.
 
-\begin{enumerate}
-    \item 
-\end{enumerate}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.7cm}
+                  >{\raggedright\arraybackslash}p{4.0cm}
+                  >{\raggedright\arraybackslash}p{4.8cm}
+                  >{\raggedright\arraybackslash}p{2.2cm}@{}}
 
-\subsection{Supuestos y limitaciones derivadas}
-A continuaci\'on se presentan los supuestos y limitaciones considerados durante el dise\~no y construcci\'on del sistema:
+\caption{Resumen de los atributos de calidad de GammaLab v2.0} \label{tab:resumen_atributos} \\
+\toprule
+\textbf{Atributo} &
+\textbf{Qué garantiza} &
+\textbf{Medidas representativas} &
+\textbf{Requisitos} \\
+\midrule
+\endfirsthead
 
-\subsubsection{Restricciones de arquitectura}
-    \begin{itemize}
-        \item \textbf{Operación standalone y offline:} El sistema debe ejecutarse de forma local en la máquina del investigador de forma estricta. No se permite el uso de servicios en la nube, APIs de procesamiento externas ni el uso de bases de datos distribuidas.
-        \item \textbf{Entorno tecnológico base:} El núcleo matemático y la lógica de interacción deben desarrollarse bajo el lenguaje Python (versión mínima 3.11), utilizando Pyside6 para la interfaz y VTK para la visualización científica.
-        \item \textbf{Compatibilidad de datos:} El módulo de entrada/salida soporta y procesa archivos de señales en formatos como: EDF, ABF, BDF, MAT y GLAB.
-    \end{itemize}   
+\toprule
+\textbf{Atributo} &
+\textbf{Qué garantiza} &
+\textbf{Medidas representativas} &
+\textbf{Requisitos} \\
+\midrule
+\endhead
 
-\subsubsection{Supuestos de operación (Evolución de v1.0)}
-    \begin{itemize}
-        \item \textbf{Procesamiento concurrente:} En esta nueva versión 2.0 se asume que el hardware cuenta con arquitectura multinúcleo (más de 4 núcleos) para el despliegue de procesamiento asíncrono y multiprocesamiento en segundo plano.
-        \item \textbf{Naturaleza del proyecto:} El sistema está diseñado exclusivamente para el posprocesamiento y análisis de señales previamente adquiridas. No soporta adquisición de datos en tiempo real ni comunicación con hardware de amplificación o registro fisiológico.
-    \end{itemize}
+\bottomrule
+\endlastfoot
+
+\textbf{Rendimiento}
+&
+Que el sistema responda con fluidez y use los recursos de forma controlada, incluso con señales grandes.
+&
+Carga de señal $\leq$ 2~s; Wavelet $\leq$ 10~s; interfaz con respuesta $\leq$ 0,3~s; $\geq$ 24~FPS con 3 canales; cambio de módulo $\leq$ 500~ms; PAC de 20$\times$20 bandas $\leq$ 30~s; arranque $\leq$ 8~s.
+&
+NFR-P-01 a NFR-P-17
+\\[0.2cm]
+
+\textbf{Confiabilidad}
+&
+Que el sistema sea estable en sesiones prolongadas y que los datos del investigador no se corrompan.
+&
+Terminación garantizada de hilos; un único escritor por dato; señal de origen inmutable; representaciones gráficas invalidadas al cambiar los datos.
+&
+NFR-R-01 a NFR-R-05
+\\[0.2cm]
+
+\textbf{Usabilidad}
+&
+Que un investigador sin formación en programación pueda operar el sistema sin ayuda.
+&
+Retroalimentación de progreso en toda operación de más de 1~s; mensajes por severidad; ayuda emergente en cada control; pantalla de bienvenida e inicio.
+&
+NFR-U-01 a NFR-U-09
+\\[0.2cm]
+
+\textbf{Soporte}
+&
+Que el sistema se pueda instalar, extender y mantener sin degradar lo existente.
+&
+Plugin nuevo registrable sin modificar el núcleo; vía pública única para los trials; servicios compartidos con instancia única; ejecutable instalable.
+&
+NFR-S-01 a NFR-S-05
+\\
+
+\end{longtable}
+
+Cada atributo se desarrolla a continuación en cuatro partes: por qué importa, qué se exige, cómo lo resuelve la arquitectura y cómo se verifica. Los escenarios detallados (estímulo, respuesta y medida) se presentan en la Sección~\ref{sec:escenarios_calidad}, y las métricas con su método de verificación en la Cuadro~\ref{tab:metricas}.
+
+\subsubsection{Rendimiento}
+
+\textbf{Por qué importa.} Las señales neurofisiológicas son densas y los análisis de frecuencia y tiempo-frecuencia (Wavelet, PAC) son computacionalmente costosos. Si el cálculo se ejecuta en el mismo hilo que la interfaz, la aplicación deja de responder y el investigador no puede distinguir un cálculo largo de una caída. El rendimiento es, además, el atributo con el que los revisores académicos medirán la mejora frente a la versión~1.0.
+
+\textbf{Qué se exige.} Los requisitos fijan umbrales verificables sobre el hardware de referencia del laboratorio. Entre los más condicionantes se encuentran: cargar una señal en $\leq$ 2~s (NFR-P-03), completar el Wavelet en $\leq$ 10~s (NFR-P-04), sostener al menos 24~FPS al interactuar con tres canales (NFR-P-05), mantener la interfaz responsiva en $\leq$ 0,3~s mientras corre un análisis en segundo plano (NFR-P-10) y completar un comodulograma PAC de hasta 20$\times$20 pares de bandas en $\leq$ 30~s con posibilidad de cancelarlo (NFR-P-16). El consumo de memoria también está acotado: la memoria de una señal debe liberarse al cerrar el proyecto o al cargar otra (NFR-P-01, NFR-P-08) y los recursos gráficos deben liberarse al salir de cada módulo (NFR-P-02).
+
+\textbf{Cómo lo resuelve la arquitectura.}
+\begin{itemize}[nosep]
+    \item \textbf{Ejecución fuera del hilo de la interfaz.} Toda operación de cómputo de los plugins se despacha a través de un servicio de tareas registrado en el núcleo, que gestiona la cola, la cancelación y la notificación de progreso (NFR-P-14, NFR-S-04).
+    \item \textbf{Submuestreo solo visual.} Para conservar la fluidez al graficar, se limita a 2\,000 puntos por serie y 200 curvas simultáneas, y se reduce únicamente la representación, nunca los datos (NFR-P-15).
+    \item \textbf{Conversión de datos en bloque.} Las representaciones gráficas se construyen con operaciones vectorizadas y no recorriendo los datos elemento por elemento (NFR-P-13).
+    \item \textbf{Reutilización de la representación.} La tabla gráfica de una señal se conserva mientras los datos no cambien, evitando reconstruirla en cada dibujo (NFR-R-04).
+\end{itemize}
+
+\textbf{Cómo se verifica.} Escenarios de Calidad 2 (carga de señal de gran tamaño) y 6 (múltiples señales cargadas), y las métricas de la Cuadro~\ref{tab:metricas}.
+
+\subsubsection{Confiabilidad}
+
+\textbf{Por qué importa.} Un análisis científico solo es útil si sus resultados son correctos y reproducibles, y una sesión de trabajo larga no debe perderse por el fallo de un componente. Esta preocupación proviene tanto del Laboratorio, que debe poder confiar en los resultados, como de la directora, responsable de validar el rigor del producto. Además, el PMP identifica la estabilidad técnica como una de las limitaciones principales de la versión~1.0 que esta iteración debe corregir.
+
+\textbf{Qué se exige.} El sistema debe garantizar la terminación y liberación de todo hilo trabajador cuando se cancela una tarea o se detiene el plugin que la originó (NFR-R-01); sincronizar el acceso al estado compartido de la sesión de modo que un solo propietario escriba cada dato (NFR-R-02); retirar los detectores de eventos de las gráficas al salir de cada módulo (NFR-R-03); descartar de forma explícita las representaciones gráficas cuando los datos cambian, para no mostrar una versión obsoleta (NFR-R-04); y no modificar jamás la señal cargada ni los trials originales (NFR-R-05).
+
+\textbf{Cómo lo resuelve la arquitectura.}
+\begin{itemize}[nosep]
+    \item \textbf{Propiedad única de los datos.} El \textit{DataStore} centraliza el estado de la sesión y se accede a él con un único escritor, de modo que la concurrencia no produzca estados inconsistentes (NFR-R-02).
+    \item \textbf{Datos de origen inmutables.} Todo preprocesamiento produce un conjunto derivado y conserva disponible el original, de modo que cualquier análisis puede repetirse desde la fuente (NFR-R-05).
+    \item \textbf{Ciclo de vida explícito de los plugins.} Cada plugin libera sus recursos gráficos, observadores y tareas al detenerse, en lugar de limitarse a ocultar su interfaz (NFR-R-01, NFR-R-03, NFR-P-02).
+    \item \textbf{Aislamiento de fallos.} Los errores de un plugin o de un archivo incompatible se capturan y se informan sin interrumpir la sesión.
+\end{itemize}
+
+\textbf{Cómo se verifica.} Escenarios de Calidad 3 (errores en tiempo de ejecución), 4 (exportación), 7 (archivos corruptos o incompatibles) y 8 (consistencia entre datos y gráficas).
+
+\subsubsection{Usabilidad}
+
+\textbf{Por qué importa.} El diferenciador del producto, según el PMP, es ser la única herramienta gratuita con interfaz gráfica intuitiva que no requiere programar. Si el investigador necesita asistencia para operar el sistema, ese diferenciador se pierde. La usabilidad es, por tanto, el criterio con el que el Laboratorio validará el producto en la Fase~4.
+
+\textbf{Qué se exige.} Toda operación que tarde más de 1~s debe mostrar progreso (NFR-U-03); los mensajes deben diferenciar información, advertencia y error (NFR-U-01); el resultado debe mostrarse en la misma pantalla en que se solicitó (NFR-U-02); cada control relevante debe tener una descripción emergente (NFR-U-07) e icono (NFR-U-04); las funcionalidades de edición deben concentrarse en \textit{Home} (NFR-U-08); y el sistema debe dar la bienvenida a usuarios nuevos y mostrar una pantalla de inicio durante la carga (NFR-U-05, NFR-U-09).
+
+\textbf{Cómo lo resuelve la arquitectura.}
+\begin{itemize}[nosep]
+    \item \textbf{Separación entre interfaz y cómputo.} Como el cálculo corre fuera del hilo de la interfaz, esta puede mostrar progreso y seguir respondiendo (NFR-U-03 se apoya en NFR-P-14).
+    \item \textbf{Interfaz uniforme entre plugins.} Todos los módulos comparten el mismo patrón de panel de parámetros, de modo que aprender uno facilita usar los demás.
+    \item \textbf{Retroalimentación centralizada.} La notificación de mensajes sigue un mecanismo común que distingue su severidad (NFR-U-01).
+\end{itemize}
+
+\textbf{Cómo se verifica.} Escenario de Calidad 5 (uso del sistema sin experiencia técnica) y las pruebas de usabilidad con el Laboratorio previstas en la Fase~4.
+
+\subsubsection{Soporte}
+
+\textbf{Por qué importa.} GammaLab v2.0 nace como una evolución de la versión~1.0 y se concibe para seguir creciendo: nuevos análisis, nuevos formatos y nuevas necesidades de otros laboratorios. El Soporte agrupa lo necesario para que ese crecimiento no degrade lo ya construido, y es el atributo que más interesa al equipo de desarrollo y a la comunidad que reutilice el código.
+
+\textbf{Qué se exige.} Un nuevo plugin de análisis debe poder incorporarse registrándolo en el núcleo, sin modificar el núcleo ni los plugins existentes (NFR-S-05); ningún módulo debe alcanzar la estructura interna de los datos, sino usar una vía pública única para leer, modificar e invalidar los trials (NFR-S-02); los servicios compartidos de exportación, medición y ajustes deben ser entregados por el núcleo con una única instancia (NFR-S-03); la ejecución pesada debe pasar por un servicio de tareas (NFR-S-04); y el sistema debe poder instalarse con un ejecutable que registre la extensión de proyecto \texttt{.glab} (NFR-S-01).
+
+\textbf{Cómo lo resuelve la arquitectura.}
+\begin{itemize}[nosep]
+    \item \textbf{Estilo microkernel.} Un núcleo mínimo de servicios y extensiones desacopladas descubiertas de forma dinámica, de modo que agregar capacidades no obliga a recompilar ni a tocar el núcleo.
+    \item \textbf{Inversión de control.} Los servicios comunes se registran en el núcleo y se entregan a los plugins, en lugar de que cada plugin los construya o importe directamente.
+    \item \textbf{Encapsulamiento del modelo de datos.} La entidad que representa la señal expone una interfaz pública para operar sobre sus trials y su frecuencia de muestreo, de modo que un cambio interno no rompe a los módulos que dependen de ella.
+\end{itemize}
+
+\textbf{Cómo se verifica.} Escenario de Calidad 1 (integración de un plugin externo).
+
+\subsubsection{Priorización y compromisos entre atributos}
+
+Los atributos no son independientes: mejorar uno suele costar algo de otro. Hacer explícitos estos compromisos evita decisiones accidentales y permite justificarlas ante los interesados. La Cuadro~\ref{tab:compromisos} recoge los más relevantes y la decisión adoptada en cada caso.
+
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.0cm}
+                  >{\raggedright\arraybackslash}p{4.9cm}
+                  >{\raggedright\arraybackslash}p{6.8cm}@{}}
+
+\caption{Compromisos entre atributos de calidad y decisión adoptada} \label{tab:compromisos} \\
+\toprule
+\textbf{Atributos en tensión} &
+\textbf{Tensión} &
+\textbf{Decisión de la arquitectura} \\
+\midrule
+\endfirsthead
+
+\toprule
+\textbf{Atributos en tensión} &
+\textbf{Tensión} &
+\textbf{Decisión de la arquitectura} \\
+\midrule
+\endhead
+
+\bottomrule
+\endlastfoot
+
+Rendimiento frente a Confiabilidad
+&
+Submuestrear la gráfica acelera el dibujo, pero podría ocultar detalle de la señal.
+&
+El submuestreo se aplica únicamente a la representación visual y los datos permanecen intactos (NFR-P-15, NFR-R-05): se gana fluidez sin perder fidelidad en el análisis ni en la exportación.
+\\[0.2cm]
+
+Rendimiento frente a Confiabilidad
+&
+Ejecutar análisis en segundo plano introduce concurrencia y el riesgo de condiciones de carrera sobre los datos.
+&
+Se acepta la concurrencia a cambio de la fluidez, pero se compensa con un único escritor por dato (NFR-R-02) y con la terminación garantizada de los hilos (NFR-R-01).
+\\[0.2cm]
+
+Soporte frente a Rendimiento
+&
+Desacoplar los módulos mediante servicios y plugins añade capas de indirección.
+&
+Se prioriza el desacoplamiento, porque la indirección es pequeña frente al costo del cómputo científico; su efecto se vigila con las métricas de rendimiento (Cuadro~\ref{tab:metricas}).
+\\[0.2cm]
+
+Usabilidad frente a Rendimiento
+&
+Informar el progreso exige comunicación constante entre el hilo de cómputo y la interfaz.
+&
+El servicio de tareas incorpora la notificación de progreso como parte de su contrato (NFR-S-04), de modo que ningún plugin la implemente por su cuenta.
+\\
+
+\end{longtable}
+
+% ----------------------------------------------------------------------
+\subsection{Supuestos}
+\label{sec:supuestos}
+
+Un supuesto es una condición que se considera cierta durante el diseño sin que el sistema pueda garantizarla. Documentarlos es importante porque, si alguno deja de cumplirse, las decisiones que dependen de él deben revisarse. Por eso, la Cuadro~\ref{tab:supuestos} registra, para cada supuesto, su fuente y la consecuencia de que no se cumpla. Las restricciones que limitan el diseño, a diferencia de los supuestos, se establecen en la Sección~\ref{sec:limitaciones} (\textit{Limitaciones del sistema}).
+
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.1cm}
+                  >{\raggedright\arraybackslash}p{6.2cm}
+                  >{\raggedright\arraybackslash}p{1.9cm}
+                  >{\raggedright\arraybackslash}p{5.5cm}@{}}
+
+\caption{Supuestos de GammaLab v2.0, su fuente y su impacto} \label{tab:supuestos} \\
+\toprule
+\textbf{ID} &
+\textbf{Supuesto} &
+\textbf{Fuente} &
+\textbf{Impacto si no se cumple} \\
+\midrule
+\endfirsthead
+
+\toprule
+\textbf{ID} &
+\textbf{Supuesto} &
+\textbf{Fuente} &
+\textbf{Impacto si no se cumple} \\
+\midrule
+\endhead
+
+\bottomrule
+\endlastfoot
+
+\multicolumn{4}{@{}l}{\textit{Entorno de ejecución}} \\
+\addlinespace[2pt]
+
+A-01 &
+El sistema se ejecuta sobre Windows 10 o superior, en arquitectura de 64 bits.
+&
+SRS
+&
+No se garantiza el instalador ni la portabilidad prevista (NFR-S-01).
+\\[0.15cm]
+
+A-02 &
+El equipo cuenta con arquitectura multinúcleo (más de cuatro núcleos) para el procesamiento en segundo plano.
+&
+Equipo
+&
+La mejora de rendimiento esperada por la paralelización (20--30\,\%) puede no alcanzarse.
+\\[0.15cm]
+
+A-03 &
+El equipo dispone de recursos suficientes para manipular señales de gran tamaño, y los umbrales de rendimiento se miden sobre el hardware de referencia del laboratorio.
+&
+SRS, PMP
+&
+Los tiempos de carga, de graficación y de arranque (NFR-P-03, P-05, P-17) pueden superarse.
+\\[0.15cm]
+
+A-04 &
+El usuario tiene permisos de lectura y escritura en el sistema de archivos local.
+&
+SRS
+&
+No es posible cargar señales, guardar proyectos ni exportar resultados.
+\\[0.15cm]
+
+A-05 &
+Las dependencias científicas requeridas (por ejemplo, NumPy, SciPy, PyWavelets, PyABF y PyEDFlib) están disponibles en el entorno de ejecución, ya sea instaladas o empaquetadas en el ejecutable.
+&
+SRS
+&
+Los módulos de lectura de archivos y de análisis no pueden ejecutarse.
+\\[0.15cm]
+
+\addlinespace[4pt]
+\multicolumn{4}{@{}l}{\textit{Datos de entrada}} \\
+\addlinespace[2pt]
+
+A-06 &
+Las señales a procesar ya fueron adquiridas: el sistema se dedica al posprocesamiento y no a la adquisición en tiempo real.
+&
+Sección~\ref{sec:limitaciones}
+&
+Requeriría un subsistema de adquisición y comunicación con hardware, hoy fuera de la arquitectura.
+\\[0.15cm]
+
+A-07 &
+Los archivos de señal están en un formato soportado (\texttt{.abf}, \texttt{.edf}, \texttt{.bdf} o \texttt{.mat}).
+&
+SRS
+&
+El archivo se rechaza y se informa al usuario (Escenario de Calidad 7).
+\\[0.15cm]
+
+A-08 &
+Los archivos \texttt{.mat} no incluyen la frecuencia de muestreo, por lo que el investigador la conoce y la ingresa manualmente antes de ejecutar análisis de frecuencia.
+&
+R80, CU-018
+&
+Los análisis de frecuencia se calcularían sobre un eje temporal incorrecto y producirían resultados erróneos.
+\\[0.15cm]
+
+A-09 &
+Las señales usadas en PAC tienen al menos un trial válido; el PAC inter-canal y el PPC requieren al menos dos canales con trials generados.
+&
+SRS
+&
+El análisis no puede ejecutarse o carece de significado.
+\\[0.15cm]
+
+A-10 &
+Las bandas de frecuencia seleccionadas están por debajo de la frecuencia de Nyquist de la señal.
+&
+SRS
+&
+El cálculo espectral no es válido para las bandas que la superen.
+\\[0.15cm]
+
+\addlinespace[4pt]
+\multicolumn{4}{@{}l}{\textit{Usuarios y participación de los interesados}} \\
+\addlinespace[2pt]
+
+A-11 &
+El usuario tiene conocimientos básicos o intermedios de análisis de señales EEG (dominios del tiempo, frecuencia y tiempo-frecuencia), sabe interpretar gráficas y comodulogramas, y maneja inglés técnico básico.
+&
+SRS
+&
+La interfaz y la terminología deberían simplificarse y complementarse con mayor ayuda contextual (Escenario de Calidad 5).
+\\[0.15cm]
+
+A-12 &
+Los investigadores del Laboratorio participan activamente en las pruebas, la validación y la retroalimentación, y la institución facilita señales EEG para validar el sistema.
+&
+PMP
+&
+La validación de los resultados y del criterio de éxito de usuario final (Fase~4) quedaría sin sustento.
+\\[0.15cm]
+
+\addlinespace[4pt]
+\multicolumn{4}{@{}l}{\textit{Arquitectura y extensiones}} \\
+\addlinespace[2pt]
+
+A-13 &
+La arquitectura microkernel heredada de la versión~1.0 es adecuada y escalable para incorporar las nuevas funcionalidades.
+&
+PMP
+&
+Sería necesario rediseñar el núcleo, con impacto en el alcance y el cronograma.
+\\[0.15cm]
+
+A-14 &
+Los módulos desarrollados por terceros respetan la arquitectura modular y las interfaces definidas por GammaLab.
+&
+SRS
+&
+Un plugin defectuoso podría comprometer la estabilidad de la sesión (NFR-R-01, NFR-S-05).
+\\
+
+\end{longtable}
 
 % ======================================================================
 \section{Principios y decisiones arquitect\'onicas}
@@ -1177,6 +1583,7 @@ La Figura \ref{fig:vistafisica} muestra el despliegue t\'ipico:
 
 % ======================================================================
 \section{Atributos de calidad}
+\label{sec:escenarios_calidad}
 
 \subsection{Escenarios de calidad}
 

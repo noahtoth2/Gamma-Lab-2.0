@@ -79,6 +79,70 @@ class ExportService:
         except Exception as e:
             self.alerts.error("Error exporting image", str(e))
 
+    # ---------- sections (results made of several tables) ----------
+    def export_sections(self, sections: dict, fmt: str, filename: str = None):
+        """
+        Export a result made of several tables (parameters, summary, matrices...).
+
+        `sections` maps a section name to `(headers, rows)`. csv writes the
+        sections one after another, each preceded by its name; xlsx writes one
+        sheet per section; json writes one list of records per section.
+        If filename is None, open a dialog. Respects the 'last_export_dir'.
+        """
+        try:
+            if not sections:
+                self.alerts.error("There are no results to export.")
+                return
+
+            signal_name, channel_name, plugin_name = self.get_names()
+            stamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            base_name = (
+                f"{signal_name}_{channel_name}_{plugin_name}_{stamp}.{fmt}"
+                if channel_name else f"{signal_name}_{plugin_name}_{stamp}.{fmt}"
+            )
+            initial_path = os.path.join(self._get_last_dir(), base_name)
+
+            if not filename:
+                filters = {
+                    "csv": "CSV file (*.csv)",
+                    "xlsx": "Excel file (*.xlsx)",
+                    "json": "JSON file (*.json)"
+                }
+                filename, _ = QFileDialog.getSaveFileName(
+                    self.parent, f"Save results as {fmt.upper()}...", initial_path, filters[fmt]
+                )
+                if not filename:
+                    return
+
+            self._set_last_dir(os.path.dirname(filename))
+
+            if fmt == "csv":
+                with open(filename, mode="w", newline="", encoding="utf-8") as f:
+                    w = csv.writer(f)
+                    for name, (headers, rows) in sections.items():
+                        w.writerow([f"[{name}]"])
+                        w.writerow(headers)
+                        w.writerows(rows)
+                        w.writerow([])
+            elif fmt == "xlsx":
+                with pd.ExcelWriter(filename) as writer:
+                    for name, (headers, rows) in sections.items():
+                        pd.DataFrame(rows, columns=headers).to_excel(
+                            writer, sheet_name=str(name)[:31], index=False)
+            elif fmt == "json":
+                data = {name: [dict(zip(headers, row)) for row in rows]
+                        for name, (headers, rows) in sections.items()}
+                with open(filename, "w", encoding="utf-8") as f:
+                    json.dump(data, f, ensure_ascii=False, indent=4)
+            else:
+                self.alerts.error(f"Format '{fmt}' not supported.")
+                return
+
+            self.alerts.info(f"Results successfully exported to:\n{base_name}", "Successful export")
+
+        except Exception as e:
+            self.alerts.error(f"Error exporting results \n{str(e)}")
+
     # ---------- table ----------
     def export_table(self, fmt: str, filename: str = None):
         """
