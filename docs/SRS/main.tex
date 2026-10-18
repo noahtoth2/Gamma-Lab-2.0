@@ -148,7 +148,7 @@ v1.0 & 17/05/26 inicio del documento & Se inició la creación del SRS y se divi
 
 El presente documento constituye la Especificación de Requisitos de Software (SRS) de GammaLab 2.0. Con el proposito de brindar una orientación metodológica clara del inicio del ciclo de desarrollo.
 % Producto -----------------------------------------------------------------------
-GammaLab v2.0 es una interfaz gráfica de escritorio de tipo standalone orientada al análisis, procesamiento y visualización de señales electroencefalográficas o EEG. Concebido como una alternativa de código abierto y enfocado en el uso local para el Laboratorio de Electrofisiología de la Universidad de Colombia, el sistema está desarrollado con el lenguaje Python, utilizando el framework PySide6 y librerías científicas como VTK. Siguiendo con la visión de GammaLab v1.0, su diseño arquitectónico evoluciona con el fin de resolver brechas en el paralelismo de cómputo y añadir nuevos métodos de acoplamiento cruzado de frecuencias (Phase-Amplitude-Coupling o PAC).
+GammaLab v2.0 es una interfaz gráfica de escritorio de tipo standalone orientada al análisis, procesamiento y visualización de señales electroencefalográficas (EEG). Concebido como una alternativa de código abierto y enfocado en el uso local para el Laboratorio de Electrofisiología de la Universidad de Colombia, el sistema está desarrollado con el lenguaje Python, utilizando el framework PySide6 y librerías científicas como VTK. Siguiendo con la visión de GammaLab v1.0, su diseño arquitectónico evoluciona con el fin de resolver brechas en el paralelismo de cómputo y añadir nuevos métodos de Phase-Amplitude-Coupling (PAC).
 
 % Alcanse del SRS -----------------------------------------------------------------
 Este documento especifica de manera formal, atómica y verificable la totalidad de los requerimientos funcionales y no funcionales que rigen el desarrollo de GammaLab v2.0. El alcance de este abarca detalladamente los requerimientos de interfaz de usuario, gestión de memoria DataStore, el procesamiento asíncrono en segundo plano del Kernel y las especificaciones técnicas del nuevo módulo de análisis (PAC). Se excluye del alcance del SRS las rutas de mantenimiento técnico a largo plazo del software, así mismo el código heredado de GammaLab v1.0 que se conservará sin modificaciones funcionales.
@@ -162,12 +162,12 @@ La importancia de este SRS radica en que este actúa como puente de información
 \subsubsection{Contexto - GammaLab v1.0}
 
 % Origen de GammaLab 1 -------------------------------------------------------------
-GammaLab nació en 2025 como una alternativa de código abierto a las herramientas con licencia comercial y fragmentada en el mercado, enfocada específicamente en las necesidades del Laboratorio de Electrofisiología de la Universidad Nacional de Colombia. El sistema se estructuró bajo una arquitectura microkernel con un ecosistema de plugins usando Python, permitiendo el análisis de señales EEG en los dominios de tiempo, frecuencia y tiempo-frecuencia mediante una interfaz gráfica unificada.
+GammaLab nació en 2025 \cite{ref13} como una alternativa de código abierto a las herramientas con licencia comercial y fragmentada en el mercado, enfocada específicamente en las necesidades del Laboratorio de Electrofisiología de la Universidad Nacional de Colombia. El sistema se estructuró bajo una arquitectura microkernel con un ecosistema de plugins usando Python, permitiendo el análisis de señales EEG en los dominios de tiempo, frecuencia y tiempo-frecuencia mediante una interfaz gráfica unificada.
 
-Aunque la primera iteración fue validada exitosamente con un 87.5\% de coincidencia frente al sistema de referencia BOARD-FTD-PACC, las pruebas de aceptación con el usuario final  identificaron brechas críticas para su correcta adopción. Entre estas limitaciones se destacan la ausencia de persistencia de sesiones y gestión de proyectos, la falta de rendimiento al no contar con mecanismos de concurrencia o paralelismo para la distribución de tareas pesadas.
+Aunque la primera iteración fue validada exitosamente con un 87.5\% de coincidencia frente al sistema de referencia BOARD-FTD-PACC \cite{ref14}, las pruebas de aceptación con el usuario final  identificaron brechas críticas para su correcta adopción. Entre estas limitaciones se destacan la ausencia de persistencia de sesiones y gestión de proyectos, la falta de rendimiento al no contar con mecanismos de concurrencia o paralelismo para la distribución de tareas pesadas.
 
 % Necesidad de GammaLab2 -----------------------------------------------------------
-Además, el equipo de investigación reportó la necesidad de contar con un control más preciso sobre la densidad de muestreo y la incorporación de métodos analíticos avanzados. Por otro lado, GammaLab v2.0 se concibe más allá de solo extender estas capacidades, sino para estabilizar la arquitectura meidnate el procesamiento asíncrono en segundo plano, así garantizando la robustez técnica necesaria para los investigadores.
+Además, el equipo de investigación reportó la necesidad de contar con un control más preciso sobre la densidad de muestreo y la incorporación de métodos analíticos avanzados. Por todo lo expuesto anteriormente, GammaLab v2.0 se concibe más allá de solo extender estas capacidades, sino para estabilizar la arquitectura meidnate el procesamiento asíncrono en segundo plano, así garantizando la robustez técnica necesaria para los investigadores.
 
 \subsection{Alcance}
 El alcance de GammaLab v2.0 lo definen los límites funcionales, técnicos y operativos del sistema, asegurando la entrega de un software robusto y enfocado en el entorno de investigación. 
@@ -182,7 +182,7 @@ Con el fin de cerrar las brechas observadas de la primera iteración del softwar
 
 \item \textbf{Persistencia de sesión y gestión de proyectos:} Implementación del componente ProjectSession para permitir el guardado local, creando una extensión propia para GammaLab (.glab) y la restauración automática del entorno de trabajo.
 
-\item \textbf{Kernel de procesamiento asíncrono y paralelo:} Desacoplamiento de la interfaz de usuario mediante una arquitectura de multiprocesamiento para la ejecución paralela del análisis matemático pesado en segundo plano sin congelar la GUI.
+\item \textbf{Kernel de procesamiento paralelo:} Desacoplamiento de la interfaz de usuario mediante una arquitectura de multiprocesamiento para la ejecución paralela del análisis matemático pesado en segundo plano sin congelar la GUI.
 
 \item \textbf{Módulo de análisis PAC:} Incorporación del un plugin especializado para cuantificar el acoplamiento phase-amplitude coupling, permitiendo la selección cruzada de canales fuentes.
 
@@ -212,8 +212,6 @@ El desarrollo de esta evolución funcional y arquitectónica aporta tres aspecto
     \item \textbf{Eficiencia computacional:} La paralelización del kernel reduce drásticamente los tiempos de procesamiento de grandes volúmenes de datos, optimizando los tiempos de respuesta del programa.
 \end{itemize}
 
-% Relación con el contexto organizacional ------------------
-El laboratorio suele tener nulo mantenimiento técnico especializado para software. Por lo tanto, el diseño de GammaLab v2.0 se alinea con la meta de entregar una herramienta autónoma, autogestionable y autoexplicativa. EL despliegue mediante un instalador ejecutable de un solo clic y la incorporación de ayudas contextuales (tooltips) robustas garantizan que el laboratorio pueda usar la herramienta de manera independiente, apoyando en sus proyectos de investigación.
 
 \subsection{Definiciones, Acrónimos y Abreviaciones}
 \begin{table}[ht]
@@ -285,7 +283,7 @@ El laboratorio suele tener nulo mantenimiento técnico especializado para softwa
 
 \renewcommand{\refname}{\vspace{-2 em}} 
 
-\begin{thebibliography}{12}
+\begin{thebibliography}{99}
 
 \bibitem{ref1}
 Microsoft Corporation, ``Windows -- product family overview,'' Available: \url{https://www.microsoft.com/windows}. Accessed: 2025.
@@ -322,6 +320,12 @@ Python Software Foundation, ``concurrent.futures --- launching parallel tasks,''
 
 \bibitem{ref12}
 pytest Development Team, ``pytest documentation,'' 2025. Available: \url{https://docs.pytest.org/en/stable/}. Accessed: 2025.
+
+\bibitem{ref13}
+S. Asencio Rodríguez, M. F. González Valencia, J. E. Martínez Clavijo, y G. V. Villalobos Rocha, ``Gamma Lab,'' Memoria de trabajo de grado, Programa de Ingeniería de Sistemas, Facultad de Ingeniería, Pontificia Universidad Javeriana, Bogotá, D.C., Colombia, nov. 2025.
+
+\bibitem{ref14}
+C. Gauthier-Umaña, M. Valderrama, A. Múnera, y M. O. Nava-Mesa, ``BOARD-FTD-PACC: a graphical user interface for the synaptic and cross-frequency analysis derived from neural signals,'' \textit{Brain Informatics}, vol. 10, art. 12, may. 2023, doi: 10.1186/s40708-023-00191-x. Available: \url{https://link.springer.com/article/10.1186/s40708-023-00191-x}.
 
 \end{thebibliography}
 \subsection{Apreciación Global}
