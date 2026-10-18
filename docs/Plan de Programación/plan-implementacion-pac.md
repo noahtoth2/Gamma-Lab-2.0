@@ -14,7 +14,7 @@ El análisis del algoritmo está en [`analisis-pac.md`](analisis-pac.md). Este d
 > | **4 — MI (comodulograma)** | ✅ **Hecha.** Cálculo, interfaz completa y plugin. 34 escenarios. El `178` se quitó (ver más abajo) |
 > | **5 — PAC Psel** | ✅ **Hecha.** Gabor, detección de ciclos, `pac_psel` y los 13 paneles. 40 escenarios |
 > | **6 — Integración con el orquestador** | ✅ **Hecha.** Selector de trial con flechas, `submit()` + 4 slots, 4 salidas apiladas y deslizables. 28 escenarios |
-> | **7 — Verificación** | ⬜ **Bloqueada** por la referencia de MATLAB (sección 8 bis). **Es lo único que queda** |
+> | **7 — Verificación** | 🟨 3 de 5 puntos cerrados; el banco de comparación montado y probado. Falta **ejecutar MATLAB** (ver `test/data/exportar_referencia_pac.m`) |
 >
 > Suite completa al 12 de octubre: **347 pasan, 5 fallan** (los cinco fallos MATLAB ya conocidos, ajenos a PAC).
 >
@@ -574,11 +574,77 @@ Una vez estén, se arma `test/plugins_test/test_pac_vs_matlab.py` con el mismo c
 
 ## 9. Fase 7 — Verificación
 
-- [ ] **Exportar desde MATLAB una matriz de referencia de `morse_tf` sola.** Es la pieza con más riesgo numérico y la única sin equivalente en ninguna librería; conviene verificarla aislada antes de componerla con el resto.
-- [ ] Comparar `m_phase_av` y el histograma contra MATLAB con el mismo archivo y los mismos parámetros, por correlación
-- [ ] Pruebas de `agrupar_por_fase` con señal sintética: una fase conocida tiene que caer en el bin esperado
-- [ ] Pruebas de `morse_tf` con tonos puros: el máximo debe quedar en la frecuencia del tono
-- [ ] Escenarios de interfaz como los de wavelet (`escenarios_wavelet.py` sirve de molde): que el cálculo corra fuera del hilo principal, que Cancelar cancele, que cerrar el proyecto a mitad no deje nada colgado, que un resultado tardío sin interfaz se descarte sin error
+> **Estado al 14 de octubre de 2026: tres de cinco puntos cerrados, y el banco de comparación montado y probado.** Lo único que falta es ejecutar MATLAB.
+
+- [x] Pruebas de `agrupar_por_fase` con señal sintética → 6 pruebas en `test_pac_core.py`: que los bins cubran el círculo, que cada muestra caiga donde le toca, que un bin vacío dé `NaN` como MATLAB.
+- [x] Pruebas de `morse_tf` con tonos puros → el máximo cae en la frecuencia del tono en cuatro frecuencias distintas, más el eje descendente y el largo con entradas pares e impares.
+- [x] Escenarios de interfaz → **48** en `escenarios_pac.py`, el molde de `escenarios_wavelet.py`: que el cálculo corra fuera del hilo principal, que Cancelar cancele, que un resultado tardío sin interfaz se descarte sin excepción, que *Clear* a mitad avise en vez de tocar los parámetros.
+- [ ] **Comparar contra MATLAB** → el banco está escrito en `test/plugins_test/test_pac_vs_matlab.py` (**9 pruebas**) y **se salta solo** mientras no estén los CSV. Falta generarlos.
+- [ ] Exportar una matriz de referencia de `morse_tf` sola → se decidió **dejarlo para después**: pesaría unos 200 MB en CSV, y el mapa ya permite localizar el fallo. Si la comparación del mapa falla, entonces se pide.
+
+### El banco de comparación
+
+Compara siete cosas, de lo más simple a lo más compuesto, para que un fallo señale **en qué paso** se separan y no solo que se separan:
+
+| Prueba | Qué aísla |
+|---|---|
+| El eje de frecuencias coincide | Si no, comparar mapas alinearía filas de frecuencias distintas |
+| La fase instantánea coincide | El filtro Chebyshev II bidireccional y el `angle(hilbert(·))` |
+| El mapa correlaciona fila a fila | El agrupado por fase, **antes** del z-score |
+| El mapa tiene la misma forma | Densidad de frecuencias y número de bins |
+| El histograma correlaciona | La suma sobre frecuencias |
+| El vector apunta a la misma fase | Lo que el usuario ve en la brújula |
+| El vector tiene la misma magnitud | La escala |
+
+La fase se compara **como ángulo** (`angle(exp(i·Δ))`), no restando: dos fases que difieren en 2π son la misma, y restar daría una diferencia enorme donde no la hay.
+
+**El banco está probado.** Se generó una referencia de mentira y se le metieron cinco errores a propósito; cada uno hizo fallar **exactamente una** prueba:
+
+| Error inyectado | Resultado |
+|---|---|
+| Vector girado 10° | 1 falla, 8 pasan |
+| Vector con 5 % más de magnitud | 1 falla, 8 pasan |
+| Fase desplazada 5° | 1 falla, 8 pasan |
+| Mapa con las filas invertidas | 1 falla, 8 pasan |
+| Eje de frecuencias ascendente | 1 falla, 8 pasan |
+
+> Esa referencia de mentira **se borró**. Dejarla habría sido peor que no tener nada: las pruebas pasarían comparando el cálculo contra sí mismo y PAC parecería verificado sin estarlo.
+
+### Lo que sí se pudo verificar sin MATLAB (14 de octubre de 2026)
+
+Se transcribió `f_Phase_PAC.m` **línea por línea**, sin refactorizar nada —incluidos `f_GetIIRFilter`, `f_IIRBiFilter` y `f_MorseAWTransformMatlab`— y se comparó contra el porte real sobre el mismo trial del ABF de prueba:
+
+| Paso | Diferencia máxima |
+|---|---|
+| Eje de frecuencias | 1,4 × 10⁻¹² |
+| **Fase instantánea** | **0** (exacta) |
+| Mapa sin normalizar | 1,7 × 10⁻¹⁶ |
+| Mapa con z-score | 3,7 × 10⁻¹⁴ |
+| Histograma | 1,1 × 10⁻¹³ |
+| **Vector medio** | 2,8 × 10⁻¹⁴ |
+
+Las dos versiones dan **1,808089 a 280,6155°**. Eso es redondeo de `float64`, no una coincidencia aproximada.
+
+**Qué prueba esto.** Que el porte no se desvió al reorganizar el cálculo: reutilizar filtros, escribir fila a fila para ahorrar memoria, compartir piezas entre plugins y separar `compute.py` del dibujo **no cambiaron ningún número**.
+
+**Qué no prueba.** Las dos versiones usan las primitivas de SciPy, no las de MATLAB. Verifica el **ensamblaje**, no que `scipy.cheby2` y el `cheby2` de MATLAB den los mismos coeficientes. Si al exportar la referencia apareciera una diferencia, ya se sabe dónde **no** está: en cómo se encadenan los pasos.
+
+Quedó como prueba permanente en `test/plugins_test/test_pac_contra_transcripcion.py`, **8 pruebas**, para que un refactor futuro no rompa la fidelidad en silencio.
+
+### Lo que falta, y por qué no lo puedo hacer yo
+
+No hay MATLAB en el equipo de desarrollo y Octave no sirve: no abre los `.mlapp` de App Designer y le faltan `fdesign.bandpass`, `design()` y `dfilt.df2sos`.
+
+El fragmento está listo para pegar en **`test/data/exportar_referencia_pac.m`**, con las instrucciones paso a paso. Son siete `writematrix` y cinco minutos.
+
+**`pac_entrada_matlab.csv` es el que convierte esto en una prueba.** Sin él, comparar las dos aplicaciones desde el `.abf` no demuestra nada, porque antes del cálculo va el recorte de trials y cada programa usa sus propios parámetros. Medido sobre el archivo de prueba con los valores por defecto, entre un trial y otro del **mismo** archivo:
+
+| | Rango entre trials |
+|---|---|
+| Magnitud del vector | 0,88 a 2,36 |
+| Fase del vector | 185° a 326° |
+
+Con esa dispersión, dos resultados pueden parecerse o no por puro azar.
 
 ---
 

@@ -12,6 +12,208 @@ from plugins.analysis.time_frequency.pac import compute as cp
 from plugins.analysis.time_frequency.pac.pac_plugin_ui import Ui_Pac
 
 
+# ===========================================================
+# === La brujula polar, como la `compass` de MATLAB
+# ===========================================================
+# VTK no trae grafico polar: `vtkChartXY` solo sabe de ejes cartesianos.
+# Antes la brujula se dibujaba encima de uno —dos circulos, una cruz y la
+# flecha—, lo que daba la forma pero no el instrumento: los ejes mostraban
+# numeros de abscisa y ordenada, y el angulo solo salia en el titulo, y en
+# RADIANES. MATLAB dibuja radios cada 30 grados rotulados en GRADOS, anillos
+# de magnitud con su valor, y ningun eje cartesiano a la vista.
+#
+# Aqui se pinta a mano con el `painter` de VTK a traves de `vtkPythonItem`,
+# que es la via que la libreria ofrece para dibujo propio dentro de la escena.
+# El gris de la rejilla y el azul de la flecha, los mismos que ya usaba el resto
+GRIS_REJILLA = (205, 205, 205)
+GRIS_TEXTO = (0.35, 0.35, 0.35)
+AZUL = (40, 90, 190)
+AZUL_TENUE = (90, 150, 230)
+
+ANILLOS_OBJETIVO = 4      # cuantos anillos de magnitud se buscan
+PASO_GRADOS = 30          # un radio cada 30 grados, como MATLAB
+
+
+def pasos_de_magnitud(rmax, objetivo=ANILLOS_OBJETIVO):
+    """Los valores donde van los anillos, redondeados a algo legible.
+
+    Elige el paso entre 1, 2, 2,5 y 5 por una potencia de diez, que es lo que
+    hace cualquier eje decente y lo que se ve en MATLAB: con un máximo de 0,6
+    salen los anillos en 0,2, 0,4 y 0,6.
+
+    **El último anillo queda por encima del máximo, no por debajo.** Es lo que
+    hace MATLAB y no es un detalle estético: el anillo exterior es el borde del
+    instrumento, así que si se quedara corto la flecha saldría del círculo y
+    parecería un error de dibujo. En una `compass` con el vector en 1,6 los
+    anillos van a 0,5, 1, 1,5 y **2**.
+    """
+    if not np.isfinite(rmax) or rmax <= 0:
+        return [1.0]
+    bruto = rmax / objetivo
+    exponente = np.floor(np.log10(bruto))
+    base = bruto / 10.0 ** exponente
+    for candidato in (1.0, 2.0, 2.5, 5.0, 10.0):
+        if base <= candidato:
+            paso = candidato * 10.0 ** exponente
+            break
+    n = int(np.ceil(rmax / paso - 1e-9))
+    return [paso * k for k in range(1, max(n, 1) + 1)]
+
+
+class BrujulaPolar:
+    """Dibuja el vector medio sobre una rejilla polar.
+
+    Se comporta como un gráfico para `_reacomodar` —entiende `SetAutoSize` y
+    `SetSize`— pero lo que se añade a la escena es `self.item`.
+    """
+
+    def __init__(self, vector, extra=None, titulo=""):
+        self.vector = complex(vector)
+        self.extra = (np.asarray(extra, dtype=np.complex128).ravel()
+                      if extra is not None else np.empty(0, dtype=np.complex128))
+        self.titulo = titulo
+        self._rect = (0.0, 0.0, 1.0, 1.0)
+
+        self.item = vtk.vtkPythonItem()
+        self.item.SetPythonObject(self)
+
+    # --- lo que `_reacomodar` necesita, para tratarla como a los demas graficos
+    def SetAutoSize(self, _valor):
+        return None
+
+    def SetSize(self, rectf):
+        self._rect = (rectf.GetX(), rectf.GetY(), rectf.GetWidth(), rectf.GetHeight())
+
+    def GetTitle(self):
+        return self.titulo
+
+    # --- el radio de la rejilla
+    def radio(self):
+        """El mayor entre |parte real| y |parte imaginaria|, como MATLAB.
+
+        Es para lo que allá sirven las cuatro flechas invisibles de `x_fake` e
+        `y_fake`: forzar la escala. **La flecha puede sobresalir del anillo
+        exterior**, y en MATLAB también lo hace: un vector a 45° mide
+        `max_lim·√2`.
+        """
+        candidatos = [abs(self.vector.real), abs(self.vector.imag)]
+        if self.extra.size:
+            candidatos += [float(np.abs(self.extra.real).max()),
+                           float(np.abs(self.extra.imag).max())]
+        r = max(candidatos)
+        return r if np.isfinite(r) and r > 0 else 1.0
+
+    # --- la interfaz de vtkPythonItem
+    def Initialize(self, _vtk_self):
+        return True
+
+    def Paint(self, _vtk_self, painter):
+        try:
+            self._pintar(painter)
+        except Exception:
+            # Una excepcion dentro del Paint de VTK no tiene a donde propagarse:
+            # dejaria la escena a medias o tumbaria el proceso. Mejor no dibujar.
+            return True
+        return True
+
+    # ------------------------------------------------------------------ dibujo
+    def _pintar(self, painter):
+        x0, y0, ancho, alto = self._rect
+        if ancho <= 1 or alto <= 1:
+            return
+        cx, cy = x0 + ancho / 2.0, y0 + alto / 2.0
+        # Se deja margen para las etiquetas de grados, que van por fuera
+        lado = min(ancho, alto) / 2.0 * 0.78
+        rmax = self.radio()
+        escala = lado / rmax
+
+        pluma = painter.GetPen()
+        painter.GetBrush().SetOpacity(0)
+
+        # --- anillos de magnitud
+        magnitudes = pasos_de_magnitud(rmax)
+        pluma.SetColor(*GRIS_REJILLA)
+        pluma.SetWidth(1.0)
+        angulos = np.linspace(0.0, 2.0 * np.pi, 181)
+        for m in magnitudes:
+            r = m * escala
+            self._poli(painter, cx + r * np.cos(angulos), cy + r * np.sin(angulos))
+
+        # --- radios cada 30 grados
+        borde = magnitudes[-1] * escala
+        for grados in range(0, 360, PASO_GRADOS):
+            rad = np.deg2rad(grados)
+            self._poli(painter, [cx, cx + borde * np.cos(rad)],
+                       [cy, cy + borde * np.sin(rad)])
+
+        # --- las etiquetas
+        texto = painter.GetTextProp()
+        texto.SetColor(*GRIS_TEXTO)
+        texto.SetFontSize(12)
+        texto.SetJustificationToCentered()
+        texto.SetVerticalJustificationToCentered()
+        for grados in range(0, 360, PASO_GRADOS):
+            rad = np.deg2rad(grados)
+            painter.DrawString(float(cx + borde * 1.12 * np.cos(rad)),
+                               float(cy + borde * 1.12 * np.sin(rad)), str(grados))
+
+        # Los valores de magnitud, entre el radio de 60 y el de 90 como MATLAB
+        texto.SetFontSize(11)
+        rad_etiqueta = np.deg2rad(75)
+        for m in magnitudes:
+            r = m * escala
+            painter.DrawString(float(cx + r * np.cos(rad_etiqueta)),
+                               float(cy + r * np.sin(rad_etiqueta)), f"{m:g}")
+
+        # --- los vectores por grupo, detras y mas tenues
+        pluma.SetWidth(1.4)
+        for w in self.extra:
+            if np.isfinite(w.real) and np.isfinite(w.imag):
+                pluma.SetColor(*AZUL_TENUE)
+                pluma.SetOpacity(160)
+                self._poli(painter, [cx, cx + w.real * escala], [cy, cy + w.imag * escala])
+        pluma.SetOpacity(255)
+
+        # --- la flecha
+        v = self.vector
+        if np.isfinite(v.real) and np.isfinite(v.imag):
+            pluma.SetColor(*AZUL)
+            pluma.SetWidth(2.5)
+            px, py = cx + v.real * escala, cy + v.imag * escala
+            self._poli(painter, [cx, px], [cy, py])
+            theta = np.angle(v)
+            largo = 0.12 * lado
+            for desvio in (+2.6, -2.6):      # ~150 grados a cada lado del eje
+                self._poli(painter, [px, px + largo * np.cos(theta + desvio)],
+                           [py, py + largo * np.sin(theta + desvio)])
+
+        # --- el titulo, arriba del todo
+        if self.titulo:
+            texto.SetFontSize(13)
+            texto.SetColor(0.15, 0.15, 0.15)
+            painter.DrawString(float(cx), float(y0 + alto - 10.0), self.titulo)
+
+    @staticmethod
+    def _poli(painter, xs, ys):
+        puntos = np.empty(2 * len(xs), dtype=np.float64)
+        puntos[0::2] = xs
+        puntos[1::2] = ys
+        painter.DrawPoly(puntos.tolist(), len(xs))
+
+
+def titulo_de(vector, n_extra=0):
+    """El rótulo del gráfico, con el ángulo **en grados**.
+
+    MATLAB imprime `radtodeg(angle(v_pha_av_pre1))` por consola, así que grados
+    es lo fiel; y además es lo que dicen las etiquetas del círculo, de modo que
+    el título y la rejilla hablan el mismo idioma.
+    """
+    v = complex(vector)
+    grados = np.rad2deg(np.angle(v)) % 360.0
+    sufijo = f" + {n_extra} por grupo" if n_extra else ""
+    return f"Vector medio{sufijo} — magnitud {abs(v):.4f}, fase {grados:.1f}°"
+
+
 class Pac_plugin(IPlugin):
     PAC_TYPES = ["PAC", "PAC Average", "PAC Psel"]
     DEFAULTS = {
@@ -406,7 +608,9 @@ class Pac_plugin(IPlugin):
                 self._altos.append(self.ALTO_SENAL)
 
         for chart in self._charts:
-            escena.AddItem(chart)
+            # La brujula es un `vtkPythonItem` envuelto en una clase de Python
+            # que entiende SetSize: a la escena va el item, no el envoltorio.
+            escena.AddItem(getattr(chart, "item", chart))
         self._ajustar_alto_del_lienzo()
         self._reacomodar()
         self._context_view.GetRenderWindow().Render()
@@ -484,7 +688,9 @@ class Pac_plugin(IPlugin):
                 self.LADO_BRUJULA, cuadrado=True)
 
         for chart in self._charts:
-            escena.AddItem(chart)
+            # La brujula es un `vtkPythonItem` envuelto en una clase de Python
+            # que entiende SetSize: a la escena va el item, no el envoltorio.
+            escena.AddItem(getattr(chart, "item", chart))
         self._ajustar_alto_del_lienzo()
         self._reacomodar()
         self._context_view.GetRenderWindow().Render()
@@ -703,73 +909,19 @@ class Pac_plugin(IPlugin):
     def _grafico_brujula(self, r, extra=None):
         """El vector medio de acoplamiento, como la `compass` de MATLAB.
 
-        Con `extra` dibuja además esos vectores en azul claro detrás del
-        principal: es el segundo `compass` de `f_Phase_PAC_Pdetect`, que
-        superpone los 16 vectores por grupo de bins y encima el vector medio.
+        Antes se dibujaba encima de un `vtkChartXY`: daba la forma, pero los ejes
+        mostraban números de abscisa y ordenada, y el ángulo solo salía en el
+        título **en radianes**. MATLAB dibuja un instrumento polar: radios cada
+        30° rotulados en **grados**, anillos de magnitud con su valor y ningún
+        eje cartesiano. Eso es lo que hace ahora `BrujulaPolar`.
 
-        VTK no trae gráfico polar, así que se dibuja a mano sobre un chart
-        normal: dos círculos de referencia, la cruz de los ejes y la flecha.
-        El radio sale igual que en MATLAB —el mayor entre |parte real| y
-        |parte imaginaria|—, que es para lo que allá sirven las cuatro flechas
-        invisibles: forzar la escala y que quede centrado en el origen.
-
-        Para que los círculos no salgan como elipses, `_reacomodar` le da a este
-        gráfico un recuadro **cuadrado**, no una franja del ancho completo.
+        Con `extra` añade esos vectores en azul claro detrás del principal: es el
+        segundo `compass` de `f_Phase_PAC_Pdetect`, que superpone los 16 vectores
+        por grupo de bins y encima el vector medio.
         """
-        v = r.vector
-        otros = np.asarray(extra, dtype=np.complex128).ravel() if extra is not None             else np.empty(0, dtype=np.complex128)
-        candidatos = [abs(v.real), abs(v.imag)]
-        if otros.size:
-            candidatos += [float(np.abs(otros.real).max()), float(np.abs(otros.imag).max())]
-        radio = max(candidatos)
-        if not np.isfinite(radio) or radio <= 0:
-            radio = 1.0
-
-        chart = vtk.vtkChartXY()
-        sufijo = f" + {otros.size} por grupo" if otros.size else ""
-        chart.SetTitle(f"Vector medio{sufijo} — magnitud {abs(v):.4f}, "
-                       f"fase {np.angle(v):+.3f} rad")
-
-        def traza(xs, ys, color, grosor):
-            tabla = vtk.vtkTable()
-            tabla.AddColumn(self._columna(np.asarray(xs, dtype=np.float64), "x"))
-            tabla.AddColumn(self._columna(np.asarray(ys, dtype=np.float64), "y"))
-            linea = chart.AddPlot(vtk.vtkChart.LINE)
-            linea.SetInputData(tabla, 0, 1)
-            linea.SetColor(*color)
-            linea.SetWidth(grosor)
-            linea.LegendVisibilityOff()
-
-        # Círculos de referencia, a la mitad y al borde
-        angulos = np.linspace(0.0, 2.0 * np.pi, 181)
-        for fraccion in (0.5, 1.0):
-            traza(radio * fraccion * np.cos(angulos),
-                  radio * fraccion * np.sin(angulos), (205, 205, 205, 255), 1.0)
-
-        # La cruz de los ejes
-        traza([-radio, radio], [0.0, 0.0], (170, 170, 170, 255), 1.0)
-        traza([0.0, 0.0], [-radio, radio], (170, 170, 170, 255), 1.0)
-
-        # Los vectores del segundo compas, detras y mas tenues
-        for w in otros:
-            if np.isfinite(w.real) and np.isfinite(w.imag):
-                traza([0.0, w.real], [0.0, w.imag], (90, 150, 230, 160), 1.4)
-
-        # La flecha, con su punta
-        traza([0.0, v.real], [0.0, v.imag], (40, 90, 190, 255), 2.5)
-        theta, largo = np.angle(v), 0.12 * radio
-        for desvio in (+2.6, -2.6):          # ~150 grados a cada lado del eje
-            traza([v.real, v.real + largo * np.cos(theta + desvio)],
-                  [v.imag, v.imag + largo * np.sin(theta + desvio)],
-                  (40, 90, 190, 255), 2.5)
-
-        margen = 1.15 * radio
-        for eje in (vtk.vtkAxis.BOTTOM, vtk.vtkAxis.LEFT):
-            chart.GetAxis(eje).SetBehavior(vtk.vtkAxis.FIXED)
-            chart.GetAxis(eje).SetRange(-margen, margen)
-            chart.GetAxis(eje).SetTitle("")
-        chart.SetShowLegend(False)
-        return chart
+        n_extra = 0 if extra is None else len(np.asarray(extra).ravel())
+        return BrujulaPolar(r.vector, extra=extra,
+                            titulo=titulo_de(r.vector, n_extra))
 
     def _grafico_senal(self, tiempo, serie, etiqueta, unidad="Amplitud"):
         n = min(len(tiempo), len(serie))
