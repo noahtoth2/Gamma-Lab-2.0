@@ -177,9 +177,51 @@ Este SAD se alinea con:
 Las referencias t\'ecnicas externas (PyQt, VTK, NumPy, EDF/ABF, YAML).
 
 % ======================================================================
+\section{Contexto del sistema}
+
 \subsection{Visión General}
 
 Gamma Lab está construido sobre una arquitectura de microkernel, en la que un núcleo mínimo (Kernel) coordina la aplicación y la funcionalidad de dominio se delega en plugins independientes. El núcleo actúa como registro de servicios y de extensiones, y ofrece además un canal de eventos para comunicar los componentes. Los 16 plugins actuales se descubren automáticamente durante el arranque a partir de un descriptor declarativo (\texttt{properties.yml}). Cada uno implementa el contrato común \texttt{IPlugin}, y todos acceden al estado de la aplicación a través de un servicio compartido, el \texttt{DataStore}.
+
+\subsection{Limitaciones del sistema}
+\label{sec:limitaciones}
+
+\subsubsection{Software}
+Las siguientes condiciones tecnológicas forman parte del punto de partida del sistema:
+\begin{itemize}[nosep]
+    \item GammaLab está desarrollado en Python y se ejecuta sobre CPython, su intérprete de referencia.
+    \item La interfaz gráfica está construida con el \textit{framework} Qt, mediante su enlace oficial para Python, PySide6.
+    \item La visualización de señales y resultados se realiza con la librería VTK, que utiliza OpenGL como motor de renderizado.
+    \item La arquitectura base del sistema es un microkernel, en el que un núcleo central coordina un conjunto de plugins.
+    \item Los plugins existentes se rigen por un contrato común de extensión, la interfaz \texttt{IPlugin}.
+    \item La aplicación se distribuye como un instalador independiente exclusivo para Windows de 64 bits. No contempla versiones web, móviles ni para sistemas Unix o macOS.
+    \item La aplicación es de uso individual. No incorpora control de acceso multiusuario, autenticación en red ni mecanismos de colaboración simultánea.
+\end{itemize}
+
+\subsubsection{Hardware}
+El sistema debe operar sobre la infraestructura con la que hoy cuenta el laboratorio:
+\begin{itemize}[nosep]
+    \item Los equipos disponen de una capacidad de memoria RAM limitada.
+    \item Los equipos cuentan con un número limitado de núcleos de procesamiento.
+    \item La aceleración gráfica depende de la GPU y de los controladores OpenGL instalados en cada equipo.
+    \item La aplicación no se conecta con equipos de adquisición, como amplificadores, electrodos o diademas inalámbricas.
+\end{itemize}
+
+\subsubsection{Datos}
+Las características de los datos que procesa el sistema también condicionan su diseño:
+\begin{itemize}[nosep]
+    \item El sistema trabaja exclusivamente con señales previamente registradas. No adquiere ni procesa señales EEG en tiempo real.
+    \item Las señales neurofisiológicas se reciben en formatos binarios ABF, EDF, BDF y MAT.
+    \item Cada señal se carga completa en memoria al momento de abrirse.
+    \item Los datos numéricos se representan en doble precisión (\texttt{float64}).
+    \item Los registros EDF pueden contener canales con frecuencias de muestreo distintas entre sí.
+    \item El estado de la aplicación se conserva en un repositorio compartido en memoria, el \texttt{DataStore}.
+    \item La persistencia de los proyectos es local e individual, en el equipo del usuario. No se utilizan bases de datos centralizadas, servicios en la nube ni servidores remotos.
+    \item Los datos de las señales se almacenan sin mecanismos de cifrado.
+\end{itemize}
+
+% ======================================================================
+\section{Diagnóstico de la arquitectura inicial}
 
 Teniendo en cuenta que Gamma Lab 2.0 parte de una base funcional y arquitectónica ya construida, se llevó a cabo un diagnóstico de la arquitectura inicial con el propósito de evaluar su estado actual, identificar las limitaciones de la implementación existente y reconocer oportunidades de mejora. Los resultados de este análisis se presentan en las siguientes secciones.
 
@@ -240,43 +282,6 @@ Por último, el sistema carece de control de admisión. Antes de ejecutar un pro
 Gamma Lab se ejecuta en un único proceso sin fronteras de aislamiento entre ellos. Un error nativo en VTK, un \texttt{MemoryError} o una excepción no capturada dentro de un \textit{slot} de Qt terminan con la aplicación completa, porque no existe un manejador global (\texttt{sys.excepthook}) que lo impida. El usuario pierde así todas las señales, segmentaciones y correcciones de la sesión. El cargador omite en silencio los plugins que fallan al importarse, y el núcleo mantiene registrados aquellos cuya inicialización falló. Los errores no se corrigen, solo se ocultan: el sistema continúa en un estado inconsistente y el usuario se encuentra con funcionalidades ausentes o con comportamientos erráticos, sin una explicación.
 
 Estas fallas son difíciles de diagnosticar por la ausencia de observabilidad. El sistema no utiliza un mecanismo de registro estructurado. La información se emite con llamadas a \texttt{print}, sin niveles de severidad, marcas de tiempo ni identificación del componente de origen. Además, como la aplicación se ejecuta desde una consola, esa salida no se persiste y se pierde justamente cuando ocurre un cierre inesperado. Ante un fallo reportado no existe un registro que permita reconstruir qué operación se ejecutaba ni en qué estado estaba el sistema, por lo que el diagnóstico depende de reproducir manualmente el error.
-
-\subsection{Limitaciones del sistema}
-\label{sec:limitaciones}
-
-\subsubsection{Software}
-Las siguientes condiciones tecnológicas forman parte del punto de partida del sistema:
-\begin{itemize}[nosep]
-    \item GammaLab está desarrollado en Python y se ejecuta sobre CPython, su intérprete de referencia.
-    \item La interfaz gráfica está construida con el \textit{framework} Qt, mediante su enlace oficial para Python, PySide6.
-    \item La visualización de señales y resultados se realiza con la librería VTK, que utiliza OpenGL como motor de renderizado.
-    \item La arquitectura base del sistema es un microkernel, en el que un núcleo central coordina un conjunto de plugins.
-    \item Los plugins existentes se rigen por un contrato común de extensión, la interfaz \texttt{IPlugin}.
-    \item La aplicación se distribuye como un instalador independiente exclusivo para Windows de 64 bits. No contempla versiones web, móviles ni para sistemas Unix o macOS.
-    \item La aplicación es de uso individual. No incorpora control de acceso multiusuario, autenticación en red ni mecanismos de colaboración simultánea.
-\end{itemize}
-
-\subsubsection{Hardware}
-El sistema debe operar sobre la infraestructura con la que hoy cuenta el laboratorio:
-\begin{itemize}[nosep]
-    \item Los equipos disponen de una capacidad de memoria RAM limitada.
-    \item Los equipos cuentan con un número limitado de núcleos de procesamiento.
-    \item La aceleración gráfica depende de la GPU y de los controladores OpenGL instalados en cada equipo.
-    \item La aplicación no se conecta con equipos de adquisición, como amplificadores, electrodos o diademas inalámbricas.
-\end{itemize}
-
-\subsubsection{Datos}
-Las características de los datos que procesa el sistema también condicionan su diseño:
-\begin{itemize}[nosep]
-    \item El sistema trabaja exclusivamente con señales previamente registradas. No adquiere ni procesa señales EEG en tiempo real.
-    \item Las señales neurofisiológicas se reciben en formatos binarios ABF, EDF, BDF y MAT.
-    \item Cada señal se carga completa en memoria al momento de abrirse.
-    \item Los datos numéricos se representan en doble precisión (\texttt{float64}).
-    \item Los registros EDF pueden contener canales con frecuencias de muestreo distintas entre sí.
-    \item El estado de la aplicación se conserva en un repositorio compartido en memoria, el \texttt{DataStore}.
-    \item La persistencia de los proyectos es local e individual, en el equipo del usuario. No se utilizan bases de datos centralizadas, servicios en la nube ni servidores remotos.
-    \item Los datos de las señales se almacenan sin mecanismos de cifrado.
-\end{itemize}
 
 % ======================================================================
 \section{Requisitos y atributos de calidad}
