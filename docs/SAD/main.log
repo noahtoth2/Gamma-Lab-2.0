@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.10.18)  18 OCT 2026 16:52
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.10.18)  18 OCT 2026 17:50
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -510,10 +510,6 @@ LaTeX Info: Redefining \. on input line 11.
 LaTeX Info: Redefining \% on input line 11.
 Package babel Info: 'spanish' activates 'spanish' shorthands.
 (babel)             Reported on input line 11.
-
-
-LaTeX Warning: Label `tab:sintesis_diagnostico' multiply defined.
-
 )
 \openout1 = `main.aux'.
 
@@ -845,9 +841,6 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 
 [23]
 
-LaTeX Warning: Reference `tab:adrs' on page 24 undefined on input line 944.
-
-
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
 (fancyhdr)                \setlength{\headheight}{13.59999pt}.
@@ -892,7 +885,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [28]
-<diagrama_casos_de_uso_sistema_completo.png, id=708, 10169.995pt x 6275.445pt>
+<diagrama_casos_de_uso_sistema_completo.png, id=709, 10169.995pt x 6275.445pt>
 File: diagrama_casos_de_uso_sistema_completo.png Graphic file (type png)
 <use diagrama_casos_de_uso_sistema_completo.png>
 Package pdftex.def Info: diagrama_casos_de_uso_sistema_completo.png  used on in
@@ -1002,7 +995,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [35]
-<diagrama_clases_sistema_completo.png, id=747, 12639.22pt x 6520.36pt>
+<diagrama_clases_sistema_completo.png, id=748, 12639.22pt x 6520.36pt>
 File: diagrama_clases_sistema_completo.png Graphic file (type png)
 <use diagrama_clases_sistema_completo.png>
 Package pdftex.def Info: diagrama_clases_sistema_completo.png  used on input li
@@ -1100,7 +1093,7 @@ Underfull \hbox (badness 1242) in paragraph at lines 1542--1542
 []|\T1/cmr/bx/n/10.95 Caso de uso o re-que-ri-
  []
 
-<diagrama_componentes_sistema_completo.png, id=792, 5542.20563pt x 3609.73593pt
+<diagrama_componentes_sistema_completo.png, id=793, 5542.20563pt x 3609.73593pt
 >
 File: diagrama_componentes_sistema_completo.png Graphic file (type png)
 <use diagrama_componentes_sistema_completo.png>
@@ -1164,7 +1157,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [47]
-<diagrama_actividad_sistema_completo.png, id=828, 6905.8pt x 8736.64pt>
+<diagrama_actividad_sistema_completo.png, id=829, 6905.8pt x 8736.64pt>
 File: diagrama_actividad_sistema_completo.png Graphic file (type png)
 <use diagrama_actividad_sistema_completo.png>
 Package pdftex.def Info: diagrama_actividad_sistema_completo.png  used on input
@@ -1187,7 +1180,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [49 <./diagrama_actividad_sistema_completo.png>]
-<diagrama_despliegue_sistema_completo.png, id=843, 4617.25pt x 3131.7pt>
+<diagrama_despliegue_sistema_completo.png, id=844, 4617.25pt x 3131.7pt>
 File: diagrama_despliegue_sistema_completo.png Graphic file (type png)
 <use diagrama_despliegue_sistema_completo.png>
 Package pdftex.def Info: diagrama_despliegue_sistema_completo.png  used on inpu
@@ -1466,20 +1459,13 @@ LaTeX Info: Redefining \% on input line 11.
 LaTeX2e <2025-11-01>
 L3 programming layer <2025-12-24>
  ***********
-
-
-LaTeX Warning: There were undefined references.
-
-
-LaTeX Warning: There were multiply-defined labels.
-
 Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: 9D06856C3C35B0FE595D464B501FE24D;19242.
  ) 
 Here is how much of TeX's memory you used:
  15055 strings out of 467870
  242529 string characters out of 5417386
- 710734 words of memory out of 5000000
+ 709760 words of memory out of 5000000
  43512 multiletter control sequences out of 15000+600000
  641310 words of font info for 68 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
@@ -1501,9 +1487,9 @@ TeX/fonts/type1/public/cm-super/sfti1000.pfb><C:/Users/Xiomara/AppData/Local/Pr
 ograms/MiKTeX/fonts/type1/public/cm-super/sfti1095.pfb><C:/Users/Xiomara/AppDat
 a/Local/Programs/MiKTeX/fonts/type1/public/cm-super/sftt1000.pfb><C:/Users/Xiom
 ara/AppData/Local/Programs/MiKTeX/fonts/type1/public/cm-super/sftt1095.pfb>
-Output written on main.pdf (60 pages, 6025785 bytes).
+Output written on main.pdf (60 pages, 6025754 bytes).
 PDF statistics:
- 1054 PDF objects out of 1200 (max. 8388607)
+ 1055 PDF objects out of 1200 (max. 8388607)
  240 named destinations out of 1000 (max. 500000)
  783 words of extra memory for PDF output out of 10000 (max. 10000000)
 
