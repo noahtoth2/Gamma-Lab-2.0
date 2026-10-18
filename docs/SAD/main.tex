@@ -187,7 +187,7 @@ Gamma Lab está construido sobre una arquitectura de microkernel, en la que un n
 
 Teniendo en cuenta que Gamma Lab 2.0 parte de una base funcional y arquitectónica ya construida, se llevó a cabo un diagnóstico de la arquitectura inicial con el propósito de evaluar su estado actual, identificar las limitaciones de la implementación existente y reconocer oportunidades de mejora. Los resultados de este análisis se presentan en las siguientes secciones.
 
-\subsection{Núcleo con pocas responsabilidades y contratos débiles}
+\subsubsection{Núcleo con pocas responsabilidades y contratos débiles}
 \label{sec:diag_nucleo}
 
 En Gamma Lab 1.0 el núcleo se limita a ser un registro pasivo: mantiene dos diccionarios, uno de plugins y otro de servicios, y un canal de eventos genérico. No asume responsabilidades propias del estilo microkernel, como gestionar el ciclo de vida de las extensiones, mediar su comunicación o verificar sus dependencias. El resultado es un \textit{anemic kernel}: el núcleo existe estructuralmente, pero no gobierna el comportamiento del sistema en tiempo de ejecución.
@@ -200,7 +200,7 @@ En cuanto a los contratos, \texttt{IPlugin} concentra la lógica de procesamient
 
 Finalmente, los servicios se obtienen mediante un \textit{service locator} basado en cadenas literales (\texttt{get\_service("DataStore")}), por lo que las dependencias quedan ocultas en la implementación y no se verifican durante la carga. Un error tipográfico o un servicio ausente se manifiesta únicamente en tiempo de ejecución. De forma similar, registrar un plugin con un nombre existente sobrescribe silenciosamente al anterior, permitiendo que errores de configuración permanezcan ocultos hasta que se utiliza la funcionalidad afectada.
 
-\subsection{Estado y memoria}
+\subsubsection{Estado y memoria}
 \label{sec:diag_estado}
 
 El estado de la aplicación reside en el \texttt{DataStore}, un diccionario global y mutable al que cualquier plugin puede acceder y modificar. Como ningún componente es responsable del ciclo de vida, cada archivo abierto permanece en memoria hasta el cierre de la aplicación, junto con sus datos derivados. En consecuencia, el consumo de memoria crece de forma monótona durante la sesión, y el usuario, tras abrir varios archivos o repetir segmentaciones, percibe un deterioro progresivo del rendimiento que solo se resuelve reiniciando el programa.
@@ -219,7 +219,7 @@ Esta mutabilidad sin control compromete la consistencia del estado. El proceso d
 
 Por último, los recursos gráficos siguen la misma lógica de retención. Cada plugin crea su propia ventana de renderizado VTK sobre un contexto OpenGL compartido, y la ventana principal conserva todos los widgets instanciados hasta el cierre de la aplicación. Al desactivarse, un plugin solo deshabilita la interacción de su vista y no libera los buffers gráficos ni las tablas de datos asociadas, por lo que cada análisis que el usuario abre aumenta de forma permanente el consumo de memoria de video y de sistema.
 
-\subsection{Concurrencia y procesos pesados}
+\subsubsection{Concurrencia y procesos pesados}
 \label{sec:diag_concurrencia}
 
 GammaLab 1.0 no define un modelo de concurrencia a nivel arquitectónico. Por defecto, todo el procesamiento se ejecuta de forma síncrona en el hilo principal, el mismo que atiende el bucle de eventos de la interfaz gráfica. Por lo que, ante operaciones de varios segundos o minutos, el usuario no puede distinguir un procesamiento en curso de un fallo.
@@ -238,7 +238,7 @@ La cancelación está igualmente limitada. Solo el promedio de \textit{wavelets}
 
 Por último, el sistema carece de control de admisión. Antes de ejecutar un proceso no se estima su costo en tiempo ni en memoria, lo que puede generar que una configuración que excede los recursos del equipo no se rechace ni se advierta. Se ejecuta hasta congelar la aplicación o hasta fallar por falta de memoria, a veces tras varios minutos de cálculo cuyo resultado se pierde por completo.
 
-\subsection{Tolerancia a fallos y Observabilidad}
+\subsubsection{Tolerancia a fallos y Observabilidad}
 \label{sec:diag_fallos}
 
 Gamma Lab se ejecuta en un único proceso sin fronteras de aislamiento entre ellos. Un error nativo en VTK, un \texttt{MemoryError} o una excepción no capturada dentro de un \textit{slot} de Qt terminan con la aplicación completa, porque no existe un manejador global (\texttt{sys.excepthook}) que lo impida. El usuario pierde así todas las señales, segmentaciones y correcciones de la sesión. El cargador omite en silencio los plugins que fallan al importarse, y el núcleo mantiene registrados aquellos cuya inicialización falló. Los errores no se corrigen, solo se ocultan: el sistema continúa en un estado inconsistente y el usuario se encuentra con funcionalidades ausentes o con comportamientos erráticos, sin una explicación.
