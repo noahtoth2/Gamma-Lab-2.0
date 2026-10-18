@@ -1542,10 +1542,176 @@ PACSingleChannelPlugin y PACInterChannelPlugin & CU-001 y CU-002 \\
 \end{tabularx}
 \end{table}
 
+
+\subsection{Vista de Desarrollo}
+
+Como complemento al modelo arquitectónico 4+1, la vista de desarrollo permite comprender cómo se organiza GammaLab 2.0 desde el punto de vista de su implementación. Esta vista presenta los principales módulos del sistema, las responsabilidades que asume cada uno y la manera en que se relacionan para ofrecer las funcionalidades de la aplicación. De esta forma, facilita la comprensión de la estructura del software y de la distribución de sus componentes dentro del proyecto.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\linewidth]{diagrama_componentes_sistema_completo.png}
+    \caption{Vista de desarrollo de GammaLab 2.0: componentes organizados por paquetes funcionales (\texttt{io}, \texttt{preprocessing}, \texttt{analysis}, \texttt{measure} y \texttt{faq}), junto con los componentes transversales de la arquitectura.}
+    \label{fig:vistadesarrollo}
+\end{figure}
+
+Como se observa en la Figura \ref{fig:vistadesarrollo}, GammaLab 2.0 sigue una arquitectura basada en el estilo \textit{Microkernel}. En esta estructura, el Kernel funciona como el punto central de coordinación, encargado de mantener el registro de los plugins y servicios disponibles. A su alrededor se encuentran los componentes que permiten cargar señales, realizar operaciones de preprocesamiento, ejecutar análisis, obtener medidas y exportar resultados.
+
+La organización modular permite que cada componente se concentre en una responsabilidad específica, sin que toda la lógica de la aplicación dependa de un único módulo. Esto facilita el mantenimiento del sistema y permite ampliar sus capacidades mediante la incorporación de nuevas funcionalidades. Además, el diagrama distingue entre los componentes existentes, aquellos que se plantean como nuevas incorporaciones para GammaLab 2.0 y los elementos que se encuentran fuera del alcance de los 23 casos de uso considerados.
+
+A continuación, se describe la función de cada grupo de componentes y su participación en el funcionamiento general del sistema.
+
+\subsubsection{Componentes principales}
+
+El \textit{Kernel} es el núcleo de GammaLab 2.0 y permite que los diferentes componentes trabajen de manera coordinada. Su función principal es mantener el registro de los plugins y servicios disponibles, de modo que puedan ser localizados y utilizados por los módulos que los necesiten. Gracias a esta organización, los componentes pueden acceder a las funcionalidades compartidas sin depender directamente de los detalles internos de su implementación.
+
+Entre sus principales responsabilidades se encuentran:
+
+\begin{itemize}
+    \item Registrar los plugins y servicios mediante operaciones como \texttt{register\_plugin} y \texttt{register\_service}.
+    \item Consultar los plugins disponibles, tanto de manera individual como por categorías funcionales.
+    \item Facilitar el acceso a los servicios registrados mediante la operación \texttt{get\_service}.
+    \item Coordinar la integración de los diferentes módulos de la aplicación.
+    \item Gestionar el ciclo de vida de los plugins y facilitar la comunicación entre los componentes.
+\end{itemize}
+
+En el diagrama, el Kernel se encuentra conectado con la interfaz principal, el gestor de plugins, los servicios de soporte y las distintas extensiones funcionales. Esta posición refleja su papel dentro de la arquitectura: servir como punto de acceso y coordinación, manteniendo una separación entre las funcionalidades centrales y los módulos que amplían las capacidades del sistema.
+
+La interacción con el usuario se realiza mediante el componente \texttt{MainWindow}, que corresponde a la interfaz gráfica principal. Desde ella, el usuario puede acceder a las herramientas disponibles, seleccionar las operaciones que desea realizar y consultar los resultados obtenidos. Para ofrecer estas funcionalidades, la interfaz se comunica con el Kernel, que permite localizar los plugins y servicios correspondientes. Así, la interfaz se concentra en la interacción con el usuario, mientras que el procesamiento se delega en los componentes especializados.
+
+Por otra parte, el \texttt{PluginManager} se encarga de descubrir, cargar e instanciar los plugins disponibles. Este componente permite incorporar las extensiones al sistema y ponerlas a disposición de la aplicación. Para ello, utiliza operaciones como \texttt{load\_all()} y \texttt{discover()}, junto con los mecanismos de configuración y metadatos asociados a los plugins.
+
+En conjunto, el Kernel, la MainWindow y el PluginManager conforman la estructura principal sobre la que se integran las demás funcionalidades de GammaLab 2.0.
+
+\subsubsection{Servicios de soporte y gestión de datos}
+
+Además de los componentes centrales, GammaLab 2.0 cuenta con servicios que resuelven necesidades comunes de la aplicación. Estos servicios permiten compartir información, administrar la configuración y gestionar archivos y resultados sin que cada plugin tenga que implementar estas funciones por separado.
+
+El \texttt{DataStore} mantiene el estado compartido de la aplicación y proporciona acceso a los datos que utilizan los diferentes módulos durante el procesamiento y el análisis. Su función es especialmente importante porque permite que las operaciones se realicen sobre la información disponible en la sesión de trabajo, evitando que cada componente gestione de manera independiente sus propios datos.
+
+El \texttt{FileIOService} se encarga de leer y validar los archivos que contienen las señales neurofisiológicas. De esta manera, centraliza el acceso a los datos de entrada y permite que los componentes que requieren una señal puedan utilizar un mecanismo común para cargarla.
+
+Por su parte, el \texttt{SettingsService} administra la configuración general de la aplicación y las preferencias del usuario. Este servicio permite consultar y modificar los parámetros de configuración, manteniéndolos disponibles para los componentes que los necesiten.
+
+El \texttt{ExportService} se ocupa de gestionar la exportación de los resultados obtenidos durante el análisis, facilitando su almacenamiento y posterior utilización. De esta forma, la generación de archivos de salida se mantiene separada de los algoritmos que realizan los cálculos.
+
+Finalmente, el \texttt{ProjectService} es uno de los nuevos componentes contemplados para GammaLab 2.0. Su propósito es permitir que el usuario guarde y recupere su espacio de trabajo mediante archivos con extensión \texttt{.glab}. Estos proyectos conservan información como la señal de referencia, los \textit{trials}, los análisis realizados y los parámetros asociados.
+
+Para cumplir esta función, el ProjectService se relaciona con el DataStore y el FileIOService. El primero permite acceder a la información de la sesión, mientras que el segundo facilita la recarga de la señal original cuando se abre un proyecto que la necesita. De esta manera, el usuario puede continuar su trabajo sin tener que reconstruir manualmente todo el estado de la sesión.
+
+En conjunto, estos servicios proporcionan las capacidades necesarias para gestionar los datos y la configuración, trabajar con archivos y conservar los resultados de las operaciones realizadas en GammaLab 2.0.
+
+\subsubsection{Orquestador del núcleo}
+
+El \texttt{TaskOrchestrator} es un componente nuevo cuyo propósito es coordinar la ejecución de las tareas de procesamiento y análisis. Su incorporación responde a la necesidad de gestionar operaciones que pueden requerir un tiempo considerable de cálculo sin afectar innecesariamente la interacción del usuario con la interfaz gráfica.
+
+En lugar de que cada plugin tenga que encargarse directamente de toda la coordinación de su ejecución, puede solicitar la operación correspondiente al orquestador. Este componente se encarga de coordinar la tarea y su interacción con los servicios necesarios, manteniendo separadas las responsabilidades de procesamiento y gestión de la ejecución.
+
+Entre sus responsabilidades previstas se encuentran:
+
+\begin{itemize}
+    \item Recibir las solicitudes de ejecución realizadas por los plugins.
+    \item Coordinar tareas de procesamiento, análisis y exportación.
+    \item Facilitar el seguimiento de las tareas y su cancelación cuando corresponda.
+    \item Contribuir a que las operaciones de larga duración no bloqueen la interfaz gráfica.
+    \item Coordinar el acceso a los servicios necesarios para completar cada operación.
+\end{itemize}
+
+Como se muestra en la Figura \ref{fig:vistadesarrollo}, el TaskOrchestrator se relaciona con los plugins de entrada y salida, preprocesamiento y análisis. Estos componentes pueden solicitar la ejecución de las operaciones correspondientes, mientras que el orquestador se encarga de coordinar su procesamiento. También se relaciona con el ExportService para gestionar las tareas asociadas a la generación de resultados.
+
+Su incorporación busca mejorar la capacidad de respuesta de la aplicación y facilitar la ejecución de operaciones computacionalmente exigentes. No obstante, las capacidades efectivamente disponibles dependerán de la implementación de los mecanismos de ejecución previstos para este componente.
+
+\subsubsection{Plugins funcionales}
+
+Los plugins son los componentes que proporcionan las principales herramientas de procesamiento y análisis de GammaLab 2.0. Cada uno se encarga de una funcionalidad específica y se integra con el resto del sistema mediante el mecanismo de registro administrado por el Kernel.
+
+Esta organización permite que las funcionalidades se agrupen según el propósito de las operaciones que realizan. De acuerdo con el diagrama, los plugins se distribuyen en las siguientes categorías:
+
+\begin{itemize}
+    \item \textbf{Plugins de entrada y salida (\texttt{io}):} permiten cargar señales desde archivos compatibles. En esta categoría se encuentra OpenSignal, encargado de proporcionar las funcionalidades de entrada necesarias para incorporar los datos a la aplicación. Estos plugins utilizan los servicios correspondientes para acceder a las señales y ponerlas a disposición de los demás módulos.
+
+    \item \textbf{Plugins de preprocesamiento (\texttt{preprocessing}):} incluyen \texttt{Trials}, \texttt{ArtifactRemove} y \texttt{Filter}. Estas herramientas permiten preparar las señales antes de analizarlas, mediante operaciones como la segmentación en ensayos o \textit{trials}, la eliminación o corrección de artefactos y la aplicación de filtros.
+
+    \item \textbf{Plugins de medición (\texttt{measure}):} incluyen \texttt{Amplitude} y \texttt{Slope}. Su función es obtener medidas cuantitativas a partir de las señales o de los resultados disponibles. La amplitud permite caracterizar la magnitud de una respuesta, mientras que la pendiente describe su variación en un intervalo determinado.
+
+    \item \textbf{Plugins de análisis (\texttt{analysis}):} incluyen \texttt{FFT}, \texttt{PSD}, \texttt{Average}, \texttt{ERP} y \texttt{Wavelet}. Estas herramientas permiten estudiar las señales desde diferentes perspectivas. Los análisis temporales incluyen el promediado y los potenciales relacionados con eventos; los análisis en frecuencia incluyen la transformada rápida de Fourier y la densidad espectral de potencia; y los análisis tiempo-frecuencia permiten estudiar cómo varían las características espectrales a lo largo del tiempo.
+\end{itemize}
+
+Estas categorías se complementan entre sí dentro del flujo de trabajo de la aplicación. Por ejemplo, una señal puede cargarse mediante un plugin de entrada, prepararse con las herramientas de preprocesamiento y utilizarse posteriormente en un análisis o una medición. Los resultados pueden consultarse desde la interfaz y, cuando corresponda, exportarse para su utilización posterior.
+
+La separación de las funcionalidades en plugins permite que cada módulo tenga una responsabilidad delimitada y que el sistema pueda ampliarse con nuevas herramientas sin necesidad de modificar toda su estructura. Para ello, las extensiones deben respetar los mecanismos de integración definidos por la arquitectura.
+
+\subsubsection{Documentación de ayuda}
+
+El componente \texttt{TooltipHelper} se incorpora con el propósito de facilitar el uso de las herramientas disponibles en GammaLab 2.0. Su función consiste en proporcionar descripciones breves sobre los plugins, de manera que el usuario pueda comprender qué hace cada herramienta antes de utilizarla.
+
+En el diagrama, este componente se relaciona con los plugins de preprocesamiento mediante la operación \texttt{aplicar\_tooltips}. Esta relación permite asociar información descriptiva a las herramientas y presentarla mediante ayudas emergentes en la interfaz.
+
+Adicionalmente, el diagrama incluye un componente de FAQ y ayuda asociado a un manual PDF estático. Este recurso permite consultar documentación complementaria cuando el usuario necesita información más detallada sobre el funcionamiento de la aplicación.
+
+Ambos componentes cumplen funciones diferentes, pero complementarias. Mientras que el TooltipHelper ofrece orientación inmediata durante la interacción con las herramientas, la documentación de ayuda proporciona explicaciones más amplias que pueden consultarse según las necesidades del usuario.
+
+De esta manera, la arquitectura contempla tanto la asistencia contextual dentro de la interfaz como el acceso a documentación de referencia.
+
+\subsubsection{Flujo general}
+
+La interacción entre los componentes permite desarrollar las operaciones de GammaLab 2.0 desde la selección de una herramienta hasta la obtención y conservación de los resultados. Aunque el recorrido puede variar según la funcionalidad utilizada, es posible identificar las siguientes etapas generales:
+
+\begin{enumerate}
+    \item \textbf{Interacción con la interfaz:} el usuario inicia una operación desde la \texttt{MainWindow}, seleccionando la funcionalidad que necesita.
+
+    \item \textbf{Identificación del componente:} el Kernel y el PluginManager permiten localizar los plugins y servicios registrados que corresponden a la operación solicitada.
+
+    \item \textbf{Coordinación de la tarea:} cuando la operación requiere procesamiento, el TaskOrchestrator coordina su ejecución y el acceso a los servicios necesarios.
+
+    \item \textbf{Procesamiento de la señal:} el plugin correspondiente realiza la operación solicitada, que puede consistir en cargar, preprocesar, analizar o medir una señal.
+
+    \item \textbf{Gestión de resultados:} los resultados obtenidos pueden actualizar el estado compartido de la aplicación, presentarse en la interfaz o exportarse mediante los servicios correspondientes.
+
+    \item \textbf{Persistencia del trabajo:} cuando el usuario guarda un proyecto, el ProjectService conserva el estado del espacio de trabajo para permitir su recuperación posterior.
+\end{enumerate}
+
+Este recorrido describe la colaboración general entre los componentes, pero no representa una secuencia obligatoria para todas las operaciones. Por ejemplo, al abrir un proyecto intervienen principalmente el ProjectService y el FileIOService para recuperar la información almacenada y, cuando es necesario, cargar nuevamente la señal de referencia. En cambio, la exportación de resultados requiere la coordinación de la tarea correspondiente y la intervención del ExportService.
+
+En términos generales, cada componente participa en la operación de acuerdo con su responsabilidad. La interfaz recibe las acciones del usuario, el Kernel permite localizar las funcionalidades disponibles, los plugins ejecutan las operaciones específicas y los servicios proporcionan el acceso a los datos y recursos necesarios. Cuando la operación lo requiere, el orquestador coordina su ejecución y los resultados se presentan, almacenan o exportan según corresponda.
+
+Esta distribución de responsabilidades permite que los componentes colaboren sin concentrar toda la lógica del sistema en un único módulo y facilita la incorporación de nuevas funcionalidades.
+
+\subsubsection{Interpretación de los colores del diagrama}
+
+La leyenda incluida en la Figura \ref{fig:vistadesarrollo} permite distinguir los componentes según su estado y su relación con el alcance definido para GammaLab 2.0. Los colores se interpretan de la siguiente manera:
+
+\begin{itemize}
+    \item \textbf{Azul - Núcleo existente:} representa los componentes centrales que ya forman parte de la estructura de la aplicación, como \texttt{MainWindow} y \texttt{Kernel}.
+
+    \item \textbf{Amarillo - Servicio o plugin existente:} identifica los servicios y plugins que se reutilizan de la versión anterior, como \texttt{DataStore}, \texttt{FileIOService}, \texttt{SettingsService} y las extensiones funcionales existentes.
+
+    \item \textbf{Rojo - Nuevo:} identifica los componentes incorporados o previstos para GammaLab 2.0, entre ellos \texttt{ProjectService}, \texttt{TaskOrchestrator} y \texttt{TooltipHelper}.
+
+    \item \textbf{Gris - Fuera del alcance de los 23 casos de uso:} representa los componentes que se muestran como referencia funcional o documental, pero que no forman parte del alcance específico considerado en dichos casos de uso.
+\end{itemize}
+
+Esta distinción permite identificar con mayor facilidad qué partes de la arquitectura se apoyan en funcionalidades existentes y cuáles corresponden a nuevas incorporaciones. También ayuda a comprender que el diagrama representa tanto la estructura reutilizada como la organización propuesta para ampliar el sistema.
+
+\subsubsection{Conclusión}
+
+La vista de desarrollo permite comprender cómo se organiza GammaLab 2.0 y cómo colaboran sus componentes para ofrecer las funcionalidades de procesamiento y análisis de señales neurofisiológicas. El Kernel y el PluginManager proporcionan la estructura necesaria para integrar las extensiones, mientras que los servicios de soporte se encargan de gestionar los datos, los archivos, la configuración, los proyectos y la exportación de resultados.
+
+Por su parte, los plugins reúnen las herramientas de entrada y salida, preprocesamiento, análisis y medición. A estos componentes se suman nuevas incorporaciones, como el TaskOrchestrator, orientado a coordinar la ejecución de tareas; el ProjectService, destinado a conservar y recuperar el estado del trabajo; y el TooltipHelper, que busca facilitar la comprensión de las herramientas disponibles.
+
+En conjunto, esta organización permite que GammaLab 2.0 evolucione a partir de su versión anterior, reutilice funcionalidades existentes e incorpore nuevas capacidades de manera ordenada. La separación de responsabilidades contribuye a que el sistema sea más fácil de mantener y ampliar, al tiempo que establece una estructura que puede acompañar el crecimiento de las necesidades de análisis del laboratorio.
+
+
+
+Dos hallazgos relevantes para la planificaci\'on de la implementaci\'on:
+\begin{itemize}[nosep]
+    \item Los paquetes \texttt{measure/} (Amplitude, Slope) y \texttt{faq/} (manual PDF est\'atico) existen en el c\'odigo pero \textbf{ninguno} de los 23 casos de uso los cubre --- se muestran en gris neutro para delimitar la frontera del alcance actual.
+    \item \texttt{TooltipHelper} depende de los plugins de preprocesamiento y an\'alisis por igual (CU-010): su ausencia hoy no es aislada, sino transversal a $\sim$15 plugins que carecen de \textit{tooltips}, salvo dos excepciones puntuales ya presentes en \texttt{TrialsPlugin} y \texttt{RelativePSDPlugin}.
+\end{itemize}
+
 \subsection{Vista de Procesos}
 La vista de procesos describe el comportamiento din\'amico del sistema completo como un \'unico flujo maestro de sesi\'on, construido a partir de las cadenas de precondici\'on declaradas por las propias 23 fichas (p.\,ej. CU-006 exige trials generados por CU-004, que a su vez exige una se\~nal cargada por CU-003) --- no es una fusi\'on literal de los 23 flujos detallados, que ser\'ia ileg\'ible.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.95\linewidth]{diagrama_actividad_sistema_completo.png}
     \caption{Flujo maestro de sesi\'on de Gamma Lab 2.0, con carriles Investigador/Sistema. Verde = ya existe, rojo = nuevo, blanco = mixto.}
@@ -1569,7 +1735,7 @@ A diferencia de Gamma Lab 1.0, los casos de uso de navegaci\'on (CU-008), limpie
 \subsection{Vista F\'isica}
 La vista f\'isica describe el entorno de despliegue local de Gamma Lab 2.0. A diferencia de Gamma Lab 1.0, aqu\'i se documenta expl\'icitamente la superficie completa de entrada/salida del sistema, incluyendo los artefactos que a\'un no existen.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.85\linewidth]{diagrama_despliegue_sistema_completo.png}
     \caption{Vista f\'isica de Gamma Lab 2.0: estaci\'on \'unica de escritorio y su superficie de E/S.}
