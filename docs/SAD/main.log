@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.10.18)  18 OCT 2026 16:28
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.10.18)  18 OCT 2026 16:52
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -822,7 +822,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [21]
-<DiagramaEstiloBase.jpg, id=623, 844.15375pt x 523.9575pt>
+<DiagramaEstiloBase.jpg, id=672, 844.15375pt x 523.9575pt>
 File: DiagramaEstiloBase.jpg Graphic file (type jpg)
 <use DiagramaEstiloBase.jpg>
 Package pdftex.def Info: DiagramaEstiloBase.jpg  used on input line 898.
@@ -892,7 +892,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [28]
-<diagrama_casos_de_uso_sistema_completo.png, id=659, 10169.995pt x 6275.445pt>
+<diagrama_casos_de_uso_sistema_completo.png, id=708, 10169.995pt x 6275.445pt>
 File: diagrama_casos_de_uso_sistema_completo.png Graphic file (type png)
 <use diagrama_casos_de_uso_sistema_completo.png>
 Package pdftex.def Info: diagrama_casos_de_uso_sistema_completo.png  used on in
@@ -1002,7 +1002,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [35]
-<diagrama_clases_sistema_completo.png, id=698, 12639.22pt x 6520.36pt>
+<diagrama_clases_sistema_completo.png, id=747, 12639.22pt x 6520.36pt>
 File: diagrama_clases_sistema_completo.png Graphic file (type png)
 <use diagrama_clases_sistema_completo.png>
 Package pdftex.def Info: diagrama_clases_sistema_completo.png  used on input li
@@ -1100,12 +1100,13 @@ Underfull \hbox (badness 1242) in paragraph at lines 1542--1542
 []|\T1/cmr/bx/n/10.95 Caso de uso o re-que-ri-
  []
 
-<diagrama_actividad_sistema_completo.png, id=743, 6905.8pt x 8736.64pt>
-File: diagrama_actividad_sistema_completo.png Graphic file (type png)
-<use diagrama_actividad_sistema_completo.png>
-Package pdftex.def Info: diagrama_actividad_sistema_completo.png  used on input
- line 1550.
-(pdftex.def)             Requested size: 432.48051pt x 547.10515pt.
+<diagrama_componentes_sistema_completo.png, id=792, 5542.20563pt x 3609.73593pt
+>
+File: diagrama_componentes_sistema_completo.png Graphic file (type png)
+<use diagrama_componentes_sistema_completo.png>
+Package pdftex.def Info: diagrama_componentes_sistema_completo.png  used on inp
+ut line 1552.
+(pdftex.def)             Requested size: 432.48051pt x 281.67944pt.
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -1114,20 +1115,11 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [42]
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.59999pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.59999pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
-
-[43 <./diagrama_actividad_sistema_completo.png>]
-<diagrama_despliegue_sistema_completo.png, id=761, 4617.25pt x 3131.7pt>
-File: diagrama_despliegue_sistema_completo.png Graphic file (type png)
-<use diagrama_despliegue_sistema_completo.png>
-Package pdftex.def Info: diagrama_despliegue_sistema_completo.png  used on inpu
-t line 1574.
-(pdftex.def)             Requested size: 386.96027pt x 262.43979pt.
+Overfull \hbox (39.49403pt too wide) in paragraph at lines 1570--1571
+[]\T1/cmr/m/n/10.95 Registrar los plu-gins y ser-vi-cios me-dian-te ope-ra-cio-
+nes co-mo \T1/cmtt/m/n/10.95 register_plugin \T1/cmr/m/n/10.95 y \T1/cmtt/m/n/1
+0.95 register_service\T1/cmr/m/n/10.95 . 
+ []
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -1136,7 +1128,18 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[44 <./diagrama_despliegue_sistema_completo.png>]
+[43 <./diagrama_componentes_sistema_completo.png>]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[44]
+LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10.95> not available
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 1630.
+
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -1161,8 +1164,12 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [47]
-LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10.95> not available
-(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 1854.
+<diagrama_actividad_sistema_completo.png, id=828, 6905.8pt x 8736.64pt>
+File: diagrama_actividad_sistema_completo.png Graphic file (type png)
+<use diagrama_actividad_sistema_completo.png>
+Package pdftex.def Info: diagrama_actividad_sistema_completo.png  used on input
+ line 1716.
+(pdftex.def)             Requested size: 432.48051pt x 547.10515pt.
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -1172,178 +1179,20 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [48]
-Overfull \hbox (10.95651pt too wide) in paragraph at lines 1856--1857
-[]\T1/cmr/bx/n/10.95 Metadatos \T1/cmtt/m/n/10.95 properties.yml\T1/cmr/bx/n/10
-.95 . \T1/cmr/m/n/10.95 Los cam-pos re-que-ri-dos (\T1/cmtt/m/n/10.95 id, name,
- category, subcategory,
- []
 
-
-Underfull \hbox (badness 10000) in paragraph at lines 1922--1922
-[]|\T1/cmr/m/n/10 Extensibilidad
- []
-
-
-Underfull \hbox (badness 3260) in paragraph at lines 1923--1923
-[]|\T1/cmr/m/n/10 Tiempo de apa-ri-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1924--1924
-[]|\T1/cmr/m/n/10 Agregar un plu-
- []
-
-
-Underfull \hbox (badness 3000) in paragraph at lines 1924--1924
-\T1/cmr/m/n/10 gin vá-li-do y co-rrer
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1925--1926
-[]|$\OML/cmm/m/it/10 <$\T1/cmr/m/n/10 1min; 0 plu-gins fa-llan
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1928--1928
-[]|\T1/cmr/m/n/10 Rendimiento --
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1928--1928
-\T1/cmr/m/n/10 car-ga gran-de
- []
-
-
-Underfull \hbox (badness 5008) in paragraph at lines 1929--1929
-[]|\T1/cmr/m/n/10 Tiempo a pri-mer
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1930--1930
-[]|\T1/cmtt/m/n/10 performance_test\T1/cmr/m/n/10 ;
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1930--1930
-\T1/cmr/m/n/10 me-di-do: 78.4ms
- []
-
-
-Underfull \hbox (badness 5119) in paragraph at lines 1934--1934
-[]|\T1/cmr/m/n/10 Confiabilidad --
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1936--1936
-[]|\T1/cmr/m/n/10 Inyección de fa-llos
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1940--1940
-[]|\T1/cmr/m/n/10 Confiabilidad
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1940--1940
-\T1/cmr/m/n/10 -- ex-por-ta-ción
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1946--1946
-[]|\T1/cmr/m/n/10 Usabilidad
- []
-
-
-Underfull \hbox (badness 1596) in paragraph at lines 1949--1950
-[]|$\OML/cmm/m/it/10 <$\T1/cmr/m/n/10 5min; ba-jas con-sul-tas al
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1952--1952
-[]|\T1/cmr/m/n/10 Rendimiento --
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1953--1953
-[]|\T1/cmr/m/n/10 Tiempo de
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1953--1953
-\T1/cmr/m/n/10 cambio;$ $% de
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1954--1954
-[]|\T1/cmr/m/n/10 Benchmark de
- []
-
-
-Underfull \hbox (badness 1629) in paragraph at lines 1955--1956
-[]|$\OML/cmm/m/it/10 <$\T1/cmr/m/n/10 1s cam-bio; me-mo-ria 70--
- []
-
-
-Underfull \hbox (badness 5119) in paragraph at lines 1958--1958
-[]|\T1/cmr/m/n/10 Confiabilidad --
- []
-
-
-Underfull \hbox (badness 2302) in paragraph at lines 1959--1959
-[]|\T1/cmr/m/n/10 Tiempo del error;
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1960--1960
-[]|\T1/cmtt/m/n/10 test_fileio_
- []
-
-
-Underfull \hbox (badness 1406) in paragraph at lines 1961--1962
-[]|\T1/cmr/m/n/10 Mensaje $\OML/cmm/m/it/10 <$\T1/cmr/m/n/10 2s; 0$ $% pér-di-d
-a
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1964--1964
-\T1/cmr/m/n/10 Usabilidad
- []
-
-
-Underfull \hbox (badness 7168) in paragraph at lines 1972--1972
-[]|\T1/cmtt/m/n/10 pytest \T1/cmr/m/n/10 --\T1/cmtt/m/n/10 cov \T1/cmr/m/n/10 s
-o-bre
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1976--1976
-[]|\T1/cmr/m/n/10 Rendimiento --
- []
-
-
-Underfull \hbox (badness 2469) in paragraph at lines 1979--1980
-[]|\T1/cmr/m/n/10 Nada em-peo-ra; ren-der sin
- []
-
-
-Underfull \hbox (badness 1107) in paragraph at lines 1983--1983
-[]|\T1/cmr/m/n/10 Éxito de arran-que
- []
-
-
-Underfull \hbox (badness 2277) in paragraph at lines 1984--1984
-[]|\T1/cmr/m/n/10 Instalación en Win-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1984--1984
-\T1/cmr/m/n/10 dows lim-pio sin
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1988--1988
-\T1/cmr/m/n/10 cancelación
- []
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[49 <./diagrama_actividad_sistema_completo.png>]
+<diagrama_despliegue_sistema_completo.png, id=843, 4617.25pt x 3131.7pt>
+File: diagrama_despliegue_sistema_completo.png Graphic file (type png)
+<use diagrama_despliegue_sistema_completo.png>
+Package pdftex.def Info: diagrama_despliegue_sistema_completo.png  used on inpu
+t line 1740.
+(pdftex.def)             Requested size: 386.96027pt x 262.43979pt.
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -1352,21 +1201,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[49]
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.59999pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.59999pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
-
-[50]
-Underfull \hbox (badness 10000) in paragraph at lines 2050--2051
-[]\T1/cmr/m/n/10.95 Riverbank Com-pu-ting. \T1/cmr/m/it/10.95 PyQt5 Re-fe-ren-c
-e Gui-de\T1/cmr/m/n/10.95 . Dis-po-ni-ble en: [][]$\T1/cmtt/m/n/10.95 https : /
- / www .
- []
-
+[50 <./diagrama_despliegue_sistema_completo.png>]
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -1375,7 +1210,235 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [51]
-Underfull \hbox (badness 10000) in paragraph at lines 2056--2057
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[52]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[53]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[54]
+Overfull \hbox (10.95651pt too wide) in paragraph at lines 2022--2023
+[]\T1/cmr/bx/n/10.95 Metadatos \T1/cmtt/m/n/10.95 properties.yml\T1/cmr/bx/n/10
+.95 . \T1/cmr/m/n/10.95 Los cam-pos re-que-ri-dos (\T1/cmtt/m/n/10.95 id, name,
+ category, subcategory,
+ []
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[55]
+Underfull \hbox (badness 10000) in paragraph at lines 2088--2088
+[]|\T1/cmr/m/n/10 Extensibilidad
+ []
+
+
+Underfull \hbox (badness 3260) in paragraph at lines 2089--2089
+[]|\T1/cmr/m/n/10 Tiempo de apa-ri-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2090--2090
+[]|\T1/cmr/m/n/10 Agregar un plu-
+ []
+
+
+Underfull \hbox (badness 3000) in paragraph at lines 2090--2090
+\T1/cmr/m/n/10 gin vá-li-do y co-rrer
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2091--2092
+[]|$\OML/cmm/m/it/10 <$\T1/cmr/m/n/10 1min; 0 plu-gins fa-llan
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2094--2094
+[]|\T1/cmr/m/n/10 Rendimiento --
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2094--2094
+\T1/cmr/m/n/10 car-ga gran-de
+ []
+
+
+Underfull \hbox (badness 5008) in paragraph at lines 2095--2095
+[]|\T1/cmr/m/n/10 Tiempo a pri-mer
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2096--2096
+[]|\T1/cmtt/m/n/10 performance_test\T1/cmr/m/n/10 ;
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2096--2096
+\T1/cmr/m/n/10 me-di-do: 78.4ms
+ []
+
+
+Underfull \hbox (badness 5119) in paragraph at lines 2100--2100
+[]|\T1/cmr/m/n/10 Confiabilidad --
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2102--2102
+[]|\T1/cmr/m/n/10 Inyección de fa-llos
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2106--2106
+[]|\T1/cmr/m/n/10 Confiabilidad
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2106--2106
+\T1/cmr/m/n/10 -- ex-por-ta-ción
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2112--2112
+[]|\T1/cmr/m/n/10 Usabilidad
+ []
+
+
+Underfull \hbox (badness 1596) in paragraph at lines 2115--2116
+[]|$\OML/cmm/m/it/10 <$\T1/cmr/m/n/10 5min; ba-jas con-sul-tas al
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2118--2118
+[]|\T1/cmr/m/n/10 Rendimiento --
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2119--2119
+[]|\T1/cmr/m/n/10 Tiempo de
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2119--2119
+\T1/cmr/m/n/10 cambio;$ $% de
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2120--2120
+[]|\T1/cmr/m/n/10 Benchmark de
+ []
+
+
+Underfull \hbox (badness 1629) in paragraph at lines 2121--2122
+[]|$\OML/cmm/m/it/10 <$\T1/cmr/m/n/10 1s cam-bio; me-mo-ria 70--
+ []
+
+
+Underfull \hbox (badness 5119) in paragraph at lines 2124--2124
+[]|\T1/cmr/m/n/10 Confiabilidad --
+ []
+
+
+Underfull \hbox (badness 2302) in paragraph at lines 2125--2125
+[]|\T1/cmr/m/n/10 Tiempo del error;
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2126--2126
+[]|\T1/cmtt/m/n/10 test_fileio_
+ []
+
+
+Underfull \hbox (badness 1406) in paragraph at lines 2127--2128
+[]|\T1/cmr/m/n/10 Mensaje $\OML/cmm/m/it/10 <$\T1/cmr/m/n/10 2s; 0$ $% pér-di-d
+a
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2130--2130
+\T1/cmr/m/n/10 Usabilidad
+ []
+
+
+Underfull \hbox (badness 7168) in paragraph at lines 2138--2138
+[]|\T1/cmtt/m/n/10 pytest \T1/cmr/m/n/10 --\T1/cmtt/m/n/10 cov \T1/cmr/m/n/10 s
+o-bre
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2142--2142
+[]|\T1/cmr/m/n/10 Rendimiento --
+ []
+
+
+Underfull \hbox (badness 2469) in paragraph at lines 2145--2146
+[]|\T1/cmr/m/n/10 Nada em-peo-ra; ren-der sin
+ []
+
+
+Underfull \hbox (badness 1107) in paragraph at lines 2149--2149
+[]|\T1/cmr/m/n/10 Éxito de arran-que
+ []
+
+
+Underfull \hbox (badness 2277) in paragraph at lines 2150--2150
+[]|\T1/cmr/m/n/10 Instalación en Win-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2150--2150
+\T1/cmr/m/n/10 dows lim-pio sin
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2154--2154
+\T1/cmr/m/n/10 cancelación
+ []
+
+ignored error: Infinite glue shrinkage found in box being split
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[56]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[57]
+Underfull \hbox (badness 10000) in paragraph at lines 2216--2217
+[]\T1/cmr/m/n/10.95 Riverbank Com-pu-ting. \T1/cmr/m/it/10.95 PyQt5 Re-fe-ren-c
+e Gui-de\T1/cmr/m/n/10.95 . Dis-po-ni-ble en: [][]$\T1/cmtt/m/n/10.95 https : /
+ / www .
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2222--2223
 \T1/cmtt/m/n/10.95 latest / api / python / vtkmodules . vtkChartsCore . html # 
 vtkmodules . vtkChartsCore .
  []
@@ -1387,7 +1450,15 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[52] (main.aux
+[58]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[59] (main.aux
 LaTeX Info: Redefining \. on input line 11.
 LaTeX Info: Redefining \% on input line 11.
 )
@@ -1403,13 +1474,13 @@ LaTeX Warning: There were undefined references.
 LaTeX Warning: There were multiply-defined labels.
 
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: E935E997D6BC6EF5667F6540B0376AE7;17520.
+(rerunfilecheck)             Checksum: 9D06856C3C35B0FE595D464B501FE24D;19242.
  ) 
 Here is how much of TeX's memory you used:
- 15015 strings out of 467870
- 241715 string characters out of 5417386
- 709494 words of memory out of 5000000
- 43495 multiletter control sequences out of 15000+600000
+ 15055 strings out of 467870
+ 242529 string characters out of 5417386
+ 710734 words of memory out of 5000000
+ 43512 multiletter control sequences out of 15000+600000
  641310 words of font info for 68 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  75i,12n,79p,1481b,802s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -1430,9 +1501,9 @@ TeX/fonts/type1/public/cm-super/sfti1000.pfb><C:/Users/Xiomara/AppData/Local/Pr
 ograms/MiKTeX/fonts/type1/public/cm-super/sfti1095.pfb><C:/Users/Xiomara/AppDat
 a/Local/Programs/MiKTeX/fonts/type1/public/cm-super/sftt1000.pfb><C:/Users/Xiom
 ara/AppData/Local/Programs/MiKTeX/fonts/type1/public/cm-super/sftt1095.pfb>
-Output written on main.pdf (53 pages, 5188773 bytes).
+Output written on main.pdf (60 pages, 6025785 bytes).
 PDF statistics:
- 962 PDF objects out of 1000 (max. 8388607)
- 217 named destinations out of 1000 (max. 500000)
- 706 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 1054 PDF objects out of 1200 (max. 8388607)
+ 240 named destinations out of 1000 (max. 500000)
+ 783 words of extra memory for PDF output out of 10000 (max. 10000000)
 
