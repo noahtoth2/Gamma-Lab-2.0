@@ -137,12 +137,24 @@ class VTKContextMenu:
             print(*args)
 
     def _get_charts(self):
-        if isinstance(self.chart, list):
-            return [ch for ch in self.chart if ch is not None]
-        return [self.chart] if self.chart is not None else []
+        """Los graficos sobre los que el menu puede actuar.
+
+        Se filtra por `vtkChart` a proposito. Un panel puede traer elementos
+        dibujados a mano que no son graficos de VTK —la brujula polar de PAC es
+        un `vtkPythonItem` envuelto en una clase de Python—, y esos no tienen
+        ejes, ni trazas, ni zoom. Antes se les llamaba igual que a los demas y
+        reventaban con `AttributeError: 'BrujulaPolar' object has no attribute
+        'SetZoomWithMouseWheel'` al girar la rueda del raton sobre el panel.
+
+        Se filtra aqui y no en cada sitio porque todo el menu —zoom, medicion,
+        exportacion— pasa por esta funcion y por `_active_chart`.
+        """
+        candidatos = self.chart if isinstance(self.chart, list) else [self.chart]
+        return [ch for ch in candidatos if isinstance(ch, vtkChart)]
 
     def _active_chart(self):
-        return (self.chart[0] if isinstance(self.chart, list) and self.chart else self.chart)
+        graficos = self._get_charts()
+        return graficos[0] if graficos else None
 
     # ---------- public setters ----------
     def set_signal_name(self, name):
