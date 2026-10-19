@@ -19,7 +19,7 @@
 \usepackage{multirow}
 \usepackage{array}
 
-\usepackage[a4paper,margin=2.5cm]{geometry}
+% \usepackage[a4paper,margin=2.5cm]{geometry}   <- duplicado: geometry ya se carga en la linea 6. Cargarlo dos veces con opciones distintas provocaba "Option clash for package geometry" y el documento no compilaba. Se quita esta y no la otra porque pedia a4paper, que contradice el letterpaper del documentclass; el PDF publicado es tamano carta.
 \definecolor{javBlue}{RGB}{0,57,107}
 \definecolor{lightgray2}{RGB}{245,245,245}
 \definecolor{headergray}{RGB}{230,230,230}
@@ -1810,13 +1810,20 @@ el historial de revisiones, asegurando un proceso verificable y consistente.
 
 
 
+Los criterios de verificación se organizan según la misma clasificación con la que
+se especificaron los requisitos en el capítulo \textit{Requerimientos Específicos}: las cuatro
+áreas funcionales (\textbf{IO}, \textbf{UI}, \textbf{WV} y \textbf{PAC}) y las cuatro
+categorías no funcionales del modelo FURPS+ (\textbf{U}, \textbf{P}, \textbf{R} y
+\textbf{S}). De este modo, cada requisito enunciado en el documento tiene un criterio
+de verificación asociado y ninguno queda fuera del proceso.
+
 \begin{table}[H]
 \centering
 
 \renewcommand{\arraystretch}{1.4}
 
 \begin{tabularx}{\textwidth}{|
->{\raggedright\arraybackslash\bfseries}p{4cm}|
+>{\raggedright\arraybackslash\bfseries}p{5.1cm}|
 X|
 }
 
@@ -1824,42 +1831,69 @@ X|
 
 \rowcolor{headergray}
 
-\textbf{Tipo} &
+\textbf{Tipo de requerimiento} &
 \textbf{Criterio de verificación}
 \\ \hline
 
-\rowcolor{lightgray2}
-Requerimientos funcionales &
-Prueba directa de la funcionalidad sobre datos reales del laboratorio,
-con aprobación explícita del cliente.
-\\ \hline
-
-Requerimientos de desempeño &
-Medición de tiempos de ejecución con señales de referencia y comparación
-contra los umbrales definidos.
+\multicolumn{2}{|l|}{\cellcolor{headergray}\textbf{Requerimientos Funcionales \textnormal{(FR-XX-YY, 45 requisitos)}}}
 \\ \hline
 
 \rowcolor{lightgray2}
-Requerimientos no funcionales &
-Revisión de código, pruebas de carga y validación de comportamiento
-bajo condiciones adversas.
+Módulo IO -- Entrada/Salida &
+Carga de cada formato soportado y reapertura de proyectos guardados, comprobando
+que la señal restaurada coincide con la original y que la sesión recupera los
+\textit{trials}, los descartes y los análisis previos. Se ejecuta sobre archivos
+reales del laboratorio, con aprobación explícita del cliente.
 \\ \hline
 
-Requerimientos de persistencia &
-Verificación de restauración correcta de sesiones tras cierre y
-reapertura de la aplicación.
+Módulo UI -- Interacción general &
+Recorrido guiado de las operaciones de edición de la señal y de gestión de
+\textit{trials} sobre datos reales, verificando con el cliente que cada acción
+produce el resultado esperado y que es reversible.
 \\ \hline
 
 \rowcolor{lightgray2}
-Paralelización (módulo PL) &
-Comparación de tiempos de análisis secuencial vs.\ paralelo sobre un
-conjunto de \textit{trials} de referencia, verificando que la GUI
-permanezca responsiva.
+Módulo WV -- Wavelet/Escalograma &
+Comparación del escalograma contra resultados de referencia calculados con los
+mismos parámetros, evaluada por correlación, más revisión visual del cliente sobre
+señales de comportamiento conocido.
 \\ \hline
 
-Módulo PAC &
-Validación del cálculo PAC contra resultados de referencia conocidos,
-con revisión de la gráfica del comodulograma por parte del cliente.
+Módulo PAC -- Acoplamiento fase-amplitud &
+Validación del comodulograma contra resultados de referencia conocidos y revisión
+de la gráfica por parte del cliente, cubriendo el acoplamiento intra-canal, el
+inter-canal y la coherencia de fase.
+\\ \hline
+
+\multicolumn{2}{|l|}{\cellcolor{headergray}\textbf{Requerimientos No Funcionales \textnormal{(NFR-X-YY, modelo FURPS+, 36 requisitos)}}}
+\\ \hline
+
+\rowcolor{lightgray2}
+Categoría U -- Usabilidad &
+Pruebas de usabilidad con investigadores del laboratorio, en sesiones guiadas y no
+guiadas, observando si completan las tareas sin asistencia y recogiendo su
+valoración de los mensajes, los iconos y la retroalimentación de progreso.
+\\ \hline
+
+Categoría P -- Rendimiento &
+Medición instrumentada de tiempos de ejecución y de consumo de memoria frente a los
+umbrales que fija cada requisito, sobre el hardware de referencia y con señales del
+laboratorio. Los resultados se contrastan contra la línea base de GammaLab~1.0.
+\\ \hline
+
+\rowcolor{lightgray2}
+Categoría R -- Confiabilidad &
+Pruebas automatizadas de los caminos críticos —cancelación de un análisis, cierre
+del proyecto a mitad de un cómputo y cambio de módulo con tareas en curso—,
+verificando que no queden hilos trabajadores activos, detectores de eventos
+registrados ni datos derivados inconsistentes.
+\\ \hline
+
+Categoría S -- Soporte &
+Revisión de la arquitectura y prueba de extensión: incorporar un módulo de análisis
+nuevo registrándolo en el núcleo y comprobar que no exige modificar el núcleo ni los
+demás módulos. Se verifica además la instalación del ejecutable y el registro de la
+extensión \texttt{.glab}.
 \\ \hline
 
 \end{tabularx}
