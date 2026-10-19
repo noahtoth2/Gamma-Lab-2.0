@@ -184,7 +184,6 @@ Las referencias t\'ecnicas externas (PyQt, VTK, NumPy, EDF/ABF, YAML).
 Gamma Lab está construido sobre una arquitectura de microkernel, en la que un núcleo mínimo (Kernel) coordina la aplicación y la funcionalidad de dominio se delega en plugins independientes. El núcleo actúa como registro de servicios y de extensiones, y ofrece además un canal de eventos para comunicar los componentes. Los 16 plugins actuales se descubren automáticamente durante el arranque a partir de un descriptor declarativo (\texttt{properties.yml}). Cada uno implementa el contrato común \texttt{IPlugin}, y todos acceden al estado de la aplicación a través de un servicio compartido, el \texttt{DataStore}.
 
 
-
 Teniendo en cuenta que Gamma Lab 2.0 parte de una base funcional y arquitectónica ya construida, se llevó a cabo un diagnóstico de la arquitectura inicial con el propósito de evaluar su estado actual, identificar las limitaciones de la implementación existente y reconocer oportunidades de mejora. Los resultados de este análisis se presentan en las siguientes secciones.
 
 \subsubsection{Núcleo con pocas responsabilidades y contratos débiles}
