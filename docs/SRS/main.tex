@@ -148,7 +148,7 @@ v1.0 & 17/05/26 inicio del documento & Se inició la creación del SRS y se divi
 
 El presente documento constituye la Especificación de Requisitos de Software (SRS) de GammaLab 2.0. Con el proposito de brindar una orientación metodológica clara del inicio del ciclo de desarrollo.
 % Producto -----------------------------------------------------------------------
-GammaLab v2.0 es una interfaz gráfica de escritorio de tipo standalone orientada al análisis, procesamiento y visualización de señales electroencefalográficas o EEG. Concebido como una alternativa de código abierto y enfocado en el uso local para el Laboratorio de Electrofisiología de la Universidad de Colombia, el sistema está desarrollado con el lenguaje Python, utilizando el framework PySide6 y librerías científicas como VTK. Siguiendo con la visión de GammaLab v1.0, su diseño arquitectónico evoluciona con el fin de resolver brechas en el paralelismo de cómputo y añadir nuevos métodos de acoplamiento cruzado de frecuencias (Phase-Amplitude-Coupling o PAC).
+GammaLab v2.0 es una interfaz gráfica de escritorio de tipo standalone orientada al análisis, procesamiento y visualización de señales electroencefalográficas (EEG). Concebido como una alternativa de código abierto y enfocado en el uso local para el Laboratorio de Electrofisiología de la Universidad de Colombia, el sistema está desarrollado con el lenguaje Python, utilizando el framework PySide6 y librerías científicas como VTK. Siguiendo con la visión de GammaLab v1.0, su diseño arquitectónico evoluciona con el fin de resolver brechas en el paralelismo de cómputo y añadir nuevos métodos de Phase-Amplitude-Coupling (PAC).
 
 % Alcanse del SRS -----------------------------------------------------------------
 Este documento especifica de manera formal, atómica y verificable la totalidad de los requerimientos funcionales y no funcionales que rigen el desarrollo de GammaLab v2.0. El alcance de este abarca detalladamente los requerimientos de interfaz de usuario, gestión de memoria DataStore, el procesamiento asíncrono en segundo plano del Kernel y las especificaciones técnicas del nuevo módulo de análisis (PAC). Se excluye del alcance del SRS las rutas de mantenimiento técnico a largo plazo del software, así mismo el código heredado de GammaLab v1.0 que se conservará sin modificaciones funcionales.
@@ -162,12 +162,12 @@ La importancia de este SRS radica en que este actúa como puente de información
 \subsubsection{Contexto - GammaLab v1.0}
 
 % Origen de GammaLab 1 -------------------------------------------------------------
-GammaLab nació en 2025 como una alternativa de código abierto a las herramientas con licencia comercial y fragmentada en el mercado, enfocada específicamente en las necesidades del Laboratorio de Electrofisiología de la Universidad Nacional de Colombia. El sistema se estructuró bajo una arquitectura microkernel con un ecosistema de plugins usando Python, permitiendo el análisis de señales EEG en los dominios de tiempo, frecuencia y tiempo-frecuencia mediante una interfaz gráfica unificada.
+GammaLab nació en 2025 \cite{ref13} como una alternativa de código abierto a las herramientas con licencia comercial y fragmentada en el mercado, enfocada específicamente en las necesidades del Laboratorio de Electrofisiología de la Universidad Nacional de Colombia. El sistema se estructuró bajo una arquitectura microkernel con un ecosistema de plugins usando Python, permitiendo el análisis de señales EEG en los dominios de tiempo, frecuencia y tiempo-frecuencia mediante una interfaz gráfica unificada.
 
-Aunque la primera iteración fue validada exitosamente con un 87.5\% de coincidencia frente al sistema de referencia BOARD-FTD-PACC, las pruebas de aceptación con el usuario final  identificaron brechas críticas para su correcta adopción. Entre estas limitaciones se destacan la ausencia de persistencia de sesiones y gestión de proyectos, la falta de rendimiento al no contar con mecanismos de concurrencia o paralelismo para la distribución de tareas pesadas.
+Aunque la primera iteración fue validada exitosamente con un 87.5\% de coincidencia frente al sistema de referencia BOARD-FTD-PACC \cite{ref14}, las pruebas de aceptación con el usuario final  identificaron brechas críticas para su correcta adopción. Entre estas limitaciones se destacan la ausencia de persistencia de sesiones y gestión de proyectos, la falta de rendimiento al no contar con mecanismos de concurrencia o paralelismo para la distribución de tareas pesadas.
 
 % Necesidad de GammaLab2 -----------------------------------------------------------
-Además, el equipo de investigación reportó la necesidad de contar con un control más preciso sobre la densidad de muestreo y la incorporación de métodos analíticos avanzados. Por otro lado, GammaLab v2.0 se concibe más allá de solo extender estas capacidades, sino para estabilizar la arquitectura meidnate el procesamiento asíncrono en segundo plano, así garantizando la robustez técnica necesaria para los investigadores.
+Además, el equipo de investigación reportó la necesidad de contar con un control más preciso sobre la densidad de muestreo y la incorporación de métodos analíticos avanzados. Por todo lo expuesto anteriormente, GammaLab v2.0 se concibe más allá de solo extender estas capacidades, sino para estabilizar la arquitectura meidnate el procesamiento asíncrono en segundo plano, así garantizando la robustez técnica necesaria para los investigadores.
 
 \subsection{Alcance}
 El alcance de GammaLab v2.0 lo definen los límites funcionales, técnicos y operativos del sistema, asegurando la entrega de un software robusto y enfocado en el entorno de investigación. 
@@ -182,7 +182,7 @@ Con el fin de cerrar las brechas observadas de la primera iteración del softwar
 
 \item \textbf{Persistencia de sesión y gestión de proyectos:} Implementación del componente ProjectSession para permitir el guardado local, creando una extensión propia para GammaLab (.glab) y la restauración automática del entorno de trabajo.
 
-\item \textbf{Kernel de procesamiento asíncrono y paralelo:} Desacoplamiento de la interfaz de usuario mediante una arquitectura de multiprocesamiento para la ejecución paralela del análisis matemático pesado en segundo plano sin congelar la GUI.
+\item \textbf{Kernel de procesamiento paralelo:} Desacoplamiento de la interfaz de usuario mediante una arquitectura de multiprocesamiento para la ejecución paralela del análisis matemático pesado en segundo plano sin congelar la GUI.
 
 \item \textbf{Módulo de análisis PAC:} Incorporación del un plugin especializado para cuantificar el acoplamiento phase-amplitude coupling, permitiendo la selección cruzada de canales fuentes.
 
@@ -212,8 +212,6 @@ El desarrollo de esta evolución funcional y arquitectónica aporta tres aspecto
     \item \textbf{Eficiencia computacional:} La paralelización del kernel reduce drásticamente los tiempos de procesamiento de grandes volúmenes de datos, optimizando los tiempos de respuesta del programa.
 \end{itemize}
 
-% Relación con el contexto organizacional ------------------
-El laboratorio suele tener nulo mantenimiento técnico especializado para software. Por lo tanto, el diseño de GammaLab v2.0 se alinea con la meta de entregar una herramienta autónoma, autogestionable y autoexplicativa. EL despliegue mediante un instalador ejecutable de un solo clic y la incorporación de ayudas contextuales (tooltips) robustas garantizan que el laboratorio pueda usar la herramienta de manera independiente, apoyando en sus proyectos de investigación.
 
 \subsection{Definiciones, Acrónimos y Abreviaciones}
 \begin{table}[ht]
@@ -285,7 +283,7 @@ El laboratorio suele tener nulo mantenimiento técnico especializado para softwa
 
 \renewcommand{\refname}{\vspace{-2 em}} 
 
-\begin{thebibliography}{12}
+\begin{thebibliography}{99}
 
 \bibitem{ref1}
 Microsoft Corporation, ``Windows -- product family overview,'' Available: \url{https://www.microsoft.com/windows}. Accessed: 2025.
@@ -322,6 +320,12 @@ Python Software Foundation, ``concurrent.futures --- launching parallel tasks,''
 
 \bibitem{ref12}
 pytest Development Team, ``pytest documentation,'' 2025. Available: \url{https://docs.pytest.org/en/stable/}. Accessed: 2025.
+
+\bibitem{ref13}
+S. Asencio Rodríguez, M. F. González Valencia, J. E. Martínez Clavijo, y G. V. Villalobos Rocha, ``Gamma Lab,'' Memoria de trabajo de grado, Programa de Ingeniería de Sistemas, Facultad de Ingeniería, Pontificia Universidad Javeriana, Bogotá, D.C., Colombia, nov. 2025.
+
+\bibitem{ref14}
+C. Gauthier-Umaña, M. Valderrama, A. Múnera, y M. O. Nava-Mesa, ``BOARD-FTD-PACC: a graphical user interface for the synaptic and cross-frequency analysis derived from neural signals,'' \textit{Brain Informatics}, vol. 10, art. 12, may. 2023, doi: 10.1186/s40708-023-00191-x. Available: \url{https://link.springer.com/article/10.1186/s40708-023-00191-x}.
 
 \end{thebibliography}
 \subsection{Apreciación Global}
@@ -1305,22 +1309,23 @@ multiprocesamiento del sistema operativo y del entorno Python.
 
 Este capítulo define los requerimientos específicos de GammaLab 2.0, derivados de las necesidades y brechas identificadas en la primera versión de la herramienta. Los requerimientos se dividen entre funcionales y no funcionales, y establecen las condiciones que deberá cumplir la nueva iteración para materializar la solución propuesta y orientar su posterior implementación y validación.
 
-\subsection{Nomenclatura de Requisitos}
+\subsection{Nomenclatura de Requerimientos}
+\label{sec:Nomenclatura de Requerimientos}
 
 Con el fin de facilitar la trazabilidad y la referencia cruzada entre los distintos documentos que soportan este trabajo, se definió una nomenclatura que distingue los requisitos funcionales de los no funcionales.
 
-Los requisitos funcionales se identifican mediante el prefijo FR-XX-YY, donde XX corresponde al área funcional de Gamma Lab 2.0 a la que se encuentra asociado el requisito y YY corresponde al número consecutivo dentro de dicha área. Esta clasificación busca mantener una correspondencia entre los requisitos y las principales capacidades funcionales involucradas en la evolución de la herramienta, facilitando su seguimiento a lo largo de las diferentes etapas de diseño, desarrollo y validación.
+Los requerimientos funcionales se identifican mediante el prefijo FR-XX-YY, donde XX corresponde al área funcional de Gamma Lab 2.0 a la que se encuentra asociado el requisito y YY corresponde al número consecutivo dentro de dicha área. Esta clasificación busca mantener una correspondencia entre los requisitos y las principales capacidades funcionales involucradas en la evolución de la herramienta, facilitando su seguimiento a lo largo de las diferentes etapas de diseño, desarrollo y validación.
 
-A partir de esta clasificación, los requisitos funcionales se organizan en cuatro áreas:
+A partir de esta clasificación, los requerimientos funcionales se organizan en cuatro áreas:
 
 \begin{itemize}
-    \item \textbf{IO} -- Entrada/Salida: agrupa los requisitos relacionados con la carga y persistencia de señales, así como el guardado y la apertura de proyectos, consolidando el manejo de datos como base funcional de la herramienta.
-    \item \textbf{UI} -- Interacción general: agrupa los requisitos orientados a mejorar la experiencia de usuario, la edición de la señal y la gestión de trials.
-    \item \textbf{WV} -- Wavelet/Escalograma: agrupa los requisitos que expanden y ajustan las capacidades de esta representación tiempo-frecuencia.
-    \item \textbf{PAC} -- Acoplamiento fase-amplitud: agrupa los requisitos del nuevo módulo de análisis incorporado en esta iteración, e incluye tanto el acoplamiento intra-canal como el inter-canal y la coherencia de fase.
+    \item \textbf{IO} -- Entrada/Salida: agrupa los requerimientos relacionados con la carga y persistencia de señales, así como el guardado y la apertura de proyectos, consolidando el manejo de datos como base funcional de la herramienta.
+    \item \textbf{UI} -- Interacción general: agrupa los requerimientos orientados a mejorar la experiencia de usuario, la edición de la señal y la gestión de trials.
+    \item \textbf{WV} -- Wavelet/Escalograma: agrupa los requerimientos que expanden y ajustan las capacidades de esta representación tiempo-frecuencia.
+    \item \textbf{PAC} -- Acoplamiento fase-amplitud: agrupa los requerimientos del nuevo módulo de análisis incorporado en esta iteración, e incluye tanto el acoplamiento intra-canal como el inter-canal y la coherencia de fase.
 \end{itemize}
 
-Los requisitos no funcionales se identifican mediante el prefijo \textbf{NFR-X-YY}, donde \textit{X} corresponde a la categoría del modelo FURPS+ y \textit{YY} es el número consecutivo dentro de dicha categoría. Estos requisitos concentran, en particular, los lineamientos orientados a la estabilización y el fortalecimiento arquitectónico de la herramienta. Se identificaron requisitos en cuatro de las categorías del modelo:
+Los requerimientos no funcionales se identifican mediante el prefijo \textbf{NFR-X-YY}, donde \textit{X} corresponde a la categoría del modelo FURPS+ y \textit{YY} es el número consecutivo dentro de dicha categoría. Estos requisitos concentran, en particular, los lineamientos orientados a la estabilización y el fortalecimiento arquitectónico de la herramienta. Se identificaron requisitos en cuatro de las categorías del modelo:
 
 \begin{itemize}
     \item \textbf{U} -- Usabilidad
@@ -1330,6 +1335,13 @@ Los requisitos no funcionales se identifican mediante el prefijo \textbf{NFR-X-Y
 \end{itemize}
 
 \subsection{Requerimientos Funcionales}
+
+La definición de los requerimientos funcionales partió del levantamiento de necesidades con el laboratorio y de la evaluación de Gamma Lab 1.0 durante su uso. Este ejercicio permitió identificar brechas entre las capacidades de la herramienta y las necesidades del trabajo experimental, así como dificultades que comprometían su uso autónomo por parte de los investigadores. La interacción resultaba poco intuitiva y dificultaba mantener el contexto de trabajo durante la navegación. De hecho, ningún usuario logró navegar por la herramienta sin asistencia durante las pruebas realizadas. Además, la falta de información sobre el estado de las operaciones generaba incertidumbre cuando la interfaz dejaba de responder durante la carga o el procesamiento de datos. Estas situaciones dificultan la construcción de un modelo mental claro del funcionamiento de la herramienta para el usuario.
+
+También se identificaron limitaciones en la continuidad del trabajo y el aprovechamiento de los resultados. La gestión de las señales y los ensayos restringía la flexibilidad de los procedimientos analíticos, mientras que la ausencia de persistencia dificultaba retomar el trabajo entre sesiones. A esto se sumaban restricciones en el intercambio de datos y en las capacidades de análisis disponibles, que no cubrían completamente las necesidades investigativas del laboratorio. En conjunto, estas brechas afectaban la fluidez del trabajo experimental y evidenciaban la necesidad de fortalecer tanto la interacción con la herramienta como el manejo de la información y el alcance de los análisis.
+
+A partir de este diagnóstico se definieron los requerimientos funcionales de Gamma Lab 2.0, mediante la traducción de las dificultades observadas y las necesidades expresadas por los investigadores en especificaciones sobre el comportamiento esperado del sistema. Las tablas siguientes presentan estos requerimientos de manera individual, agrupados por los modulos definidos en la sección de nomenclatura \ref{sec:Nomenclatura de Requerimientos}.
+
 
 \subsubsection{Módulo IO -- Entrada/Salida}
 
@@ -1359,7 +1371,7 @@ FR-IO-07 & R28 & El sistema debe asignar un nombre de exportación en el que se 
 
 \end{longtable}
 \vspace{-0.5em}
-\captionof{table}{Requisitos funcionales del módulo IO}
+\captionof{table}{Requerimientos funcionales del módulo IO}
 \label{tab:fr-io}
 
 \subsubsection{Módulo UI -- Interacción general}
@@ -1406,7 +1418,7 @@ FR-UI-15 & R68 & El sistema debe identificar cada conjunto de trials por la pare
 
 \end{longtable}
 \vspace{-0.5em}
-\captionof{table}{Requisitos funcionales del módulo UI}
+\captionof{table}{Requerimientos funcionales del módulo UI}
 \label{tab:fr-ui}
 
 \subsubsection{Módulo WV -- Wavelet/Escalograma}
@@ -1429,7 +1441,7 @@ FR-WV-03 & R35 & El sistema debe exportar wavelet en EMF \\
 
 \end{longtable}
 \vspace{-0.5em}
-\captionof{table}{Requisitos funcionales del módulo WV}
+\captionof{table}{Requerimientos funcionales del módulo WV}
 \label{tab:fr-wv}
 
 \subsubsection{Módulo PAC -- Acoplamiento fase-amplitud}
@@ -1486,10 +1498,17 @@ FR-PAC-20 & R76 & El sistema debe aplicar sobre la señal activa un filtro Butte
 
 \end{longtable}
 \vspace{-0.5em}
-\captionof{table}{Requisitos funcionales del módulo PAC}
+\captionof{table}{Requerimientos funcionales del módulo PAC}
 \label{tab:fr-pac}
 
 \subsection{Requerimientos No Funcionales}
+
+La definición de los requerimientos no funcionales partió de una revisión técnica de Gamma Lab 1.0, orientada a comprender su arquitectura, la interacción entre sus componentes y el comportamiento de la aplicación durante la ejecución. El análisis evidenció que, aunque la herramienta cuenta con una estructura modular basada en complementos independientes, los mecanismos de coordinación entre estos son insuficientes para gestionar adecuadamente sus dependencias y su ciclo de vida. Asimismo, la gestión del estado compartido y de los recursos no garantiza un uso eficiente de la memoria ni la conservación de la consistencia de los datos. Estas limitaciones se agravan ante operaciones de procesamiento intensivo, que pueden bloquear la interfaz y dificultar la interrupción segura de las tareas, comprometiendo la continuidad del trabajo experimental y la confiabilidad de los resultados.
+
+Adicionalmente, la ausencia de mecanismos adecuados para gestionar los fallos y registrar los errores dificulta la identificación de sus causas y la recuperación de la aplicación. Dado que todos los componentes se ejecutan en un mismo proceso, un fallo puede comprometer el funcionamiento de toda la herramienta y ocasionar la pérdida del trabajo realizado durante la sesión. Estas limitaciones evidencian la necesidad de establecer condiciones que fortalezcan la confiabilidad de la aplicación y faciliten su mantenimiento.
+
+A partir de este diagnóstico se definieron los requerimientos no funcionales de Gamma Lab 2.0, que traducen los hallazgos de la revisión técnica en condiciones verificables para su implementación. Los requerimientos se presentan en el orden de los módulos establecido en la sección de nomenclatura \ref{sec:Nomenclatura de Requerimientos}.
+
 
 \subsubsection{Categoría U -- Usabilidad}
 
@@ -1523,7 +1542,7 @@ NFR-U-09 & R44 & El sistema debe mostrar una pantalla de inicio mientras carga l
 
 \end{longtable}
 \vspace{-0.5em}
-\captionof{table}{Requisitos no funcionales de la categoría Usabilidad}
+\captionof{table}{Requerimientos no funcionales de la categoría Usabilidad}
 \label{tab:nfr-u}
 
 \subsubsection{Categoría P -- Rendimiento}
@@ -1574,7 +1593,7 @@ NFR-P-17 & R81 & El sistema debe quedar listo para usarse en un tiempo máximo d
 
 \end{longtable}
 \vspace{-0.5em}
-\captionof{table}{Requisitos no funcionales de la categoría Rendimiento}
+\captionof{table}{Requerimientos no funcionales de la categoría Rendimiento}
 \label{tab:nfr-p}
 
 \subsubsection{Categoría R -- Confiabilidad}
@@ -1601,7 +1620,7 @@ NFR-R-05 & R79 & El sistema no debe modificar la señal cargada ni los trials or
 
 \end{longtable}
 \vspace{-0.5em}
-\captionof{table}{Requisitos no funcionales de la categoría Confiabilidad}
+\captionof{table}{Requerimientos no funcionales de la categoría Confiabilidad}
 \label{tab:nfr-r}
 
 \subsubsection{Categoría S -- Soporte}
@@ -1628,10 +1647,10 @@ NFR-S-05 & R77 & El sistema debe permitir incorporar un nuevo plugin de análisi
 
 \end{longtable}
 \vspace{-0.5em}
-\captionof{table}{Requisitos no funcionales de la categoría Soporte}
+\captionof{table}{Requerimientos no funcionales de la categoría Soporte}
 \label{tab:nfr-s}
 
-\newpage
+
 \section{PROCESO INGENIERÍA DE REQUERIMIENTOS}
 
 Esta sección describe el proceso, técnicas y métodos utilizados para la construcción y
