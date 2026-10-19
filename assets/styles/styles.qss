@@ -68,7 +68,7 @@ QMainWindow {
 
 #searchIconLabel {
     color: #6f7a86;
-    font-size: 20pt;
+    font-size: 30pt;
 }
 
 /* Main button bar (navigation row / tabs) */
