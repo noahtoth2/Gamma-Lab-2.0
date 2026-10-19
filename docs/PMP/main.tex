@@ -573,8 +573,6 @@ Este esquema de trabajo responde directamente al enfoque híbrido Water-Scrum-Fa
 
 \section{Administración del Proyecto}
 
-En esta sección se documentan los mecanismos de administración del proyecto GAMMA LAB 2.0, incluyendo estimación de actividades, inicio del proyecto, planes de trabajo, descomposición de actividades (WBS), calendarización, asignación de recursos y gestión de métricas.
-
 \subsection{Métodos y Herramientas de Estimación}
 
 Para la estimación de actividades del proyecto GAMMA LAB 2.0, se adopta un enfoque de estimación \textit{Bottom-Up}, el cual parte de la identificación de tareas específicas y granulares, estima el esfuerzo requerido para cada una de ellas, y posteriormente agrega estas estimaciones para obtener el tiempo total del proyecto. Esta metodología es particularmente adecuada para proyectos en evolución donde se cuenta con experiencia de una versión anterior y donde las dependencias técnicas son claras.
@@ -584,8 +582,8 @@ El proceso inició con la definición de las cuatro fases del proyecto, correlac
 \begin{itemize}
     \item \textbf{Fase 1: Identificación de brechas de mejora en GammaLab 1.0} -- 3 semanas
     \item \textbf{Fase 2: Diseño del planteamiento estructural de la solución} -- 4 semanas
-    \item \textbf{Fase 3: Implementación técnica} -- 7 semanas
-    \item \textbf{Fase 4: Validación y pruebas con el usuario} -- 2 semanas
+    \item \textbf{Fase 3: Implementación técnica} -- 6 semanas
+    \item \textbf{Fase 4: Validación y pruebas con el usuario} -- 3 semanas
 \end{itemize}
 
 A partir de esta estructura, el equipo identificó las actividades concretas dentro de cada fase, desagregó estas actividades en tareas específicas y estimó el esfuerzo en horas-persona requerido para cada tarea. Esta información se consolidó en una tabla de estimación detallada que refleja la carga de trabajo esperada por fase.
@@ -595,13 +593,15 @@ A partir de esta estructura, el equipo identificó las actividades concretas den
 La estimación se fundamenta en los siguientes supuestos:
 
 \begin{itemize}
-    \item El equipo de desarrollo está compuesto por cuatro desarrolladores dedicados al 100\% del proyecto.
-    \item Cada desarrollador dispone de un mínimo de 6 horas semanales de disponibilidad efectiva para trabajo de desarrollo, análisis, diseño, codificación y pruebas.
+    \item El equipo de desarrollo está compuesto por cuatro desarrolladores que compaginan el proyecto con su carga académica regular, por lo que no se supone una dedicación exclusiva. El esfuerzo mínimo esperado se estima a partir de los créditos académicos: conforme a la normativa colombiana de educación superior (Decreto 1330 de 2019), un crédito académico equivale a 48 horas de trabajo del estudiante.
+    \item Cada desarrollador dispone de un mínimo de 9 horas semanales de disponibilidad efectiva para trabajo de desarrollo, análisis, diseño, codificación y pruebas. El proyecto de grado equivale a 3 créditos académicos (144 horas por integrante), que repartidos en las 16 semanas del proyecto dan esas 9 horas semanales, y suman 576 horas-persona para el equipo.
     \item La jornada semanal de dedicación será distribuida de manera flexible entre las actividades, con énfasis en mantener sincronización a través de canales de comunicación asíncrona (GitHub, comunicación escrita).
     \item Se reutilizará conocimiento y código de GAMMA LAB 1.0, reduciendo el tiempo de aprendizaje inicial.
     \item La directora del proyecto está disponible para sesiones de revisión semanal y proporciona retroalimentación en plazos acordados.
     \item El cliente (Laboratorio de Electrofisiología) participa activamente en validaciones de línea base (Fase 1) y en pruebas finales (Fase 4).
-    \item No existen restricciones significativas de recursos técnicos o de infraestructura que impidan la ejecución del proyecto.
+    \item Cada desarrollador dispone de un equipo propio (portátil o de escritorio) con capacidad suficiente para ejecutar el entorno de desarrollo (Python, PyQt5 y VTK) y las pruebas locales, y las herramientas de colaboración (GitHub, Microsoft Teams, Overleaf, OneDrive y el Kanban del departamento) están accesibles para todo el equipo durante la ejecución del proyecto.
+    \item El acceso a la máquina virtual compartida de integración, solicitada en la sección de Infraestructura, será otorgado; de no serlo, las pruebas de integración se ejecutarán en los equipos de los desarrolladores.
+    \item El acceso al equipamiento del Laboratorio para las pruebas de rendimiento y validación se coordina a través de la directora y se concentra en la Fase~4. Por tratarse de un recurso limitado (véase \textit{Restricciones de Recursos}), no se supone disponibilidad permanente: esas pruebas se planifican en ventanas acotadas.
     \item Las metodologías de desarrollo (Water-Scrum-Fall) y las herramientas (Git, el Kanban del departamento, Python, PyQt5) permanecen estables durante la ejecución.
 \end{itemize}
 
@@ -620,9 +620,9 @@ La siguiente tabla resume la estimación de duración por fases, con base en el 
 \hline
 2 & Diseño de solución & 4 sem & 19 ago & 13 sep \\
 \hline
-3 & Implementación técnica & 7 sem & 16 sep & 27 oct \\
+3 & Implementación técnica & 6 sem & 16 sep & 27 oct \\
 \hline
-4 & Validación y pruebas & 2 sem & 28 oct & 20 nov \\
+4 & Validación y pruebas & 3 sem & 28 oct & 20 nov \\
 \hline
 \multicolumn{2}{|l|}{\textbf{Total estimado}} & \textbf{16 sem} & \textbf{27 jul} & \textbf{20 nov} \\
 \hline
@@ -630,6 +630,8 @@ La siguiente tabla resume la estimación de duración por fases, con base en el 
 \caption{Resumen de calendarización del proyecto GAMMA LAB 2.0}
 \label{tab:calendario}
 \end{table}
+
+\textit{Nota: Las duraciones son semanas calendario entre el inicio y el cierre de cada fase, redondeadas a la semana más cercana (Fase~1: 21 días; Fase~2: 26; Fase~3: 42; Fase~4: 24). Entre las fases 1--2 y 2--3 hay dos días de transición cada una, por lo que el total calendario, del 27 de julio al 20 de noviembre, es de 16 semanas y 5 días.}
 
 \subsubsection{Distribución de Esfuerzo por Fase}
 
@@ -642,22 +644,22 @@ Basado en el análisis Bottom-Up de tareas, la siguiente tabla detalla el esfuer
 \hline
 \textbf{Fase} & \textbf{Duración (sem)} & \textbf{Esfuerzo Total (h-persona)} \\
 \hline
-Fase 1: Identificación de brechas & 3 & 72 h \\
+Fase 1: Identificación de brechas & 3 & 108 h \\
 \hline
-Fase 2: Diseño de solución & 4 & 96 h \\
+Fase 2: Diseño de solución & 4 & 144 h \\
 \hline
-Fase 3: Implementación técnica & 7 & 168 h \\
+Fase 3: Implementación técnica & 6 & 216 h \\
 \hline
-Fase 4: Validación y pruebas & 2 & 48 h \\
+Fase 4: Validación y pruebas & 3 & 108 h \\
 \hline
-\textbf{Total} & \textbf{16} & \textbf{384 h} \\
+\textbf{Total} & \textbf{16} & \textbf{576 h} \\
 \hline
 \end{tabular}
 \caption{Estimación de esfuerzo por fases del proyecto (Bottom-Up)}
 \label{tab:esfuerzo}
 \end{table}
 
-\textit{Nota: El esfuerzo total de 384 horas se distribuye entre 4 desarrolladores, resultando en 96 horas por persona en las 16 semanas, equivalentes a 6 horas semanales promedio por desarrollador.}
+\textit{Nota: El esfuerzo total de 576 horas se distribuye entre 4 desarrolladores, resultando en 144 horas por persona en las 16 semanas, equivalentes a 9 horas semanales promedio por desarrollador. Corresponde a los 3 créditos académicos del proyecto de grado, a 48 horas de trabajo del estudiante por crédito.}
 
 \subsection{Inicio del Proyecto}
 
@@ -723,7 +725,7 @@ Para el desarrollo de GAMMA LAB 2.0, se dispone de la siguiente infraestructura 
 
 \subsubsection{Equipo de Desarrollo}
 
-El equipo de GAMMA LAB 2.0 está conformado por cuatro estudiantes de Ingeniería de Sistemas de la Pontificia Universidad Javeriana, todos dedicados al 100\% del proyecto durante las 16 semanas de ejecución.
+El equipo de GAMMA LAB 2.0 está conformado por cuatro estudiantes de Ingeniería de Sistemas de la Pontificia Universidad Javeriana, cada uno con una dedicación mínima de 9 horas semanales durante las 16 semanas de ejecución (144 horas por integrante, equivalentes a los 3 créditos académicos del proyecto de grado), en paralelo con su carga académica regular.
 
 \begin{table}[H]
 \centering
@@ -759,7 +761,7 @@ Sebastian Almanza Galvis & Desarrollador & 100\% & Frente 4 (Paralelización mó
 
 \subsubsection{Disponibilidad Horaria por Desarrollador}
 
-Cada desarrollador dispone de un mínimo de 6 horas semanales de dedicación efectiva al proyecto. Esta disponibilidad se distribuye de la siguiente manera:
+Cada desarrollador dispone de un mínimo de 9 horas semanales de dedicación efectiva al proyecto. Esta disponibilidad se distribuye de la siguiente manera:
 
 \begin{table}[H]
 \centering
@@ -768,15 +770,15 @@ Cada desarrollador dispone de un mínimo de 6 horas semanales de dedicación efe
 \hline
 \textbf{Desarrollador} & \textbf{Horas/sem} & \textbf{Total (16 sem)} & \textbf{Promedio por fase} \\
 \hline
-Juan Felipe Romero & 6 & 96 h & 24-28 h \\
+Juan Felipe Romero & 9 & 144 h & 36 h \\
 \hline
-Laura Juliana Garzón & 6 & 96 h & 24-28 h \\
+Laura Juliana Garzón & 9 & 144 h & 36 h \\
 \hline
-Xiomara Herrera & 6 & 96 h & 24-28 h \\
+Xiomara Herrera & 9 & 144 h & 36 h \\
 \hline
-Sebastian Almanza & 6 & 96 h & 24-28 h \\
+Sebastian Almanza & 9 & 144 h & 36 h \\
 \hline
-\textbf{Total equipo} & \textbf{24} & \textbf{384 h} & \textbf{96-112 h} \\
+\textbf{Total equipo} & \textbf{36} & \textbf{576 h} & \textbf{144 h} \\
 \hline
 \end{tabular}
 \caption{Distribución de disponibilidad horaria por desarrollador}
@@ -790,7 +792,7 @@ Sebastian Almanza & 6 & 96 h & 24-28 h \\
     
     \item Se espera que los desarrolladores comuniquen anticipadamente cualquier conflicto o reducción temporal en disponibilidad, para permitir que el equipo se reorganice.
     
-    \item Las reuniones formales (Sprint Planning, Sprint Review, Sprint Retrospective, reuniones con directora) son obligatorias y están fuera de las 6 horas semanales de desarrollo estimadas. Se espera que no superen 2 horas semanales en total.
+    \item Las reuniones formales (Sprint Planning, Sprint Review, Sprint Retrospective, reuniones con directora) son obligatorias y están fuera de las 9 horas semanales de desarrollo estimadas. Se espera que no superen 2 horas semanales en total.
     
     \item La comunicación asíncrona a través de GitHub Issues, Pull Request comments y WhatsApp reduce la necesidad de reuniones en tiempo real, permitiendo máxima flexibilidad horaria.
 \end{itemize}
@@ -918,7 +920,7 @@ La \textit{velocidad} se define como el número de horas-persona completadas (se
 \hline
 \textbf{Métrica} & \textbf{Objetivo} & \textbf{Frecuencia} & \textbf{Responsable} \\
 \hline
-Velocidad por sprint & 24 h/semana & Semanal & Scrum Master \\
+Velocidad por sprint & 36 h/semana & Semanal & Scrum Master \\
 \hline
 Burn-down chart & Progresión lineal & Semanal & Scrum Master \\
 \hline

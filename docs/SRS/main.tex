@@ -148,7 +148,7 @@ v1.0 & 17/05/26 inicio del documento & Se inició la creación del SRS y se divi
 
 El presente documento constituye la Especificación de Requisitos de Software (SRS) de GammaLab 2.0. Con el proposito de brindar una orientación metodológica clara del inicio del ciclo de desarrollo.
 % Producto -----------------------------------------------------------------------
-GammaLab v2.0 es una interfaz gráfica de escritorio de tipo standalone orientada al análisis, procesamiento y visualización de señales electroencefalográficas o EEG. Concebido como una alternativa de código abierto y enfocado en el uso local para el Laboratorio de Electrofisiología de la Universidad de Colombia, el sistema está desarrollado con el lenguaje Python, utilizando el framework PySide6 y librerías científicas como VTK. Siguiendo con la visión de GammaLab v1.0, su diseño arquitectónico evoluciona con el fin de resolver brechas en el paralelismo de cómputo y añadir nuevos métodos de acoplamiento cruzado de frecuencias (Phase-Amplitude-Coupling o PAC).
+GammaLab v2.0 es una interfaz gráfica de escritorio de tipo standalone orientada al análisis, procesamiento y visualización de señales electroencefalográficas o EEG. Concebido como una alternativa de código abierto y enfocado en el uso local para el Laboratorio de Electrofisiología de la Universidad de Colombia, el sistema está desarrollado con el lenguaje Python, utilizando el framework PyQt5 y librerías científicas como VTK. Siguiendo con la visión de GammaLab v1.0, su diseño arquitectónico evoluciona con el fin de resolver brechas en el paralelismo de cómputo y añadir nuevos métodos de acoplamiento cruzado de frecuencias (Phase-Amplitude-Coupling o PAC).
 
 % Alcanse del SRS -----------------------------------------------------------------
 Este documento especifica de manera formal, atómica y verificable la totalidad de los requerimientos funcionales y no funcionales que rigen el desarrollo de GammaLab v2.0. El alcance de este abarca detalladamente los requerimientos de interfaz de usuario, gestión de memoria DataStore, el procesamiento asíncrono en segundo plano del Kernel y las especificaciones técnicas del nuevo módulo de análisis (PAC). Se excluye del alcance del SRS las rutas de mantenimiento técnico a largo plazo del software, así mismo el código heredado de GammaLab v1.0 que se conservará sin modificaciones funcionales.
@@ -173,7 +173,7 @@ Además, el equipo de investigación reportó la necesidad de contar con un cont
 El alcance de GammaLab v2.0 lo definen los límites funcionales, técnicos y operativos del sistema, asegurando la entrega de un software robusto y enfocado en el entorno de investigación. 
 
 % Descripción del producto ------------------
-GammaLab v2.0 se define como una aplicación de escritorio standalone, lo que significa que es local y funcional sin acceso a internet. Desarrollada en el lenguaje Python bajo el framework PySide6 y librerías de visualización científicas VTK. El sistema está diseñado específicamente para interactuar con archivos de señales electroencefalográficas (EEG) en formatos estándar como ABF, EDF, BDF y MAT. Su arquitectura está diseñada para investigadores y estudiantes del Laboratorio de Electrofisiología de la Universidad Nacional de Colombia, permitiéndoles ejecutar análisis avanzados sin requerir conocimientos en programación, ni fragmentando su flujo de trabajo en diferentes herramientas durante sus análisis.
+GammaLab v2.0 se define como una aplicación de escritorio standalone, lo que significa que es local y funcional sin acceso a internet. Desarrollada en el lenguaje Python bajo el framework PyQt5 y librerías de visualización científicas VTK. El sistema está diseñado específicamente para interactuar con archivos de señales electroencefalográficas (EEG) en formatos estándar como ABF, EDF, BDF y MAT. Su arquitectura está diseñada para investigadores y estudiantes del Laboratorio de Electrofisiología de la Universidad Nacional de Colombia, permitiéndoles ejecutar análisis avanzados sin requerir conocimientos en programación, ni fragmentando su flujo de trabajo en diferentes herramientas durante sus análisis.
 % Funcionalideades ------------------
 Con el fin de cerrar las brechas observadas de la primera iteración del software, la visión de esta segunda iteración se definirá por medio de las siguientes funciones:
 
@@ -182,7 +182,7 @@ Con el fin de cerrar las brechas observadas de la primera iteración del softwar
 
 \item \textbf{Persistencia de sesión y gestión de proyectos:} Implementación del componente ProjectSession para permitir el guardado local, creando una extensión propia para GammaLab (.glab) y la restauración automática del entorno de trabajo.
 
-\item \textbf{Kernel de procesamiento asíncrono y paralelo:} Desacoplamiento de la interfaz de usuario mediante una arquitectura de multiprocesamiento para la ejecución paralela del análisis matemático pesado en segundo plano sin congelar la GUI.
+\item \textbf{Kernel de procesamiento asíncrono:} Desacoplamiento de la interfaz de usuario mediante un servicio de tareas basado en hilos trabajadores, que ejecuta el análisis matemático pesado en segundo plano sin congelar la GUI.
 
 \item \textbf{Módulo de análisis PAC:} Incorporación del un plugin especializado para cuantificar el acoplamiento phase-amplitude coupling, permitiendo la selección cruzada de canales fuentes.
 
@@ -318,9 +318,12 @@ S. W. Harden, ``pyabf 2.3.5,'' 2022. Available: \url{https://pypi.org/project/py
 Teunis van Beelen, ``pyEDFlib,'' 2025. Available: \url{https://pypi.org/project/pyEDFlib/}. Accessed: 2025.
 
 \bibitem{ref11}
-Python Software Foundation, ``concurrent.futures --- launching parallel tasks,'' 2025. Available: \url{https://docs.python.org/3/library/concurrent.futures.html}. Accessed: 2025.
+Python Software Foundation, ``threading --- Thread-based parallelism,'' Python 3 documentation. Available: \url{https://docs.python.org/3/library/threading.html}.
 
 \bibitem{ref12}
+The Qt Company, ``QThread Class,'' Qt 5 documentation. Available: \url{https://doc.qt.io/qt-5/qthread.html}.
+
+\bibitem{ref13}
 pytest Development Team, ``pytest documentation,'' 2025. Available: \url{https://docs.pytest.org/en/stable/}. Accessed: 2025.
 
 \end{thebibliography}
@@ -373,10 +376,10 @@ entrada y salida de señales, e interfaces de usuario a través de la GUI, sin
 intercambio de mensajes con servicios remotos.
 
 La comunicación entre los plugins y el Kernel del sistema se realiza a través
-del contrato de integración definido en la arquitectura interna. La
-paralelización opera dentro del Kernel, que puede ejecutar tareas mediante
-hilos para operaciones de entrada y salida o mediante procesos independientes
-para cálculos intensivos.
+del contrato de integración definido en la arquitectura interna. El Kernel
+incluye un servicio de tareas que ejecuta las operaciones pesadas en hilos
+trabajadores, fuera del hilo de la interfaz, de modo que esta se mantenga
+responsiva mientras se calcula.
 
 \subsubsection{Interfaces con el Usuario}
 
@@ -398,7 +401,7 @@ técnicas:
     1920 x 1080 px; tamaño recomendado mayor o igual a 14 pulgadas.
 
     \item \textbf{Interfaz gráfica (GUI).} Desarrollada en Python con
-    PySide6 y los componentes Qt. Está organizada en módulos navegables con
+    PyQt5 y los componentes Qt. Está organizada en módulos navegables con
     barras laterales para la selección de la señal activa, la configuración
     de parámetros por plugin, la ejecución de análisis y la visualización
     de resultados. GammaLab 2.0 incorpora las vistas de PAC de un canal, PAC
@@ -433,36 +436,29 @@ las tareas de procesamiento pueden distribuirse entre varios núcleos.
     \item \textbf{Python.} Es el lenguaje de programación base del sistema.
     Se utiliza la versión 3.11--3.12 \cite{ref2}.
 
-    \item \textbf{PySide6.} Es el framework sobre el que se construye la
+    \item \textbf{PyQt5.} Es el framework sobre el que se construye la
     interfaz gráfica del sistema, manejando widgets, layouts, navegación y
     eventos mediante los componentes Qt \cite{ref3}.
 
     \item \textbf{VTK.} Es la librería utilizada para el renderizado
     embebido de señales EEG y la visualización científica 2D y 3D dentro de
-    la aplicación\cite{ref4}.
+    la aplicación \cite{ref4}.
 
     \item \textbf{NumPy.} Provee las estructuras de arreglos
     multidimensionales y las operaciones matemáticas base del sistema,
     incluyendo las operaciones requeridas por los análisis espectrales y el
-    análisis de acoplamiento cruzado de frecuencias.
+    análisis de acoplamiento cruzado de frecuencias \cite{ref5}.
 
     \item \textbf{SciPy.} Complementa a NumPy con módulos especializados para
     procesamiento de señales, incluyendo el cálculo de densidad espectral de
     potencia, interpolaciones y filtros como Butterworth \cite{ref6}.
-
-    \item \textbf{MNE.} Proporciona herramientas especializadas para el
-    procesamiento y análisis de señales neurofisiológicas.
-
-    \item \textbf{TensorPAC.} Proporciona algoritmos para el cálculo del
-    acoplamiento fase-amplitud, la generación de comodulogramas, histogramas
-    de fase y vectores de acoplamiento medio.
 
     \item \textbf{Pandas.} Gestiona la organización y exportación de
     resultados en formatos tabulares como \texttt{.csv}, \texttt{.xlsx} y
     \texttt{.json} \cite{ref7}.
 
     \item \textbf{PyWavelets.} Provee los algoritmos para el cálculo de la
-    transformada wavelet y su promedio en el dominio tiempo-frecuencia.
+    transformada wavelet y su promedio en el dominio tiempo-frecuencia \cite{ref8}.
 
     \item \textbf{pyABF.} Permite la lectura de archivos de
     electrofisiología en formato \texttt{.abf} \cite{ref9}.
@@ -470,16 +466,22 @@ las tareas de procesamiento pueden distribuirse entre varios núcleos.
     \item \textbf{pyEDFlib.} Permite la lectura de archivos de
     electrofisiología en formato \texttt{.edf} \cite{ref10}.
 
-    \item \textbf{concurrent.futures y multiprocessing.} Son módulos de la
-    biblioteca estándar de Python utilizados para implementar la
-    paralelización en el Kernel. Permiten distribuir las tareas entre hilos
-    para operaciones de entrada y salida y entre procesos independientes para
-    cálculos intensivos \cite{ref11}.
+    \item \textbf{threading.} Módulo de la biblioteca estándar de Python
+    utilizado por el servicio de tareas del Kernel para coordinar los hilos de
+    ejecución, en particular la señal de cancelación cooperativa entre la
+    interfaz y el hilo trabajador \cite{ref11}.
+
+    \item \textbf{QThread (Qt).} Clase de Qt, disponible a través de PyQt5,
+    que implementa los hilos trabajadores del servicio de tareas. Las
+    operaciones pesadas que se despachan a este servicio (por ejemplo, la
+    carga de señales, Wavelet, PAC y el índice de modulación) se ejecutan en
+    estos hilos, fuera del hilo de la interfaz, y notifican su progreso y su
+    resultado mediante señales de Qt \cite{ref12}.
 
     \item \textbf{pytest.} Es el framework utilizado para la validación
     interna del sistema mediante pruebas unitarias, cubriendo módulos de
     carga de señales, filtrado, generación de trials, análisis PAC,
-    análisis inter-canal, exportación y ejecución paralela de tareas \cite{ref11}.
+    análisis inter-canal, exportación y ejecución de tareas en segundo plano \cite{ref13}.
 
 \end{itemize}
 
@@ -500,12 +502,12 @@ intercambio de datos con sistemas externos.
     3.11+, requiriendo espacio en disco para el entorno base y sus
     dependencias.
 
-    \item \textbf{Librerías Científicas.} El uso de NumPy, SciPy, MNE,
-    Pandas, TensorPAC y PyWavelets genera un consumo adicional de memoria
+    \item \textbf{Librerías Científicas.} El uso de NumPy, SciPy,
+    Pandas y PyWavelets genera un consumo adicional de memoria
     durante el procesamiento de señales EEG, dependiendo del tamaño de los
     arreglos manipulados y del número de trials seleccionados.
 
-    \item \textbf{Interfaz Gráfica.} La GUI construida con PySide6 demanda
+    \item \textbf{Interfaz Gráfica.} La GUI construida con PyQt5 demanda
     memoria adicional durante la ejecución, especialmente cuando se
     visualizan simultáneamente varias gráficas y resultados.
 
@@ -517,11 +519,23 @@ intercambio de datos con sistemas externos.
     presentan un consumo variable según la cantidad de canales y puntos de
     cada señal.
 
-    \item \textbf{Paralelización del Kernel.} La ejecución simultánea de
-    tareas mediante \textit{multiprocessing} implica la creación de procesos
-    independientes, cada uno con su propio espacio de memoria. En escenarios
-    de carga alta, esto puede incrementar el consumo total de RAM de acuerdo
-    con el número de procesos activos.
+    \item \textbf{Ejecución de tareas en segundo plano.} El servicio de tareas
+    del Kernel ejecuta las operaciones pesadas en hilos trabajadores
+    (\textit{QThread}) distintos del hilo de la interfaz. Los hilos comparten
+    el espacio de memoria del proceso, por lo que no se duplica el entorno de
+    ejecución: el consumo adicional depende de los arreglos que cada tarea
+    recibe y de los resultados que produce. Las tareas se atienden de una en
+    una, en cola; una tarea cancelada que no atiende la cancelación conserva
+    su hilo y su memoria hasta terminar.
+
+    \item \textbf{Reparto del trabajo entre hilos.} Los análisis que procesan
+    varios trials de forma independiente (por ejemplo, PAC Average) reparten
+    los trials entre varios hilos dentro de la misma tarea. El número de hilos
+    se decide en el equipo donde corre el sistema: nunca supera cuatro, la
+    mitad de los núcleos disponibles ni lo que cabe en la memoria (como máximo
+    un cuarto de la RAM libre, con un tope de 3~GB). Cada hilo en vuelo reserva
+    del orden de cientos de megabytes, según la longitud del trial; en un
+    equipo con pocos núcleos o poca memoria el sistema usa un solo hilo.
 
 \end{itemize}
 
@@ -623,26 +637,32 @@ representaciones gráficas también pueden exportarse manualmente.
 
 \subsubsection{Funciones de Soporte al Procesamiento}
 
-GammaLab 2.0 utiliza las siguientes librerías para el procesamiento y
-visualización de señales:
+GammaLab 2.0 utiliza las siguientes librerías para el procesamiento, la
+visualización de señales y la ejecución de tareas en segundo plano:
 
 \begin{itemize}
 
     \item \textbf{NumPy y SciPy:} operaciones matemáticas, filtrado y
     transformadas.
 
-    \item \textbf{MNE y TensorPAC:} procesamiento de señales
-    neurofisiológicas y cálculo de acoplamiento fase-amplitud.
+    \item \textbf{Cálculo propio de PAC y del índice de modulación:}
+    implementado sobre NumPy y SciPy a partir de los algoritmos de referencia
+    en MATLAB, sin una librería externa dedicada.
 
     \item \textbf{Pandas:} manipulación estructurada y exportación de datos.
 
     \item \textbf{PyWavelets:} análisis tiempo-frecuencia mediante
     transformadas wavelet.
 
-    \item \textbf{Matplotlib y VTK:} renderizado y visualización 2D y 3D.
+    \item \textbf{VTK:} renderizado y visualización 2D y 3D.
 
     \item \textbf{pyEDFlib y pyABF:} lectura de formatos estándar de
     adquisición neurofisiológica.
+
+    \item \textbf{threading y QThread (PyQt5):} hilos de ejecución del
+    servicio de tareas del Kernel: ejecución en segundo plano, cola de tareas,
+    cancelación cooperativa (\texttt{threading.Event}) y señales de progreso
+    hacia la interfaz.
 
 \end{itemize}
 
@@ -920,13 +940,13 @@ El sistema se desarrolla en Python 3.11--3.12 y se distribuye como
 aplicación ejecutable localmente en Windows; alternativamente puede
 ejecutarse directamente desde el código fuente del repositorio oficial.
 
-El procesamiento de señales utiliza NumPy, SciPy, MNE, TensorPAC y
-PyWavelets. La interfaz gráfica se construye con PySide6 y los componentes
-Qt. Los formatos de entrada soportados son \texttt{.abf}, \texttt{.edf},
+El procesamiento de señales utiliza NumPy, SciPy y PyWavelets. La interfaz
+gráfica se construye con PyQt5 y los componentes Qt. Los formatos de entrada soportados son \texttt{.abf}, \texttt{.edf},
 \texttt{.bdf} y \texttt{.mat}.
 
-La paralelización del Kernel se implementa mediante mecanismos de hilos y
-multiprocessing incluidos en la biblioteca estándar de Python.
+La ejecución de tareas en segundo plano del Kernel se implementa con hilos
+(\textit{QThread} de Qt y el módulo \texttt{threading} de la biblioteca
+estándar de Python).
 
 \subsubsection{Restricciones de Hardware}
 
@@ -1278,9 +1298,9 @@ comprender terminología científica y nombres de librerías.
 \begin{itemize}
 
 \item El sistema depende de bibliotecas científicas externas como NumPy,
-SciPy, MNE, PyWavelets, PyEDFlib, PyABF, Pandas y TensorPAC.
+SciPy, PyWavelets, PyEDFlib, PyABF y Pandas.
 
-\item La interfaz gráfica depende del framework PySide6 y de los componentes
+\item La interfaz gráfica depende del framework PyQt5 y de los componentes
 Qt.
 
 \item El almacenamiento y control de versiones del proyecto depende de Git y
@@ -1290,10 +1310,10 @@ GitHub.
 generación de archivos CSV, Excel, JSON e imágenes.
 
 \item El módulo de análisis PAC depende de las capacidades de procesamiento de
-señales proporcionadas por TensorPAC, MNE, NumPy y SciPy.
+señales proporcionadas por NumPy y SciPy.
 
-\item El módulo de paralelización depende de las capacidades de
-multiprocesamiento del sistema operativo y del entorno Python.
+\item El servicio de tareas del Kernel depende de los hilos de Qt (\textit{QThread})
+y del módulo \texttt{threading} del entorno Python.
 
 \end{itemize}
 

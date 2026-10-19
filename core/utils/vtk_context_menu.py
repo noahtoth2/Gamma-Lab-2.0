@@ -137,9 +137,8 @@ class VTKContextMenu:
             print(*args)
 
     def _get_charts(self):
-        if isinstance(self.chart, list):
-            return [ch for ch in self.chart if ch is not None]
-        return [self.chart] if self.chart is not None else []
+        charts = self.chart if isinstance(self.chart, list) else [self.chart]
+        return [ch for ch in charts if ch is not None and hasattr(ch, "SetZoomWithMouseWheel")]
 
     def _active_chart(self):
         return (self.chart[0] if isinstance(self.chart, list) and self.chart else self.chart)

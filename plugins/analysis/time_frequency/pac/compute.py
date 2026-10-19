@@ -19,6 +19,7 @@ from scipy.signal import find_peaks, hilbert
 
 from core.filters.iir import bifiltro, filtro_butterworth, filtro_iir
 from core.filters.wavelet import tasa_efectiva
+from core.utils.parallel import map_ordenado
 
 GAMMA = 3.0          # ps_Gamma: el valor por defecto de la Morse generalizada
 NBINS = 100          # los bins de fase de f_Phase_PAC
@@ -895,15 +896,7 @@ def pac_promedio(ctx, data, fs_calculado, fs, p1, p2, a1, a2):
     fs_efectiva, factor, n_freq = _preparar(datos[:, 0], fs_calculado, fs, p1, p2, a1, a2)
     sos_fase, _ = filtro_iir(fs_efectiva, p1, p2)
 
-    acumulado_suma = None
-    acumulada_cuenta = None
-    frecuencias = tiempo = None
-    primer_x = primera_banda = primera_fase = None
-
-    for i in range(n_trials):
-        if ctx is not None and ctx.cancelled:
-            return None
-
+    def un_trial(i):
         x = np.nan_to_num(datos[:, i], nan=0.0, posinf=0.0, neginf=0.0)[::factor]
         if x.size < 4:
             raise ValueError(
@@ -914,16 +907,21 @@ def pac_promedio(ctx, data, fs_calculado, fs, p1, p2, a1, a2):
         fase = np.angle(hilbert(banda_fase))
         tf, tiempo, frecuencias = morse_tf(x, fs_efectiva, a1, a2, n_freq, cycles=CICLOS)
         suma, cuenta = agrupar_por_fase(tf, fase)
+        if i == 0:
+            return suma, cuenta, tiempo, frecuencias, x, banda_fase, fase
+        return suma, cuenta, None, None, None, None, None
 
-        if acumulado_suma is None:
-            acumulado_suma, acumulada_cuenta = suma, cuenta
-            primer_x, primera_banda, primera_fase = x, banda_fase, fase
-        else:
-            acumulado_suma += suma
-            acumulada_cuenta += cuenta
+    # Cada trial en vuelo reserva ~2,2 matrices tiempo-frecuencia (medido)
+    bytes_por_trial = int(2.2 * n_freq * -(-datos.shape[0] // factor) * 8)
+    resultados = map_ordenado(un_trial, range(n_trials), ctx=ctx, bytes_por_item=bytes_por_trial)
+    if resultados is None:
+        return None
 
-        if ctx is not None:
-            ctx.progress(int(100 * (i + 1) / n_trials), f"Trial {i + 1}/{n_trials}")
+    (acumulado_suma, acumulada_cuenta, tiempo, frecuencias,
+     primer_x, primera_banda, primera_fase) = resultados[0]
+    for suma, cuenta, *_ in resultados[1:]:
+        acumulado_suma += suma
+        acumulada_cuenta += cuenta
 
     crudo = promediar_bins(acumulado_suma, acumulada_cuenta)
     histograma = np.nansum(crudo, axis=0)

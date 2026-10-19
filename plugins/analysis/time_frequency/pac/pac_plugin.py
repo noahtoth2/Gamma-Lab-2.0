@@ -1007,7 +1007,7 @@ class Pac_plugin(IPlugin):
         """Apunta el menú contextual a los gráficos y al canal actuales."""
         if self.vtk_menu is None:
             return
-        self.vtk_menu.set_chart(list(self._charts))
+        self.vtk_menu.set_chart([c for c in self._charts if isinstance(c, vtk.vtkChart)])
         params = (self._ultimo or {}).get("parametros") or {}
         self.vtk_menu.set_signal_name(params.get("señal") or "signal")
         self.vtk_menu.set_channel_name(params.get("canal") or None)
