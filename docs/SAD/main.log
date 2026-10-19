@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.10.18)  18 OCT 2026 17:50
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.10.18)  18 OCT 2026 21:25
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -719,7 +719,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [10]
-Overfull \hbox (6.99513pt too wide) in paragraph at lines 281--282
+Overfull \hbox (6.99513pt too wide) in paragraph at lines 280--281
 []\T1/cmr/m/n/10.95 El es-ta-do de la apli-ca-ción se con-ser-va en un re-po-si
 -to-rio com-par-ti-do en me-mo-ria, el \T1/cmtt/m/n/10.95 DataStore\T1/cmr/m/n/
 10.95 . 
@@ -821,7 +821,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 <DiagramaEstiloBase.jpg, id=672, 844.15375pt x 523.9575pt>
 File: DiagramaEstiloBase.jpg Graphic file (type jpg)
 <use DiagramaEstiloBase.jpg>
-Package pdftex.def Info: DiagramaEstiloBase.jpg  used on input line 898.
+Package pdftex.def Info: DiagramaEstiloBase.jpg  used on input line 897.
 (pdftex.def)             Requested size: 432.48051pt x 268.43802pt.
 
 
@@ -865,7 +865,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [26]
-Underfull \hbox (badness 10000) in paragraph at lines 1039--1039
+Underfull \hbox (badness 10000) in paragraph at lines 1038--1038
 []|\T1/cmr/m/n/10 Solo el Tas-kOr-ches-tra-tor es-cri-be en el
  []
 
@@ -889,7 +889,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 File: diagrama_casos_de_uso_sistema_completo.png Graphic file (type png)
 <use diagrama_casos_de_uso_sistema_completo.png>
 Package pdftex.def Info: diagrama_casos_de_uso_sistema_completo.png  used on in
-put line 1126.
+put line 1125.
 (pdftex.def)             Requested size: 432.48051pt x 266.7747pt.
 
 
@@ -900,22 +900,22 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [29]
-Underfull \hbox (badness 1817) in paragraph at lines 1146--1146
+Underfull \hbox (badness 1817) in paragraph at lines 1145--1145
 []|\T1/cmr/m/n/10.95 Navegar y cam-biar de
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1148--1148
+Underfull \hbox (badness 10000) in paragraph at lines 1147--1147
 []|\T1/cmr/m/n/10.95 Limpiar for-mu-la-rio
  []
 
 
-Underfull \hbox (badness 2326) in paragraph at lines 1152--1152
+Underfull \hbox (badness 2326) in paragraph at lines 1151--1151
 []|\T1/cmr/m/n/10.95 Interactuar vi-sual-men-te
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1154--1154
+Underfull \hbox (badness 10000) in paragraph at lines 1153--1153
 []|\T1/cmr/m/n/10.95 Optimizar ren-de-ri-za-do
  []
 
@@ -935,12 +935,12 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [31]
-Underfull \hbox (badness 1152) in paragraph at lines 1189--1189
+Underfull \hbox (badness 1152) in paragraph at lines 1188--1188
 []|\T1/cmr/m/n/10.95 Orquestador del nú-cleo
  []
 
 
-Underfull \hbox (badness 2326) in paragraph at lines 1191--1191
+Underfull \hbox (badness 2326) in paragraph at lines 1190--1190
 []|\T1/cmr/m/n/10.95 Cancelar pro-ce-sa-mien-to
  []
 
@@ -952,22 +952,22 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [32]
-Underfull \hbox (badness 10000) in paragraph at lines 1216--1216
+Underfull \hbox (badness 10000) in paragraph at lines 1215--1215
 []|\T1/cmr/m/n/10.95 Generar y mo-di-fi-car
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1218--1218
+Underfull \hbox (badness 10000) in paragraph at lines 1217--1217
 []|\T1/cmr/m/n/10.95 Ajustar fre-cuen-cia de
  []
 
 
-Underfull \hbox (badness 2894) in paragraph at lines 1222--1222
+Underfull \hbox (badness 2894) in paragraph at lines 1221--1221
 []|\T1/cmr/m/n/10.95 Remover ar-te-fac-to con
  []
 
 
-Underfull \hbox (badness 4634) in paragraph at lines 1224--1224
+Underfull \hbox (badness 4634) in paragraph at lines 1223--1223
 []|\T1/cmr/m/n/10.95 Seleccionar trials pa-ra
  []
 
@@ -999,7 +999,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 File: diagrama_clases_sistema_completo.png Graphic file (type png)
 <use diagrama_clases_sistema_completo.png>
 Package pdftex.def Info: diagrama_clases_sistema_completo.png  used on input li
-ne 1334.
+ne 1333.
 (pdftex.def)             Requested size: 432.48051pt x 223.0623pt.
 
 
@@ -1034,42 +1034,42 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [39]
-Underfull \hbox (badness 10000) in paragraph at lines 1501--1501
+Underfull \hbox (badness 10000) in paragraph at lines 1500--1500
 []|\T1/cmr/m/n/10.95 SettingsService, Fi-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1501--1501
+Underfull \hbox (badness 10000) in paragraph at lines 1500--1500
 []|\T1/cmr/m/n/10.95 FileIOService, Da-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1501--1501
+Underfull \hbox (badness 10000) in paragraph at lines 1500--1500
 []|\T1/cmr/m/n/10.95 VTKContextMenu,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1501--1501
+Underfull \hbox (badness 10000) in paragraph at lines 1500--1500
 []|\T1/cmr/m/n/10.95 Extensiones con-cre-
  []
 
 
-Underfull \hbox (badness 1824) in paragraph at lines 1501--1501
+Underfull \hbox (badness 1824) in paragraph at lines 1500--1500
 \T1/cmr/m/n/10.95 tas y PA-CA-naly-sis-
  []
 
 
-Overfull \hbox (21.56555pt too wide) in paragraph at lines 1501--1501
+Overfull \hbox (21.56555pt too wide) in paragraph at lines 1500--1500
 []|\T1/cmr/m/n/10.95 PACSingleChannelPlugin,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1501--1501
+Underfull \hbox (badness 10000) in paragraph at lines 1500--1500
 \T1/cmr/m/n/10.95 PA-CIn-ter-Chan-nel-
  []
 
 
-Overfull \hbox (1.3544pt too wide) in paragraph at lines 1501--1501
+Overfull \hbox (1.3544pt too wide) in paragraph at lines 1500--1500
 []|\T1/cmr/m/n/10.95 Generalización| 
  []
 
@@ -1089,7 +1089,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [41]
-Underfull \hbox (badness 1242) in paragraph at lines 1542--1542
+Underfull \hbox (badness 1242) in paragraph at lines 1541--1541
 []|\T1/cmr/bx/n/10.95 Caso de uso o re-que-ri-
  []
 
@@ -1098,7 +1098,7 @@ Underfull \hbox (badness 1242) in paragraph at lines 1542--1542
 File: diagrama_componentes_sistema_completo.png Graphic file (type png)
 <use diagrama_componentes_sistema_completo.png>
 Package pdftex.def Info: diagrama_componentes_sistema_completo.png  used on inp
-ut line 1552.
+ut line 1551.
 (pdftex.def)             Requested size: 432.48051pt x 281.67944pt.
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -1108,7 +1108,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [42]
-Overfull \hbox (39.49403pt too wide) in paragraph at lines 1570--1571
+Overfull \hbox (39.49403pt too wide) in paragraph at lines 1569--1570
 []\T1/cmr/m/n/10.95 Registrar los plu-gins y ser-vi-cios me-dian-te ope-ra-cio-
 nes co-mo \T1/cmtt/m/n/10.95 register_plugin \T1/cmr/m/n/10.95 y \T1/cmtt/m/n/1
 0.95 register_service\T1/cmr/m/n/10.95 . 
@@ -1131,7 +1131,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 
 [44]
 LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10.95> not available
-(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 1630.
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 1629.
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -1161,7 +1161,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 File: diagrama_actividad_sistema_completo.png Graphic file (type png)
 <use diagrama_actividad_sistema_completo.png>
 Package pdftex.def Info: diagrama_actividad_sistema_completo.png  used on input
- line 1716.
+ line 1715.
 (pdftex.def)             Requested size: 432.48051pt x 547.10515pt.
 
 
@@ -1184,7 +1184,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 File: diagrama_despliegue_sistema_completo.png Graphic file (type png)
 <use diagrama_despliegue_sistema_completo.png>
 Package pdftex.def Info: diagrama_despliegue_sistema_completo.png  used on inpu
-t line 1740.
+t line 1739.
 (pdftex.def)             Requested size: 386.96027pt x 262.43979pt.
 
 
@@ -1227,7 +1227,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [54]
-Overfull \hbox (10.95651pt too wide) in paragraph at lines 2022--2023
+Overfull \hbox (10.95651pt too wide) in paragraph at lines 2021--2022
 []\T1/cmr/bx/n/10.95 Metadatos \T1/cmtt/m/n/10.95 properties.yml\T1/cmr/bx/n/10
 .95 . \T1/cmr/m/n/10.95 Los cam-pos re-que-ri-dos (\T1/cmtt/m/n/10.95 id, name,
  category, subcategory,
@@ -1241,169 +1241,169 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [55]
-Underfull \hbox (badness 10000) in paragraph at lines 2088--2088
+Underfull \hbox (badness 10000) in paragraph at lines 2087--2087
 []|\T1/cmr/m/n/10 Extensibilidad
  []
 
 
-Underfull \hbox (badness 3260) in paragraph at lines 2089--2089
+Underfull \hbox (badness 3260) in paragraph at lines 2088--2088
 []|\T1/cmr/m/n/10 Tiempo de apa-ri-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2090--2090
+Underfull \hbox (badness 10000) in paragraph at lines 2089--2089
 []|\T1/cmr/m/n/10 Agregar un plu-
  []
 
 
-Underfull \hbox (badness 3000) in paragraph at lines 2090--2090
+Underfull \hbox (badness 3000) in paragraph at lines 2089--2089
 \T1/cmr/m/n/10 gin vá-li-do y co-rrer
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2091--2092
+Underfull \hbox (badness 10000) in paragraph at lines 2090--2091
 []|$\OML/cmm/m/it/10 <$\T1/cmr/m/n/10 1min; 0 plu-gins fa-llan
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2094--2094
+Underfull \hbox (badness 10000) in paragraph at lines 2093--2093
 []|\T1/cmr/m/n/10 Rendimiento --
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2094--2094
+Underfull \hbox (badness 10000) in paragraph at lines 2093--2093
 \T1/cmr/m/n/10 car-ga gran-de
  []
 
 
-Underfull \hbox (badness 5008) in paragraph at lines 2095--2095
+Underfull \hbox (badness 5008) in paragraph at lines 2094--2094
 []|\T1/cmr/m/n/10 Tiempo a pri-mer
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2096--2096
+Underfull \hbox (badness 10000) in paragraph at lines 2095--2095
 []|\T1/cmtt/m/n/10 performance_test\T1/cmr/m/n/10 ;
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2096--2096
+Underfull \hbox (badness 10000) in paragraph at lines 2095--2095
 \T1/cmr/m/n/10 me-di-do: 78.4ms
  []
 
 
-Underfull \hbox (badness 5119) in paragraph at lines 2100--2100
+Underfull \hbox (badness 5119) in paragraph at lines 2099--2099
 []|\T1/cmr/m/n/10 Confiabilidad --
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2102--2102
+Underfull \hbox (badness 10000) in paragraph at lines 2101--2101
 []|\T1/cmr/m/n/10 Inyección de fa-llos
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2106--2106
+Underfull \hbox (badness 10000) in paragraph at lines 2105--2105
 []|\T1/cmr/m/n/10 Confiabilidad
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2106--2106
+Underfull \hbox (badness 10000) in paragraph at lines 2105--2105
 \T1/cmr/m/n/10 -- ex-por-ta-ción
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2112--2112
+Underfull \hbox (badness 10000) in paragraph at lines 2111--2111
 []|\T1/cmr/m/n/10 Usabilidad
  []
 
 
-Underfull \hbox (badness 1596) in paragraph at lines 2115--2116
+Underfull \hbox (badness 1596) in paragraph at lines 2114--2115
 []|$\OML/cmm/m/it/10 <$\T1/cmr/m/n/10 5min; ba-jas con-sul-tas al
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2118--2118
+Underfull \hbox (badness 10000) in paragraph at lines 2117--2117
 []|\T1/cmr/m/n/10 Rendimiento --
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2119--2119
+Underfull \hbox (badness 10000) in paragraph at lines 2118--2118
 []|\T1/cmr/m/n/10 Tiempo de
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2119--2119
+Underfull \hbox (badness 10000) in paragraph at lines 2118--2118
 \T1/cmr/m/n/10 cambio;$ $% de
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2120--2120
+Underfull \hbox (badness 10000) in paragraph at lines 2119--2119
 []|\T1/cmr/m/n/10 Benchmark de
  []
 
 
-Underfull \hbox (badness 1629) in paragraph at lines 2121--2122
+Underfull \hbox (badness 1629) in paragraph at lines 2120--2121
 []|$\OML/cmm/m/it/10 <$\T1/cmr/m/n/10 1s cam-bio; me-mo-ria 70--
  []
 
 
-Underfull \hbox (badness 5119) in paragraph at lines 2124--2124
+Underfull \hbox (badness 5119) in paragraph at lines 2123--2123
 []|\T1/cmr/m/n/10 Confiabilidad --
  []
 
 
-Underfull \hbox (badness 2302) in paragraph at lines 2125--2125
+Underfull \hbox (badness 2302) in paragraph at lines 2124--2124
 []|\T1/cmr/m/n/10 Tiempo del error;
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2126--2126
+Underfull \hbox (badness 10000) in paragraph at lines 2125--2125
 []|\T1/cmtt/m/n/10 test_fileio_
  []
 
 
-Underfull \hbox (badness 1406) in paragraph at lines 2127--2128
+Underfull \hbox (badness 1406) in paragraph at lines 2126--2127
 []|\T1/cmr/m/n/10 Mensaje $\OML/cmm/m/it/10 <$\T1/cmr/m/n/10 2s; 0$ $% pér-di-d
 a
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2130--2130
+Underfull \hbox (badness 10000) in paragraph at lines 2129--2129
 \T1/cmr/m/n/10 Usabilidad
  []
 
 
-Underfull \hbox (badness 7168) in paragraph at lines 2138--2138
+Underfull \hbox (badness 7168) in paragraph at lines 2137--2137
 []|\T1/cmtt/m/n/10 pytest \T1/cmr/m/n/10 --\T1/cmtt/m/n/10 cov \T1/cmr/m/n/10 s
 o-bre
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2142--2142
+Underfull \hbox (badness 10000) in paragraph at lines 2141--2141
 []|\T1/cmr/m/n/10 Rendimiento --
  []
 
 
-Underfull \hbox (badness 2469) in paragraph at lines 2145--2146
+Underfull \hbox (badness 2469) in paragraph at lines 2144--2145
 []|\T1/cmr/m/n/10 Nada em-peo-ra; ren-der sin
  []
 
 
-Underfull \hbox (badness 1107) in paragraph at lines 2149--2149
+Underfull \hbox (badness 1107) in paragraph at lines 2148--2148
 []|\T1/cmr/m/n/10 Éxito de arran-que
  []
 
 
-Underfull \hbox (badness 2277) in paragraph at lines 2150--2150
+Underfull \hbox (badness 2277) in paragraph at lines 2149--2149
 []|\T1/cmr/m/n/10 Instalación en Win-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2150--2150
+Underfull \hbox (badness 10000) in paragraph at lines 2149--2149
 \T1/cmr/m/n/10 dows lim-pio sin
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2154--2154
+Underfull \hbox (badness 10000) in paragraph at lines 2153--2153
 \T1/cmr/m/n/10 cancelación
  []
 
@@ -1424,14 +1424,14 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [57]
-Underfull \hbox (badness 10000) in paragraph at lines 2216--2217
+Underfull \hbox (badness 10000) in paragraph at lines 2215--2216
 []\T1/cmr/m/n/10.95 Riverbank Com-pu-ting. \T1/cmr/m/it/10.95 PyQt5 Re-fe-ren-c
 e Gui-de\T1/cmr/m/n/10.95 . Dis-po-ni-ble en: [][]$\T1/cmtt/m/n/10.95 https : /
  / www .
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2222--2223
+Underfull \hbox (badness 10000) in paragraph at lines 2221--2222
 \T1/cmtt/m/n/10.95 latest / api / python / vtkmodules . vtkChartsCore . html # 
 vtkmodules . vtkChartsCore .
  []
