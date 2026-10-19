@@ -1309,22 +1309,23 @@ multiprocesamiento del sistema operativo y del entorno Python.
 
 Este capítulo define los requerimientos específicos de GammaLab 2.0, derivados de las necesidades y brechas identificadas en la primera versión de la herramienta. Los requerimientos se dividen entre funcionales y no funcionales, y establecen las condiciones que deberá cumplir la nueva iteración para materializar la solución propuesta y orientar su posterior implementación y validación.
 
-\subsection{Nomenclatura de Requisitos}
+\subsection{Nomenclatura de Requerimientos}
+\label{sec:Nomenclatura de Requerimientos}
 
 Con el fin de facilitar la trazabilidad y la referencia cruzada entre los distintos documentos que soportan este trabajo, se definió una nomenclatura que distingue los requisitos funcionales de los no funcionales.
 
-Los requisitos funcionales se identifican mediante el prefijo FR-XX-YY, donde XX corresponde al área funcional de Gamma Lab 2.0 a la que se encuentra asociado el requisito y YY corresponde al número consecutivo dentro de dicha área. Esta clasificación busca mantener una correspondencia entre los requisitos y las principales capacidades funcionales involucradas en la evolución de la herramienta, facilitando su seguimiento a lo largo de las diferentes etapas de diseño, desarrollo y validación.
+Los requerimientos funcionales se identifican mediante el prefijo FR-XX-YY, donde XX corresponde al área funcional de Gamma Lab 2.0 a la que se encuentra asociado el requisito y YY corresponde al número consecutivo dentro de dicha área. Esta clasificación busca mantener una correspondencia entre los requisitos y las principales capacidades funcionales involucradas en la evolución de la herramienta, facilitando su seguimiento a lo largo de las diferentes etapas de diseño, desarrollo y validación.
 
-A partir de esta clasificación, los requisitos funcionales se organizan en cuatro áreas:
+A partir de esta clasificación, los requerimientos funcionales se organizan en cuatro áreas:
 
 \begin{itemize}
-    \item \textbf{IO} -- Entrada/Salida: agrupa los requisitos relacionados con la carga y persistencia de señales, así como el guardado y la apertura de proyectos, consolidando el manejo de datos como base funcional de la herramienta.
-    \item \textbf{UI} -- Interacción general: agrupa los requisitos orientados a mejorar la experiencia de usuario, la edición de la señal y la gestión de trials.
-    \item \textbf{WV} -- Wavelet/Escalograma: agrupa los requisitos que expanden y ajustan las capacidades de esta representación tiempo-frecuencia.
-    \item \textbf{PAC} -- Acoplamiento fase-amplitud: agrupa los requisitos del nuevo módulo de análisis incorporado en esta iteración, e incluye tanto el acoplamiento intra-canal como el inter-canal y la coherencia de fase.
+    \item \textbf{IO} -- Entrada/Salida: agrupa los requerimientos relacionados con la carga y persistencia de señales, así como el guardado y la apertura de proyectos, consolidando el manejo de datos como base funcional de la herramienta.
+    \item \textbf{UI} -- Interacción general: agrupa los requerimientos orientados a mejorar la experiencia de usuario, la edición de la señal y la gestión de trials.
+    \item \textbf{WV} -- Wavelet/Escalograma: agrupa los requerimientos que expanden y ajustan las capacidades de esta representación tiempo-frecuencia.
+    \item \textbf{PAC} -- Acoplamiento fase-amplitud: agrupa los requerimientos del nuevo módulo de análisis incorporado en esta iteración, e incluye tanto el acoplamiento intra-canal como el inter-canal y la coherencia de fase.
 \end{itemize}
 
-Los requisitos no funcionales se identifican mediante el prefijo \textbf{NFR-X-YY}, donde \textit{X} corresponde a la categoría del modelo FURPS+ y \textit{YY} es el número consecutivo dentro de dicha categoría. Estos requisitos concentran, en particular, los lineamientos orientados a la estabilización y el fortalecimiento arquitectónico de la herramienta. Se identificaron requisitos en cuatro de las categorías del modelo:
+Los requerimientos no funcionales se identifican mediante el prefijo \textbf{NFR-X-YY}, donde \textit{X} corresponde a la categoría del modelo FURPS+ y \textit{YY} es el número consecutivo dentro de dicha categoría. Estos requisitos concentran, en particular, los lineamientos orientados a la estabilización y el fortalecimiento arquitectónico de la herramienta. Se identificaron requisitos en cuatro de las categorías del modelo:
 
 \begin{itemize}
     \item \textbf{U} -- Usabilidad
@@ -1334,6 +1335,13 @@ Los requisitos no funcionales se identifican mediante el prefijo \textbf{NFR-X-Y
 \end{itemize}
 
 \subsection{Requerimientos Funcionales}
+
+La definición de los requerimientos funcionales partió del levantamiento de necesidades con el laboratorio y de la evaluación de Gamma Lab 1.0 durante su uso. Este ejercicio permitió identificar brechas entre las capacidades de la herramienta y las necesidades del trabajo experimental, así como dificultades que comprometían su uso autónomo por parte de los investigadores. La interacción resultaba poco intuitiva y dificultaba mantener el contexto de trabajo durante la navegación. De hecho, ningún usuario logró navegar por la herramienta sin asistencia durante las pruebas realizadas. Además, la falta de información sobre el estado de las operaciones generaba incertidumbre cuando la interfaz dejaba de responder durante la carga o el procesamiento de datos. Estas situaciones dificultan la construcción de un modelo mental claro del funcionamiento de la herramienta para el usuario.
+
+También se identificaron limitaciones en la continuidad del trabajo y el aprovechamiento de los resultados. La gestión de las señales y los ensayos restringía la flexibilidad de los procedimientos analíticos, mientras que la ausencia de persistencia dificultaba retomar el trabajo entre sesiones. A esto se sumaban restricciones en el intercambio de datos y en las capacidades de análisis disponibles, que no cubrían completamente las necesidades investigativas del laboratorio. En conjunto, estas brechas afectaban la fluidez del trabajo experimental y evidenciaban la necesidad de fortalecer tanto la interacción con la herramienta como el manejo de la información y el alcance de los análisis.
+
+A partir de este diagnóstico se definieron los requerimientos funcionales de Gamma Lab 2.0, mediante la traducción de las dificultades observadas y las necesidades expresadas por los investigadores en especificaciones sobre el comportamiento esperado del sistema. Las tablas siguientes presentan estos requerimientos de manera individual, agrupados por los modulos definidos en la sección de nomenclatura \ref{sec:Nomenclatura de Requerimientos}.
+
 
 \subsubsection{Módulo IO -- Entrada/Salida}
 
@@ -1363,7 +1371,7 @@ FR-IO-07 & R28 & El sistema debe asignar un nombre de exportación en el que se 
 
 \end{longtable}
 \vspace{-0.5em}
-\captionof{table}{Requisitos funcionales del módulo IO}
+\captionof{table}{Requerimientos funcionales del módulo IO}
 \label{tab:fr-io}
 
 \subsubsection{Módulo UI -- Interacción general}
@@ -1410,7 +1418,7 @@ FR-UI-15 & R68 & El sistema debe identificar cada conjunto de trials por la pare
 
 \end{longtable}
 \vspace{-0.5em}
-\captionof{table}{Requisitos funcionales del módulo UI}
+\captionof{table}{Requerimientos funcionales del módulo UI}
 \label{tab:fr-ui}
 
 \subsubsection{Módulo WV -- Wavelet/Escalograma}
@@ -1433,7 +1441,7 @@ FR-WV-03 & R35 & El sistema debe exportar wavelet en EMF \\
 
 \end{longtable}
 \vspace{-0.5em}
-\captionof{table}{Requisitos funcionales del módulo WV}
+\captionof{table}{Requerimientos funcionales del módulo WV}
 \label{tab:fr-wv}
 
 \subsubsection{Módulo PAC -- Acoplamiento fase-amplitud}
@@ -1490,10 +1498,16 @@ FR-PAC-20 & R76 & El sistema debe aplicar sobre la señal activa un filtro Butte
 
 \end{longtable}
 \vspace{-0.5em}
-\captionof{table}{Requisitos funcionales del módulo PAC}
+\captionof{table}{Requerimientos funcionales del módulo PAC}
 \label{tab:fr-pac}
 
 \subsection{Requerimientos No Funcionales}
+
+La definición de los requerimientos no funcionales partió de una revisión técnica de Gamma Lab 1.0, orientada a comprender su arquitectura, la interacción entre sus componentes y la gestión de los recursos durante la ejecución. Este análisis evidenció limitaciones internas que comprometían la estabilidad y el rendimiento de la aplicación, y que dificultaban su mantenimiento y evolución. Entre ellas, se identificó una gestión insuficiente de los datos compartidos, los recursos gráficos y el ciclo de vida de los complementos, así como la ausencia de mecanismos para gestionar las tareas de cómputo, liberar recursos y coordinar las interacciones entre módulos. Estas carencias afectaban la capacidad de respuesta de la aplicación ante operaciones concurrentes o interrupciones, e impedían incorporar nuevas funcionalidades sin aumentar las dependencias entre los componentes existentes.
+
+
+A partir de este diagnóstico se definieron los requerimientos no funcionales de Gamma Lab 2.0, que traducen los hallazgos de la revisión técnica en condiciones verificables para su implementación. Los requerimientos se presentan en el orden de los módulos establecido en la sección de nomenclatura \ref{sec:Nomenclatura de Requerimientos}.
+
 
 \subsubsection{Categoría U -- Usabilidad}
 
@@ -1527,7 +1541,7 @@ NFR-U-09 & R44 & El sistema debe mostrar una pantalla de inicio mientras carga l
 
 \end{longtable}
 \vspace{-0.5em}
-\captionof{table}{Requisitos no funcionales de la categoría Usabilidad}
+\captionof{table}{Requerimientos no funcionales de la categoría Usabilidad}
 \label{tab:nfr-u}
 
 \subsubsection{Categoría P -- Rendimiento}
@@ -1578,7 +1592,7 @@ NFR-P-17 & R81 & El sistema debe quedar listo para usarse en un tiempo máximo d
 
 \end{longtable}
 \vspace{-0.5em}
-\captionof{table}{Requisitos no funcionales de la categoría Rendimiento}
+\captionof{table}{Requerimientos no funcionales de la categoría Rendimiento}
 \label{tab:nfr-p}
 
 \subsubsection{Categoría R -- Confiabilidad}
@@ -1605,7 +1619,7 @@ NFR-R-05 & R79 & El sistema no debe modificar la señal cargada ni los trials or
 
 \end{longtable}
 \vspace{-0.5em}
-\captionof{table}{Requisitos no funcionales de la categoría Confiabilidad}
+\captionof{table}{Requerimientos no funcionales de la categoría Confiabilidad}
 \label{tab:nfr-r}
 
 \subsubsection{Categoría S -- Soporte}
@@ -1632,10 +1646,10 @@ NFR-S-05 & R77 & El sistema debe permitir incorporar un nuevo plugin de análisi
 
 \end{longtable}
 \vspace{-0.5em}
-\captionof{table}{Requisitos no funcionales de la categoría Soporte}
+\captionof{table}{Requerimientos no funcionales de la categoría Soporte}
 \label{tab:nfr-s}
 
-\newpage
+
 \section{PROCESO INGENIERÍA DE REQUERIMIENTOS}
 
 Esta sección describe el proceso, técnicas y métodos utilizados para la construcción y
