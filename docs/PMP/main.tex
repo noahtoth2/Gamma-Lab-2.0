@@ -223,12 +223,13 @@ El proyecto se fundamenta en los siguientes supuestos:
 El proyecto opera bajo las siguientes restricciones:
  
 \begin{itemize}
-    \item \textbf{Restricciones Temporales}: El proyecto debe completarse dentro del cronograma académico de grado establecido por la institución
-    \item \textbf{Restricciones Técnicas}: Dependencia de Python y librerías de código abierto (NumPy, SciPy, MNE-Python, PyQt/PySide) para el desarrollo
-    \item \textbf{Restricciones de Recursos}: Disponibilidad limitada de equipamiento especializado en el laboratorio para pruebas de rendimiento y validación
-    \item \textbf{Restricciones de Conocimiento}: Limitación inicial en la comprensión profunda del código heredado de GammaLab 1.0, requiriendo fase de exploración técnica
-    \item \textbf{Restricciones de Compatibilidad}: Necesidad de mantener retrocompatibilidad donde sea posible con funcionalidades existentes de la versión 1.0
-    \item \textbf{Restricciones de Equipo}: Equipo conformado por 4 estudiantes con roles de desarrollo colaborativo bajo metodología ágil
+    \item \textbf{Restricciones Temporales}: El proyecto debe completarse en 16 semanas de desarrollo, dentro del cronograma académico de grado establecido por la institución. Esto exige planificar las actividades de forma que cada entrega quede cerrada dentro de ese periodo, sin posibilidad de extensión.
+    \item \textbf{Restricciones Económicas}: Ni el equipo ni la dirección del proyecto realizan inversión económica; el único aporte es el conocimiento y el tiempo del equipo. No se contempla la adquisición de licencias, equipos ni servicios, por lo que toda decisión de gestión se toma dentro de lo que ya está disponible sin costo.
+    \item \textbf{Restricciones de Equipamiento}: El diseño, la implementación y la validación se realizan sobre el equipamiento ya disponible en el laboratorio, que es limitado y de uso compartido. Esto implica que la ejecución de pruebas y validaciones debe planificarse en función de la disponibilidad del laboratorio y de los equipos.
+    \item \textbf{Restricciones de Equipo de Trabajo}: Equipo de 4 estudiantes con roles de desarrollo colaborativo bajo un enfoque de gestión híbrido, con una dedicación de 6 horas semanales por integrante (24 horas semanales en total). La planificación se ajusta a esa capacidad.
+    \item \textbf{Restricciones Institucionales}: El proyecto debe cumplir con la normativa de trabajo de grado de la institución, incluyendo los entregables formales y la sustentación, lo que fija requisitos de documentación y fechas que el equipo de trabajo no puede modificar.
+    \item \textbf{Restricciones de Disponibilidad de los Interesados}: La directora del proyecto y los investigadores del laboratorio participan en horarios limitados, por lo que las sesiones de revisión, validación y retroalimentación deben planificarse con anticipación dentro de las 16 semanas.
+    \item \textbf{Restricciones sobre los Datos}: El uso de las señales EEG está sujeto a las condiciones de acceso y confidencialidad que establezca la institución, lo que limita cómo pueden almacenarse, compartirse y documentarse en los entregables.
 \end{itemize}
  
 \subsection{Resumen del Proyecto}
@@ -255,7 +256,9 @@ La siguiente tabla sintetiza las características principales del proyecto Gamma
         \hline
         Equipo & 4 estudiantes + 1 directora (Product Owner) \\
         \hline
-        Duración & Proyecto académico de grado \\
+        Duración & Un semestre académico (16 semanas) \\
+        \hline
+        Tipo de Proyecto & Trabajo de grado académico de nivel pregrado \\
         \hline
     \end{tabular}
     \caption{Resumen de características principales del proyecto GammaLab 2.0}
@@ -595,7 +598,7 @@ A partir de esta estructura, el equipo identificó las actividades concretas den
 La estimación se fundamenta en los siguientes supuestos:
 
 \begin{itemize}
-    \item El equipo de desarrollo está compuesto por cuatro desarrolladores dedicados al 100\% del proyecto.
+    \item El equipo de desarrollo está compuesto por cuatro desarrolladores.
     \item Cada desarrollador dispone de un mínimo de 6 horas semanales de disponibilidad efectiva para trabajo de desarrollo, análisis, diseño, codificación y pruebas.
     \item La jornada semanal de dedicación será distribuida de manera flexible entre las actividades, con énfasis en mantener sincronización a través de canales de comunicación asíncrona (GitHub, comunicación escrita).
     \item Se reutilizará conocimiento y código de GAMMA LAB 1.0, reduciendo el tiempo de aprendizaje inicial.
@@ -723,22 +726,22 @@ Para el desarrollo de GAMMA LAB 2.0, se dispone de la siguiente infraestructura 
 
 \subsubsection{Equipo de Desarrollo}
 
-El equipo de GAMMA LAB 2.0 está conformado por cuatro estudiantes de Ingeniería de Sistemas de la Pontificia Universidad Javeriana, todos dedicados al 100\% del proyecto durante las 16 semanas de ejecución.
+El equipo de GAMMA LAB 2.0 está conformado por cuatro estudiantes de Ingeniería de Sistemas de la Pontificia Universidad Javeriana, todos dedicados al desarrollo del proyecto durante las 16 semanas de ejecución.
 
 \begin{table}[H]
 \centering
 \small
-\begin{tabular}{|p{2.8cm}|p{2.5cm}|p{1.5cm}|p{2.5cm}|}
+\begin{tabular}{|p{2.8cm}|p{2.5cm}|p{2.5cm}|}
 \hline
-\textbf{Nombre} & \textbf{Rol} & \textbf{Ded.} & \textbf{Responsabilidad} \\
+\textbf{Nombre} & \textbf{Rol} & \textbf{Responsabilidad} \\
 \hline
-Juan Felipe Romero Ortiz & Desarrollador + Scrum Master & 100\% & Frente 1 (UX/UI) \\
+Juan Felipe Romero Ortiz & Desarrollador + Scrum Master & Frente 1 (UX/UI) \\
 \hline
-Laura Juliana Garzón Arias & Desarrollador & 100\% & Frente 2 (Paralelización) \\
+Laura Juliana Garzón Arias & Desarrollador & Frente 2 (Paralelización) \\
 \hline
-Xiomara Herrera Suárez & Desarrollador & 100\% & Frente 3 (Amplitude Coupling) \\
+Xiomara Herrera Suárez & Desarrollador & Frente 3 (Amplitude Coupling) \\
 \hline
-Sebastian Almanza Galvis & Desarrollador & 100\% & Frente 4 (Paralelización módulo) \\
+Sebastian Almanza Galvis & Desarrollador & Frente 4 (Paralelización módulo) \\
 \hline
 \end{tabular}
 \caption{Equipo de desarrollo de GAMMA LAB 2.0}
@@ -950,9 +953,6 @@ Tasa de defectos & Minimizar & Por sprint & Testing \\
 
 
 \section{Monitoreo y Control del Proyecto}
-En esta sección se describen los procesos y mecanismos para administrar
-los requerimientos, monitorear el progreso, gestionar riesgos y realizar el cierre
-formal del proyecto GammaLab 2.0.
 
 \subsection{Administración de Requerimientos}
 
