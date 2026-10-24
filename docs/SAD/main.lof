@@ -4,4 +4,4 @@
 \contentsline {figure}{\numberline {3}{\ignorespaces Diagrama de clases del sistema Gamma Lab 2.0. Los elementos en verde se encuentran implementados y los elementos en rojo están planificados.}}{36}{figure.caption.10}%
 \contentsline {figure}{\numberline {4}{\ignorespaces Vista de desarrollo de GammaLab 2.0: componentes organizados por paquetes funcionales (\texttt {io}, \texttt {preprocessing}, \texttt {analysis}, \texttt {measure} y \texttt {faq}), junto con los componentes transversales de la arquitectura.}}{43}{figure.caption.29}%
 \contentsline {figure}{\numberline {5}{\ignorespaces Flujo maestro de sesi\'on de Gamma Lab 2.0, con carriles Investigador/Sistema. Verde = ya existe, rojo = nuevo, blanco = mixto.}}{49}{figure.caption.30}%
-\contentsline {figure}{\numberline {6}{\ignorespaces Vista f\'isica de Gamma Lab 2.0: estaci\'on \'unica de escritorio y su superficie de E/S.}}{50}{figure.caption.31}%
+\contentsline {figure}{\numberline {6}{\ignorespaces Vista f\'isica de Gamma Lab 2.0: estaci\'on \'unica de escritorio y su superficie de E/S.}}{51}{figure.caption.31}%
