@@ -470,7 +470,8 @@ class Pac_plugin(IPlugin):
             self._actualizar_menu()
             self._notify(
                 f"{tipo}: acoplamiento {abs(resultado.vector):.4f} "
-                f"en la fase {np.angle(resultado.vector):+.3f} rad ({detalle})")
+                f"en la fase {np.rad2deg(np.angle(resultado.vector)) % 360.0:.1f}° "
+                f"({detalle})")
             if not self._corrida_restaura:
                 self.mark_project_dirty()
         except Exception as e:
@@ -590,17 +591,23 @@ class Pac_plugin(IPlugin):
             # ninguna senal**. Antes aqui salian los cuatro paneles del PRIMER
             # trial bajo un titulo que decia "promedio", lo que invita a leer
             # como promediado algo que no lo es.
-            chart = self._grafico_senal(r.fases, np.cos(r.fases),
-                                        "Referencia: cos(fase)", "rad")
+            grados_ref = self._fase_en_grados(r.fases)[0]
+            chart = self._grafico_senal(grados_ref, np.cos(np.deg2rad(grados_ref)),
+                                        "Referencia: cos(fase)", "cos")
             self._charts.append(chart)
             self._altos.append(self.ALTO_SENAL)
         else:
             # PAC de un trial: los cuatro paneles comparten el eje de tiempo,
             # como el `linkaxes(ax,'x')` de MATLAB.
+            # La fase instantánea se dibuja en grados de 0 a 360, igual que el
+            # histograma, la brújula y los mapas. Es la misma serie: `angle` la
+            # devuelve en radianes de −π a π y aquí solo se reexpresa, así que
+            # el diente de sierra salta ahora en el pico del ritmo lento (0°) y
+            # no en el valle.
             for etiqueta, unidad, serie in (
                     ("Original", "Amplitud", r.senal),
                     ("Filtrada en fase", "Amplitud", r.banda_fase),
-                    ("Fase instantánea", "rad", r.fase),
+                    ("Fase instantánea", "°", np.rad2deg(r.fase) % 360.0),
                     ("Filtrada en amplitud", "Amplitud", r.banda_amplitud)):
                 chart = self._grafico_senal(r.tiempo, serie, etiqueta, unidad)
                 self._charts_senal.append(chart)
@@ -658,11 +665,13 @@ class Pac_plugin(IPlugin):
 
         # 6-7. El mapa fase/frecuencia en escala logarítmica, y debajo el coseno
         # de referencia que el MATLAB dibuja para situar la fase
+        grados_psel, mapa_psel = self._fase_en_grados(r.fases, r.mapa)
         self._mapa_chart = agregar(
-            self._grafico_mapa_log(r.mapa, r.frecuencias, r.fases,
-                                   "PAC Psel — mapa fase/frecuencia", "Fase (rad)"),
+            self._grafico_mapa_log(mapa_psel, r.frecuencias, grados_psel,
+                                   "PAC Psel — mapa fase/frecuencia", "Fase (°)"),
             self.ALTO_MAPA)
-        agregar(self._grafico_senal(r.fases, np.cos(r.fases), "Referencia: cos(fase)", "rad"),
+        agregar(self._grafico_senal(grados_psel, np.cos(np.deg2rad(grados_psel)),
+                                    "Referencia: cos(fase)", "cos"),
                 self.ALTO_SENAL)
 
         # 8-9. El tiempo-frecuencia promedio y el promedio del ritmo lento debajo
@@ -823,10 +832,11 @@ class Pac_plugin(IPlugin):
 
     def _grafico_mapa(self, r, titulo):
         """El mapa fase-frecuencia, con el mismo patrón vectorizado del wavelet."""
-        mapa = np.nan_to_num(np.asarray(r.mapa, dtype=np.float32),
-                             nan=0.0, posinf=0.0, neginf=0.0)
+        fases, mapa = self._fase_en_grados(
+            r.fases, np.nan_to_num(np.asarray(r.mapa, dtype=np.float32),
+                                   nan=0.0, posinf=0.0, neginf=0.0))
         n_freq, n_fase = mapa.shape
-        fases, frecuencias = r.fases, r.frecuencias
+        frecuencias = r.frecuencias
 
         paso_fase = (fases[-1] - fases[0]) / max(1, n_fase - 1)
         f_min, f_max = float(np.min(frecuencias)), float(np.max(frecuencias))
@@ -863,11 +873,11 @@ class Pac_plugin(IPlugin):
         chart.SetInputData(img, 0)
         chart.SetTransferFunction(lut)
         chart.SetTitle(f"{titulo} — mapa fase/frecuencia")
-        chart.GetAxis(vtk.vtkAxis.BOTTOM).SetTitle("Fase (rad)")
+        chart.GetAxis(vtk.vtkAxis.BOTTOM).SetTitle("Fase (°)")
         chart.GetAxis(vtk.vtkAxis.LEFT).SetTitle("Frecuencia (Hz)")
         # FIXED: si no, VTK redondea el rango hacia afuera y deja franjas vacias
-        # a los lados —el eje decia -3,5 a 3,5 cuando los datos llegan a +-pi, y
-        # 0 a 600 Hz cuando llegan a 500—.
+        # a los lados —el eje llegaba a 400 grados cuando los datos terminan en
+        # 360, y a 600 Hz cuando llegan a 500—.
         eje_x = chart.GetAxis(vtk.vtkAxis.BOTTOM)
         eje_x.SetBehavior(vtk.vtkAxis.FIXED)
         eje_x.SetRange(float(fases[0]), float(fases[-1] + paso_fase))
@@ -876,10 +886,41 @@ class Pac_plugin(IPlugin):
         eje_y.SetRange(f_min, f_max)
         return chart
 
+    @staticmethod
+    def _fase_en_grados(fases_rad, *matrices, eje=-1):
+        """Pasa el eje de fase a grados de 0 a 360 y rota los datos con él.
+
+        **Por qué grados y no radianes.** La brújula marca 0-360, porque es la
+        convención de un instrumento polar y es lo que hace la `compass` de
+        MATLAB. El histograma y los mapas venían en radianes de −π a π, que es
+        lo que hace el `bar(index_pi, ...)` del original. En MATLAB eso no
+        molesta porque son ventanas separadas; aquí van apilados uno encima de
+        otro, y un acoplamiento que la brújula sitúa en 280,6° aparecía en el
+        histograma como −79,4°. Mismo dato, dos lecturas.
+
+        **Por qué hay que rotar y no basta con reetiquetar.** Los bins empiezan
+        en −π. Al pasarlos a 0-360 el que estaba en −180 se convierte en 180, o
+        sea salta al final: el eje dejaría de ir en orden. Rotar los datos la
+        misma cantidad los deja alineados. La fase es circular, así que rotar
+        no pierde nada — pero **la forma del histograma cambia** respecto al de
+        MATLAB, que arranca en −180.
+
+        El cálculo sigue en radianes de principio a fin; esto es solo el dibujo.
+        """
+        grados = np.rad2deg(np.asarray(fases_rad, dtype=np.float64)) % 360.0
+        # El modulo deja basura de coma flotante donde tendria que haber un cero
+        # clavado, porque −π y π son el mismo punto del circulo: 2,5e−14 grados.
+        # No afecta al dibujo, pero sale escrita en el CSV.
+        grados[np.isclose(grados, 0.0, atol=1e-9) | np.isclose(grados, 360.0, atol=1e-9)] = 0.0
+        corte = int(np.argmin(grados))          # donde queda el 0 tras envolver
+        rotadas = tuple(np.roll(np.asarray(m), -corte, axis=eje) for m in matrices)
+        return (np.roll(grados, -corte),) + rotadas
+
     def _grafico_histograma(self, r):
-        valores = np.nan_to_num(np.asarray(r.histograma, dtype=np.float64))
+        grados, valores = self._fase_en_grados(
+            r.fases, np.nan_to_num(np.asarray(r.histograma, dtype=np.float64)))
         tabla = vtk.vtkTable()
-        tabla.AddColumn(self._columna(r.fases, "Fase"))
+        tabla.AddColumn(self._columna(grados, "Fase"))
         tabla.AddColumn(self._columna(valores, "Energía"))
 
         chart = vtk.vtkChartXY()
@@ -889,7 +930,7 @@ class Pac_plugin(IPlugin):
         barras.LegendVisibilityOff()
         chart.SetTitle("Histograma por fase")
         chart.SetShowLegend(False)
-        chart.GetAxis(vtk.vtkAxis.BOTTOM).SetTitle("Fase (rad)")
+        chart.GetAxis(vtk.vtkAxis.BOTTOM).SetTitle("Fase (°)")
 
         # MATLAB acerca el eje Y al rango de los datos con un 10% de margen, en
         # vez de arrancar en cero:
@@ -1024,8 +1065,14 @@ class Pac_plugin(IPlugin):
         p = self._ultimo["parametros"]
         n = self._num
 
+        # Los ángulos se exportan en grados de 0 a 360, los mismos que se ven en
+        # pantalla: si el histograma dibuja una barra en 280° y el CSV la pone en
+        # −1,39, parecen dos corridas distintas.
+        grados, histograma = self._fase_en_grados(r.fases, r.histograma)
+        _, mapa = self._fase_en_grados(r.fases, r.mapa)
+
         resumen = [["magnitud_vector_medio", n(abs(r.vector))],
-                   ["angulo_vector_medio_rad", n(np.angle(r.vector))],
+                   ["angulo_vector_medio_grados", n(np.rad2deg(np.angle(r.vector)) % 360.0)],
                    ["fs_efectiva_hz", n(r.fs_efectiva)]]
         if hasattr(r, "n_ciclos"):
             resumen += [["n_ciclos", int(r.n_ciclos)],
@@ -1034,13 +1081,13 @@ class Pac_plugin(IPlugin):
         else:
             resumen += [["n_trials", int(r.n_trials)]]
 
-        encabezado_mapa = ["frecuencia_hz"] + [f"fase_{f:.4f}" for f in r.fases]
-        filas_mapa = [[n(fr)] + [n(v) for v in fila] for fr, fila in zip(r.frecuencias, r.mapa)]
+        encabezado_mapa = ["frecuencia_hz"] + [f"fase_{g:.1f}deg" for g in grados]
+        filas_mapa = [[n(fr)] + [n(v) for v in fila] for fr, fila in zip(r.frecuencias, mapa)]
         return {
             "Parametros": (["parametro", "valor"], [[k, v] for k, v in p.items()]),
             "Resumen": (["medida", "valor"], resumen),
-            "Histograma": (["fase_rad", "valor"],
-                           [[n(f), n(v)] for f, v in zip(r.fases, r.histograma)]),
+            "Histograma": (["fase_grados", "valor"],
+                           [[n(g), n(v)] for g, v in zip(grados, histograma)]),
             "Mapa": (encabezado_mapa, filas_mapa),
         }
 
