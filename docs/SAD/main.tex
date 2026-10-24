@@ -1732,7 +1732,49 @@ El flujo de la Figura \ref{fig:vistaprocesos} se organiza en las siguientes etap
 A diferencia de Gamma Lab 1.0, los casos de uso de navegaci\'on (CU-008), limpieza de formulario (CU-009, 0\% implementado) y ayuda contextual (CU-010, cobertura parcial en solo 2 de m\'as de 15 plugins) son transversales a toda la sesi\'on: no ocupan un lugar fijo en la secuencia y se documentan como notas adjuntas al diagrama en lugar de forzarlas dentro del flujo principal.
 
 \subsection{Vista F\'isica}
-La vista f\'isica describe el entorno de despliegue local de Gamma Lab 2.0. A diferencia de Gamma Lab 1.0, aqu\'i se documenta expl\'icitamente la superficie completa de entrada/salida del sistema, incluyendo los artefactos que a\'un no existen.
+
+\subsubsection{Propósito}
+
+La vista física describe el entorno de ejecución de Gamma Lab 2.0 y la forma en que el sistema se relaciona con él. Representa la infraestructura sobre la que se despliegan los componentes de software y los artefactos que el sistema intercambia con su entorno, de modo que hace explícitos los límites de persistencia del sistema y los datos que entran y salen de él.
+
+\subsubsection{Notación}
+
+El diagrama sigue la notación de despliegue definida en la especificación UML 2.5.1 del Object Management Group \cite{omg_uml}. El equipo físico donde se ejecuta el sistema se representa como un nodo con el estereotipo «device», y dentro de él se ubican los componentes de software desplegados. Los archivos que el sistema consume o produce se representan como elementos con el estereotipo «artifact». Las relaciones entre el nodo y los artefactos son dependencias, representadas con líneas punteadas, y su etiqueta indica el tipo de acceso (lectura, escritura o ambos) y la operación del sistema que lo origina.
+
+Al igual que en la vista lógica, cada elemento del diagrama se clasifica según su origen. Los elementos sin color de fondo provienen de Gamma Lab 1.0, mientras que los elementos en color rojo se incorporaron en Gamma Lab 2.0.
+
+\subsubsection{Visi\'on general del modelo}
+
+El modelo físico de Gamma Lab 2.0 está formado por un único nodo, la estación de 
+trabajo del investigador, en el que se despliegan todos los componentes del sistema. 
+Esto corresponde a una aplicación de escritorio monousuario que se ejecuta como un 
+solo proceso local, sin servidores, sin comunicación en red y sin dependencias de 
+servicios externos. Dentro del nodo, la interfaz principal concentra la interacción 
+con el usuario. El núcleo, junto con el gestor de extensiones, administra el registro 
+de servicios y el ciclo de vida de los módulos. El almacén de datos mantiene en 
+memoria el estado compartido de la sesión. El orquestador de tareas ejecuta las 
+operaciones de cómputo pesado en hilos trabajadores dentro del mismo proceso. El 
+servicio de proyectos gestiona la persistencia y la restauración del trabajo del 
+investigador. Por último, las extensiones implementan las funcionalidades de 
+preprocesamiento, análisis y visualización.
+
+Este modelo de despliegue tiene dos implicaciones arquitectónicas. La primera es que 
+el desempeño del sistema depende por completo de los recursos de la estación de 
+trabajo, en particular de la memoria disponible y de la capacidad de procesamiento. 
+Por eso la liberación explícita de recursos y la ejecución concurrente controlada por 
+el núcleo pasan a ser responsabilidades centrales de la arquitectura. La segunda es 
+que el sistema de archivos es la única frontera de integración del sistema. Por esa 
+frontera, el sistema se relaciona con cinco artefactos. Los archivos de señal son la 
+fuente de datos de cada sesión y se leen durante la carga. El archivo de proyecto 
+almacena y restaura el estado del trabajo mediante una referencia a la señal de 
+origen, sin duplicar sus datos. Los archivos exportados contienen los resultados 
+numéricos y gráficos de los análisis. El archivo de configuración conserva las 
+preferencias de la aplicación. Los descriptores de cada extensión se leen al iniciar 
+la aplicación para descubrir y registrar los módulos disponibles, lo que permite 
+incorporar nuevas extensiones sin modificar el núcleo.
+
+La Figura~\ref{fig:vistafisica} presenta el diagrama de despliegue del sistema.
+
 
 \begin{figure}[H]
     \centering
@@ -1741,16 +1783,95 @@ La vista f\'isica describe el entorno de despliegue local de Gamma Lab 2.0. A di
     \label{fig:vistafisica}
 \end{figure}
 
-La Figura \ref{fig:vistafisica} muestra el despliegue t\'ipico:
-\begin{itemize}[nosep]
-    \item Un \'unico nodo \textit{PC del Investigador}: no existe arquitectura cliente-servidor en ninguna de las 23 fichas.
-    \item \textbf{Archivos de se\~nal} (\texttt{.edf}/\texttt{.abf}/\texttt{.mat}): ya existe, le\'idos por \texttt{FileIOService}.
-    \item \textbf{Archivo de proyecto} (\texttt{.glab}): \textbf{nuevo} --- cero referencias en el c\'odigo actual.
-    \item \textbf{Archivos exportados} (\texttt{.png}/\texttt{.csv}/\texttt{.xlsx}/\texttt{.json}): ya existe v\'ia \texttt{ExportService}; el formato vectorial \texttt{.emf} (CU-017) es nuevo.
-    \item \texttt{gamma\_lab\_settings.json}: la clase \texttt{SettingsService} ya existe, pero \textbf{no} est\'a conectada en el arranque (\texttt{main.py}) hoy.
-    \item \texttt{properties.yml} (por cada plugin): ya existe, sostiene el descubrimiento autom\'atico de plugins.
+\subsubsection{Componentes internos}
+
+Los componentes internos del nodo se instancian durante el arranque de la aplicación 
+y permanecen activos hasta su cierre. Cada uno ocupa una posición distinta dentro del 
+proceso: algunos se ejecutan en el hilo principal, otros en hilos trabajadores, y 
+otros actúan como estructuras compartidas entre ambos.
+
+\begin{itemize}
+    \item \textbf{Núcleo y gestor de extensiones (Kernel + PluginManager):} el núcleo 
+    es el componente mínimo del sistema. No implementa funcionalidad de dominio, sino 
+    que provee los servicios que las extensiones necesitan para operar. Es el primer 
+    componente que se instancia. Crea y registra el resto de los servicios, y a través 
+    del gestor de extensiones carga cada módulo disponible. Durante la ejecución actúa 
+    como punto de resolución de dependencias: las extensiones le solicitan los 
+    servicios que requieren, en lugar de construirlos.
+
+    \item \textbf{Interfaz principal (MainWindow):} se construye después de que el 
+    núcleo termina el registro y se ejecuta en el hilo principal. Recibe los eventos 
+    del usuario, activa y detiene las extensiones según la navegación y es el único 
+    componente que actualiza la presentación gráfica.
+
+    \item \textbf{Almacén de datos (DataStore):} se instancia como un servicio único 
+    del núcleo y lo comparten todas las extensiones. Es el punto de encuentro entre el 
+    hilo principal, que lee el estado para presentarlo, y los hilos trabajadores, que 
+    escriben los resultados. Por eso su acceso se sincroniza y cada dato tiene un único 
+    propietario de escritura.
+
+    \item \textbf{Orquestador de tareas (TaskOrchestrator):} se registra en el núcleo 
+    durante el arranque y mantiene las colas de ejecución durante toda la sesión. Por 
+    cada solicitud crea un hilo trabajador, lo supervisa durante el cómputo y lo libera 
+    al terminar, ya sea por finalización, error o cancelación.
+
+    \item \textbf{Servicio de proyectos (ProjectService):} se registra en el núcleo 
+    como servicio compartido y solo se invoca en los momentos del ciclo de vida del 
+    proyecto: apertura, guardado y cierre.
+
+    \item \textbf{Extensiones (Plugins):} cada extensión se carga en el arranque, pero 
+    su interfaz se construye la primera vez que el usuario la activa y se reutiliza en 
+    las activaciones siguientes. Al desactivarse, libera sus recursos gráficos y sus 
+    detectores de eventos. La instancia permanece registrada en el núcleo.
 \end{itemize}
 
+En ejecución, la interacción entre estos componentes sigue un ciclo constante. La 
+interfaz recibe una acción del usuario y la dirige a la extensión activa. La extensión 
+obtiene del núcleo el orquestador y le entrega la operación como una tarea. El 
+orquestador la ejecuta en un hilo trabajador, que publica el resultado en el almacén 
+de datos mediante escritura sincronizada. Por último, la interfaz recibe la 
+notificación y actualiza la presentación desde el hilo principal. Gracias a este 
+ciclo, ningún cómputo pesado ocupa el hilo principal y ninguna extensión escribe 
+directamente sobre la presentación. Al cerrar la aplicación, el recorrido se invierte: 
+el orquestador cancela o espera las tareas en curso, las extensiones se detienen y 
+liberan sus recursos, y el núcleo finaliza el proceso.
+
+\subsubsection{Artefactos externos}
+
+Cada artefacto externo tiene un componente interno responsable de su acceso y un 
+momento definido de la ejecución en el que se lee o se escribe. Las operaciones de 
+lectura y escritura de mayor volumen se ejecutan a través del orquestador, fuera del 
+hilo principal.
+
+\begin{itemize}
+    \item \textbf{Archivos de señal (.edf, .abf, .mat):} se leen al cargar una señal o 
+    al restaurar un proyecto. Antes de cerrar el proyecto activo, el sistema valida el 
+    formato del archivo, de modo que un archivo no soportado o corrupto no altera la 
+    sesión en curso. La lectura y la construcción del conjunto de datos se ejecutan en 
+    un hilo trabajador, y el resultado se registra después en el almacén de datos.
+
+    \item \textbf{Archivo de proyecto (.glab):} lo lee y escribe exclusivamente el 
+    servicio de proyectos. Se escribe al guardar o al cerrar un proyecto, y se lee al 
+    abrirlo. En la apertura, el servicio verifica que el archivo de señal referenciado 
+    siga en la ruta registrada antes de iniciar la carga. Si el archivo no está, el 
+    usuario puede localizarlo manualmente.
+
+    \item \textbf{Archivos exportados (.png, .csv, .xlsx, .json, .emf):} se escriben a 
+    solicitud del usuario a partir del resultado activo en el almacén de datos. Si la 
+    operación supera un segundo, la interfaz muestra un indicador de progreso. Si la 
+    escritura falla por permisos o por falta de espacio, se informa la causa y el 
+    estado de la sesión se mantiene sin cambios.
+
+    \item \textbf{Archivo de configuración (gamma\_lab\_settings.json):} contiene las 
+    preferencias de la aplicación y se lee y escribe a través del servicio de 
+    configuración del núcleo, que entrega una única instancia de esas preferencias a 
+    todos los módulos.
+
+    \item \textbf{Descriptores de extensión (properties.yml):} el gestor de extensiones 
+    los lee una sola vez durante el arranque, antes de construir la interfaz. Cada 
+    descriptor determina si su extensión se carga y en qué categoría de la interfaz se 
+    ubica.
+\end{itemize}
 
 
 % ======================================================================
