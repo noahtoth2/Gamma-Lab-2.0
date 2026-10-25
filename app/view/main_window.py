@@ -211,6 +211,9 @@ class MainWindow(QMainWindow):
 
         # Build each subcategory and put a divider between them
         subcats = list(subcategories.items())
+        if section == "Analysis":
+            # Connectivity (PPC) goes last; the rest keep their order
+            subcats.sort(key=lambda kv: kv[0] == "Connectivity")
         measurements_row = None
         for idx, (subcat, plugins) in enumerate(subcats):
             group_box = QGroupBox(subcat, self.ui.buttonContainer)

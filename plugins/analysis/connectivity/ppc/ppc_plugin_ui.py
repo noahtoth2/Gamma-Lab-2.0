@@ -1,13 +1,7 @@
-"""Interfaz de PPC — **ANDAMIO PROVISIONAL, PARA REEMPLAZAR**.
+"""Interfaz de PPC: el panel de parámetros y el área del gráfico.
 
-Este archivo existe por un motivo concreto: que `ppc_plugin.py` se pueda
-cargar, correr y probar de punta a punta mientras se construye la interfaz de
-verdad. Hace lo mínimo —los campos, el botón y el hueco del gráfico— sin nada
-de diseño.
-
-**La interfaz definitiva la construye otra persona del equipo, y reemplaza este
-archivo completo.** Lo único que tiene que conservar son los nombres de los
-widgets, porque son el contrato con el que `ppc_plugin.py` los lee:
+`ppc_plugin.py` lee los widgets por nombre, así que esos nombres son el contrato
+y no deben cambiar:
 
 | Nombre | Tipo | Qué es |
 |---|---|---|
@@ -25,6 +19,9 @@ widgets, porque son el contrato con el que `ppc_plugin.py` los lee:
 Los nombres repiten los de PAC donde el campo es el mismo
 (`sampleDensitySpinBox`, `lowFrequencySpinBox`, `highFrequencySpinBox`,
 `clearButton`, `plotArea`), para que no haya dos convenciones en el proyecto.
+
+Las etiquetas van en inglés, como las de PAC, y cada control lleva su descripción
+emergente (R42).
 
 **Ojo con la etiqueta de `wd`.** En MATLAB `wd` es *la* ventana; aquí es la
 ventana **mínima**, porque cada frecuencia usa la suya (decisión 10 del plan).
@@ -96,18 +93,28 @@ class Ui_Ppc(object):
         self.splitter.widget(1).setMaximumWidth(300)
 
         # --- Los campos
-        self.channel1ComboBox = self._combo("Canal 1")
-        self.channel2ComboBox = self._combo("Canal 2")
-        self.sampleDensitySpinBox = self._entero("Remuestreo (Hz)")
-        self.lowFrequencySpinBox = self._decimal("F min (Hz)")
-        self.highFrequencySpinBox = self._decimal("F max (Hz)")
-        self.windowSpinBox = self._decimal("Ventana mínima (s)")
-        self.cyclesSpinBox = self._decimal("Ciclos de la gaussiana")
+        self.channel1ComboBox = self._combo(
+            "Channel 1", "First channel of the pair. Only channels that already have trials are listed.")
+        self.channel2ComboBox = self._combo(
+            "Channel 2", "Second channel of the pair. It must be different from channel 1 and its "
+                         "trials must be cut with the same parameters.")
+        self.sampleDensitySpinBox = self._entero(
+            "Sample frequency (Hz)", "Rate the signal is downsampled to before the analysis.")
+        self.lowFrequencySpinBox = self._decimal(
+            "F min (Hz)", "Lowest frequency of the map.")
+        self.highFrequencySpinBox = self._decimal(
+            "F max (Hz)", "Highest frequency of the map. It cannot exceed half the sample frequency.")
+        self.windowSpinBox = self._decimal(
+            "Minimum window (s)", "Shortest analysis window. Each frequency uses its own window, "
+                                  "never shorter than this one.")
+        self.cyclesSpinBox = self._decimal(
+            "Gaussian cycles", "Cycles of the Gabor wavelet. More cycles give a sharper frequency "
+                               "and a blurrier time resolution.")
 
         self.paramsLayout.addStretch(1)
         self.retranslateUi(PPC)
 
-    # --- Tres ayudas para no repetir el mismo bloque siete veces
+    # --- Tres ayudas para no repetir el mismo bloque
     def _etiqueta(self, texto):
         lab = QtWidgets.QLabel(self.layoutWidget)
         lab.setText(texto)
@@ -115,22 +122,25 @@ class Ui_Ppc(object):
         self.paramsLayout.addWidget(lab)
         return lab
 
-    def _combo(self, texto):
+    def _combo(self, texto, ayuda=""):
         self._etiqueta(texto)
         w = QtWidgets.QComboBox(self.layoutWidget)
+        w.setToolTip(ayuda)
         self.paramsLayout.addWidget(w)
         return w
 
-    def _entero(self, texto):
+    def _entero(self, texto, ayuda=""):
         self._etiqueta(texto)
         w = QtWidgets.QSpinBox(self.layoutWidget)
+        w.setToolTip(ayuda)
         w.setRange(1, 1_000_000)
         self.paramsLayout.addWidget(w)
         return w
 
-    def _decimal(self, texto):
+    def _decimal(self, texto, ayuda=""):
         self._etiqueta(texto)
         w = QtWidgets.QDoubleSpinBox(self.layoutWidget)
+        w.setToolTip(ayuda)
         w.setDecimals(3)
         w.setRange(0.0, 100_000.0)
         self.paramsLayout.addWidget(w)
@@ -142,3 +152,4 @@ class Ui_Ppc(object):
         self.parametersLabel.setText(_t("PPC", "Parameters"))
         self.clearButton.setToolTip(_t("PPC", "Clear parameters"))
         self.createPpcButton.setText(_t("PPC", "Generate"))
+        self.createPpcButton.setToolTip(_t("PPC", "Compute the phase consistency map between the two channels"))

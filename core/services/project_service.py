@@ -14,7 +14,7 @@ SCHEMA_VERSION = "1.0"
 
 ANALYSIS_PLUGIN_NAMES = [
     "FFT", "FFT Average", "PSD", "PSD Average", "Relative PSD",
-    "Average", "Event Related Potential", "Wavelet", "Wavelet Average", "PAC",
+    "Average", "Event Related Potential", "Wavelet", "Wavelet Average", "PAC", "PPC",
 ]
 
 

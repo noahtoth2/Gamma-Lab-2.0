@@ -514,5 +514,5 @@ Y uno que no estaba en duda:
 | 4 — Guardas y avisos | ✅ 5 errores y 5 avisos, `avisos(resultado)` en `compute.py`. 12 pruebas más |
 | 5a — Paralelismo | ✅ `map_ordenado` sobre los trials. **1,8× a 2,7×**, idéntico bit a bit. 12 pruebas más |
 | 5b — Orquestación | ✅ `ppc_plugin.py` con `submit` y los cuatro slots. 19 pruebas en `test/plugins_test/test_ppc_plugin_orquestado.py` |
-| 6 — El plugin (interfaz: otra persona) | 🟨 `properties.yml` y la clase lógica hechas; falta `render_resultado`, el icono y la interfaz de verdad |
+| 6 — El plugin | ✅ `render_resultado` (mapa log-frecuencia × tiempo, NaN transparentes, barra de color), icono `icn_ppc.png`, avisos bajo el gráfico, exportación CSV/XLSX/JSON desde el menú contextual, guardado en el proyecto y panel con descripciones. Verificado de punta a punta con dos canales sintéticos: PPC 0,998 en los 10 Hz acoplados y ≈ 0 en el resto |
 | 7 — Verificación | ⬜ |
