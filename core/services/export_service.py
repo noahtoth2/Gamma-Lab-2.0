@@ -5,6 +5,7 @@ import vtk
 import pandas as pd
 import csv
 import json
+import numpy as np
 
 from core.utils.plugin_alerts import PluginAlerts
 
@@ -57,7 +58,7 @@ class ExportService:
             w2i.SetInput(window)
             w2i.Update()
 
-            ext = format if format != "jpeg" else "jpg"
+            ext = format.lower()
             if ext == "png":
                 writer = vtk.vtkPNGWriter()
             elif ext in ["jpg", "jpeg"]:
@@ -78,6 +79,50 @@ class ExportService:
 
         except Exception as e:
             self.alerts.error(f"Error exporting image:\n{e}", "Export error")
+
+    # ---------- vector graphic (EMF) ----------
+    def export_emf(self, filename: str = None):
+        """
+        Export the active chart as an Enhanced Metafile: axes, ticks, labels and
+        colour bar are vector records and the heat map is an embedded bitmap.
+        """
+        try:
+            from core.utils.emf_writer import chart_a_emf
+
+            chart = self.get_active_chart()
+            if chart is None:
+                self.alerts.error("There is no chart to export.")
+                return
+
+            signal_name, channel_name, plugin_name = self.get_names()
+            stamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            base_name = (
+                f"{signal_name}_{channel_name}_{plugin_name}_{stamp}.emf"
+                if channel_name else f"{signal_name}_{plugin_name}_{stamp}.emf"
+            )
+            initial_path = os.path.join(self._get_last_dir(), base_name)
+
+            if not filename:
+                filename, _ = QFileDialog.getSaveFileName(
+                    self.parent, "Save vector graphic as...", initial_path, "Enhanced Metafile (*.emf)"
+                )
+                if not filename:
+                    return
+
+            self._set_last_dir(os.path.dirname(filename))
+
+            # Same proportions as the chart on screen
+            w, h = max(1, self.vtk_widget.width()), max(1, self.vtk_widget.height())
+            ancho = 1000
+            alto = int(min(max(ancho * h / w, 400), 1400))
+            chart_a_emf(chart, filename, ancho, alto)
+
+            self.alerts.info(f"Graphic exported successfully {os.path.basename(filename)}", "Successful export")
+
+        except OSError as e:
+            self.alerts.error(f"The file could not be saved (protected folder or full disk).\n{e}")
+        except Exception as e:
+            self.alerts.error(f"Error exporting graphic \n{str(e)}")
 
     # ---------- sections (results made of several tables) ----------
     def export_sections(self, sections: dict, fmt: str, filename: str = None):
@@ -144,6 +189,40 @@ class ExportService:
             self.alerts.error(f"Error exporting results \n{str(e)}")
 
     # ---------- table ----------
+    def _heatmap_sections(self, chart):
+        """The matrix behind a heat map: one row per Y value, one column per X value."""
+        from vtkmodules.util import numpy_support
+
+        img = getattr(chart, "emf_imagen", None)
+        if img is None:
+            return None
+        nx, ny, _ = img.GetDimensions()
+        ox, oy, _ = img.GetOrigin()
+        sx, sy, _ = img.GetSpacing()
+        z = numpy_support.vtk_to_numpy(img.GetPointData().GetScalars()).reshape(ny, nx)
+        x = ox + np.arange(nx) * sx
+        y = oy + np.arange(ny) * sy
+        y_title = chart.GetAxis(vtk.vtkAxis.LEFT).GetTitle() or "Y"
+        if "log" in y_title.lower():
+            # the axis is drawn in log10; the table carries the real frequency
+            y = 10.0 ** y
+            y_title = "Frequency (Hz)"
+        x_title = chart.GetAxis(vtk.vtkAxis.BOTTOM).GetTitle() or "X"
+
+        def num(v):
+            v = float(v)
+            return v if np.isfinite(v) else None
+
+        rows = [[num(yy)] + [num(v) for v in fila] for yy, fila in zip(y, z)]
+        return {"Map": ([y_title] + [f"{x_title}={num(xx):.6g}" for xx in x], rows)}
+
+    def _export_heatmap_table(self, chart, fmt, filename=None):
+        secciones = self._heatmap_sections(chart)
+        if secciones is None:
+            self.alerts.error("The chart does not contain data to export.")
+            return
+        self.export_sections(secciones, fmt, filename)
+
     def export_table(self, fmt: str, filename: str = None):
         """
         Export data (all series) from the active chart to csv/xlsx/json.
@@ -153,6 +232,9 @@ class ExportService:
             chart = self.get_active_chart()
             if not chart:
                 self.alerts.warning("There is no chart to export.")
+                return
+            if isinstance(chart, vtk.vtkChartHistogram2D):
+                self._export_heatmap_table(chart, fmt, filename)
                 return
             if chart.GetNumberOfPlots() == 0:
                 self.alerts.warning("The chart does not contain data to export.")

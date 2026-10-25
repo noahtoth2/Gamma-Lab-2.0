@@ -1097,6 +1097,7 @@ D15 & P11 & ADR-12 & Escenario 3 \\
 % \usepackage{float}
 
 \subsection{Vista de Escenarios}
+\label{sec:vista_escenarios}
 
 \subsubsection{Prop\'osito}
 
@@ -2183,6 +2184,7 @@ Trazabilidad & NFR-R-04 (R73), NFR-U-02 (R03) \\
 \end{center}
 
 \subsection{M\'etricas y plan de verificaci\'on}
+\label{sec:metricas_verificacion}
 
 La Tabla~\ref{tab:metricas} formaliza la ``Medida de Respuesta'' de cada escenario de calidad (secci\'on~5.1) en una m\'etrica verificable, junto con su m\'etodo de medici\'on y el criterio de aceptaci\'on correspondiente.
 
@@ -2293,6 +2295,362 @@ Liberaci\'on garantizada (R46, R70, R74) \\
 
 Los escenarios de calidad, las reglas de compatibilidad y la tabla de m\'etricas convierten los atributos de calidad de la secci\'on~3.2 en criterios operativos y verificables, no en aspiraciones gen\'ericas. El plan de evidencia de la secci\'on~6.4 sostiene estos criterios con artefactos reproducibles: fixtures reales validados contra una referencia de MATLAB, benchmarks versionados por etiqueta, auditor\'ias documentales, y pruebas de usabilidad y de instalaci\'on. Junto con las reglas de versionado de la secci\'on~6.2, esta estructura garantiza que la arquitectura de GammaLab~2.0 eval\'ue, documente y demuestre sus atributos de calidad de forma reproducible en cada nueva versi\'on del sistema.
 
+
+% ======================================================================
+\section{Trazabilidad de requerimientos y casos de uso}
+\label{sec:trazabilidad}
+
+Esta sección relaciona tres niveles de la especificación: los requerimientos del sistema, los casos de uso que los realizan y las decisiones de arquitectura que los sostienen. Su propósito es permitir dos lecturas opuestas. De los requerimientos hacia los casos de uso, para comprobar que ninguna necesidad del laboratorio quedó sin un comportamiento observable que la atienda. De los casos de uso hacia los requerimientos y las decisiones, para saber qué se compromete en el diseño cuando un caso de uso cambia.
+
+\subsection{Fuentes y criterio de construcción}
+
+La trazabilidad se construyó a partir de dos artefactos de la especificación: el libro de requerimientos y casos de uso del proyecto, que contiene los 81 requerimientos R01 a R81 con su prioridad y su tipo según FURPS+, y las 23 fichas de casos de uso, cada una con el campo \textit{Requisitos asociados}. Los vínculos entre casos de uso y requerimientos se tomaron literalmente de ese campo; ninguno se infirió por afinidad temática. Los vínculos con la arquitectura se tomaron de la Tabla~\ref{tab:traza_diagnostico}, que ya relaciona cada problema del diagnóstico de la Sección~\ref{sec:principios} con su principio, su decisión y los casos de uso que verifican su solución. Los casos de uso se agrupan en los cinco subsistemas de la Vista de Escenarios (Sección~\ref{sec:vista_escenarios}).
+
+Un requerimiento se considera \textit{cubierto} cuando al menos un caso de uso lo declara, y un caso de uso se considera \textit{justificado} cuando declara al menos un requerimiento. La Sección~\ref{sec:cobertura} presenta el resultado de aplicar ambos criterios.
+
+
+\subsection{De los casos de uso a los requerimientos}
+\label{sec:traza_cu_req}
+
+La Tabla~\ref{tab:traza_cu_req} presenta, para cada caso de uso, el subsistema al que pertenece y los requerimientos que realiza. Los casos de uso se ordenan por su identificador.
+
+\begin{center}
+\small
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.08\textwidth}|>{\raggedright\arraybackslash}p{0.27\textwidth}|>{\raggedright\arraybackslash}p{0.17\textwidth}|>{\raggedright\arraybackslash}p{0.36\textwidth}|}
+\hline
+\textbf{CU} & \textbf{Nombre} & \textbf{Subsistema} & \textbf{Requerimientos} \\
+\hline
+\endfirsthead
+\hline
+\textbf{CU} & \textbf{Nombre} & \textbf{Subsistema} & \textbf{Requerimientos} \\
+\hline
+\endhead
+\hline
+\multicolumn{4}{r}{\textit{Continúa en la siguiente página}} \\
+\endfoot
+\hline
+\endlastfoot
+
+CU-001 & An\'alisis PAC de un canal & Análisis & R02, R13, R14, R15, R16, R17, R18, R19, R20, R21, R22, R23, R75 \\
+\hline
+CU-002 & An\'alisis PAC de dos canales / PPC & Análisis & R60, R61, R62, R63, R64, R65, R66 \\
+\hline
+CU-003 & Cargar se\~nal (con gesti\'on de memoria) & Núcleo y Ciclo de Vida & R02, R07, R08, R11, R12, R47, R52, R54, R71, R80 \\
+\hline
+CU-004 & Generar y modificar trials & Preprocesamiento & R01, R02, R24, R27, R31, R67, R71, R79 \\
+\hline
+CU-005 & Guardado y exportaci\'on de datos & Exportación & R02, R04, R05, R07, R09, R28, R51, R57 \\
+\hline
+CU-006 & Seleccionar trials para an\'alisis & Preprocesamiento & R27, R37, R38, R68 \\
+\hline
+CU-007 & Remover artefacto con medidas & Preprocesamiento & R02, R40, R67, R69, R71, R79 \\
+\hline
+CU-008 & Navegar y cambiar de m\'odulo & Interfaz y Usabilidad & R06, R43, R45, R50, R55, R58 \\
+\hline
+CU-009 & Limpiar formulario (Clear) & Interfaz y Usabilidad & R25 \\
+\hline
+CU-010 & Consultar ayuda contextual & Interfaz y Usabilidad & R42 \\
+\hline
+CU-011 & Iniciar la aplicaci\'on & Núcleo y Ciclo de Vida & R10, R39, R44, R69, R70, R77, R81 \\
+\hline
+CU-012 & Interactuar visualmente con la se\~nal & Interfaz y Usabilidad & R26, R30, R32, R49, R59 \\
+\hline
+CU-013 & Calcular Wavelet & Análisis & R02, R33, R34, R46, R48, R70 \\
+\hline
+CU-014 & Cancelar procesamiento pesado & Núcleo y Ciclo de Vida & R46, R55, R70, R74 \\
+\hline
+CU-015 & C\'alculo de promedio de trials & Análisis & R03, R36, R41, R56, R71 \\
+\hline
+CU-016 & Aplicar filtros digitales & Preprocesamiento & R58, R59, R71, R76, R79 \\
+\hline
+CU-017 & Exportaci\'on gr\'afica vectorial (EMF) & Exportación & R28, R35, R57 \\
+\hline
+CU-018 & Ajustar frecuencia de muestreo & Preprocesamiento & R29, R67, R72 \\
+\hline
+CU-019 & Optimizar renderizado (submuestreo) & Interfaz y Usabilidad & R30, R49, R59, R73 \\
+\hline
+CU-020 & Orquestador del n\'ucleo (ejecutar an\'alisis pesado) & Núcleo y Ciclo de Vida & R04, R46, R54, R55, R69, R70, R71, R77 \\
+\hline
+CU-021 & Cerrar un proyecto & Núcleo y Ciclo de Vida & R02, R07, R11, R12, R52 \\
+\hline
+CU-022 & Cerrar la aplicaci\'on & Núcleo y Ciclo de Vida & R45, R46, R53, R58 \\
+\hline
+CU-023 & Abrir un proyecto & Núcleo y Ciclo de Vida & R02, R07, R08, R39, R47, R54, R71, R78 \\
+\hline
+\caption{Requerimientos realizados por cada caso de uso} \label{tab:traza_cu_req} \\
+\end{longtable}
+\end{center}
+
+
+\subsection{De los requerimientos a los casos de uso}
+\label{sec:traza_req_cu}
+
+La Tabla~\ref{tab:traza_req_cu} presenta la lectura inversa: para cada requerimiento, su tipo, su prioridad y los casos de uso que lo realizan. El enunciado completo de cada requerimiento se encuentra en el libro de requerimientos y en el SRS, y no se repite aquí para que la tabla sirva como índice.
+
+\begin{center}
+\small
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.09\textwidth}|>{\raggedright\arraybackslash}p{0.17\textwidth}|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.46\textwidth}|}
+\hline
+\textbf{R} & \textbf{Tipo (FURPS+)} & \textbf{Prioridad} & \textbf{Casos de uso} \\
+\hline
+\endfirsthead
+\hline
+\textbf{R} & \textbf{Tipo (FURPS+)} & \textbf{Prioridad} & \textbf{Casos de uso} \\
+\hline
+\endhead
+\hline
+\multicolumn{4}{r}{\textit{Continúa en la siguiente página}} \\
+\endfoot
+\hline
+\endlastfoot
+
+R01 & Funcional & Alta & CU-004 \\
+\hline
+R02 & Usabilidad & Media & CU-001, CU-003, CU-004, CU-005, CU-007, CU-013, CU-021, CU-023 \\
+\hline
+R03 & Usabilidad & Media & CU-015 \\
+\hline
+R04 & Usabilidad & Alta & CU-005, CU-020 \\
+\hline
+R05 & Funcional & Alta & CU-005 \\
+\hline
+R06 & Usabilidad & Media & CU-008 \\
+\hline
+R07 & Funcional & Alta & CU-003, CU-005, CU-021, CU-023 \\
+\hline
+R08 & Funcional & Alta & CU-003, CU-023 \\
+\hline
+R09 & Funcional & Baja & CU-005 \\
+\hline
+R10 & Usabilidad & Baja & CU-011 \\
+\hline
+R11 & Rendimiento & Alta & CU-003, CU-021 \\
+\hline
+R12 & Usabilidad & Media & CU-003, CU-021 \\
+\hline
+R13 & Funcional & Alta & CU-001 \\
+\hline
+R14 & Funcional & Alta & CU-001 \\
+\hline
+R15 & Funcional & Alta & CU-001 \\
+\hline
+R16 & Funcional & Alta & CU-001 \\
+\hline
+R17 & Funcional & Alta & CU-001 \\
+\hline
+R18 & Funcional & Alta & CU-001 \\
+\hline
+R19 & Funcional & Media & CU-001 \\
+\hline
+R20 & Funcional & Media & CU-001 \\
+\hline
+R21 & Funcional & Media & CU-001 \\
+\hline
+R22 & Funcional & Media & CU-001 \\
+\hline
+R23 & Funcional & Media & CU-001 \\
+\hline
+R24 & Funcional & Alta & CU-004 \\
+\hline
+R25 & Funcional & Baja & CU-009 \\
+\hline
+R26 & Funcional & Media & CU-012 \\
+\hline
+R27 & Funcional & Alta & CU-004, CU-006 \\
+\hline
+R28 & Funcional & Baja & CU-005, CU-017 \\
+\hline
+R29 & Funcional & Alta & CU-018 \\
+\hline
+R30 & Funcional & Alta & CU-012, CU-019 \\
+\hline
+R31 & Funcional & Alta & CU-004 \\
+\hline
+R32 & Funcional & Media & CU-012 \\
+\hline
+R33 & Funcional & Alta & CU-013 \\
+\hline
+R34 & Funcional & Alta & CU-013 \\
+\hline
+R35 & Funcional & Baja & CU-017 \\
+\hline
+R36 & Funcional & Alta & CU-015 \\
+\hline
+R37 & Funcional & Alta & CU-006 \\
+\hline
+R38 & Funcional & Media & CU-006 \\
+\hline
+R39 & Soporte & Baja & CU-011, CU-023 \\
+\hline
+R40 & Funcional & Baja & CU-007 \\
+\hline
+R41 & Funcional & Alta & CU-015 \\
+\hline
+R42 & Usabilidad & Alta & CU-010 \\
+\hline
+R43 & Usabilidad & Alta & CU-008 \\
+\hline
+R44 & Usabilidad & Media & CU-011 \\
+\hline
+R45 & Rendimiento & Alta & CU-008, CU-022 \\
+\hline
+R46 & Confiabilidad & Alta & CU-013, CU-014, CU-020, CU-022 \\
+\hline
+R47 & Rendimiento & Alta & CU-003, CU-023 \\
+\hline
+R48 & Rendimiento & Baja & CU-013 \\
+\hline
+R49 & Rendimiento & Alta & CU-012, CU-019 \\
+\hline
+R50 & Rendimiento & Alta & CU-008 \\
+\hline
+R51 & Rendimiento & Media & CU-005 \\
+\hline
+R52 & Rendimiento & Media & CU-003, CU-021 \\
+\hline
+R53 & Rendimiento & Media & CU-022 \\
+\hline
+R54 & Confiabilidad & Alta & CU-003, CU-020, CU-023 \\
+\hline
+R55 & Rendimiento & Media & CU-008, CU-014, CU-020 \\
+\hline
+R56 & Rendimiento & Media & CU-015 \\
+\hline
+R57 & Rendimiento & Media & CU-005, CU-017 \\
+\hline
+R58 & Confiabilidad & Alta & CU-008, CU-016, CU-022 \\
+\hline
+R59 & Rendimiento & Media & CU-012, CU-016, CU-019 \\
+\hline
+R60 & Funcional & Alta & CU-002 \\
+\hline
+R61 & Funcional & Alta & CU-002 \\
+\hline
+R62 & Funcional & Alta & CU-002 \\
+\hline
+R63 & Funcional & Media & CU-002 \\
+\hline
+R64 & Funcional & Media & CU-002 \\
+\hline
+R65 & Funcional & Media & CU-002 \\
+\hline
+R66 & Funcional & Media & CU-002 \\
+\hline
+R67 & Soporte & Alta & CU-004, CU-007, CU-018 \\
+\hline
+R68 & Funcional & Alta & CU-006 \\
+\hline
+R69 & Soporte & Alta & CU-007, CU-011, CU-020 \\
+\hline
+R70 & Soporte & Alta & CU-011, CU-013, CU-014, CU-020 \\
+\hline
+R71 & Rendimiento & Alta & CU-003, CU-004, CU-007, CU-015, CU-016, CU-020, CU-023 \\
+\hline
+R72 & Confiabilidad & Alta & CU-018 \\
+\hline
+R73 & Rendimiento & Alta & CU-019 \\
+\hline
+R74 & Rendimiento & Alta & CU-014 \\
+\hline
+R75 & Funcional & Media & CU-001 \\
+\hline
+R76 & Funcional & Alta & CU-016 \\
+\hline
+R77 & Soporte & Alta & CU-011, CU-020 \\
+\hline
+R78 & Funcional & Alta & CU-023 \\
+\hline
+R79 & Confiabilidad & Alta & CU-004, CU-007, CU-016 \\
+\hline
+R80 & Funcional & Alta & CU-003 \\
+\hline
+R81 & Rendimiento & Media & CU-011 \\
+\hline
+\caption{Casos de uso que realizan cada requerimiento} \label{tab:traza_req_cu} \\
+\end{longtable}
+\end{center}
+
+
+\subsection{De los casos de uso a las decisiones arquitectónicas}
+\label{sec:traza_cu_arq}
+
+La Tabla~\ref{tab:traza_cu_arq} invierte la Tabla~\ref{tab:traza_diagnostico}: indica, para cada caso de uso que sirve de verificación a una decisión de la Sección~\ref{sec:principios}, el problema del diagnóstico al que responde, los principios y las decisiones que lo atienden y, cuando existe, el escenario de calidad asociado. Un caso de uso que cambie obliga a revisar las decisiones de su fila.
+
+\begin{center}
+\small
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.08\textwidth}|>{\raggedright\arraybackslash}p{0.13\textwidth}|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.22\textwidth}|>{\raggedright\arraybackslash}p{0.22\textwidth}|}
+\hline
+\textbf{CU} & \textbf{Problema} & \textbf{Principio} & \textbf{Decisión} & \textbf{Escenario de calidad} \\
+\hline
+\endfirsthead
+\hline
+\textbf{CU} & \textbf{Problema} & \textbf{Principio} & \textbf{Decisión} & \textbf{Escenario de calidad} \\
+\hline
+\endhead
+\hline
+\multicolumn{5}{r}{\textit{Continúa en la siguiente página}} \\
+\endfoot
+\hline
+\endlastfoot
+
+CU-003 & D2, D5 & P2, P5, P7 & ADR-03, ADR-06, ADR-08 & Escenario 6 \\
+\hline
+CU-004 & D2 & P2 & ADR-03 & --- \\
+\hline
+CU-007 & D7 & P5 & ADR-06 & Escenario 8 \\
+\hline
+CU-008 & D8 & P7 & ADR-08 & --- \\
+\hline
+CU-011 & D1, D4, D14 & P1, P4, P10 & ADR-01, ADR-02, ADR-05, ADR-11 & Escenarios 1 y 3 \\
+\hline
+CU-014 & D11 & P8 & ADR-09 & --- \\
+\hline
+CU-016 & D7 & P5 & ADR-06 & Escenario 8 \\
+\hline
+CU-019 & D6 & P6 & ADR-07 & Escenarios 2 y 6 \\
+\hline
+CU-020 & D9, D10, D12 & P8, P9 & ADR-09, ADR-10 & Escenario 2 \\
+\hline
+CU-021 & D5 & P5, P7 & ADR-06, ADR-08 & Escenario 6 \\
+\hline
+CU-022 & D1, D8 & P1, P7 & ADR-01, ADR-02, ADR-08 & --- \\
+\hline
+\caption{Decisiones arquitectónicas que sostienen cada caso de uso} \label{tab:traza_cu_arq} \\
+\end{longtable}
+\end{center}
+
+Los casos de uso CU-001, CU-002, CU-005, CU-006, CU-009, CU-010, CU-012, CU-013, CU-015, CU-017, CU-018 y CU-023 no figuran en la tabla porque ninguno de los problemas del diagnóstico de la versión 1.0 se verifica a través de ellos. Se realizan sobre la estructura general del microkernel y de los servicios del núcleo, sin una decisión arquitectónica propia.
+
+
+\subsection{Análisis de cobertura}
+\label{sec:cobertura}
+
+La Tabla~\ref{tab:cobertura} resume el resultado de aplicar los criterios de la Sección~\ref{sec:trazabilidad} a las dos matrices anteriores.
+
+\begin{table}[H]
+\centering
+\small
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{|p{0.52\linewidth}|p{0.16\linewidth}|p{0.16\linewidth}|}
+\hline
+\textbf{Verificación} & \textbf{Resultado} & \textbf{Proporción} \\
+\hline
+Requerimientos declarados por al menos un caso de uso & 81 de 81 & 100\,\% \\
+\hline
+Casos de uso que declaran al menos un requerimiento & 23 de 23 & 100\,\% \\
+\hline
+Requerimientos declarados por más de un caso de uso & 26 de 81 & 32\,\% \\
+\hline
+Referencias a requerimientos inexistentes en el libro & 0 & --- \\
+\hline
+\end{tabular}
+\caption{Cobertura de la trazabilidad entre requerimientos y casos de uso}
+\label{tab:cobertura}
+\end{table}
+
+Los 81 requerimientos se distribuyen así según FURPS+: 45 funcional, 17 rendimiento, 9 usabilidad, 5 soporte, 5 confiabilidad. Los casos de uso que más requerimientos concentran son CU-001 (13 requerimientos), CU-003 (10 requerimientos), CU-023 (8 requerimientos), CU-020 (8 requerimientos), CU-005 (8 requerimientos), CU-004 (8 requerimientos), lo que los hace los más sensibles a un cambio de alcance. Los requerimientos más compartidos son R02 (8 casos de uso), R71 (7 casos de uso), R70 (4 casos de uso): son requerimientos transversales, que se cumplen en varios casos de uso a la vez y deben verificarse en cada uno.
+
+Dos observaciones completan el análisis. Primero, la cobertura completa significa que cada requerimiento tiene un caso de uso que lo realiza, pero no que esté implementado ni verificado; la verificación de los atributos de calidad se sigue en la Sección~\ref{sec:metricas_verificacion}. Segundo, CU-020 (ejecución a través del orquestador) es incluido por diez casos de uso en el diagrama de la Figura~\ref{fig:vistacasosuso}, por lo que los requerimientos que declara (R04, R46, R54, R55, R69, R70, R71 y R77) condicionan indirectamente a todos ellos.
 
 % ======================================================================
 \section{Anexos}

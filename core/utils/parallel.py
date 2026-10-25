@@ -80,8 +80,8 @@ def map_ordenado(fn, items, ctx=None, max_hilos=MAX_HILOS, etiqueta="Trial", byt
             hechos += 1
             if f.exception() is not None or cancelado():
                 pool.shutdown(wait=False, cancel_futures=True)
-            else:
-                avance(hechos)
+                break
+            avance(hechos)
 
     for f in futuros:
         if not f.cancelled() and f.exception() is not None:
