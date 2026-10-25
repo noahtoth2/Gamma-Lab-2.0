@@ -147,14 +147,14 @@ class MeasurementService:
         
         if measure_type == "slope_all_trials" and self._context.get("plugin") != "trials":
             try:
-                self.alerts.info("This measurement is only available in the Trials plugin.")
+                self.alerts.warning("This measurement is only available in the Trials plugin.")
             except Exception:
                 pass
             return False
     
         if self._state != 'idle':
             try:
-                self.alerts.info("A measurement is already in progress. Complete it or cancel (Esc).")
+                self.alerts.warning("A measurement is already in progress. Complete it or cancel (Esc).")
             except Exception:
                 pass
             return False
@@ -639,7 +639,7 @@ class MeasurementService:
             result = self._compute_amplitude_window(x1, x2)
             if not result:
                 try:
-                    self.alerts.info("The amplitude could not be calculated in the selected window.", "Amplitude")
+                    self.alerts.warning("The amplitude could not be calculated in the selected window.", "Amplitude")
                 except Exception:
                     pass
                 self._state = 'idle'
@@ -677,7 +677,7 @@ class MeasurementService:
                 self._load_reference_data_for_pick(ch)
                 if not self._ref_data or not self._ref_data.get('xs'):
                     try:
-                        self.alerts.info("No data to estimate X indices.")
+                        self.alerts.warning("No data to estimate X indices.")
                     except Exception:
                         pass
                     self.cancel(); return
@@ -686,14 +686,14 @@ class MeasurementService:
             i2 = self._nearest_index(x2)
             if i1 is None or i2 is None:
                 try:
-                    self.alerts.info("Could not determine the indices of the points.")
+                    self.alerts.warning("Could not determine the indices of the points.")
                 except Exception:
                     pass
                 self.cancel(); return
 
             if i1 == i2:
                 try:
-                    self.alerts.info("Both points fall at the same index; dx=0.")
+                    self.alerts.warning("Both points fall at the same index; dx=0.")
                 except Exception:
                     pass
                 # seguimos adelante para que no deje rastro de estado
@@ -716,7 +716,7 @@ class MeasurementService:
         else:
             # unsupported type (in case of leftover 'derivative')
             try:
-                self.alerts.info(f"Unsupported measurement type: {kind}", "Measurement")
+                self.alerts.error(f"Unsupported measurement type: {kind}", "Measurement")
             except Exception:
                 pass
 

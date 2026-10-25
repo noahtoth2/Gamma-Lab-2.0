@@ -370,9 +370,15 @@ class TrialsPlugin(IPlugin):
 
         # Show only the first trial
         self.last_td = td
+        self.visible_trials = [0]
         self.navigate_trial(0)
 
-        self._notify(f"Trials: T={td.trials.shape[1]}, Ns={td.trials.shape[0]}, channel='{td.channel_name}'")
+        # Avisar a la ventana principal y a los demas plugins (indicador de
+        # trial, Remove Artifact...). Antes este evento solo lo emitia Open Signal.
+        self.kernel.emit_event("trials_generated", {"signal": ds.name, "channel": td.channel_name})
+
+        self._notify(f"Trials: {td.trials.shape[1]} trials generados en '{td.channel_name}' "
+                     f"(Ns={td.trials.shape[0]}); descartes reiniciados")
    
 
     # -------------- Navigation between trials ----------------------
@@ -383,7 +389,7 @@ class TrialsPlugin(IPlugin):
         direction = -1 → previous
         """
         if not self.last_td:
-            self.alerts.info("No trials loaded.", "Navigation")
+            self.alerts.warning("No trials loaded.", "Navigation")
             return
 
         td = self.last_td
@@ -391,7 +397,7 @@ class TrialsPlugin(IPlugin):
         
         _, T = td.trials.shape
         if T == 0:
-            self.alerts.info("No trials available.", "Navigation")
+            self.alerts.warning("No trials available.", "Navigation")
             return
 
         if not self.visible_trials:
@@ -413,7 +419,13 @@ class TrialsPlugin(IPlugin):
             pass
         self.ui.Btn_discard_trial.clicked.connect(lambda _, idx=new_idx: self._on_discard_trial(idx, T))
 
-        self._notify(f"Trial {new_idx + 1} of {T}")
+        state = self.current_trial_state() or {}
+        if state.get("discarded"):
+            self._notify(f"Trial {new_idx + 1} of {T} (discarded)")
+        elif state.get("note"):
+            self._notify(f"Trial {new_idx + 1} of {T} (valid {state['position']}/{state['total']})")
+        else:
+            self._notify(f"Trial {new_idx + 1} of {T}")
    
 
 
@@ -449,6 +461,8 @@ class TrialsPlugin(IPlugin):
             self._update_trial_ui(ds, index, T, True)
             self.alerts.info(f"Trial {index + 1} discarded.", "Discard trial")
         self.mark_project_dirty()
+        self.kernel.emit_event("trial_discard_updated",
+                               {"signal": ds.name, "channel": ch, "index": index})
 
     def _update_trial_ui(self, ds: SignalDataset, index: int, total: int = None, estado_descartado: bool = None):
         """Update current trial label/button depending on discard state."""
@@ -458,18 +472,49 @@ class TrialsPlugin(IPlugin):
         if estado_descartado is None:
             estado_descartado = ds.is_trial_discarded(ds.name, ch, index)
 
+        # Este plugin navega por el indice original (incluye descartados); el
+        # resto de la aplicacion numera por posicion entre los validos. Si hay
+        # descartes se muestran las dos para que se puedan relacionar.
+        state = self.current_trial_state()
+        valid_text = ""
+        if state and state.get("note") and not estado_descartado:
+            valid_text = f"  (valid {state['position']}/{state['total']})"
+
         if estado_descartado:
             self.ui.currentTrialLabel.setText(f"Current trial: {index + 1} (discarded){total_text}")
             self.ui.currentTrialLabel.setStyleSheet("color: red; font-weight: bold;")
             self.ui.Btn_discard_trial.setText("Include")
         else:
-            self.ui.currentTrialLabel.setText(f"Current trial: {index + 1}{total_text}")
+            self.ui.currentTrialLabel.setText(f"Current trial: {index + 1}{total_text}{valid_text}")
             self.ui.currentTrialLabel.setStyleSheet("color: black; font-weight: bold;")
             self.ui.Btn_discard_trial.setText("Discard")
 
         if total is not None:
             self.ui.totalTrialsValueBox.setText(str(total))
         self.ui.currentTrialValueBox.setText(str(index + 1))
+
+        self.publish_current_trial()
+
+    def current_trial_state(self):
+        """Trial visible, traducido a la numeracion de la aplicacion (posicion
+        entre los validos). Si esta descartado no tiene posicion valida."""
+        td = self.last_td
+        ds = self.get_active_signal(silent=True) if self.mainwin else None
+        if td is None or ds is None or not self.visible_trials:
+            return super().current_trial_state()
+        idx = self.visible_trials[0]
+        T = int(td.trials.shape[1])
+        valid = ds.get_active_trial_indices(ds.name, td.channel_name) or list(range(T))
+        discarded = idx not in valid
+        return self.build_trial_state(
+            "single",
+            position=None if discarded else valid.index(idx) + 1,
+            total=len(valid),
+            channel=td.channel_name,
+            discarded=discarded,
+            original_index=idx,
+            note=(f"original {idx + 1} de {T}" if len(valid) != T and not discarded else None),
+        )
 
     # -------------- Render ----------------------
     def _render_trials(self, td: TrialDataset):

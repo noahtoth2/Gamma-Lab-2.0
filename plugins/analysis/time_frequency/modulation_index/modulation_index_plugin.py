@@ -7,6 +7,8 @@ from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from vtkmodules.util import numpy_support
 
 from core.plugins.interfaces import IPlugin
+from core.utils.trial_labels import trials_used
+from core.utils.cursor_readout import CursorReadout
 from plugins.analysis.time_frequency.modulation_index import compute as cm
 from plugins.analysis.time_frequency.modulation_index.modulation_index_plugin_ui import (
     Ui_ModulationIndex)
@@ -63,6 +65,7 @@ class Modulation_index_plugin(IPlugin):
             self.ui.generateButton.clicked.connect(self.on_create_mi)
             self.ui.prevTrialButton.clicked.connect(partial(self._mover_trial, -1))
             self.ui.nextTrialButton.clicked.connect(partial(self._mover_trial, +1))
+            self.ui.trialSpinBox.valueChanged.connect(lambda _: self.publish_current_trial())
         else:
             self.widget.setParent(parent)
         return self.widget
@@ -83,7 +86,7 @@ class Modulation_index_plugin(IPlugin):
 
     def _on_clear_clicked(self):
         if self._calculando:
-            self.alerts.info("Hay un cálculo del índice de modulación en curso; "
+            self.alerts.warning("Hay un cálculo del índice de modulación en curso; "
                              "espera a que termine.")
             return
         d = self.DEFAULTS
@@ -117,6 +120,13 @@ class Modulation_index_plugin(IPlugin):
         if self.ui.trialSpinBox.value() > max(1, n):
             self.ui.trialSpinBox.setValue(1)
         self.ui.trialTotalLabel.setText(f"de {n}" if n else "sin trials")
+
+    def current_trial_state(self):
+        _, td = self._active_trials_quiet()
+        if td is None or self.ui is None:
+            return None
+        return self.build_trial_state("single", position=self.ui.trialSpinBox.value(),
+                                      total=int(td.trials.shape[1]), channel=td.channel_name)
 
     def _mover_trial(self, paso: int):
         if not self.ui.trialSpinBox.isEnabled():
@@ -157,7 +167,7 @@ class Modulation_index_plugin(IPlugin):
         self._actualizar_selector_trial()
         indice = self.ui.trialSpinBox.value() - 1
         if not (0 <= indice < datos.shape[1]):
-            self.alerts.error(f"El trial {indice + 1} no existe; hay {datos.shape[1]}.")
+            self.alerts.warning(f"El trial {indice + 1} no existe; hay {datos.shape[1]}.")
             return
 
         tasks.cancel_all_from(self.meta.id)
@@ -182,6 +192,7 @@ class Modulation_index_plugin(IPlugin):
         )
         self._handle = handle
         handle.progress.connect(partial(self._on_mi_progress, handle))
+        self._trials_en_curso = trials_used([indice + 1], datos.shape[1], "single")
         handle.finished.connect(partial(self._on_mi_done, handle, indice))
         handle.failed.connect(partial(self._on_mi_failed, handle))
         handle.cancelled.connect(partial(self._on_mi_cancelled, handle))
@@ -219,6 +230,9 @@ class Modulation_index_plugin(IPlugin):
                 return
             self.ensure_vtk()
             self.render_resultado(resultado, indice)
+            self._trials_used = getattr(self, "_trials_en_curso", None)
+            if self._trials_used:
+                self._notify(f"Índice de modulación calculado con {self._trials_used['label']}")
 
             self._avisar_de_los_limites(resultado)
             self.mark_project_dirty()
@@ -312,6 +326,8 @@ class Modulation_index_plugin(IPlugin):
         self._context_view.GetRenderer().SetBackground(*self.FONDO)
         self.vtk_widget.Initialize()
         self.vtk_widget.Start()
+        # Este panel no tiene menu contextual, que es quien suele instalarla
+        CursorReadout.attach(self.vtk_widget, lambda: getattr(self, "_charts", []))
 
     def render_resultado(self, r, indice=0):
         escena = self._context_view.GetScene()
@@ -367,7 +383,9 @@ class Modulation_index_plugin(IPlugin):
         chart = vtk.vtkChartHistogram2D()
         chart.SetInputData(img, 0)
         chart.SetTransferFunction(lut)
-        chart.SetTitle(f"Índice de modulación — trial {indice + 1}")
+        n_total = (getattr(self, "_trials_en_curso", None) or {}).get("total_valid")
+        chart.SetTitle(f"Índice de modulación — trial {indice + 1}"
+                       + (f" de {n_total}" if n_total else ""))
         eje_x = chart.GetAxis(vtk.vtkAxis.BOTTOM)
         eje_x.SetTitle("Frecuencia de fase (Hz)")
         eje_x.SetBehavior(vtk.vtkAxis.FIXED)
@@ -403,6 +421,7 @@ class Modulation_index_plugin(IPlugin):
             "fq_a2": self.ui.fqA2SpinBox.value(),
             "a_step": self.ui.aStepSpinBox.value(),
             "trial": self.ui.trialSpinBox.value(),
+            "trials_used": self._trials_used,
         }
 
     def apply_analysis_params(self, params: dict):

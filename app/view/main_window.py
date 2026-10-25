@@ -36,7 +36,9 @@ from PyQt5.QtWidgets import QFrame
 
 from core.plugins.interfaces import IPlugin
 from core.utils.plugin_alerts import PluginAlerts
+from core.utils.notifications import NotificationCenter
 from core.utils.task_progress import TaskProgressBar
+from core.utils.trial_labels import describe_trials
 from core.services.project_service import ProjectService
 
 class MainWindow(QMainWindow):
@@ -78,6 +80,12 @@ class MainWindow(QMainWindow):
         # obtiene porcentaje y boton Cancelar sin hacer nada (problema nº 9).
         self.task_progress = TaskProgressBar(self)
         self.statusBar().addPermanentWidget(self.task_progress)
+
+        # Valores X/Y bajo el cursor en cualquier grafica (core.utils.cursor_readout)
+        self.cursor_readout = QLabel(self)
+        self.cursor_readout.setObjectName("cursorReadoutLabel")
+        self.cursor_readout.setToolTip("Posición del cursor en unidades de los ejes del gráfico")
+        self.statusBar().addPermanentWidget(self.cursor_readout)
         tasks = self.kernel.get_service("TaskService")
         if tasks is not None:
             tasks.task_started.connect(self._on_task_started)
@@ -90,6 +98,12 @@ class MainWindow(QMainWindow):
 
         # Workspace area where plugins render
         self.plugin_area = self.ui.workspace
+
+        # Avisos no modales (info/warning) en la esquina del workspace; los
+        # errores siguen siendo un dialogo modal (ver PluginAlerts).
+        self.notifications = NotificationCenter(self.plugin_area)
+        PluginAlerts.set_center(self.notifications)
+        self.statusBar().messageChanged.connect(self._on_status_message_changed)
 
         # Initialize sidebar functionality
         self.setup_sidebar_functionality()
@@ -342,7 +356,7 @@ class MainWindow(QMainWindow):
         """Arm interactive 2-point picking on the last chart view visited."""
         svc = self._get_active_measure_service()
         if not svc:
-            self.alerts.info("Open a chart view (Trials, FFT, etc.) first.")
+            self.alerts.warning("Open a chart view (Trials, FFT, etc.) first.")
             return
         svc.on_change = self._refresh_measurement_tables
         svc.start(measure_type)
@@ -446,7 +460,7 @@ class MainWindow(QMainWindow):
             store = self.kernel.get_service("DataStore")
             lst = (store.get("measurements", []) or []) if store else []
             if not lst:
-                self.alerts.info("There are no measurements to delete.")
+                self.alerts.warning("There are no measurements to delete.")
                 return
             lst.pop()
             store.set("measurements", lst)
@@ -467,14 +481,14 @@ class MainWindow(QMainWindow):
         if svc:
             svc.set_overlay_visible(True)
         else:
-            self.alerts.info("Open a chart view (Trials, FFT, etc.) first.")
+            self.alerts.warning("Open a chart view (Trials, FFT, etc.) first.")
 
     def _on_hide_all_measurements(self):
         svc = self._get_active_measure_service()
         if svc:
             svc.set_overlay_visible(False)
         else:
-            self.alerts.info("Open a chart view (Trials, FFT, etc.) first.")
+            self.alerts.warning("Open a chart view (Trials, FFT, etc.) first.")
 
     def _build_delete_button(self) -> QWidget:
         """'delete last / delete all' dropdown for the Measurements group."""
@@ -523,7 +537,7 @@ class MainWindow(QMainWindow):
         def apply_zoom(factor):
             menu = self._active_vtk_menu
             if not menu or not hasattr(menu, "zoom_by_factor"):
-                self.alerts.info("Open a chart view (Trials, FFT, etc.) first.")
+                self.alerts.warning("Open a chart view (Trials, FFT, etc.) first.")
                 return
             menu.zoom_by_factor(factor)
             zoom_state["pct"] = max(10, round(zoom_state["pct"] / factor))
@@ -532,7 +546,7 @@ class MainWindow(QMainWindow):
         def restore_zoom():
             menu = self._active_vtk_menu
             if not menu or not hasattr(menu, "reset_zoom"):
-                self.alerts.info("Open a chart view (Trials, FFT, etc.) first.")
+                self.alerts.warning("Open a chart view (Trials, FFT, etc.) first.")
                 return
             menu.reset_zoom()
             zoom_state["pct"] = 100
@@ -566,7 +580,7 @@ class MainWindow(QMainWindow):
             try:
                 self.active_plugin.stop()
             except Exception as e:
-                self.alerts.warning(f"An error occurred while stopping the VTK render plugin.\n\nDetails:\n{str(e)}", "Error stopping plugin")
+                self.alerts.error(f"An error occurred while stopping the VTK render plugin.\n\nDetails:\n{str(e)}", "Error stopping plugin")
             self.active_plugin_widget.setVisible(False)
 
         self.active_plugin_widget = None
@@ -656,6 +670,9 @@ class MainWindow(QMainWindow):
                 plugin.on_show()
             except Exception as e:
                 print("Error in plugin on_show:", e)
+
+        self._refresh_trial_indicator()
+        self.notifications.restack()
 
     def eventFilter(self, obj, event):
         if obj is self.plugin_area and event.type() == QEvent.Resize:
@@ -939,6 +956,8 @@ class MainWindow(QMainWindow):
         self._update_title_bar_signal_name()
         self._update_background_logo_visibility()
         self._update_home_welcome_visibility()
+        self._refresh_trial_indicator()
+        self.notifications.clear()
 
     def _reset_all_plugin_widgets(self):
         names = list(self.plugin_widgets.keys())
@@ -1127,6 +1146,98 @@ class MainWindow(QMainWindow):
             self.ui.titleProjectNameLabel.setVisible(False)
             self.ui.titleSeparatorLabel.setVisible(False)
 
+    # ---------- Mensajes por severidad en la barra de estado ----------
+    def show_status(self, msg: str, level: str = "info", timeout: int = 3000):
+        """Mensaje en la barra de estado, coloreado por severidad (QSS
+        `QStatusBar[severity=...]`). El color se quita al borrarse el mensaje."""
+        bar = self.statusBar()
+        self._set_severity(bar, level)
+        bar.showMessage(msg, timeout)
+
+    def _on_status_message_changed(self, msg: str):
+        if not msg:
+            self._set_severity(self.statusBar(), "info")
+
+    @staticmethod
+    def _set_severity(widget, level: str):
+        if widget.property("severity") == level:
+            return
+        widget.setProperty("severity", level)
+        widget.style().unpolish(widget)
+        widget.style().polish(widget)
+
+    # ---------- Indicador del trial actual ----------
+    def _refresh_trial_indicator(self):
+        """Pide al plugin visible su estado de trial y lo muestra. Sin plugin
+        con trials, muestra el estado general de la senal activa."""
+        state = None
+        plugin = self.active_plugin
+        if plugin is not None and hasattr(plugin, "current_trial_state"):
+            try:
+                state = plugin.current_trial_state()
+            except Exception as e:
+                print("[MainWindow] current_trial_state error:", e)
+        if state is None:
+            state = self._default_trial_state()
+        self._update_trial_indicator(state)
+
+    def _default_trial_state(self):
+        store = self.kernel.get_service("DataStore")
+        sig = store.get_active_signal() if store else None
+        if sig is None:
+            return None
+        try:
+            td = sig.get_active_trials(sig.name, None) if sig.number_of_trials_dataset() else None
+        except Exception:
+            td = None
+        if td is None:
+            return {"mode": "none"}
+        return {"mode": "all", "total": int(td.trials.shape[1]), "channel": td.channel_name}
+
+    @staticmethod
+    def format_trial_state(state) -> str:
+        if not state:
+            return ""
+        mode = state.get("mode")
+        total = int(state.get("total") or 0)
+        if mode == "none":
+            return "Sin trials generados"
+        if mode == "raw":
+            texto = "Señal continua (sin trials)"
+        elif mode == "single":
+            if state.get("discarded"):
+                orig = state.get("original_index")
+                texto = (f"Trial descartado (original {orig + 1})" if orig is not None
+                         else "Trial descartado")
+            else:
+                texto = f"Trial {state.get('position')} / {total}"
+        elif mode == "average":
+            texto = f"Promedio de {total} trials"
+        elif mode == "selection":
+            d = describe_trials(state.get("positions"), total)
+            texto = d[:1].upper() + d[1:]
+        else:
+            texto = f"Todos los trials ({total})"
+        channel = state.get("channel")
+        if channel and mode != "raw":
+            texto = f"{channel} · {texto}"
+        if state.get("note"):
+            texto = f"{texto} · {state['note']}"
+        return texto
+
+    def _update_trial_indicator(self, state):
+        label = self.ui.titleTrialLabel
+        texto = self.format_trial_state(state)
+        if not texto:
+            label.setVisible(False)
+            return
+        label.setText(texto)
+        label.setToolTip(
+            "Trial con el que se está trabajando.\n"
+            "Los trials se numeran por su posición entre los válidos (no descartados).")
+        self._set_severity(label, "warning" if state.get("discarded") else "info")
+        label.setVisible(True)
+
     def on_open_signal_clicked(self):
         """File > Open signal: show the channel/signal preview and pop the file picker."""
         plugin = self.kernel.get_plugin("Open Signal")
@@ -1155,6 +1266,16 @@ class MainWindow(QMainWindow):
         elif topic in ("trials_generated", "trial_discard_updated"):
             # State changes that affect data availability
             self._update_background_logo_visibility()
+        elif topic == "current_trial_changed":
+            # Solo cuenta lo que publica el plugin que el usuario esta viendo
+            if (isinstance(payload, dict) and self.active_plugin is not None
+                    and payload.get("plugin") == self.active_plugin.name()):
+                self._update_trial_indicator(payload)
+            return
+
+        if topic in ("signal_added", "signal_active_changed",
+                     "trials_generated", "trial_discard_updated"):
+            self._refresh_trial_indicator()
 
     def setup_sidebar_functionality(self):
         sidebar = self.ui.widget_3

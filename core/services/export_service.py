@@ -77,7 +77,7 @@ class ExportService:
             self.alerts.info(f"Image exported successfully {base_name}", "Successful export")
 
         except Exception as e:
-            self.alerts.error("Error exporting image", str(e))
+            self.alerts.error(f"Error exporting image:\n{e}", "Export error")
 
     # ---------- sections (results made of several tables) ----------
     def export_sections(self, sections: dict, fmt: str, filename: str = None):
@@ -91,7 +91,7 @@ class ExportService:
         """
         try:
             if not sections:
-                self.alerts.error("There are no results to export.")
+                self.alerts.warning("There are no results to export.")
                 return
 
             signal_name, channel_name, plugin_name = self.get_names()
@@ -152,10 +152,10 @@ class ExportService:
         try:
             chart = self.get_active_chart()
             if not chart:
-                self.alerts.error("There is no chart to export.")
+                self.alerts.warning("There is no chart to export.")
                 return
             if chart.GetNumberOfPlots() == 0:
-                self.alerts.error("The chart does not contain data to export.")
+                self.alerts.warning("The chart does not contain data to export.")
                 return
 
             signal_name, channel_name, plugin_name = self.get_names()

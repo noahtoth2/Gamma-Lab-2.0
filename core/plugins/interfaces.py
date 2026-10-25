@@ -24,6 +24,9 @@ class IPlugin(ABC):
         self.active_signal: SignalDataset = None
         self.active_chanel = None
         self.alerts = PluginAlerts()
+        # Trials que uso la ultima operacion (core.utils.trial_labels.trials_used);
+        # se guarda con los parametros del analisis en el proyecto.
+        self._trials_used: dict | None = None
 
         
         
@@ -55,10 +58,20 @@ class IPlugin(ABC):
         print(f"[{self.meta.name}]", *args)
         sys.stdout.flush()
 
-    def _notify(self, msg: str):
+    def _notify(self, msg: str, level: str = "info"):
+        """Mensaje breve en la barra de estado, coloreado por severidad.
+
+        `info` se queda solo en la barra; `warning` y `error` ademas pasan por
+        `self.alerts`, para que no se pierdan entre los mensajes de progreso.
+        """
+        if level in ("warning", "error"):
+            self.alerts.show(level, msg)
         try:
             if self.mainwin:
-                self.mainwin.statusBar().showMessage(msg, 3000)
+                if hasattr(self.mainwin, "show_status"):
+                    self.mainwin.show_status(msg, level, 3000 if level == "info" else 6000)
+                else:
+                    self.mainwin.statusBar().showMessage(msg, 3000)
                 return
         except Exception:
             pass
@@ -73,7 +86,7 @@ class IPlugin(ABC):
                 return None
             store: DataStore | None = self.mainwin.kernel.get_service("DataStore")
             if store is None:
-                self.alerts.warning("DataStore service not found.")
+                self.alerts.error("DataStore service not found.")
             return store
         except Exception as e:
             self.alerts.error(f"Error accessing DataStore: {e}")
@@ -161,6 +174,97 @@ class IPlugin(ABC):
         except Exception as e:
             self.alerts.error(f"Error al obtener los trials del canal '{channel_name}': {e}")
             return None
+
+    # ===== Trial actual (indicador global de la barra de titulo) =====
+    def _active_trials_quiet(self):
+        """(senal, trials activos) sin avisar al usuario si faltan."""
+        try:
+            store = self.kernel.get_service("DataStore") if self.kernel else None
+            sig = store.get_active_signal() if store else None
+            if sig is None:
+                return None, None
+            return sig, sig.get_active_trials(sig.name, None)
+        except Exception:
+            return None, None
+
+    def build_trial_state(self, mode: str, *, position: int = None, positions=None,
+                          total: int = None, channel: str = None, discarded: bool = False,
+                          original_index: int = None, note: str = None) -> dict:
+        """Estado del trial actual con la numeracion de la aplicacion:
+        posicion base 1 entre los trials validos.
+
+        `mode`: "single" (un trial), "average" (promedio), "all" (todos los
+        validos), "selection" (subconjunto) o "none" (no hay trials).
+        """
+        if total is None or channel is None:
+            _, td = self._active_trials_quiet()
+            if td is not None:
+                if total is None:
+                    total = int(td.trials.shape[1])
+                if channel is None:
+                    channel = td.channel_name
+        return {
+            "plugin": self.name(),
+            "mode": mode,
+            "position": position,
+            "positions": None if positions is None else sorted({int(p) for p in positions}),
+            "total": int(total or 0),
+            "channel": channel,
+            "discarded": bool(discarded),
+            "original_index": original_index,
+            "note": note,
+        }
+
+    def publish_current_trial(self, mode: str = None, **kwargs):
+        """Publica en que trial se esta trabajando: lo guarda en el DataStore
+        (`current_trial`) y emite `current_trial_changed`. La ventana principal
+        solo lo muestra si viene del plugin visible.
+
+        Sin argumentos publica `self.current_trial_state()`, que es lo normal:
+        el plugin describe su estado en un solo sitio y avisa cuando cambia.
+        """
+        state = self.current_trial_state() if mode is None else self.build_trial_state(mode, **kwargs)
+        if state is None:
+            return None
+        try:
+            store = self.kernel.get_service("DataStore") if self.kernel else None
+            if store is not None:
+                store.set("current_trial", state)
+            if self.kernel is not None:
+                self.kernel.emit_event("current_trial_changed", state)
+        except Exception as e:
+            self._log("publish_current_trial error:", e)
+        return state
+
+    def trial_state_from_used(self, used: dict, channel: str = None) -> dict:
+        """Estado del indicador a partir de un registro `trials_used`."""
+        mode = used.get("mode") or "selection"
+        positions = used.get("positions") or []
+        total = used.get("total_valid")
+        channel = channel or used.get("channel")
+        if mode == "single" and positions:
+            return self.build_trial_state("single", position=positions[0], total=total, channel=channel)
+        if mode in ("average", "all"):
+            return self.build_trial_state(mode, total=total, channel=channel)
+        return self.build_trial_state("selection", positions=positions, total=total, channel=channel)
+
+    def current_trial_state(self) -> dict | None:
+        """Lo que el indicador debe mostrar cuando este plugin esta visible.
+
+        Por defecto: los trials que uso la ultima operacion de este plugin
+        (`self._trials_used`), si siguen correspondiendo a los trials actuales;
+        si no, todos los validos del canal activo, que es lo que usa la mayoria
+        de los analisis. Los plugins con selector de trial lo sobrescriben.
+        """
+        _, td = self._active_trials_quiet()
+        if td is None:
+            return None
+        total = int(td.trials.shape[1])
+        used = self._trials_used
+        if (used and used.get("total_valid") == total
+                and used.get("channel") in (None, td.channel_name)):
+            return self.trial_state_from_used(used, td.channel_name)
+        return self.build_trial_state("all", total=total, channel=td.channel_name)
 
     def on_kernel_event(self, topic: str, payload: object):
 

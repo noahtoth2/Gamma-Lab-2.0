@@ -10,6 +10,7 @@ import numpy as np
 from core.plugins.interfaces import IPlugin
 from core.plugins.meta import PluginMeta
 from core.utils.vtk_context_menu import VTKContextMenu
+from core.utils.trial_labels import trials_used
 from core.model.signal_dataset import SignalDataset
 from core.services.data_store import DataStore
 from plugins.analysis.time_frequency.wavelet import compute as cw
@@ -111,7 +112,7 @@ class Wavelet_plugin(IPlugin):
 
     def _on_clear_clicked(self):
         if self._calculando:
-            self.alerts.info("Hay un cálculo de wavelet en curso; espera a que termine.")
+            self.alerts.warning("Hay un cálculo de wavelet en curso; espera a que termine.")
             return
         self.ui.sampleDensitySpinBox.setValue(self.params["sample_density_value"])
         self.ui.lowFrequencySpinBox.setValue(self.params["low_frequency_value"])
@@ -190,6 +191,9 @@ class Wavelet_plugin(IPlugin):
             sig = trials.trials[:, 0] if trials.trials.ndim == 2 else np.ravel(trials.trials)
         except Exception:
             sig = np.array(trials.trials, dtype=float).ravel()
+        # Este analisis usa solo el primer trial valido; se indica tal cual.
+        n_total = trials.trials.shape[1] if trials.trials.ndim == 2 else 1
+        self._trials_en_curso = trials_used([1], n_total, "single", channel=trials.channel_name)
 
         sig = np.nan_to_num(np.asarray(sig).flatten(), nan=0.0, posinf=0.0, neginf=0.0)
         fs_calculado = round(1.0 / (t[1] - t[0]), 3)
@@ -203,10 +207,10 @@ class Wavelet_plugin(IPlugin):
         norm_method = self.ui.normalizeComboBox.currentText().lower()
 
         if fmin <= 0:
-            self.alerts.error("La frecuencia baja debe ser mayor que cero.")
+            self.alerts.warning("La frecuencia baja debe ser mayor que cero.")
             return
         if fmax <= fmin:
-            self.alerts.error(f"La frecuencia alta ({fmax:g} Hz) debe ser mayor que la baja ({fmin:g} Hz).")
+            self.alerts.warning(f"La frecuencia alta ({fmax:g} Hz) debe ser mayor que la baja ({fmin:g} Hz).")
             return
 
         # El factor de submuestreo es entero, asi que una densidad que no divida
@@ -214,7 +218,7 @@ class Wavelet_plugin(IPlugin):
         # que de verdad se va a usar, no contra la pedida (problema nº 18).
         fs_efectiva, _ = cw.tasa_efectiva(fs_calculado, fs)
         if fmax > fs_efectiva / 2:
-            self.alerts.error(f"La frecuencia alta ({fmax:g} Hz) no puede superar {fs_efectiva / 2:g} Hz, "
+            self.alerts.warning(f"La frecuencia alta ({fmax:g} Hz) no puede superar {fs_efectiva / 2:g} Hz, "
                               f"la mitad de la densidad efectiva ({fs_efectiva:g} Hz).")
             return
         if abs(fs_efectiva - fs) > 1e-9:
@@ -286,7 +290,15 @@ class Wavelet_plugin(IPlugin):
 
             self.ensure_vtk()
 
-            self.render_scalogram(times, freqs, scalogram, "Scalogram Wavelet (Morlet)", scaled)
+            usados = getattr(self, "_trials_en_curso", None)
+            titulo = "Scalogram Wavelet (Morlet)"
+            if usados:
+                titulo += f" — {usados['label']}"
+            self.render_scalogram(times, freqs, scalogram, titulo, scaled)
+            self._trials_used = usados
+            if usados:
+                self._notify(f"Wavelet calculada con {usados['label']} ({usados['channel']})")
+            self.publish_current_trial()
             self.mark_project_dirty()
         except Exception as e:
             self._log("render_scalogram:", e)
@@ -299,6 +311,14 @@ class Wavelet_plugin(IPlugin):
     # =====================================================
     # === Project save/restore
     # =====================================================
+    def current_trial_state(self):
+        """Wavelet siempre calcula sobre el primer trial valido."""
+        _, td = self._active_trials_quiet()
+        if td is None:
+            return None
+        return self.build_trial_state("single", position=1, total=int(td.trials.shape[1]),
+                                      channel=td.channel_name)
+
     def get_analysis_params(self) -> dict:
         return {
             "sample_density": self.ui.sampleDensitySpinBox.value(),
@@ -309,6 +329,7 @@ class Wavelet_plugin(IPlugin):
             "normalize_mode": self.ui.normalizeComboBox.currentText(),
             "scale_enabled": self.ui.scaleCheckBox.isChecked(),
             "scale_mode": self.ui.scaleComboBox.currentText(),
+            "trials_used": self._trials_used,
         }
 
     def apply_analysis_params(self, params: dict):
@@ -457,7 +478,7 @@ class Wavelet_plugin(IPlugin):
             self.vtk_menu.set_datastore(self.kernel.get_service("DataStore"))
 
         except Exception as e:
-            self.alerts.info(f"Error creating contextual map\n {str(e)}", "Contextual map")
+            self.alerts.error(f"Error creating contextual menu\n {str(e)}", "Contextual menu")
 
             
         context_view.GetRenderer().SetBackground(0.98, 0.98, 0.98)

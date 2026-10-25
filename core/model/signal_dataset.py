@@ -211,6 +211,31 @@ class SignalDataset:
 
         return filtered_dataset
 
+    def get_active_trial_indices(self, file_name: str, channel_name: str = None) -> List[int]:
+        """Indices **originales** de los trials que `get_active_trials` devuelve.
+
+        `get_active_trials` quita las columnas descartadas y pierde la numeracion
+        original: la columna k del resultado es el trial `indices[k]` del corte.
+        La aplicacion numera los trials por su posicion entre los validos, y esto
+        sirve para traducir entre las dos numeraciones (p. ej. el plugin Trials
+        navega por el indice original, incluidos los descartados).
+
+        Devuelve `[]` si no hay trials para ese canal.
+        """
+        if not self.__trials_dataset:
+            return []
+        if channel_name is None:
+            channel_name = self.__trials_dataset[-1].channel_name
+        coincidencias = [
+            t for t in self.__trials_dataset
+            if Path(t.source).name == file_name and t.channel_name == channel_name
+        ]
+        if not coincidencias:
+            return []
+        T = coincidencias[-1].trials.shape[1]
+        discarded = self.__discarded_trials.get((file_name, channel_name), set())
+        return [i for i in range(T) if i not in discarded]
+
     def discard_trial(self, source: str, channel: str, index: int):
         """Discard a specific trial from the given channel."""
         key = (source, channel)

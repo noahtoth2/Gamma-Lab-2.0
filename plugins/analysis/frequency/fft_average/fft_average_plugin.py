@@ -10,6 +10,7 @@ from core.plugins.meta import PluginMeta
 from core.utils.vtk_context_menu import VTKContextMenu
 from core.model.signal_dataset import SignalDataset
 from core.utils.adapters import trials_matrix_to_vtk_table
+from core.utils.trial_labels import trials_used
 from plugins.analysis.frequency.fft_average.fft_average_plugin_ui import Ui_Fft_Average
 
 class Fft_average_plugin(IPlugin):
@@ -96,8 +97,11 @@ class Fft_average_plugin(IPlugin):
             freq, mag_avg, fs_eff = self._compute_fft_average(X, fs, target_fs, per_trial = per_trial)
 
             # 4) Plot
+            self._trials_used = trials_used(None, X.shape[1], "average", channel=ch_name)
             self._plot_fft_average(freq, mag_avg, ch_name, lo, hi, fs_eff)
-            self._notify(f"FFT ready: fs_eff={fs_eff:.2f} Hz, {freq.size} bins, trials={mag_avg.shape[1]}")
+            self._notify(f"FFT Average ready with {self._trials_used['label']}: "
+                         f"fs_eff={fs_eff:.2f} Hz, {freq.size} bins")
+            self.publish_current_trial()
             self.mark_project_dirty()
 
     # ====== Project save/restore ======
@@ -106,6 +110,7 @@ class Fft_average_plugin(IPlugin):
             "sample_density": self.ui.sampleDensitySpinBox.value(),
             "low_freq": self.ui.lowFrequencySpinBox.value(),
             "high_freq": self.ui.highFrequencySpinBox.value(),
+            "trials_used": self._trials_used,
         }
 
     def apply_analysis_params(self, params: dict):
@@ -227,7 +232,7 @@ class Fft_average_plugin(IPlugin):
         hi = min(hi, fs_eff/2.0)
         lo = max(lo, 0.0)
         if lo >= hi:
-            self._notify("Empty frequency range after adjusting to Nyquist."); return
+            self._notify("Empty frequency range after adjusting to Nyquist.", "warning"); return
         sel = (freq >= lo) & (freq <= hi)
         self._log(f"Plot bins: {sel.sum()} of {freq.size}")
         freq_v = freq[sel]
@@ -253,8 +258,9 @@ class Fft_average_plugin(IPlugin):
         ax_b.SetTitle("Frequency (Hz)")
         ax_l.SetTitle("Magnitude")
         try:
-            if ch_name:
-                self.chart.SetTitle(f"FFT - {ch_name}")
+            etiqueta = (self._trials_used or {}).get("label")
+            titulo = f"FFT Average - {ch_name}" if ch_name else "FFT Average"
+            self.chart.SetTitle(f"{titulo} — {etiqueta}" if etiqueta else titulo)
         except Exception:
             pass
         

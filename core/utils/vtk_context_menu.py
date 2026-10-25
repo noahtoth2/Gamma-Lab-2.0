@@ -7,6 +7,7 @@ import os
 from core.services.export_service import ExportService
 from core.services.measurement_service import MeasurementService
 from core.services.settings_service import SettingsService
+from core.utils.cursor_readout import CursorReadout
 
 
 class VTKContextMenu:
@@ -55,6 +56,13 @@ class VTKContextMenu:
         # Wire zoom/mouse
         self._install_wheel_shortcuts()
         self._install_mouse_observers()
+
+        # X/Y readout under the cursor (one observer per widget, even if the
+        # plugin recreates this menu on every render)
+        try:
+            CursorReadout.attach(self.vtk_widget, self._get_charts)
+        except Exception as e:
+            self._log("CursorReadout attach error:", e)
 
         # Ensure zoom with mouse wheel
         for ch in self._get_charts():

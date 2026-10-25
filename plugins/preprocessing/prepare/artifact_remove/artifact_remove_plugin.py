@@ -10,6 +10,7 @@ from types import SimpleNamespace  # Helper for trials
 
 from core.plugins.interfaces import IPlugin
 from core.plugins.meta import PluginMeta
+from core.utils.trial_labels import trials_used
 from core.model.signal_dataset import SignalDataset
 from core.model.trial_dataset import TrialDataset
 
@@ -247,7 +248,7 @@ class ArtifactRemovePlugin(IPlugin):
         # El botón puede volver a habilitarse si llega un evento de datos a mitad del
         # cálculo; esta guarda no depende del botón.
         if self._apply_handle is not None:
-            self.alerts.info("Ya se está aplicando una modificación; espera a que termine.")
+            self.alerts.warning("Ya se está aplicando una modificación; espera a que termine.")
             return
 
         if self.current_display_index != -1:
@@ -302,7 +303,7 @@ class ArtifactRemovePlugin(IPlugin):
             self._clear_render("")
 
         except ValueError as ve:
-            self.alerts.error(str(ve), "Error en los parámetros")
+            self.alerts.warning(str(ve), "Parámetros no válidos")
         except RuntimeError as re:
             self.alerts.error(str(re), "Error en los datos")
         except Exception as e:
@@ -495,16 +496,22 @@ class ArtifactRemovePlugin(IPlugin):
 
         if self.current_display_index == -1:
             y = np.nanmean(trials, axis=1)
-            title = f"Average ({Tact} Valid) - {channel_name}"
+            title = f"Average of all {Tact} valid trials - {channel_name}"
             status = f"Viewing Average / {Tact} Valid ({total_trials} Total)"
             current_trial_text = "Average"
+            self._trial_state = self.build_trial_state("average", total=Tact, channel=channel_name)
         else:
             idx = self.current_display_index
             y = trials[:, idx]
             orig_idx = orig_indices[idx] if idx < len(orig_indices) else idx
-            title = f"Trial {orig_idx + 1} - {channel_name}"
+            title = f"Trial {idx + 1}/{Tact} (orig. {orig_idx + 1}) - {channel_name}"
             status = f"Viewing Valid {idx + 1}/{Tact} (Orig. {orig_idx + 1}) / {total_trials} Total"
             current_trial_text = str(orig_idx + 1)
+            self._trial_state = self.build_trial_state(
+                "single", position=idx + 1, total=Tact, channel=channel_name,
+                original_index=orig_idx,
+                note=(f"original {orig_idx + 1} de {total_trials}" if Tact != total_trials else None))
+        self.publish_current_trial()
 
         if self.ui:
             self.ui.trial_status_label.setText(status)
@@ -517,6 +524,11 @@ class ArtifactRemovePlugin(IPlugin):
             return self._clear_render(f"Length mismatch: time={t.shape[0]}, data={y.shape[0]}")
 
         self._plot_curve(t, y, title, channel_name)
+
+    def current_trial_state(self):
+        """Lo que se esta viendo: el promedio o un trial valido."""
+        state = getattr(self, "_trial_state", None)
+        return state if state is not None else super().current_trial_state()
 
     # --- VTK display logic ---
     def _ensure_vtk(self):
@@ -695,6 +707,7 @@ class ArtifactRemovePlugin(IPlugin):
         self.total_original_trials = 0
         self.discarded_indices = set()
         self.modified_indices = set()
+        self._trial_state = None
         
         if self.ui:
             try:
@@ -825,7 +838,10 @@ class ArtifactRemovePlugin(IPlugin):
                 # Sin esto, cerrar después de modificar no avisa de cambios sin
                 # guardar y el trabajo se pierde en silencio (problema nº 21).
                 self.mark_project_dirty()
-                self.alerts.info("Cambios aplicados a todos los trials válidos.")
+                self._trials_used = trials_used(None, len(prep.orig_indices), "all",
+                                                channel=prep.channel_name)
+                self.alerts.info(f"Cambios aplicados a {self._trials_used['label']} "
+                                 f"de {prep.channel_name} (trials válidos).")
         except Exception as e:
             print(f"{LOGP} Error writing modification: {e}")
             self.alerts.error(f"No se pudo aplicar la modificación: {e}", "Error al aplicar")

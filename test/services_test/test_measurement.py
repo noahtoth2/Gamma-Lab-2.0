@@ -55,7 +55,7 @@ def test_start_slope_all_trials_wrong_plugin():
     result = svc.start("slope_all_trials")
     assert result is False
     assert svc._state == "idle"
-    svc.alerts.info.assert_called_once()
+    svc.alerts.warning.assert_called_once()
 
 
 def test_start_slope_all_trials_correct_plugin():
@@ -71,7 +71,7 @@ def test_start_when_measurement_already_in_progress():
     svc._state = "waiting_p2"
     result = svc.start("slope")
     assert result is False
-    svc.alerts.info.assert_called()
+    svc.alerts.warning.assert_called()
 
 
 def test_start_while_busy_different_type_is_blocked_and_does_not_mutate():
@@ -82,7 +82,7 @@ def test_start_while_busy_different_type_is_blocked_and_does_not_mutate():
     assert result is False
     assert svc._state == "waiting_p2"
     assert svc._current["type"] == "slope"
-    svc.alerts.info.assert_called()
+    svc.alerts.warning.assert_called()
 
 
 # ---------------------------------------------------------------------

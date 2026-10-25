@@ -4,28 +4,58 @@ from PyQt5.QtGui import QMovie
 
 
 class PluginAlerts:
+    """Mensajes al usuario con tres severidades que se presentan distinto:
+
+    - `info`: aviso azul no modal que se cierra solo.
+    - `warning`: aviso ambar no modal que se queda hasta cerrarlo.
+    - `error`: dialogo modal, porque interrumpe lo que se estaba haciendo.
+
+    Los avisos no modales van al `NotificationCenter` de la ventana principal,
+    registrado con `set_center`. Sin centro (tests, dialogos sueltos) se
+    vuelve al `QMessageBox` de siempre.
+    """
+
+    _center = None  # NotificationCenter compartido por todas las instancias
 
     def __init__(self, parent: QWidget = None):
         self.parent = parent
         self._spinner_dialog = None
 
+    @classmethod
+    def set_center(cls, center):
+        cls._center = center
 
     def __show_message(self, title: str, message: str, level: str):
         """Internal helper to show alerts with different levels."""
+        if level not in ("error", "warning", "info"):
+            raise ValueError(f"Unknown alert level: {level}")
         print(f"[PluginAlerts] {level.upper()}: {message}")
 
-        if not self.parent:
+        center = PluginAlerts._center
+        if level in ("info", "warning") and center is not None:
+            try:
+                center.show_message(level, title, message)
+                return
+            except RuntimeError:
+                # El widget C++ ya no existe (ventana cerrada)
+                PluginAlerts._center = None
+
+        parent = self.parent
+        if not parent and center is not None:
+            try:
+                parent = center.window()
+            except RuntimeError:
+                parent = None
+        if not parent:
             # No UI context (console or test mode)
             return
 
         if level == "error":
-            QMessageBox.critical(self.parent, title, message)
+            QMessageBox.critical(parent, title, message)
         elif level == "warning":
-            QMessageBox.warning(self.parent, title, message)
-        elif level == "info":
-            QMessageBox.information(self.parent, title, message)
+            QMessageBox.warning(parent, title, message)
         else:
-            raise ValueError(f"Unknown alert level: {level}")
+            QMessageBox.information(parent, title, message)
 
     def error(self, message: str, title: str = "Error"):
         self.__show_message(title, message, "error")
@@ -35,6 +65,11 @@ class PluginAlerts:
 
     def info(self, message: str, title: str = "Information"):
         self.__show_message(title, message, "info")
+
+    def show(self, level: str, message: str, title: str = None):
+        """Equivalente a `info`/`warning`/`error` con el nivel como argumento."""
+        defaults = {"info": "Information", "warning": "Warning", "error": "Error"}
+        self.__show_message(title or defaults.get(level, ""), message, level)
 
     #  LOADING SPINNER
     def show_spinner(self, text: str = "Processing...", gif_path: str = None):

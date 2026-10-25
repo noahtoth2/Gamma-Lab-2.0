@@ -10,6 +10,7 @@ import numpy as np
 from core.plugins.interfaces import IPlugin
 from core.plugins.meta import PluginMeta
 from core.utils.vtk_context_menu import VTKContextMenu
+from core.utils.trial_labels import trials_used
 from plugins.analysis.time_frequency.wavelet_average.wavelet_average_plugin_ui import Ui_Wavelet_Average
 from plugins.analysis.time_frequency.wavelet_average import compute as cw
 
@@ -87,7 +88,7 @@ class Wavelet_average_plugin(IPlugin):
 
     def _on_clear_clicked(self):
         if self._calculando:
-            self.alerts.info("Hay un cálculo de wavelet en curso; espera a que termine.")
+            self.alerts.warning("Hay un cálculo de wavelet en curso; espera a que termine.")
             return
         self.ui.sampleDensitySpinBox.setValue(self.params["sample_density_value"])
         self.ui.lowFrequencySpinBox.setValue(self.params["low_frequency_value"])
@@ -200,6 +201,8 @@ class Wavelet_average_plugin(IPlugin):
             return
 
         fs_calculado = round(1.0 / (t[1] - t[0]), 3)
+        n_total = trials.trials.shape[1] if np.ndim(trials.trials) == 2 else 1
+        self._trials_en_curso = trials_used(None, n_total, "average", channel=trials.channel_name)
 
         # UI parameters
         fs = self.ui.sampleDensitySpinBox.value()
@@ -211,10 +214,10 @@ class Wavelet_average_plugin(IPlugin):
         norm_method = self.ui.normalizeComboBox.currentText().lower()
 
         if fmin <= 0:
-            self.alerts.error("La frecuencia baja debe ser mayor que cero.")
+            self.alerts.warning("La frecuencia baja debe ser mayor que cero.")
             return
         if fmax <= fmin:
-            self.alerts.error(f"La frecuencia alta ({fmax:g} Hz) debe ser mayor que la baja ({fmin:g} Hz).")
+            self.alerts.warning(f"La frecuencia alta ({fmax:g} Hz) debe ser mayor que la baja ({fmin:g} Hz).")
             return
 
         # El factor de submuestreo es entero, asi que una densidad que no divida
@@ -222,7 +225,7 @@ class Wavelet_average_plugin(IPlugin):
         # que de verdad se va a usar, no contra la pedida (problema nº 18).
         fs_efectiva, _ = cw.tasa_efectiva(fs_calculado, fs)
         if fmax > fs_efectiva / 2:
-            self.alerts.error(f"La frecuencia alta ({fmax:g} Hz) no puede superar {fs_efectiva / 2:g} Hz, "
+            self.alerts.warning(f"La frecuencia alta ({fmax:g} Hz) no puede superar {fs_efectiva / 2:g} Hz, "
                               f"la mitad de la densidad efectiva ({fs_efectiva:g} Hz).")
             return
         if abs(fs_efectiva - fs) > 1e-9:
@@ -289,8 +292,16 @@ class Wavelet_average_plugin(IPlugin):
 
             self.ensure_vtk()
 
-            self.render_scalogram(times, freqs, avg_scalogram, "Wavelet Average (Morlet)", scaled)
+            usados = getattr(self, "_trials_en_curso", None)
+            titulo = "Wavelet Average (Morlet)"
+            if usados:
+                titulo += f" — {usados['label']}"
+            self.render_scalogram(times, freqs, avg_scalogram, titulo, scaled)
             self._log("Rendering complete.")
+            self._trials_used = usados
+            if usados:
+                self._notify(f"Wavelet Average calculada con {usados['label']} ({usados['channel']})")
+            self.publish_current_trial()
             self.mark_project_dirty()
         except Exception as e:
             self._log("Render failed:", e)
@@ -312,6 +323,7 @@ class Wavelet_average_plugin(IPlugin):
             "normalize_mode": self.ui.normalizeComboBox.currentText(),
             "scale_enabled": self.ui.scaleCheckBox.isChecked(),
             "scale_mode": self.ui.scaleComboBox.currentText(),
+            "trials_used": self._trials_used,
         }
 
     def apply_analysis_params(self, params: dict):

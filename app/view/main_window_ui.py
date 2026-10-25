@@ -71,6 +71,15 @@ class Ui_MainWindow(object):
         self.titleProjectNameLabel.setVisible(False)
         titleBarLayout.addWidget(self.titleProjectNameLabel)
 
+        titleBarLayout.addSpacing(12)
+
+        # Current trial indicator (MainWindow._update_trial_indicator)
+        self.titleTrialLabel = QtWidgets.QLabel(self.titleBar)
+        self.titleTrialLabel.setObjectName("titleTrialLabel")
+        self.titleTrialLabel.setProperty("severity", "info")
+        self.titleTrialLabel.setVisible(False)
+        titleBarLayout.addWidget(self.titleTrialLabel)
+
         titleBarLayout.addStretch(1)
 
         self.searchBar = QtWidgets.QWidget(self.titleBar)

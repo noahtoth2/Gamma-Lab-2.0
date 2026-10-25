@@ -11,6 +11,7 @@ from core.utils.vtk_context_menu import VTKContextMenu
 from core.model.signal_dataset import SignalDataset
 from plugins.analysis.frequency.relative_psd.relative_psd_plugin_ui import Ui_Relative_psd
 from core.utils.adapters import trials_matrix_to_vtk_table
+from core.utils.trial_labels import trials_used
 
 
 class Relative_psd_plugin(IPlugin):
@@ -221,7 +222,7 @@ class Relative_psd_plugin(IPlugin):
             if f1 >= f2:
                 raise ValueError("Low frequency must be lower than High frequency.")
         except Exception as e:
-            self.alerts.error(f"Parameter error: {str(e)}")
+            self.alerts.warning(f"Parameter error: {str(e)}", "Invalid parameters")
             return
 
         try:
@@ -240,7 +241,14 @@ class Relative_psd_plugin(IPlugin):
         self.ui.absPowerValue.setText(f"{abs_power: .4e}")
         self.ui.relPowerValue.setText(f"{rel_power: .4f}")
 
-        self._notify(f"Relative PSD [{f1}-{f2} Hz] ready. fs_eff={fs_eff:.1f} Hz, df≈{freq[1]-freq[0]:.2f} Hz")
+        # GF solo cambia como se combinan (promedio o todos); entran todos los validos
+        self._trials_used = trials_used(None, X.shape[1], "all" if GF == 1 else "average",
+                                        channel=ch_name)
+        for lbl in (self.ui.absPowerValue, self.ui.relPowerValue):
+            lbl.setToolTip(f"Calculado con {self._trials_used['label']} — {ch_name}")
+        self._notify(f"Relative PSD [{f1}-{f2} Hz] ready with {self._trials_used['label']}. "
+                     f"fs_eff={fs_eff:.1f} Hz, df≈{freq[1]-freq[0]:.2f} Hz")
+        self.publish_current_trial()
 
         # Log standard bands (like MATLAB)
         self._log_bands(freq, pxx_all, GF)
@@ -266,6 +274,7 @@ class Relative_psd_plugin(IPlugin):
             "nfft": self.ui.nfftSpinBox.value(),
             "detrend": self.ui.detrendComboBox.currentText() if hasattr(self.ui, "detrendComboBox") else "none",
             "gain_factor_index": self.ui.gainFactorComboBox.currentIndex() if hasattr(self.ui, "gainFactorComboBox") else 1,
+            "trials_used": self._trials_used,
         }
 
     def apply_analysis_params(self, params: dict):
@@ -456,7 +465,8 @@ class Relative_psd_plugin(IPlugin):
         ax_l.SetTitle("PSD (V^2/Hz)")
         try:
             if ch_name:
-                self.chart.SetTitle(f"Relative PSD - {ch_name}")
+                etiqueta = (self._trials_used or {}).get("label")
+                self.chart.SetTitle(f"Relative PSD - {ch_name}" + (f" — {etiqueta}" if etiqueta else ""))
         except Exception:
             pass
 
