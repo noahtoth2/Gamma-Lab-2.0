@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.10.18)  21 OCT 2026 21:26
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.9.1)  25 OCT 2026 14:25
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -6,9 +6,9 @@ entering extended mode
 (main.tex
 LaTeX2e <2025-11-01>
 L3 programming layer <2025-12-24>
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/base\article.cls
+(C:\Program Files\MiKTeX\tex/latex/base\article.cls
 Document Class: article 2025/01/22 v1.4n Standard LaTeX document class
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/base\size11.clo
+(C:\Program Files\MiKTeX\tex/latex/base\size11.clo
 File: size11.clo 2025/01/22 v1.4n Standard LaTeX file (size option)
 )
 \c@part=\count275
@@ -23,15 +23,15 @@ File: size11.clo 2025/01/22 v1.4n Standard LaTeX file (size option)
 \belowcaptionskip=\skip50
 \bibindent=\dimen148
 )
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/base\inputenc.sty
+(C:\Program Files\MiKTeX\tex/latex/base\inputenc.sty
 Package: inputenc 2024/02/08 v1.3d Input encoding file
 \inpenc@prehook=\toks17
 \inpenc@posthook=\toks18
 )
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/base\fontenc.sty
+(C:\Program Files\MiKTeX\tex/latex/base\fontenc.sty
 Package: fontenc 2025/07/18 v2.1d Standard LaTeX package
 )
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/generic/babel\babel.sty
+(C:\Program Files\MiKTeX\tex/generic/babel\babel.sty
 Package: babel 2025/12/11 v25.17 The multilingual framework for LuaLaTeX, pdfLa
 TeX and XeLaTeX
 \babel@savecnt=\count283
@@ -52,26 +52,25 @@ on input line 2101.
 \U@D=\dimen149
 \l@unhyphenated=\language79
 
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/generic/babel\txtbabel.def)
+(C:\Program Files\MiKTeX\tex/generic/babel\txtbabel.def)
 \bbl@readstream=\read2
 \bbl@dirlevel=\count284
 Package babel Info: Configuration files are deprecated, as
 (babel)             they can break document portability.
 (babel)             Reported on input line 4196.
+
 *************************************
 * Local config file bblopts.cfg used
 *
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/arabi\bblopts.cfg
+(C:\Program Files\MiKTeX\tex/latex/arabi\bblopts.cfg
 File: bblopts.cfg 2005/09/08 v0.1 add Arabic and Farsi to "declared" options of
  babel
 )
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/generic/babel/locale/es\bab
-el-spanish.tex)
+(C:\Program Files\MiKTeX\tex/generic/babel/locale/es\babel-spanish.tex)
 Package babel Info: Importing font and identification data for spanish
 (babel)             from babel-es.ini. Reported on input line 4320.
 
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/babel-spanish\spanish
-.ldf
+(C:\Users\jlaur\AppData\Roaming\MiKTeX\tex/latex/babel-spanish\spanish.ldf
 Language: spanish.ldf 2021/05/27 v5.0q Spanish support from the babel system
 \es@quottoks=\toks19
 \es@quotdepth=\count285
@@ -85,36 +84,37 @@ on input line 7.
 LaTeX Encoding Info:    Redeclaring text command \guillemotright (encoding OT1)
  on input line 7.
 
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/graphics\graphicx.sty
+(C:\Program Files\MiKTeX\tex/latex/graphics\graphicx.sty
 Package: graphicx 2024/12/31 v1.2e Enhanced LaTeX Graphics (DPC,SPQR)
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/graphics\keyval.sty
+
+(C:\Program Files\MiKTeX\tex/latex/graphics\keyval.sty
 Package: keyval 2022/05/29 v1.15 key=value parser (DPC)
 \KV@toks@=\toks20
 )
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/graphics\graphics.sty
+(C:\Program Files\MiKTeX\tex/latex/graphics\graphics.sty
 Package: graphics 2024/08/06 v1.4g Standard LaTeX Graphics (DPC,SPQR)
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/graphics\trig.sty
+
+(C:\Program Files\MiKTeX\tex/latex/graphics\trig.sty
 Package: trig 2023/12/02 v1.11 sin cos tan (DPC)
 )
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/graphics-cfg\graphics
-.cfg
+(C:\Program Files\MiKTeX\tex/latex/graphics-cfg\graphics.cfg
 File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
 )
 Package graphics Info: Driver file: pdftex.def on input line 106.
 
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/graphics-def\pdftex.d
-ef
+(C:\Program Files\MiKTeX\tex/latex/graphics-def\pdftex.def
 File: pdftex.def 2025/09/29 v1.2d Graphics/color driver for pdftex
 ))
 \Gin@req@height=\dimen150
 \Gin@req@width=\dimen151
 )
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/geometry\geometry.sty
+(C:\Users\jlaur\AppData\Roaming\MiKTeX\tex/latex/geometry\geometry.sty
 Package: geometry 2026/03/07 v6.0 Page Geometry
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/generic/iftex\ifvtex.sty
+
+(C:\Program Files\MiKTeX\tex/generic/iftex\ifvtex.sty
 Package: ifvtex 2019/10/25 v1.7 ifvtex legacy package. Use iftex instead.
 
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/generic/iftex\iftex.sty
+(C:\Program Files\MiKTeX\tex/generic/iftex\iftex.sty
 Package: iftex 2024/12/12 v1.0g TeX engine tests
 ))
 \Gm@cnth=\count286
@@ -130,9 +130,8 @@ Package: iftex 2024/12/12 v1.0g TeX engine tests
 \Gm@layoutvoffset=\dimen159
 \Gm@dimlist=\toks21
 
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/geometry\geometry.cfg
-))
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/booktabs\booktabs.sty
+(C:\Users\jlaur\AppData\Roaming\MiKTeX\tex/latex/geometry\geometry.cfg))
+(C:\Users\jlaur\AppData\Roaming\MiKTeX\tex/latex/booktabs\booktabs.sty
 Package: booktabs 2020/01/12 v1.61803398 Publication quality tables
 \heavyrulewidth=\dimen160
 \lightrulewidth=\dimen161
@@ -151,7 +150,8 @@ Package: booktabs 2020/01/12 v1.61803398 Publication quality tables
 \@thisruleclass=\count291
 \@lastruleclass=\count292
 \@thisrulewidth=\dimen172
-) (C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/tools\longtable.sty
+)
+(C:\Program Files\MiKTeX\tex/latex/tools\longtable.sty
 Package: longtable 2025-10-13 v4.24 Multi-page Table package (DPC)
 \LTleft=\skip51
 \LTright=\skip52
@@ -169,7 +169,8 @@ Package: longtable 2025-10-13 v4.24 Multi-page Table package (DPC)
 \c@LT@tables=\count296
 \c@LT@chunks=\count297
 \LT@p@ftn=\toks22
-) (C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/tools\array.sty
+)
+(C:\Program Files\MiKTeX\tex/latex/tools\array.sty
 Package: array 2025/09/25 v2.6n Tabular extension package (FMi)
 \col@sep=\dimen174
 \ar@mcellbox=\box58
@@ -179,7 +180,7 @@ Package: array 2025/09/25 v2.6n Tabular extension package (FMi)
 \backup@length=\skip56
 \ar@cellbox=\box59
 )
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/tools\tabularx.sty
+(C:\Program Files\MiKTeX\tex/latex/tools\tabularx.sty
 Package: tabularx 2023/12/11 v2.12a `tabularx' package (DPC)
 \TX@col@width=\dimen176
 \TX@old@table=\dimen177
@@ -189,7 +190,7 @@ Package: tabularx 2023/12/11 v2.12a `tabularx' package (DPC)
 \TX@cols=\count298
 \TX@ftn=\toks24
 )
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/enumitem\enumitem.sty
+(C:\Users\jlaur\AppData\Roaming\MiKTeX\tex/latex/enumitem\enumitem.sty
 Package: enumitem 2025/02/06 v3.11 Customized lists
 \labelindent=\skip57
 \enit@outerparindent=\dimen181
@@ -198,7 +199,7 @@ Package: enumitem 2025/02/06 v3.11 Customized lists
 \enit@count@id=\count299
 \enitdp@description=\count300
 )
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/fancyhdr\fancyhdr.sty
+(C:\Users\jlaur\AppData\Roaming\MiKTeX\tex/latex/fancyhdr\fancyhdr.sty
 Package: fancyhdr 2025/02/07 v5.2 Extensive control of page headers and footers
 
 \f@nch@headwidth=\skip58
@@ -217,7 +218,7 @@ Package: fancyhdr 2025/02/07 v5.2 Extensive control of page headers and footers
 \f@nch@widthR=\skip71
 \@temptokenb=\toks26
 )
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/titlesec\titlesec.sty
+(C:\Users\jlaur\AppData\Roaming\MiKTeX\tex/latex/titlesec\titlesec.sty
 Package: titlesec 2025/01/04 v2.17 Sectioning titles
 \ttl@box=\box61
 \beforetitleunit=\skip72
@@ -228,17 +229,16 @@ Package: titlesec 2025/01/04 v2.17 Sectioning titles
 \titlewidth=\dimen184
 \titlewidthlast=\dimen185
 \titlewidthfirst=\dimen186
-) (C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/xcolor\xcolor.sty
+)
+(C:\Program Files\MiKTeX\tex/latex/xcolor\xcolor.sty
 Package: xcolor 2024/09/29 v3.02 LaTeX color extensions (UK)
 
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/graphics-cfg\color.cf
-g
+(C:\Program Files\MiKTeX\tex/latex/graphics-cfg\color.cfg
 File: color.cfg 2016/01/02 v1.6 sample color configuration
 )
 Package xcolor Info: Driver file: pdftex.def on input line 274.
 
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/graphics\mathcolor.lt
-x)
+(C:\Program Files\MiKTeX\tex/latex/graphics\mathcolor.ltx)
 Package xcolor Info: Model `cmy' substituted by `cmy0' on input line 1349.
 Package xcolor Info: Model `hsb' substituted by `rgb' on input line 1353.
 Package xcolor Info: Model `RGB' extended on input line 1365.
@@ -249,62 +249,53 @@ Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1370.
 Package xcolor Info: Model `Gray' substituted by `gray' on input line 1371.
 Package xcolor Info: Model `wave' substituted by `hsb' on input line 1372.
 )
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\hyperref.sty
+(C:\Program Files\MiKTeX\tex/latex/hyperref\hyperref.sty
 Package: hyperref 2025-07-12 v7.01o Hypertext links for LaTeX
 
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/kvsetkeys\kvsetkeys.s
-ty
+(C:\Users\jlaur\AppData\Roaming\MiKTeX\tex/latex/kvsetkeys\kvsetkeys.sty
 Package: kvsetkeys 2022-10-05 v1.19 Key value parser (HO)
 )
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/generic/kvdefinekeys\kvdefi
-nekeys.sty
+(C:\Users\jlaur\AppData\Roaming\MiKTeX\tex/generic/kvdefinekeys\kvdefinekeys.st
+y
 Package: kvdefinekeys 2019-12-19 v1.6 Define keys (HO)
-)
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/generic/pdfescape\pdfescape
-.sty
+) (C:\Users\jlaur\AppData\Roaming\MiKTeX\tex/generic/pdfescape\pdfescape.sty
 Package: pdfescape 2019/12/09 v1.15 Implements pdfTeX's escape features (HO)
 
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/generic/ltxcmds\ltxcmds.sty
+(C:\Users\jlaur\AppData\Roaming\MiKTeX\tex/generic/ltxcmds\ltxcmds.sty
 Package: ltxcmds 2023-12-04 v1.26 LaTeX kernel commands for general use (HO)
 )
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/generic/pdftexcmds\pdftexcm
-ds.sty
+(C:\Program Files\MiKTeX\tex/generic/pdftexcmds\pdftexcmds.sty
 Package: pdftexcmds 2020-06-27 v0.33 Utility functions of pdfTeX for LuaTeX (HO
 )
 
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/generic/infwarerr\infwarerr
-.sty
+(C:\Users\jlaur\AppData\Roaming\MiKTeX\tex/generic/infwarerr\infwarerr.sty
 Package: infwarerr 2019/12/03 v1.5 Providing info/warning/error messages (HO)
 )
 Package pdftexcmds Info: \pdf@primitive is available.
 Package pdftexcmds Info: \pdf@ifprimitive is available.
 Package pdftexcmds Info: \pdfdraftmode found.
 ))
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/hycolor\hycolor.sty
+(C:\Users\jlaur\AppData\Roaming\MiKTeX\tex/latex/hycolor\hycolor.sty
 Package: hycolor 2020-01-27 v1.10 Color options for hyperref/bookmark (HO)
 )
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\nameref.sty
+(C:\Program Files\MiKTeX\tex/latex/hyperref\nameref.sty
 Package: nameref 2025-06-21 v2.57 Cross-referencing by name of section
 
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/refcount\refcount.sty
+(C:\Users\jlaur\AppData\Roaming\MiKTeX\tex/latex/refcount\refcount.sty
 Package: refcount 2019/12/15 v3.6 Data extraction from label references (HO)
 )
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/generic/gettitlestring\gett
-itlestring.sty
+(C:\Users\jlaur\AppData\Roaming\MiKTeX\tex/generic/gettitlestring\gettitlestrin
+g.sty
 Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
-
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/kvoptions\kvoptions.s
-ty
+ (C:\Users\jlaur\AppData\Roaming\MiKTeX\tex/latex/kvoptions\kvoptions.sty
 Package: kvoptions 2022-06-15 v3.15 Key value format for package options (HO)
 ))
 \c@section@level=\count301
-)
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/etoolbox\etoolbox.sty
+) (C:\Program Files\MiKTeX\tex/latex/etoolbox\etoolbox.sty
 Package: etoolbox 2025/10/02 v2.5m e-TeX tools for LaTeX (JAW)
 \etb@tempcnta=\count302
 )
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/generic/stringenc\stringenc
-.sty
+(C:\Users\jlaur\AppData\Roaming\MiKTeX\tex/generic/stringenc\stringenc.sty
 Package: stringenc 2019/11/29 v1.12 Convert strings between diff. encodings (HO
 )
 )
@@ -312,16 +303,17 @@ Package: stringenc 2019/11/29 v1.12 Convert strings between diff. encodings (HO
 \Hy@linkcounter=\count303
 \Hy@pagecounter=\count304
 
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\pd1enc.def
+(C:\Program Files\MiKTeX\tex/latex/hyperref\pd1enc.def
 File: pd1enc.def 2025-07-12 v7.01o Hyperref: PDFDocEncoding definition (HO)
 Now handling font encoding PD1 ...
 ... no UTF-8 mapping file for font encoding PD1
 )
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/generic/intcalc\intcalc.sty
+(C:\Users\jlaur\AppData\Roaming\MiKTeX\tex/generic/intcalc\intcalc.sty
 Package: intcalc 2019/12/15 v1.3 Expandable calculations with integers (HO)
 )
 \Hy@SavedSpaceFactor=\count305
- (C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\puenc.def
+
+(C:\Program Files\MiKTeX\tex/latex/hyperref\puenc.def
 File: puenc.def 2025-07-12 v7.01o Hyperref: PDF Unicode definition (HO)
 Now handling font encoding PU ...
 ... no UTF-8 mapping file for font encoding PU
@@ -334,18 +326,18 @@ Package hyperref Info: Backreferencing OFF on input line 4215.
 Package hyperref Info: Implicit mode ON; LaTeX internals redefined.
 Package hyperref Info: Bookmarks ON on input line 4462.
 \c@Hy@tempcnt=\count306
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/url\url.sty
+
+(C:\Program Files\MiKTeX\tex/latex/url\url.sty
 \Urlmuskip=\muskip17
 Package: url 2013/09/16  ver 3.4  Verb mode for urls, etc.
 )
 LaTeX Info: Redefining \url on input line 4801.
 \XeTeXLinkMargin=\dimen188
 
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/generic/bitset\bitset.sty
+(C:\Users\jlaur\AppData\Roaming\MiKTeX\tex/generic/bitset\bitset.sty
 Package: bitset 2019/12/09 v1.3 Handle bit-vector datatype (HO)
 
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/generic/bigintcalc\bigintca
-lc.sty
+(C:\Users\jlaur\AppData\Roaming\MiKTeX\tex/generic/bigintcalc\bigintcalc.sty
 Package: bigintcalc 2019/12/15 v1.5 Expandable calculations on big integers (HO
 )
 ))
@@ -364,29 +356,27 @@ Package hyperref Info: PDF/A mode OFF on input line 6108.
 \c@Hfootnote=\count310
 )
 Package hyperref Info: Driver (autodetected): hpdftex.
-
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\hpdftex.def
+(C:\Program Files\MiKTeX\tex/latex/hyperref\hpdftex.def
 File: hpdftex.def 2025-07-12 v7.01o Hyperref driver for pdfTeX
 \Fld@listcount=\count311
 \c@bookmark@seq@number=\count312
 
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/rerunfilecheck\rerunf
-ilecheck.sty
+(C:\Users\jlaur\AppData\Roaming\MiKTeX\tex/latex/rerunfilecheck\rerunfilecheck.
+sty
 Package: rerunfilecheck 2025-06-21 v1.11 Rerun checks for auxiliary files (HO)
 
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/generic/uniquecounter\uniqu
-ecounter.sty
+(C:\Users\jlaur\AppData\Roaming\MiKTeX\tex/generic/uniquecounter\uniquecounter.
+sty
 Package: uniquecounter 2019/12/15 v1.4 Provide unlimited unique counter (HO)
 )
 Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 2
 84.
 )
 \Hy@SectionHShift=\skip74
-)
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/caption\caption.sty
+) (C:\Users\jlaur\AppData\Roaming\MiKTeX\tex/latex/caption\caption.sty
 Package: caption 2023/08/05 v3.6o Customizing captions (AR)
 
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/caption\caption3.sty
+(C:\Users\jlaur\AppData\Roaming\MiKTeX\tex/latex/caption\caption3.sty
 Package: caption3 2023/07/31 v2.4d caption3 kernel (AR)
 \caption@tempdima=\dimen191
 \captionmargin=\dimen192
@@ -403,27 +393,27 @@ Package caption Info: Standard document class detected.
 Package caption Info: hyperref package is loaded.
 Package caption Info: longtable package is loaded.
 
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/caption\ltcaption.sty
+(C:\Users\jlaur\AppData\Roaming\MiKTeX\tex/latex/caption\ltcaption.sty
 Package: ltcaption 2021/01/08 v1.4c longtable captions (AR)
 ))
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsmath.sty
+(C:\Program Files\MiKTeX\tex/latex/amsmath\amsmath.sty
 Package: amsmath 2025/07/09 v2.17z AMS math features
 \@mathmargin=\skip75
 
 For additional information on amsmath, use the `?' option.
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amstext.sty
+(C:\Program Files\MiKTeX\tex/latex/amsmath\amstext.sty
 Package: amstext 2024/11/17 v2.01 AMS text
 
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsgen.sty
+(C:\Program Files\MiKTeX\tex/latex/amsmath\amsgen.sty
 File: amsgen.sty 1999/11/30 v2.0 generic functions
 \@emptytoks=\toks28
 \ex@=\dimen199
 ))
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsbsy.sty
+(C:\Program Files\MiKTeX\tex/latex/amsmath\amsbsy.sty
 Package: amsbsy 1999/11/29 v1.2d Bold Symbols
 \pmbraise@=\dimen256
 )
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsopn.sty
+(C:\Program Files\MiKTeX\tex/latex/amsmath\amsopn.sty
 Package: amsopn 2022/04/08 v2.04 operator names
 )
 \inf@bad=\count315
@@ -474,7 +464,7 @@ LaTeX Info: Redefining \Relbar on input line 970.
 LaTeX Info: Redefining \[ on input line 2950.
 LaTeX Info: Redefining \] on input line 2951.
 )
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/float\float.sty
+(C:\Users\jlaur\AppData\Roaming\MiKTeX\tex/latex/float\float.sty
 Package: float 2001/11/08 v1.3d Float enhancements (AL)
 \c@float@type=\count327
 \float@exts=\toks33
@@ -482,7 +472,7 @@ Package: float 2001/11/08 v1.3d Float enhancements (AL)
 \@float@everytoks=\toks34
 \@floatcapt=\box65
 )
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/ragged2e\ragged2e.sty
+(C:\Program Files\MiKTeX\tex/latex/ragged2e\ragged2e.sty
 Package: ragged2e 2023/06/22 v3.6 ragged2e Package
 \CenteringLeftskip=\skip78
 \RaggedLeftLeftskip=\skip79
@@ -501,8 +491,7 @@ Package: ragged2e 2023/06/22 v3.6 ragged2e Package
 )
 Package hyperref Info: Option `colorlinks' set `true' on input line 32.
 
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/l3backend\l3backend-p
-dftex.def
+(C:\Program Files\MiKTeX\tex/latex/l3backend\l3backend-pdftex.def
 File: l3backend-pdftex.def 2025-10-09 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count328
 ) (main.aux
@@ -534,8 +523,7 @@ LaTeX Font Info:    ... okay on input line 46.
 LaTeX Info: Redefining \. on input line 46.
 LaTeX Info: Redefining \% on input line 46.
 
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pdf.
-mkii
+(C:\Program Files\MiKTeX\tex/context/base/mkii\supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count329
 \scratchdimen=\dimen264
@@ -548,15 +536,12 @@ mkii
 \MPnumerator=\count333
 \makeMPintoPDFobject=\count334
 \everyMPtoPDFconversion=\toks36
-)
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/epstopdf-pkg\epstopdf
--base.sty
+) (C:\Program Files\MiKTeX\tex/latex/epstopdf-pkg\epstopdf-base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
 Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 85.
 
-(C:\Users\Xiomara\AppData\Local\Programs\MiKTeX\tex/latex/00miktex\epstopdf-sys
-.cfg
+(C:\Program Files\MiKTeX\tex/latex/00miktex\epstopdf-sys.cfg
 File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
 ))
 *geometry* driver: auto-detecting
@@ -603,9 +588,7 @@ Package caption Info: float package is loaded.
 Package caption Info: End \AtBeginDocument code.
  [1
 
-{C:/Users/Xiomara/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/Xi
-omara/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/cm-super/cm-super-t1.enc}] 
-(main.toc
+{C:/Users/jlaur/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}] (main.toc
 LaTeX Info: Redefining \. on input line 1.
 LaTeX Info: Redefining \% on input line 1.
 
@@ -621,7 +604,7 @@ pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has
 been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.35 ...Estado y memoria}{23}{subsubsection.4.2.2}
+l.35 ...Estado y memoria}{24}{subsubsection.4.2.2}
                                                   % [1]
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -630,7 +613,15 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[2])
+[2]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[3])
 \tf@toc=\write4
 \openout4 = `main.toc'.
 
@@ -642,7 +633,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[3] (main.lof
+[4] (main.lof
 LaTeX Info: Redefining \. on input line 1.
 LaTeX Info: Redefining \% on input line 1.
 )
@@ -657,7 +648,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[4] (main.lot
+[5] (main.lot
 LaTeX Info: Redefining \. on input line 1.
 LaTeX Info: Redefining \% on input line 1.
 )
@@ -672,21 +663,13 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[5]
+[6]
 Underfull \hbox (badness 1946) in paragraph at lines 159--160
 []|\T1/cmr/m/n/10.95 Visualization Tool-kit. Bi-blio-te-ca pa-ra vi-sua-li-za-c
 ión cien-tí-fi-ca
  []
 
 ignored error: Infinite glue shrinkage found in box being split
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.59999pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.59999pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
-
-[6]
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -719,6 +702,14 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [10]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[11]
 Overfull \hbox (6.99513pt too wide) in paragraph at lines 280--281
 []\T1/cmr/m/n/10.95 El es-ta-do de la apli-ca-ción se con-ser-va en un re-po-si
 -to-rio com-par-ti-do en me-mo-ria, el \T1/cmtt/m/n/10.95 DataStore\T1/cmr/m/n/
@@ -732,16 +723,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[11]
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.59999pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.59999pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
-
 [12]
-ignored error: Infinite glue shrinkage found in box being split
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -759,6 +741,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [14]
+ignored error: Infinite glue shrinkage found in box being split
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -783,7 +766,6 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [17]
-ignored error: Infinite glue shrinkage found in box being split
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -810,6 +792,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [20]
+ignored error: Infinite glue shrinkage found in box being split
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -818,7 +801,15 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [21]
-<DiagramaEstiloBase.jpg, id=697, 844.15375pt x 523.9575pt>
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[22]
+<DiagramaEstiloBase.jpg, id=739, 844.15375pt x 523.9575pt>
 File: DiagramaEstiloBase.jpg Graphic file (type jpg)
 <use DiagramaEstiloBase.jpg>
 Package pdftex.def Info: DiagramaEstiloBase.jpg  used on input line 897.
@@ -831,15 +822,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[22 <./DiagramaEstiloBase.jpg>]
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.59999pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.59999pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
-
-[23]
+[23 <./DiagramaEstiloBase.jpg>]
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -848,7 +831,6 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [24]
-ignored error: Infinite glue shrinkage found in box being split
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -857,6 +839,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [25]
+ignored error: Infinite glue shrinkage found in box being split
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -865,6 +848,14 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [26]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[27]
 Underfull \hbox (badness 10000) in paragraph at lines 1038--1038
 []|\T1/cmr/m/n/10 Solo el Tas-kOr-ches-tra-tor es-cri-be en el
  []
@@ -876,7 +867,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[27]
+[28]
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -884,12 +875,12 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[28]
-<diagrama_casos_de_uso_sistema_completo.png, id=734, 10169.995pt x 6275.445pt>
+[29]
+<diagrama_casos_de_uso_sistema_completo.png, id=776, 10169.995pt x 6275.445pt>
 File: diagrama_casos_de_uso_sistema_completo.png Graphic file (type png)
 <use diagrama_casos_de_uso_sistema_completo.png>
 Package pdftex.def Info: diagrama_casos_de_uso_sistema_completo.png  used on in
-put line 1125.
+put line 1126.
 (pdftex.def)             Requested size: 432.48051pt x 266.7747pt.
 
 
@@ -899,23 +890,23 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[29]
-Underfull \hbox (badness 1817) in paragraph at lines 1145--1145
+[30]
+Underfull \hbox (badness 1817) in paragraph at lines 1146--1146
 []|\T1/cmr/m/n/10.95 Navegar y cam-biar de
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1147--1147
+Underfull \hbox (badness 10000) in paragraph at lines 1148--1148
 []|\T1/cmr/m/n/10.95 Limpiar for-mu-la-rio
  []
 
 
-Underfull \hbox (badness 2326) in paragraph at lines 1151--1151
+Underfull \hbox (badness 2326) in paragraph at lines 1152--1152
 []|\T1/cmr/m/n/10.95 Interactuar vi-sual-men-te
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1153--1153
+Underfull \hbox (badness 10000) in paragraph at lines 1154--1154
 []|\T1/cmr/m/n/10.95 Optimizar ren-de-ri-za-do
  []
 
@@ -926,7 +917,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[30 <./diagrama_casos_de_uso_sistema_completo.png>]
+[31 <./diagrama_casos_de_uso_sistema_completo.png>]
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -934,13 +925,13 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[31]
-Underfull \hbox (badness 1152) in paragraph at lines 1188--1188
+[32]
+Underfull \hbox (badness 1152) in paragraph at lines 1189--1189
 []|\T1/cmr/m/n/10.95 Orquestador del nú-cleo
  []
 
 
-Underfull \hbox (badness 2326) in paragraph at lines 1190--1190
+Underfull \hbox (badness 2326) in paragraph at lines 1191--1191
 []|\T1/cmr/m/n/10.95 Cancelar pro-ce-sa-mien-to
  []
 
@@ -951,34 +942,26 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[32]
-Underfull \hbox (badness 10000) in paragraph at lines 1215--1215
+[33]
+Underfull \hbox (badness 10000) in paragraph at lines 1216--1216
 []|\T1/cmr/m/n/10.95 Generar y mo-di-fi-car
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1217--1217
+Underfull \hbox (badness 10000) in paragraph at lines 1218--1218
 []|\T1/cmr/m/n/10.95 Ajustar fre-cuen-cia de
  []
 
 
-Underfull \hbox (badness 2894) in paragraph at lines 1221--1221
+Underfull \hbox (badness 2894) in paragraph at lines 1222--1222
 []|\T1/cmr/m/n/10.95 Remover ar-te-fac-to con
  []
 
 
-Underfull \hbox (badness 4634) in paragraph at lines 1223--1223
+Underfull \hbox (badness 4634) in paragraph at lines 1224--1224
 []|\T1/cmr/m/n/10.95 Seleccionar trials pa-ra
  []
 
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.59999pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.59999pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
-
-[33]
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -995,11 +978,19 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [35]
-<diagrama_clases_sistema_completo.png, id=773, 12639.22pt x 6520.36pt>
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[36]
+<diagrama_clases_sistema_completo.png, id=816, 12639.22pt x 6520.36pt>
 File: diagrama_clases_sistema_completo.png Graphic file (type png)
 <use diagrama_clases_sistema_completo.png>
 Package pdftex.def Info: diagrama_clases_sistema_completo.png  used on input li
-ne 1333.
+ne 1334.
 (pdftex.def)             Requested size: 432.48051pt x 223.0623pt.
 
 
@@ -1009,15 +1000,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[36 <./diagrama_clases_sistema_completo.png>]
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.59999pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.59999pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
-
-[37]
+[37 <./diagrama_clases_sistema_completo.png>]
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -1034,42 +1017,50 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [39]
-Underfull \hbox (badness 10000) in paragraph at lines 1500--1500
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[40]
+Underfull \hbox (badness 10000) in paragraph at lines 1501--1501
 []|\T1/cmr/m/n/10.95 SettingsService, Fi-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1500--1500
+Underfull \hbox (badness 10000) in paragraph at lines 1501--1501
 []|\T1/cmr/m/n/10.95 FileIOService, Da-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1500--1500
+Underfull \hbox (badness 10000) in paragraph at lines 1501--1501
 []|\T1/cmr/m/n/10.95 VTKContextMenu,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1500--1500
+Underfull \hbox (badness 10000) in paragraph at lines 1501--1501
 []|\T1/cmr/m/n/10.95 Extensiones con-cre-
  []
 
 
-Underfull \hbox (badness 1824) in paragraph at lines 1500--1500
+Underfull \hbox (badness 1824) in paragraph at lines 1501--1501
 \T1/cmr/m/n/10.95 tas y PA-CA-naly-sis-
  []
 
 
-Overfull \hbox (21.56555pt too wide) in paragraph at lines 1500--1500
+Overfull \hbox (21.56555pt too wide) in paragraph at lines 1501--1501
 []|\T1/cmr/m/n/10.95 PACSingleChannelPlugin,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1500--1500
+Underfull \hbox (badness 10000) in paragraph at lines 1501--1501
 \T1/cmr/m/n/10.95 PA-CIn-ter-Chan-nel-
  []
 
 
-Overfull \hbox (1.3544pt too wide) in paragraph at lines 1500--1500
+Overfull \hbox (1.3544pt too wide) in paragraph at lines 1501--1501
 []|\T1/cmr/m/n/10.95 Generalización| 
  []
 
@@ -1080,26 +1071,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[40]
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.59999pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.59999pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
-
 [41]
-Underfull \hbox (badness 1242) in paragraph at lines 1541--1541
-[]|\T1/cmr/bx/n/10.95 Caso de uso o re-que-ri-
- []
-
-<diagrama_componentes_sistema_completo.png, id=818, 5542.20563pt x 3609.73593pt
->
-File: diagrama_componentes_sistema_completo.png Graphic file (type png)
-<use diagrama_componentes_sistema_completo.png>
-Package pdftex.def Info: diagrama_componentes_sistema_completo.png  used on inp
-ut line 1551.
-(pdftex.def)             Requested size: 432.48051pt x 281.67944pt.
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -1108,7 +1080,26 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [42]
-Overfull \hbox (39.49403pt too wide) in paragraph at lines 1569--1570
+Underfull \hbox (badness 1242) in paragraph at lines 1542--1542
+[]|\T1/cmr/bx/n/10.95 Caso de uso o re-que-ri-
+ []
+
+<diagrama_componentes_sistema_completo.png, id=861, 5542.20563pt x 3609.73593pt
+>
+File: diagrama_componentes_sistema_completo.png Graphic file (type png)
+<use diagrama_componentes_sistema_completo.png>
+Package pdftex.def Info: diagrama_componentes_sistema_completo.png  used on inp
+ut line 1552.
+(pdftex.def)             Requested size: 432.48051pt x 281.67944pt.
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[43]
+Overfull \hbox (39.49403pt too wide) in paragraph at lines 1570--1571
 []\T1/cmr/m/n/10.95 Registrar los plu-gins y ser-vi-cios me-dian-te ope-ra-cio-
 nes co-mo \T1/cmtt/m/n/10.95 register_plugin \T1/cmr/m/n/10.95 y \T1/cmtt/m/n/1
 0.95 register_service\T1/cmr/m/n/10.95 . 
@@ -1121,18 +1112,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[43 <./diagrama_componentes_sistema_completo.png>]
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.59999pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.59999pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
-
-[44]
-LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10.95> not available
-(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 1629.
-
+[44 <./diagrama_componentes_sistema_completo.png>]
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -1141,6 +1121,9 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [45]
+LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10.95> not available
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 1630.
+
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -1157,11 +1140,19 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [47]
-<diagrama_actividad_sistema_completo.png, id=854, 6905.8pt x 8736.64pt>
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[48]
+<diagrama_actividad_sistema_completo.png, id=897, 6905.8pt x 8736.64pt>
 File: diagrama_actividad_sistema_completo.png Graphic file (type png)
 <use diagrama_actividad_sistema_completo.png>
 Package pdftex.def Info: diagrama_actividad_sistema_completo.png  used on input
- line 1715.
+ line 1716.
 (pdftex.def)             Requested size: 432.48051pt x 547.10515pt.
 
 
@@ -1171,7 +1162,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[48]
+[49]
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -1179,7 +1170,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[49 <./diagrama_actividad_sistema_completo.png>]
+[50 <./diagrama_actividad_sistema_completo.png>]
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -1187,12 +1178,12 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[50]
-<diagrama_despliegue_sistema_completo.png, id=879, 4617.25pt x 3131.7pt>
+[51]
+<diagrama_despliegue_sistema_completo.png, id=921, 4617.25pt x 3131.7pt>
 File: diagrama_despliegue_sistema_completo.png Graphic file (type png)
 <use diagrama_despliegue_sistema_completo.png>
 Package pdftex.def Info: diagrama_despliegue_sistema_completo.png  used on inpu
-t line 1781.
+t line 1782.
 (pdftex.def)             Requested size: 386.96027pt x 262.43979pt.
 
 
@@ -1202,15 +1193,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[51 <./diagrama_despliegue_sistema_completo.png>]
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 13.59999pt, for example:
-(fancyhdr)                \setlength{\headheight}{13.59999pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
-
-[52]
+[52 <./diagrama_despliegue_sistema_completo.png>]
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -1243,7 +1226,15 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
 [56]
-Overfull \hbox (10.95651pt too wide) in paragraph at lines 2142--2143
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[57]
+Overfull \hbox (10.95651pt too wide) in paragraph at lines 2143--2144
 []\T1/cmr/bx/n/10.95 Metadatos \T1/cmtt/m/n/10.95 properties.yml\T1/cmr/bx/n/10
 .95 . \T1/cmr/m/n/10.95 Los cam-pos re-que-ri-dos (\T1/cmtt/m/n/10.95 id, name,
  category, subcategory,
@@ -1256,170 +1247,170 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[57]
-Underfull \hbox (badness 10000) in paragraph at lines 2208--2208
+[58]
+Underfull \hbox (badness 10000) in paragraph at lines 2210--2210
 []|\T1/cmr/m/n/10 Extensibilidad
  []
 
 
-Underfull \hbox (badness 3260) in paragraph at lines 2209--2209
+Underfull \hbox (badness 3260) in paragraph at lines 2211--2211
 []|\T1/cmr/m/n/10 Tiempo de apa-ri-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2210--2210
+Underfull \hbox (badness 10000) in paragraph at lines 2212--2212
 []|\T1/cmr/m/n/10 Agregar un plu-
  []
 
 
-Underfull \hbox (badness 3000) in paragraph at lines 2210--2210
+Underfull \hbox (badness 3000) in paragraph at lines 2212--2212
 \T1/cmr/m/n/10 gin vá-li-do y co-rrer
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2211--2212
+Underfull \hbox (badness 10000) in paragraph at lines 2213--2214
 []|$\OML/cmm/m/it/10 <$\T1/cmr/m/n/10 1min; 0 plu-gins fa-llan
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2214--2214
+Underfull \hbox (badness 10000) in paragraph at lines 2216--2216
 []|\T1/cmr/m/n/10 Rendimiento --
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2214--2214
+Underfull \hbox (badness 10000) in paragraph at lines 2216--2216
 \T1/cmr/m/n/10 car-ga gran-de
  []
 
 
-Underfull \hbox (badness 5008) in paragraph at lines 2215--2215
+Underfull \hbox (badness 5008) in paragraph at lines 2217--2217
 []|\T1/cmr/m/n/10 Tiempo a pri-mer
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2216--2216
+Underfull \hbox (badness 10000) in paragraph at lines 2218--2218
 []|\T1/cmtt/m/n/10 performance_test\T1/cmr/m/n/10 ;
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2216--2216
+Underfull \hbox (badness 10000) in paragraph at lines 2218--2218
 \T1/cmr/m/n/10 me-di-do: 78.4ms
  []
 
 
-Underfull \hbox (badness 5119) in paragraph at lines 2220--2220
+Underfull \hbox (badness 5119) in paragraph at lines 2222--2222
 []|\T1/cmr/m/n/10 Confiabilidad --
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2222--2222
+Underfull \hbox (badness 10000) in paragraph at lines 2224--2224
 []|\T1/cmr/m/n/10 Inyección de fa-llos
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2226--2226
+Underfull \hbox (badness 10000) in paragraph at lines 2228--2228
 []|\T1/cmr/m/n/10 Confiabilidad
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2226--2226
+Underfull \hbox (badness 10000) in paragraph at lines 2228--2228
 \T1/cmr/m/n/10 -- ex-por-ta-ción
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2232--2232
+Underfull \hbox (badness 10000) in paragraph at lines 2234--2234
 []|\T1/cmr/m/n/10 Usabilidad
  []
 
 
-Underfull \hbox (badness 1596) in paragraph at lines 2235--2236
+Underfull \hbox (badness 1596) in paragraph at lines 2237--2238
 []|$\OML/cmm/m/it/10 <$\T1/cmr/m/n/10 5min; ba-jas con-sul-tas al
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2238--2238
+Underfull \hbox (badness 10000) in paragraph at lines 2240--2240
 []|\T1/cmr/m/n/10 Rendimiento --
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2239--2239
+Underfull \hbox (badness 10000) in paragraph at lines 2241--2241
 []|\T1/cmr/m/n/10 Tiempo de
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2239--2239
+Underfull \hbox (badness 10000) in paragraph at lines 2241--2241
 \T1/cmr/m/n/10 cambio;$ $% de
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2240--2240
+Underfull \hbox (badness 10000) in paragraph at lines 2242--2242
 []|\T1/cmr/m/n/10 Benchmark de
  []
 
 
-Underfull \hbox (badness 1629) in paragraph at lines 2241--2242
+Underfull \hbox (badness 1629) in paragraph at lines 2243--2244
 []|$\OML/cmm/m/it/10 <$\T1/cmr/m/n/10 1s cam-bio; me-mo-ria 70--
  []
 
 
-Underfull \hbox (badness 5119) in paragraph at lines 2244--2244
+Underfull \hbox (badness 5119) in paragraph at lines 2246--2246
 []|\T1/cmr/m/n/10 Confiabilidad --
  []
 
 
-Underfull \hbox (badness 2302) in paragraph at lines 2245--2245
+Underfull \hbox (badness 2302) in paragraph at lines 2247--2247
 []|\T1/cmr/m/n/10 Tiempo del error;
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2246--2246
+Underfull \hbox (badness 10000) in paragraph at lines 2248--2248
 []|\T1/cmtt/m/n/10 test_fileio_
  []
 
 
-Underfull \hbox (badness 1406) in paragraph at lines 2247--2248
+Underfull \hbox (badness 1406) in paragraph at lines 2249--2250
 []|\T1/cmr/m/n/10 Mensaje $\OML/cmm/m/it/10 <$\T1/cmr/m/n/10 2s; 0$ $% pér-di-d
 a
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2250--2250
+Underfull \hbox (badness 10000) in paragraph at lines 2252--2252
 \T1/cmr/m/n/10 Usabilidad
  []
 
 
-Underfull \hbox (badness 7168) in paragraph at lines 2258--2258
+Underfull \hbox (badness 7168) in paragraph at lines 2260--2260
 []|\T1/cmtt/m/n/10 pytest \T1/cmr/m/n/10 --\T1/cmtt/m/n/10 cov \T1/cmr/m/n/10 s
 o-bre
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2262--2262
+Underfull \hbox (badness 10000) in paragraph at lines 2264--2264
 []|\T1/cmr/m/n/10 Rendimiento --
  []
 
 
-Underfull \hbox (badness 2469) in paragraph at lines 2265--2266
+Underfull \hbox (badness 2469) in paragraph at lines 2267--2268
 []|\T1/cmr/m/n/10 Nada em-peo-ra; ren-der sin
  []
 
 
-Underfull \hbox (badness 1107) in paragraph at lines 2269--2269
+Underfull \hbox (badness 1107) in paragraph at lines 2271--2271
 []|\T1/cmr/m/n/10 Éxito de arran-que
  []
 
 
-Underfull \hbox (badness 2277) in paragraph at lines 2270--2270
+Underfull \hbox (badness 2277) in paragraph at lines 2272--2272
 []|\T1/cmr/m/n/10 Instalación en Win-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2270--2270
+Underfull \hbox (badness 10000) in paragraph at lines 2272--2272
 \T1/cmr/m/n/10 dows lim-pio sin
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2274--2274
+Underfull \hbox (badness 10000) in paragraph at lines 2276--2276
 \T1/cmr/m/n/10 cancelación
  []
 
@@ -1431,7 +1422,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[58]
+[59]
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -1439,15 +1430,58 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[59]
-Underfull \hbox (badness 10000) in paragraph at lines 2336--2337
+[60]
+ignored error: Infinite glue shrinkage found in box being split
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[61]
+ignored error: Infinite glue shrinkage found in box being split
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[62]
+ignored error: Infinite glue shrinkage found in box being split
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[63]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[64]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[65]
+Underfull \hbox (badness 10000) in paragraph at lines 2694--2695
 []\T1/cmr/m/n/10.95 Riverbank Com-pu-ting. \T1/cmr/m/it/10.95 PyQt5 Re-fe-ren-c
 e Gui-de\T1/cmr/m/n/10.95 . Dis-po-ni-ble en: [][]$\T1/cmtt/m/n/10.95 https : /
  / www .
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2342--2343
+Underfull \hbox (badness 10000) in paragraph at lines 2700--2701
 \T1/cmtt/m/n/10.95 latest / api / python / vtkmodules . vtkChartsCore . html # 
 vtkmodules . vtkChartsCore .
  []
@@ -1459,7 +1493,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[60]
+[66]
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 13.59999pt, for example:
@@ -1467,7 +1501,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
 
-[61] (main.aux
+[67] (main.aux
 LaTeX Info: Redefining \. on input line 11.
 LaTeX Info: Redefining \% on input line 11.
 )
@@ -1476,36 +1510,35 @@ LaTeX2e <2025-11-01>
 L3 programming layer <2025-12-24>
  ***********
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: E541E726430DAF51F1444D1096A0751C;20011.
+(rerunfilecheck)             Checksum: D2FA8F71ED321EDFA563332C98B8D623;21622.
  ) 
 Here is how much of TeX's memory you used:
- 15067 strings out of 467870
- 242743 string characters out of 5417386
- 709763 words of memory out of 5000000
- 43517 multiletter control sequences out of 15000+600000
+ 15102 strings out of 467871
+ 239904 string characters out of 5428444
+ 786765 words of memory out of 5000000
+ 43536 multiletter control sequences out of 15000+600000
  641310 words of font info for 68 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  75i,12n,79p,1481b,802s stack positions out of 10000i,1000n,20000p,200000b,200000s
-<C:/Users/Xiomara/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/c
-m/cmmi10.pfb><C:/Users/Xiomara/AppData/Local/Programs/MiKTeX/fonts/type1/public
-/amsfonts/cm/cmr10.pfb><C:/Users/Xiomara/AppData/Local/Programs/MiKTeX/fonts/ty
-pe1/public/amsfonts/cm/cmsy10.pfb><C:/Users/Xiomara/AppData/Local/Programs/MiKT
-eX/fonts/type1/public/cm-super/sfbx1000.pfb><C:/Users/Xiomara/AppData/Local/Pro
-grams/MiKTeX/fonts/type1/public/cm-super/sfbx1095.pfb><C:/Users/Xiomara/AppData
-/Local/Programs/MiKTeX/fonts/type1/public/cm-super/sfbx1200.pfb><C:/Users/Xioma
-ra/AppData/Local/Programs/MiKTeX/fonts/type1/public/cm-super/sfbx1440.pfb><C:/U
-sers/Xiomara/AppData/Local/Programs/MiKTeX/fonts/type1/public/cm-super/sfbx2488
-.pfb><C:/Users/Xiomara/AppData/Local/Programs/MiKTeX/fonts/type1/public/cm-supe
-r/sfrm1000.pfb><C:/Users/Xiomara/AppData/Local/Programs/MiKTeX/fonts/type1/publ
-ic/cm-super/sfrm1095.pfb><C:/Users/Xiomara/AppData/Local/Programs/MiKTeX/fonts/
-type1/public/cm-super/sfrm1200.pfb><C:/Users/Xiomara/AppData/Local/Programs/MiK
-TeX/fonts/type1/public/cm-super/sfti1000.pfb><C:/Users/Xiomara/AppData/Local/Pr
-ograms/MiKTeX/fonts/type1/public/cm-super/sfti1095.pfb><C:/Users/Xiomara/AppDat
-a/Local/Programs/MiKTeX/fonts/type1/public/cm-super/sftt1000.pfb><C:/Users/Xiom
-ara/AppData/Local/Programs/MiKTeX/fonts/type1/public/cm-super/sftt1095.pfb>
-Output written on main.pdf (62 pages, 6037015 bytes).
+ <C:\Users\jlaur\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecti
+1000.pk> <C:\Users\jlaur\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi60
+0\ectt1000.pk> <C:\Users\jlaur\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec
+/dpi600\ecrm1000.pk> <C:\Users\jlaur\AppData\Local\MiKTeX\fonts/pk/ljfour/jknap
+pen/ec/dpi600\ecbx1000.pk> <C:\Users\jlaur\AppData\Local\MiKTeX\fonts/pk/ljfour
+/jknappen/ec/dpi600\ecti1095.pk> <C:\Users\jlaur\AppData\Local\MiKTeX\fonts/pk/
+ljfour/jknappen/ec/dpi600\ectt1095.pk> <C:\Users\jlaur\AppData\Local\MiKTeX\fon
+ts/pk/ljfour/jknappen/ec/dpi600\ecrm1095.pk> <C:\Users\jlaur\AppData\Local\MiKT
+eX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1095.pk> <C:\Users\jlaur\AppData\Loca
+l\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx2488.pk> <C:\Users\jlaur\AppDat
+a\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1440.pk> <C:\Users\jlaur\
+AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1200.pk> <C:\Users\
+jlaur\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1200.pk><C:/P
+rogram Files/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Program Files
+/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Program Files/MiKTeX/fonts
+/type1/public/amsfonts/cm/cmsy10.pfb>
+Output written on main.pdf (68 pages, 5946935 bytes).
 PDF statistics:
- 1092 PDF objects out of 1200 (max. 8388607)
- 247 named destinations out of 1000 (max. 500000)
- 823 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 1787 PDF objects out of 2073 (max. 8388607)
+ 263 named destinations out of 1000 (max. 500000)
+ 871 words of extra memory for PDF output out of 10000 (max. 10000000)
 

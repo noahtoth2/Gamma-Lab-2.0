@@ -195,6 +195,11 @@ def plugin_con(ds, tareas):
     p.kernel = kernel
     p.mainwin = _MainWin(kernel)
     p.ui = _UiFalsa()
+    # El dibujo no se prueba aquí: no hay ventana ni OpenGL en el doble. Se
+    # sustituye por un registro de lo que se habría dibujado.
+    p.dibujados = []
+    p.ensure_vtk = lambda: None
+    p.render_resultado = p.dibujados.append
     p._llenar_canales()
     return p
 
@@ -223,13 +228,41 @@ def test_los_dos_combos_arrancan_en_canales_distintos(listo):
     assert p.ui.channel2ComboBox.currentText() == "IN 7"
 
 
-def test_solo_ofrece_canales_que_ya_tienen_trials(qt_app):
-    """El plugin *Trials* corta uno por vez: ofrecer los demás sería ofrecer
-    algo que todavía no existe."""
+def test_ofrece_todos_los_canales_de_la_señal(qt_app):
+    """Aunque solo uno tenga trials: los del otro se generan al calcular."""
     ds = señal_con(trials_de("CA1", 0, 1))
     p = plugin_con(ds, TaskService())
     assert [p.ui.channel1ComboBox.itemText(i)
-            for i in range(p.ui.channel1ComboBox.count())] == ["CA1"]
+            for i in range(p.ui.channel1ComboBox.count())] == ["CA1", "IN 7"]
+
+
+def test_genera_los_trials_del_otro_canal_con_la_misma_receta(qt_app):
+    """Con un solo canal cortado, el segundo se corta solo con los mismos
+    parámetros: es lo que habría que hacer a mano en Trials."""
+    from core.filters.trials import cut_trials_single_channel
+
+    n = int(FS * 12)
+    t = np.arange(n) / FS
+    estimulo = np.zeros(n)
+    for k in range(6):
+        estimulo[int((1 + 1.5 * k) * FS): int((1 + 1.5 * k) * FS) + 10] = 1.0
+    ds = SignalDataset(
+        name=ARCHIVO, format="abf", source_path=f"C:/datos/{ARCHIVO}", sampling_rate=FS,
+        time=t, signals=np.vstack([np.sin(2 * np.pi * 10 * t), np.cos(2 * np.pi * 10 * t), estimulo]),
+        channel_names=["CA1", "IN 7", "STIM"], units=["mV", "mV", "V"], metadata={})
+    receta = dict(channel=0, stim_channel=2, threshold=0.5, t0=0.0, t1=1.0,
+                  end_mode="fixed", stim_expected=None, inter_stim_time=None)
+    td = cut_trials_single_channel(ds=ds, **receta, debug=False)
+    td.metadata["generation_params"] = receta
+    ds.add_trial_dataset(td)
+
+    p = plugin_con(ds, TaskService())
+    p.ui.channel2ComboBox.setCurrentText("IN 7")
+    nuevo = p._asegurar_trials(ds, "IN 7")
+    assert nuevo is not None and nuevo.channel_name == "IN 7"
+    assert np.asarray(nuevo.trials).shape == np.asarray(td.trials).shape
+    assert ds.get_active_trials(ds.name, "IN 7") is not None
+    cp.validar_alineacion(td, nuevo)   # mismo corte: no lanza
 
 
 def test_los_valores_por_omision_son_los_del_matlab(listo):
@@ -375,14 +408,16 @@ def test_salir_de_la_pestana_cancela_lo_que_este_en_vuelo(listo):
 # ============================================================
 #   Lo que se dice antes de encolar
 # ============================================================
-def test_sin_dos_canales_avisa_y_no_encola(qt_app):
+def test_sin_receta_para_el_otro_canal_avisa_y_no_encola(qt_app):
+    """CA1 tiene trials pero sin parámetros de corte guardados: no hay de dónde
+    copiar la receta para IN 7."""
     ds = señal_con(trials_de("CA1", 0, 1))
     p = plugin_con(ds, TaskService())
     avisos = []
     p.alerts.warning = avisos.append
 
     p.on_create_ppc()
-    assert avisos and "dos canales" in avisos[0]
+    assert avisos and "no tiene trials" in avisos[0]
     assert p._handle is None, "no puede haber encolado nada"
 
 
@@ -468,10 +503,17 @@ def test_el_doble_de_la_prueba_ofrece_lo_mismo_que_el_plugin_usa():
 
 
 # ============================================================
-#   El hueco de la Fase 6
+#   El dibujo
 # ============================================================
-def test_render_resultado_existe_y_todavia_no_dibuja():
-    """Declarado a propósito: así `_on_ppc_done` ya tiene su sitio de llamada
-    y el hueco se ve en el código en vez de quedar implícito."""
-    assert hasattr(Ppc_plugin, "render_resultado")
-    assert "Fase 6" in (Ppc_plugin.render_resultado.__doc__ or "")
+def test_el_resultado_se_manda_a_dibujar(listo):
+    """`_on_ppc_done` llama a `render_resultado` con el resultado del cálculo."""
+    p, _, _ = listo
+    p.on_create_ppc()
+    assert esperar(lambda: p._ultimo is not None)
+    assert p.dibujados == [p._ultimo["resultado"]]
+
+
+def test_el_plugin_declara_el_dibujo_y_la_exportacion():
+    for nombre in ("render_resultado", "ensure_vtk", "exportar_resultados",
+                   "get_analysis_params", "apply_analysis_params"):
+        assert callable(getattr(Ppc_plugin, nombre, None)), nombre
