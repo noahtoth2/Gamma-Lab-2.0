@@ -21,6 +21,7 @@ from vtkmodules.util import numpy_support
 
 from core.filters.trials import cut_trials_single_channel
 from core.plugins.interfaces import IPlugin
+from core.utils.emf_writer import anotar_mapa
 from core.utils.vtk_context_menu import VTKContextMenu
 from plugins.analysis.connectivity.ppc import compute as cp
 from plugins.analysis.connectivity.ppc.ppc_plugin_ui import Ui_Ppc
@@ -404,6 +405,7 @@ class Ppc_plugin(IPlugin):
         chart = vtk.vtkChartHistogram2D()
         chart.SetInputData(img, 0)
         chart.SetTransferFunction(lut)
+        anotar_mapa(chart, img, lut)
         chart.SetTitle("Phase Coherence")
         eje_x = chart.GetAxis(vtk.vtkAxis.BOTTOM)
         eje_x.SetTitle("Time(s)")
