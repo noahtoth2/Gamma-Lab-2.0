@@ -8,6 +8,7 @@ from vtkmodules.util import numpy_support
 
 from core.plugins.interfaces import IPlugin
 from core.utils.vtk_context_menu import VTKContextMenu
+from core.utils.trial_labels import trials_used
 from plugins.analysis.time_frequency.pac import compute as cp
 from plugins.analysis.time_frequency.pac.pac_plugin_ui import Ui_Pac
 
@@ -273,6 +274,8 @@ class Pac_plugin(IPlugin):
             self.ui.prevTrialButton.clicked.connect(partial(self._mover_trial, -1))
             self.ui.nextTrialButton.clicked.connect(partial(self._mover_trial, +1))
             self.ui.pacTypeComboBox.currentIndexChanged.connect(self._actualizar_selector_trial)
+            self.ui.pacTypeComboBox.currentIndexChanged.connect(lambda _: self.publish_current_trial())
+            self.ui.trialSpinBox.valueChanged.connect(lambda _: self.publish_current_trial())
         else:
             self.widget.setParent(parent)
         return self.widget
@@ -289,7 +292,7 @@ class Pac_plugin(IPlugin):
 
     def _on_clear_clicked(self):
         if self._calculando:
-            self.alerts.info("Hay un cálculo de PAC en curso; espera a que termine.")
+            self.alerts.warning("Hay un cálculo de PAC en curso; espera a que termine.")
             return
         d = self.DEFAULTS
         self.ui.pacTypeComboBox.setCurrentIndex(0)
@@ -333,6 +336,29 @@ class Pac_plugin(IPlugin):
             self.ui.trialTotalLabel.setText(f"todos ({n})" if n else "todos")
         else:
             self.ui.trialTotalLabel.setText(f"de {n}" if n else "sin trials")
+
+    def _trials_de_la_corrida(self, n: int) -> dict:
+        """Que trials entran en el calculo con el tipo elegido."""
+        tipo = self.ui.pacTypeComboBox.currentText()
+        if self._usa_un_solo_trial():
+            return trials_used([self.ui.trialSpinBox.value()], n, "single")
+        if tipo == "PAC Average":
+            return trials_used(None, n, "average")
+        return trials_used(None, n, "all")   # Psel concatena todos
+
+    def current_trial_state(self):
+        _, td = self._active_trials_quiet()
+        if td is None or self.ui is None:
+            return None
+        n = int(td.trials.shape[1])
+        tipo = self.ui.pacTypeComboBox.currentText()
+        if self._usa_un_solo_trial():
+            return self.build_trial_state("single", position=self.ui.trialSpinBox.value(),
+                                          total=n, channel=td.channel_name)
+        if tipo == "PAC Average":
+            return self.build_trial_state("average", total=n, channel=td.channel_name)
+        return self.build_trial_state("all", total=n, channel=td.channel_name,
+                                      note="concatenados (Psel)")
 
     def _mover_trial(self, paso: int):
         """Las flechas: avanzar o retroceder sin salirse del rango."""
@@ -386,7 +412,7 @@ class Pac_plugin(IPlugin):
         # uno porque Python indexa desde cero.
         indice = self.ui.trialSpinBox.value() - 1
         if self._usa_un_solo_trial() and not (0 <= indice < datos.shape[1]):
-            self.alerts.error(f"El trial {indice + 1} no existe; hay {datos.shape[1]}.")
+            self.alerts.warning(f"El trial {indice + 1} no existe; hay {datos.shape[1]}.")
             return
 
         senal = self.get_active_signal()
@@ -399,6 +425,9 @@ class Pac_plugin(IPlugin):
             "a1_hz": a1, "a2_hz": a2,
             "trial": (indice + 1) if self._usa_un_solo_trial() else "todos",
         }
+        self._trials_en_curso = self._trials_de_la_corrida(datos.shape[1])
+        # Texto legible en la exportacion (una fila por parametro)
+        self._params_en_curso["trials_usados"] = self._trials_en_curso["label"]
 
         tasks.cancel_all_from(self.meta.id)
         self._terminar_calculo()
@@ -457,6 +486,8 @@ class Pac_plugin(IPlugin):
             if self.ui is None or resultado is None:
                 return
             self.ensure_vtk()
+            usados = getattr(self, "_trials_en_curso", None) or {}
+            etiqueta_trials = usados.get("label", "")
             if tipo == "PAC Psel":
                 self.render_psel(resultado)
                 detalle = f"{resultado.n_ciclos} ciclo(s)"
@@ -464,12 +495,14 @@ class Pac_plugin(IPlugin):
                     detalle += (f", {resultado.ciclos_descartados} omitido(s) por "
                                 f"quedar pegados al borde de la señal")
             else:
-                self.render_resultado(resultado, tipo)
+                self.render_resultado(
+                    resultado, f"{tipo} — {etiqueta_trials}" if etiqueta_trials else tipo)
                 detalle = f"{resultado.n_trials} trial(s)"
             self._ultimo = {"parametros": self._params_en_curso, "resultado": resultado}
+            self._trials_used = usados or None
             self._actualizar_menu()
             self._notify(
-                f"{tipo}: acoplamiento {abs(resultado.vector):.4f} "
+                f"{tipo} con {etiqueta_trials}: acoplamiento {abs(resultado.vector):.4f} "
                 f"en la fase {np.rad2deg(np.angle(resultado.vector)) % 360.0:.1f}° "
                 f"({detalle})")
             if not self._corrida_restaura:
@@ -1094,7 +1127,7 @@ class Pac_plugin(IPlugin):
     def exportar_resultados(self, fmt: str):
         """Exporta los números de la última ejecución, con los parámetros que la produjeron."""
         if not self._ultimo or self.vtk_menu is None:
-            self.alerts.info("Primero ejecuta un análisis PAC para poder exportar sus resultados.")
+            self.alerts.warning("Primero ejecuta un análisis PAC para poder exportar sus resultados.")
             return
         self.vtk_menu.export_service.export_sections(self._secciones_resultado(), fmt)
 
@@ -1110,6 +1143,7 @@ class Pac_plugin(IPlugin):
             "a1": self.ui.ampLowFrequencySpinBox.value(),
             "a2": self.ui.ampHighFrequencySpinBox.value(),
             "trial": self.ui.trialSpinBox.value(),
+            "trials_used": self._trials_used,
         }
 
     def apply_analysis_params(self, params: dict):

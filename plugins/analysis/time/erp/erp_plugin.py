@@ -15,6 +15,7 @@ from core.model.trial_dataset import TrialDataset
 from plugins.analysis.time.erp import compute as ce
 from plugins.analysis.time.erp.erp_plugin_ui import Ui_ErpPlot
 from core.utils.adapters import trials_matrix_to_vtk_table
+from core.utils.trial_labels import trials_used
 
 class Erp_plugin(IPlugin):
     def __init__(self, meta: PluginMeta):
@@ -213,18 +214,22 @@ class Erp_plugin(IPlugin):
         # 2) collect selection
         idx = self._collect_selected_indices(n_trials)
         if not idx:
-            self._notify("No trials selected.")
+            self._notify("No trials selected.", "warning")
             return
 
         # indices 1-based → 0-based
         sel = M[np.array(idx) - 1, :]  # (K, Ns)
 
-        # 3) render
-        self._render_butterfly(t, sel)
-        self._render_heatmap(t, sel)
-
         self.ch_name = getattr(td, "channel_name", "")
-        self._notify(f"ERP: {len(idx)} trials plotted. Channel: {self.ch_name}")
+        used = trials_used(idx, n_trials, channel=self.ch_name)
+
+        # 3) render
+        self._render_butterfly(t, sel, title=f"ERP — {self.ch_name} — {used['label']}")
+        self._render_heatmap(t, sel, title=f"Trials: {used['label']}")
+
+        self._trials_used = used
+        self._notify(f"ERP: {used['label']} plotted. Channel: {self.ch_name}")
+        self.publish_current_trial()
         self.mark_project_dirty()
 
     # ====== Project save/restore ======
@@ -250,6 +255,7 @@ class Erp_plugin(IPlugin):
             "range_from": self.ui.spnFrom.value(),
             "range_to": self.ui.spnTo.value(),
             "manual_checked_indices": checked_indices,
+            "trials_used": self._trials_used,
         }
 
     def apply_analysis_params(self, params: dict):
@@ -309,7 +315,7 @@ class Erp_plugin(IPlugin):
         except Exception as e:
             print("[TrialsPlugin] cleanup_vtk() error:", e)
             
-    def _render_butterfly(self, t: np.ndarray, sel: np.ndarray):
+    def _render_butterfly(self, t: np.ndarray, sel: np.ndarray, title: str = None):
         """
         Draw lines (1 per trial) with vtkChartXY.
         t: (T,), sel: (K, T)
@@ -335,16 +341,18 @@ class Erp_plugin(IPlugin):
         
         ax_bottom.SetTitle("Time (s)")
         ax_left.SetTitle("Amplitude")
+        if title:
+            chart.SetTitle(title)
 
         try:
             self.vtk_menu = VTKContextMenu(chart, self.vtk_top, self.active_signal.name,self.ch_name,self.meta.id, parent=self.widget)
         except Exception as e:
-            self.alerts.info(f"Error creating contextual menu\n {str(e)}", "Contextual menu")
+            self.alerts.error(f"Error creating contextual menu\n {str(e)}", "Contextual menu")
 
 
         self.view_top.GetRenderWindow().Render()
 
-    def _render_heatmap(self, t: np.ndarray, sel: np.ndarray):
+    def _render_heatmap(self, t: np.ndarray, sel: np.ndarray, title: str = None):
         """2D heatmap with correct time axes"""
         assert self.view_bot is not None
         scene = self.view_bot.GetScene()
@@ -387,6 +395,8 @@ class Erp_plugin(IPlugin):
         
         ax_bottom.SetTitle("Time (s)")
         ax_left.SetTitle("Trials")
+        if title:
+            chart.SetTitle(title)
         
         # The chart should respect spacing/origin automatically
         # but enforce just in case
@@ -397,10 +407,10 @@ class Erp_plugin(IPlugin):
         scene.AddItem(chart)
         
         try:
-            self.vtk_menu_bot = VTKContextMenu(chart, self.vtk_top, self.active_signal.name,self.ch_name,self.meta.id, parent=self.widget)
+            self.vtk_menu_bot = VTKContextMenu(chart, self.vtk_bot, self.active_signal.name,self.ch_name,self.meta.id, parent=self.widget)
             self.vtk_menu_bot.add_action("Change LUT", self._on_change_lut)
         except Exception as e:
-            self.alerts.info(f"Error creating contextual menu\n {str(e)}", "Contextal menu")
+            self.alerts.error(f"Error creating contextual menu\n {str(e)}", "Contextual menu")
 
 
 

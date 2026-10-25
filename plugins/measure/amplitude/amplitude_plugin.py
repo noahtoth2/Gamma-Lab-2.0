@@ -306,7 +306,7 @@ class AmplitudePlugin(IPlugin):
             return
         rows = self.model.get_all_rows()
         if not rows:
-            self.alerts.error("No measurements to export.")
+            self.alerts.warning("No measurements to export.")
             return
 
         default_path = os.path.join(self._export_dir(), "amplitude_measurements.csv")

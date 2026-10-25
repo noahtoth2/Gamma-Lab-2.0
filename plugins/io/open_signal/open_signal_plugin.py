@@ -243,8 +243,7 @@ class OpenSignalPlugin(IPlugin):
 
         ext = Path(fname).suffix.lower()
         if ext not in co.EXTENSIONES:
-            if self.mainwin:
-                self.mainwin.statusBar().showMessage(f"Unsupported format: {ext}", 4000)
+            self.alerts.warning(f"Unsupported format: {ext}", "Open signal")
             return
 
         tasks = self.kernel.get_service("TaskService") if self.kernel else None
@@ -286,7 +285,7 @@ class OpenSignalPlugin(IPlugin):
         self._terminar_carga()
         if self.ui is None:
             return
-        QMessageBox.warning(self.ui, "Error", f"Error opening file\n{message}.")
+        self.alerts.error(f"Error opening file\n{message}.", "Open signal")
         self._log("open_file_dialog error:", message)
 
     def _on_load_cancelled(self, handle):
@@ -320,9 +319,16 @@ class OpenSignalPlugin(IPlugin):
             if self.mainwin:
                 self.mainwin.statusBar().showMessage(f"Loaded: {fname}", 4000)
         except Exception as e:
-            QMessageBox.warning(self.ui, "Error", f"Error opening file {fname}\n{e}.")
+            self.alerts.error(f"Error opening file {fname}\n{e}.", "Open signal")
             self._log("_on_load_done error:", e)
             traceback.print_exc()
+
+    def current_trial_state(self):
+        """Aqui se ve la senal continua, no trials."""
+        store = self.kernel.get_service("DataStore") if self.kernel else None
+        if store is None or store.get_active_signal() is None:
+            return None
+        return self.build_trial_state("raw")
 
     def _set_dataset(self, ds: SignalDataset):
         self.current_ds = ds

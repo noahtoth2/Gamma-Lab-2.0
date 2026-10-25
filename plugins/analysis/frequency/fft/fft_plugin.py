@@ -10,8 +10,11 @@ from core.utils.vtk_context_menu import VTKContextMenu
 from core.model.signal_dataset import SignalDataset
 from plugins.analysis.frequency.fft.fft_plugin_ui import Ui_Fft
 from core.utils.adapters import trials_matrix_to_vtk_table
+from core.utils.trial_labels import trials_used
 
 class Fft_plugin(IPlugin):
+    MAX_PLOTS = 200
+
     def __init__(self, meta: PluginMeta):
         super().__init__(meta)
         self.ui: Ui_Fft | None = None
@@ -125,8 +128,12 @@ class Fft_plugin(IPlugin):
             freq, mag, fs_eff = self._compute_fft(X, fs, target_fs)
 
             # 4) Plot
+            self._trials_used = trials_used(None, X.shape[1], "all", channel=ch_name)
             self._plot_fft(freq, mag, ch_name, lo, hi)
-            self._notify(f"FFT ready: fs_eff={fs_eff:.2f} Hz, {freq.size} bins, trials={mag.shape[1]}")
+            dibujados = f", se dibujan {self.MAX_PLOTS}" if mag.shape[1] > self.MAX_PLOTS else ""
+            self._notify(f"FFT ready with {self._trials_used['label']}{dibujados}: "
+                         f"fs_eff={fs_eff:.2f} Hz, {freq.size} bins")
+            self.publish_current_trial()
             self.mark_project_dirty()
 
     # ====== Project save/restore ======
@@ -135,6 +142,7 @@ class Fft_plugin(IPlugin):
             "sample_density": self.ui.sampleDensitySpinBox.value(),
             "low_freq": self.ui.lowFrequencySpinBox.value(),
             "high_freq": self.ui.highFrequencySpinBox.value(),
+            "trials_used": self._trials_used,
         }
 
     def apply_analysis_params(self, params: dict):
@@ -221,7 +229,8 @@ class Fft_plugin(IPlugin):
         mag_v  = mag[sel, :]  # (Nf_sel, T)
 
         # Limit number of displayed curves
-        MAX_PLOTS = 200
+        MAX_PLOTS = self.MAX_PLOTS
+        n_trials = mag_v.shape[1]
         if mag_v.shape[1] > MAX_PLOTS:
             self._log(f"There are {mag_v.shape[1]} trials → showing {MAX_PLOTS}")
             mag_v = mag_v[:, :MAX_PLOTS]
@@ -240,8 +249,13 @@ class Fft_plugin(IPlugin):
         ax_b.SetTitle("Frequency (Hz)")
         ax_l.SetTitle("Magnitude")
         try:
-            if ch_name:
-                self.chart.SetTitle(f"FFT - {ch_name}")
+            etiqueta = (self._trials_used or {}).get("label")
+            titulo = f"FFT - {ch_name}" if ch_name else "FFT"
+            if etiqueta:
+                titulo += f" — {etiqueta}"
+                if n_trials > MAX_PLOTS:
+                    titulo += f", se dibujan {MAX_PLOTS}"
+            self.chart.SetTitle(titulo)
         except Exception:
             pass
         

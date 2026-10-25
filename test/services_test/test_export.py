@@ -212,18 +212,21 @@ class DummyChart:
         return self._plots[i]
 
 
-def test_export_table_no_chart_triggers_error(tmp_path):
+def test_export_table_no_chart_triggers_warning(tmp_path):
+    # Nothing to export is something the user can fix: a warning, not an error
     svc = make_service(tmp_path, chart_cb=lambda: None)
     svc.export_table(fmt="csv", filename=str(tmp_path / "tbl.csv"))
-    svc.alerts.error.assert_called_once()
+    svc.alerts.warning.assert_called_once()
+    svc.alerts.error.assert_not_called()
     svc.alerts.info.assert_not_called()
 
 
-def test_export_table_chart_with_zero_plots_triggers_error(tmp_path):
+def test_export_table_chart_with_zero_plots_triggers_warning(tmp_path):
     chart = DummyChart([])
     svc = make_service(tmp_path, chart_cb=lambda: chart)
     svc.export_table(fmt="csv", filename=str(tmp_path / "tbl.csv"))
-    svc.alerts.error.assert_called_once()
+    svc.alerts.warning.assert_called_once()
+    svc.alerts.error.assert_not_called()
     svc.alerts.info.assert_not_called()
 
 

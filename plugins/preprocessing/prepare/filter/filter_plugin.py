@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QWidget
 from core.plugins.interfaces import IPlugin
 from core.plugins.meta import PluginMeta
 from core.utils.vtk_context_menu import VTKContextMenu
+from core.utils.trial_labels import trials_used
 from core.model.signal_dataset import SignalDataset
 from core.services.data_store import DataStore
 
@@ -152,11 +153,17 @@ class Filter_plugin(IPlugin):
                 return
 
             trials = self.get_active_trials()
-            if trials.trials is None:
+            if trials is None or trials.trials is None:
                 return
 
+            # La vista previa filtra siempre el canal 0 de la senal cruda y el
+            # primer trial valido; se indica tal cual en los titulos.
             signal_data = self.active_signal.signals[0, :]
             trial_data = trials.trials[:, 0]
+            nombres = list(getattr(self.active_signal, "channel_names", []) or [])
+            canal_senal = nombres[0] if nombres else "canal 1"
+            self._trials_used = trials_used([1], trials.trials.shape[1], "single",
+                                            channel=trials.channel_name)
             fs = self.active_signal.sampling_rate
             print(f"Sampling Rate: {fs} Hz")
 
@@ -168,15 +175,28 @@ class Filter_plugin(IPlugin):
             filtered_signal = self.run_filter(signal_data, low, high, order, fs, type_filter)
             filtered_trial = self.run_filter(trial_data, low, high, order, fs, type_filter)
 
-            self._render_filtered(filtered_signal, self.active_signal.sampling_rate, unit="mV", type = "signal")
-            self._render_filtered(filtered_trial, self.active_signal.sampling_rate, unit="mV", type = "trial")
+            self._render_filtered(filtered_signal, self.active_signal.sampling_rate, unit="mV", type = "signal",
+                                  title=f"Filtered Signal — {canal_senal} (señal completa)")
+            self._render_filtered(filtered_trial, self.active_signal.sampling_rate, unit="mV", type = "trial",
+                                  title=f"Filtered Trial — {self._trials_used['label']} — {trials.channel_name}")
+            self._notify(f"Filtro aplicado a {canal_senal} (señal completa) y a "
+                         f"{self._trials_used['label']} de {trials.channel_name} (vista previa)")
+            self.publish_current_trial()
 
         except ValueError as ve:
-            self.alerts.error(str(ve))
+            self.alerts.warning(str(ve), "Invalid parameters")
         except Exception as e:
             self.alerts.error(f"Unexpected error in on_apply_filter: {str(e)}")
             self._log("Unexpected error in on_apply_filter:", e)
     # end def
+
+    def current_trial_state(self):
+        """La vista previa del filtro usa siempre el primer trial valido."""
+        _, td = self._active_trials_quiet()
+        if td is None:
+            return None
+        return self.build_trial_state("single", position=1, total=int(td.trials.shape[1]),
+                                      channel=td.channel_name, note="vista previa del filtro")
 
     def run_filter(self, signal, low, high, order, fs, type="butterworth"):
         """ Applies a bandpass filter to the signal."""
@@ -208,7 +228,8 @@ class Filter_plugin(IPlugin):
             return np.zeros_like(signal)
     # end def
 
-    def _render_filtered(self, filtered_output, fs: float, unit: str = "mV", type: str = ""):
+    def _render_filtered(self, filtered_output, fs: float, unit: str = "mV", type: str = "",
+                         title: str = None):
         """
         Render filtered signal or trial using the correct vtkContextView.
         """
@@ -282,7 +303,7 @@ class Filter_plugin(IPlugin):
             ax_b.SetTitle("Time (s)")
             ax_l.SetTitle(unit)
 
-            chart.SetTitle(f"Filtered {type.capitalize()}")
+            chart.SetTitle(title or f"Filtered {type.capitalize()}")
 
             # --- Add chart to scene ---
             scene.AddItem(chart)

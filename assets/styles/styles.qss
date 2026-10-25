@@ -841,3 +841,99 @@ QFrame[role="divider"] {
     qproperty-alignment: AlignCenter;
     margin-bottom: 6px;
 }
+
+/* =========================================
+   SEVERITY: notifications and status labels
+   info = blue, warning = amber, error = red
+   ========================================= */
+
+#notificationCard {
+    border-radius: 6px;
+    border: 1px solid #C9D6EA;
+    border-left: 5px solid #2E60A9;
+    background-color: #EEF3FB;
+}
+
+#notificationCard[severity="warning"] {
+    border: 1px solid #F0D9A8;
+    border-left: 5px solid #D9822B;
+    background-color: #FFF6E5;
+}
+
+#notificationCard[severity="error"] {
+    border: 1px solid #F1C2C2;
+    border-left: 5px solid #C0392B;
+    background-color: #FDECEC;
+}
+
+#notificationIcon {
+    font-size: 12pt;
+    font-weight: 700;
+    color: #2E60A9;
+    background: transparent;
+}
+
+#notificationIcon[severity="warning"] { color: #D9822B; }
+#notificationIcon[severity="error"]   { color: #C0392B; }
+
+#notificationTitle {
+    font-weight: 700;
+    color: #2E60A9;
+    background: transparent;
+}
+
+#notificationTitle[severity="warning"] { color: #9A5B12; }
+#notificationTitle[severity="error"]   { color: #922B21; }
+
+#notificationMessage {
+    color: #33475b;
+    background: transparent;
+}
+
+#notificationClose {
+    border: none;
+    background: transparent;
+    color: #6B7785;
+    font-size: 9pt;
+    padding: 0px 4px;
+}
+
+#notificationClose:hover {
+    color: #1F2D3D;
+}
+
+/* Status bar text coloured by severity (IPlugin._notify) */
+QStatusBar[severity="warning"] { color: #9A5B12; }
+QStatusBar[severity="error"]   { color: #C0392B; font-weight: 600; }
+
+/* Current-trial indicator in the title bar */
+#titleTrialLabel {
+    color: #2E60A9;
+    font-size: 10pt;
+    font-weight: 600;
+    padding: 1px 8px;
+    border-radius: 4px;
+    background-color: #EEF3FB;
+}
+
+#titleTrialLabel[severity="warning"] {
+    color: #9A5B12;
+    background-color: #FFF6E5;
+}
+
+/* Cursor X/Y readout */
+#cursorReadoutLabel {
+    color: #33475b;
+    font-family: "Consolas", "Inter";
+    padding: 0px 8px;
+}
+
+#cursorOverlayLabel {
+    color: #1F2D3D;
+    background-color: rgba(255, 255, 255, 215);
+    border: 1px solid #C9D6EA;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-family: "Consolas", "Inter";
+    font-size: 9pt;
+}

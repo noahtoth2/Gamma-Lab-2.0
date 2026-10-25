@@ -1543,8 +1543,35 @@ PACSingleChannelPlugin y PACInterChannelPlugin & CU-001 y CU-002 \\
 
 
 \subsection{Vista de Desarrollo}
+\subsubsection{Propósito}
+La vista de desarrollo permite comprender cómo se organiza GammaLab 2.0 y cómo colaboran sus componentes para ofrecer las funcionalidades de procesamiento y análisis de señales neurofisiológicas. El Kernel y el PluginManager proporcionan la estructura necesaria para integrar las extensiones, mientras que los servicios de soporte se encargan de gestionar los datos, los archivos, la configuración, los proyectos y la exportación de resultados.
 
-Como complemento al modelo arquitectónico 4+1, la vista de desarrollo permite comprender cómo se organiza GammaLab 2.0 desde el punto de vista de su implementación. Esta vista presenta los principales módulos del sistema, las responsabilidades que asume cada uno y la manera en que se relacionan para ofrecer las funcionalidades de la aplicación. De esta forma, facilita la comprensión de la estructura del software y de la distribución de sus componentes dentro del proyecto.
+Por su parte, los plugins reúnen las herramientas de entrada y salida, preprocesamiento, análisis y medición. A estos componentes se suman nuevas incorporaciones, como el TaskOrchestrator, orientado a coordinar la ejecución de tareas; el ProjectService, destinado a conservar y recuperar el estado del trabajo; y el TooltipHelper, que busca facilitar la comprensión de las herramientas disponibles.
+
+En conjunto, esta organización permite que GammaLab 2.0 evolucione a partir de su versión anterior, reutilice funcionalidades existentes e incorpore nuevas capacidades de manera ordenada. La separación de responsabilidades contribuye a que el sistema sea más fácil de mantener y ampliar, al tiempo que establece una estructura que puede acompañar el crecimiento de las necesidades de análisis del laboratorio.
+
+\subsubsection{Notación}
+La leyenda incluida en la Figura \ref{fig:vistadesarrollo} permite distinguir los componentes según su estado y su relación con el alcance definido para GammaLab 2.0. Los colores se interpretan de la siguiente manera:
+
+\begin{itemize}
+    \item \textbf{Azul - Núcleo existente:} representa los componentes centrales que ya forman parte de la estructura de la aplicación, como \texttt{MainWindow} y \texttt{Kernel}.
+
+    \item \textbf{Amarillo - Servicio o plugin existente:} identifica los servicios y plugins que se reutilizan de la versión anterior, como \texttt{DataStore}, \texttt{FileIOService}, \texttt{SettingsService} y las extensiones funcionales existentes.
+
+    \item \textbf{Rojo - Nuevo:} identifica los componentes incorporados o previstos para GammaLab 2.0, entre ellos \texttt{ProjectService}, \texttt{TaskOrchestrator} y \texttt{TooltipHelper}.
+
+    \item \textbf{Gris - Fuera del alcance de los 23 casos de uso:} representa los componentes que se muestran como referencia funcional o documental, pero que no forman parte del alcance específico considerado en dichos casos de uso.
+\end{itemize}
+
+Esta distinción permite identificar con mayor facilidad qué partes de la arquitectura se apoyan en funcionalidades existentes y cuáles corresponden a nuevas incorporaciones. También ayuda a comprender que el diagrama representa tanto la estructura reutilizada como la organización propuesta para ampliar el sistema.
+
+
+\subsubsection{Visión general del modelo}
+GammaLab 2.0 sigue una arquitectura basada en el estilo \textit{Microkernel}. En esta estructura, el Kernel funciona como el punto central de coordinación, encargado de mantener el registro de los plugins y servicios disponibles. A su alrededor se encuentran los componentes que permiten cargar señales, realizar operaciones de preprocesamiento, ejecutar análisis, obtener medidas y exportar resultados.
+
+La organización modular permite que cada componente se concentre en una responsabilidad específica, sin que toda la lógica de la aplicación dependa de un único módulo. Esto facilita el mantenimiento del sistema y permite ampliar sus capacidades mediante la incorporación de nuevas funcionalidades. Además, el diagrama distingue entre los componentes existentes, aquellos que se plantean como nuevas incorporaciones para GammaLab 2.0 y los elementos que se encuentran fuera del alcance de los 23 casos de uso considerados.
+
+A continuación, se describe la función de cada grupo de componentes y su participación en el funcionamiento general del sistema.
 
 \begin{figure}[H]
     \centering
@@ -1553,15 +1580,11 @@ Como complemento al modelo arquitectónico 4+1, la vista de desarrollo permite c
     \label{fig:vistadesarrollo}
 \end{figure}
 
-Como se observa en la Figura \ref{fig:vistadesarrollo}, GammaLab 2.0 sigue una arquitectura basada en el estilo \textit{Microkernel}. En esta estructura, el Kernel funciona como el punto central de coordinación, encargado de mantener el registro de los plugins y servicios disponibles. A su alrededor se encuentran los componentes que permiten cargar señales, realizar operaciones de preprocesamiento, ejecutar análisis, obtener medidas y exportar resultados.
 
-La organización modular permite que cada componente se concentre en una responsabilidad específica, sin que toda la lógica de la aplicación dependa de un único módulo. Esto facilita el mantenimiento del sistema y permite ampliar sus capacidades mediante la incorporación de nuevas funcionalidades. Además, el diagrama distingue entre los componentes existentes, aquellos que se plantean como nuevas incorporaciones para GammaLab 2.0 y los elementos que se encuentran fuera del alcance de los 23 casos de uso considerados.
-
-A continuación, se describe la función de cada grupo de componentes y su participación en el funcionamiento general del sistema.
 
 \subsubsection{Componentes principales}
 
-El \textit{Kernel} es el núcleo de GammaLab 2.0 y permite que los diferentes componentes trabajen de manera coordinada. Su función principal es mantener el registro de los plugins y servicios disponibles, de modo que puedan ser localizados y utilizados por los módulos que los necesiten. Gracias a esta organización, los componentes pueden acceder a las funcionalidades compartidas sin depender directamente de los detalles internos de su implementación.
+El Kernel es el núcleo de GammaLab 2.0 y permite que los diferentes componentes trabajen de manera coordinada. Su función principal es mantener el registro de los plugins y servicios disponibles, de modo que puedan ser localizados y utilizados por los módulos que los necesiten. Gracias a esta organización, los componentes pueden acceder a las funcionalidades compartidas sin depender directamente de los detalles internos de su implementación.
 
 Entre sus principales responsabilidades se encuentran:
 
@@ -1674,30 +1697,6 @@ Este recorrido describe la colaboración general entre los componentes, pero no 
 En términos generales, cada componente participa en la operación de acuerdo con su responsabilidad. La interfaz recibe las acciones del usuario, el Kernel permite localizar las funcionalidades disponibles, los plugins ejecutan las operaciones específicas y los servicios proporcionan el acceso a los datos y recursos necesarios. Cuando la operación lo requiere, el orquestador coordina su ejecución y los resultados se presentan, almacenan o exportan según corresponda.
 
 Esta distribución de responsabilidades permite que los componentes colaboren sin concentrar toda la lógica del sistema en un único módulo y facilita la incorporación de nuevas funcionalidades.
-
-\subsubsection{Interpretación de los colores del diagrama}
-
-La leyenda incluida en la Figura \ref{fig:vistadesarrollo} permite distinguir los componentes según su estado y su relación con el alcance definido para GammaLab 2.0. Los colores se interpretan de la siguiente manera:
-
-\begin{itemize}
-    \item \textbf{Azul - Núcleo existente:} representa los componentes centrales que ya forman parte de la estructura de la aplicación, como \texttt{MainWindow} y \texttt{Kernel}.
-
-    \item \textbf{Amarillo - Servicio o plugin existente:} identifica los servicios y plugins que se reutilizan de la versión anterior, como \texttt{DataStore}, \texttt{FileIOService}, \texttt{SettingsService} y las extensiones funcionales existentes.
-
-    \item \textbf{Rojo - Nuevo:} identifica los componentes incorporados o previstos para GammaLab 2.0, entre ellos \texttt{ProjectService}, \texttt{TaskOrchestrator} y \texttt{TooltipHelper}.
-
-    \item \textbf{Gris - Fuera del alcance de los 23 casos de uso:} representa los componentes que se muestran como referencia funcional o documental, pero que no forman parte del alcance específico considerado en dichos casos de uso.
-\end{itemize}
-
-Esta distinción permite identificar con mayor facilidad qué partes de la arquitectura se apoyan en funcionalidades existentes y cuáles corresponden a nuevas incorporaciones. También ayuda a comprender que el diagrama representa tanto la estructura reutilizada como la organización propuesta para ampliar el sistema.
-
-\subsubsection{Conclusión}
-
-La vista de desarrollo permite comprender cómo se organiza GammaLab 2.0 y cómo colaboran sus componentes para ofrecer las funcionalidades de procesamiento y análisis de señales neurofisiológicas. El Kernel y el PluginManager proporcionan la estructura necesaria para integrar las extensiones, mientras que los servicios de soporte se encargan de gestionar los datos, los archivos, la configuración, los proyectos y la exportación de resultados.
-
-Por su parte, los plugins reúnen las herramientas de entrada y salida, preprocesamiento, análisis y medición. A estos componentes se suman nuevas incorporaciones, como el TaskOrchestrator, orientado a coordinar la ejecución de tareas; el ProjectService, destinado a conservar y recuperar el estado del trabajo; y el TooltipHelper, que busca facilitar la comprensión de las herramientas disponibles.
-
-En conjunto, esta organización permite que GammaLab 2.0 evolucione a partir de su versión anterior, reutilice funcionalidades existentes e incorpore nuevas capacidades de manera ordenada. La separación de responsabilidades contribuye a que el sistema sea más fácil de mantener y ampliar, al tiempo que establece una estructura que puede acompañar el crecimiento de las necesidades de análisis del laboratorio.
 
 
 

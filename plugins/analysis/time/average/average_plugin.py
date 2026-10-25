@@ -2,6 +2,7 @@ from core import kernel
 from core.plugins.interfaces import IPlugin
 from core.plugins.meta import PluginMeta
 from core.utils.vtk_context_menu import VTKContextMenu
+from core.utils.trial_labels import trials_used
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QListWidgetItem
 
@@ -100,18 +101,27 @@ class Average_plugin(IPlugin):
             return
         t = trials.time_rel
 
-        self._notify(f"Average computed -> shape: {av_data.shape} with {trials.trials.shape[1]} trials used")
+        # Siempre promedia TODOS los trials validos: la seleccion del panel
+        # (single / range / lista) todavia no se aplica al calculo. Se indica
+        # tal cual para que el usuario sepa que entro en el promedio.
+        used = trials_used(None, trials.trials.shape[1], "average", channel=trials.channel_name)
+        self._trials_used = used
+        aviso = ""
+        if hasattr(self.ui, "chkSelectAll") and not self.ui.chkSelectAll.isChecked():
+            aviso = " (la selección del panel no se aplica: se promedian todos)"
+        self._notify(f"Average computed with {used['label']}{aviso}")
 
         
         # Render in VTK
         self.render_average(t, av_data, trials.channel_name, trials.unit)
+        self.publish_current_trial()
         self.mark_project_dirty()
 
     # ====== Project save/restore ======
     def get_analysis_params(self) -> dict:
         # No configurable parameters - always averages all active trials. The
         # entry's mere presence in the manifest means "re-run this on open".
-        return {"used": True}
+        return {"used": True, "trials_used": self._trials_used}
 
     def apply_analysis_params(self, params: dict):
         self._on_calculate_average()
@@ -176,7 +186,8 @@ class Average_plugin(IPlugin):
 
         chart.GetAxis(vtk.vtkAxis.BOTTOM).SetTitle("Time (s)")
         chart.GetAxis(vtk.vtkAxis.LEFT).SetTitle(unit or "Amplitude")
-        chart.SetTitle(f"Average - {channel_name or ''}")
+        etiqueta = (self._trials_used or {}).get("label")
+        chart.SetTitle(f"Average - {channel_name or ''}" + (f" — {etiqueta}" if etiqueta else ""))
 
         # --- Context menu ---
 
@@ -245,7 +256,7 @@ class Average_plugin(IPlugin):
                 )
                 self.vtk_menu.set_datastore(self.kernel.get_service("DataStore"))
             except Exception as e:            
-                self.alerts.info(f"Error creating contextual menu\n {str(e)}", "Contextual menu")
+                self.alerts.error(f"Error creating contextual menu\n {str(e)}", "Contextual menu")
 
 
 

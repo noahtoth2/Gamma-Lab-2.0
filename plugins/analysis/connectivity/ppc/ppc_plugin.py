@@ -19,6 +19,7 @@ import numpy as np
 from PyQt5.QtWidgets import QWidget
 
 from core.plugins.interfaces import IPlugin
+from core.utils.trial_labels import trials_used
 from plugins.analysis.connectivity.ppc import compute as cp
 from plugins.analysis.connectivity.ppc.ppc_plugin_ui import Ui_Ppc
 
@@ -186,6 +187,11 @@ class Ppc_plugin(IPlugin):
             "ventana_min_s": wd, "ciclos": ciclos,
             "n_trials": int(np.asarray(td1.trials).shape[1]),
         }
+        # PPC usa todos los trials validos de los dos canales, emparejados
+        self._trials_en_curso = trials_used(None, self._params_en_curso["n_trials"], "all",
+                                            channel=f"{canal_1} ↔ {canal_2}")
+        self._params_en_curso["trials_usados"] = (
+            f"{self._trials_en_curso['label']} · {canal_1} y {canal_2}")
 
         tareas.cancel_all_from(self.meta.id)
         self._terminar_calculo()
@@ -249,10 +255,13 @@ class Ppc_plugin(IPlugin):
             self.render_resultado(resultado)
             for aviso in cp.avisos(resultado):
                 self._log(aviso)
+            self._trials_used = getattr(self, "_trials_en_curso", None)
+            usados = (self._trials_used or {}).get("label", f"{resultado.n_trials} trial(s)")
             self._notify(
                 f"PPC {resultado.canal_1} ↔ {resultado.canal_2}: "
                 f"{resultado.frecuencias.size} frecuencias × "
-                f"{resultado.tiempos.size} ventanas, {resultado.n_trials} trial(s)")
+                f"{resultado.tiempos.size} ventanas, trials: {usados}")
+            self.publish_current_trial()
             self.mark_project_dirty()
         except Exception as e:
             self._log("render_resultado:", e)
@@ -263,6 +272,12 @@ class Ppc_plugin(IPlugin):
     # =====================================================
     # === El dibujo (Fase 6)
     # =====================================================
+    def current_trial_state(self):
+        """PPC trabaja con dos canales a la vez: se muestran los dos."""
+        if self._trials_used:
+            return self.trial_state_from_used(self._trials_used)
+        return super().current_trial_state()
+
     def render_resultado(self, resultado):
         """Un mapa de frecuencia logarítmica contra tiempo, con barra de color.
 

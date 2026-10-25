@@ -11,12 +11,15 @@ from core.utils.vtk_context_menu import VTKContextMenu
 # UI and VTK adapter
 from plugins.analysis.frequency.psd.psd_plugin_ui import Ui_Psd
 from core.utils.adapters import trials_matrix_to_vtk_table
+from core.utils.trial_labels import trials_used
 
 class Psd_plugin(IPlugin):
     """
     Power Spectral Density (PSD) plugin with selectable modes:
     All Trials, Average, Individual. Mirrors other signal plugins.
     """
+
+    MAX_PLOTS = 200
     
     def __init__(self, meta: PluginMeta):
         super().__init__(meta)
@@ -106,7 +109,7 @@ class Psd_plugin(IPlugin):
                 self.ui.modeComboBox.setCurrentIndex(midx)
         except Exception:
             pass
-        self.ui.trialIndexSpinBox.setValue(0)
+        self.ui.trialIndexSpinBox.setValue(1)
     # --- End UI helpers ---
 
     def _wire_ui(self):
@@ -139,6 +142,12 @@ class Psd_plugin(IPlugin):
         # Mode combobox
         self.ui.modeComboBox.currentTextChanged.connect(self._on_mode_changed)
 
+        # Trial selector counts from 1 (position among valid trials), like the
+        # rest of the application.
+        self.ui.trialIndexSpinBox.setMinimum(1)
+        self.ui.modeComboBox.currentTextChanged.connect(lambda _: self.publish_current_trial())
+        self.ui.trialIndexSpinBox.valueChanged.connect(lambda _: self.publish_current_trial())
+
     def _on_mode_changed(self, mode_text: str):
         """Show or hide the individual trial selector."""
         is_individual = (mode_text == "Individual")
@@ -146,8 +155,21 @@ class Psd_plugin(IPlugin):
         self.ui.trialIndexSpinBox.setVisible(is_individual)
         
         # Enable the spinbox only when visible and there are trials
-        num_trials = self.ui.trialIndexSpinBox.maximum() + 1
+        num_trials = self.ui.trialIndexSpinBox.maximum()
         self.ui.trialIndexSpinBox.setEnabled(is_individual and num_trials > 0)
+
+    def current_trial_state(self):
+        _, td = self._active_trials_quiet()
+        if td is None:
+            return None
+        total = int(td.trials.shape[1])
+        mode = self.ui.modeComboBox.currentText() if self.ui else "All Trials"
+        if mode == "Individual":
+            return self.build_trial_state("single", position=self.ui.trialIndexSpinBox.value(),
+                                          total=total, channel=td.channel_name)
+        if mode == "Average":
+            return self.build_trial_state("average", total=total, channel=td.channel_name)
+        return self.build_trial_state("all", total=total, channel=td.channel_name)
 
     def _sync_noverlap(self):
         """Set noverlap to half of nperseg by default."""
@@ -190,7 +212,7 @@ class Psd_plugin(IPlugin):
             self._notify("PSD: no trials in active signal.")
             # Disable selector on failure
             self.ui.trialIndexSpinBox.setEnabled(False)
-            self.ui.trialIndexSpinBox.setRange(0, 0)
+            self.ui.trialIndexSpinBox.setRange(1, 1)
             return
             
         # Target Fs default = fs (no downsample)
@@ -203,7 +225,7 @@ class Psd_plugin(IPlugin):
             
         # Update UI with number of trials
         num_trials = X.shape[1]
-        self.ui.trialIndexSpinBox.setRange(0, num_trials - 1)
+        self.ui.trialIndexSpinBox.setRange(1, max(1, num_trials))
         # Enable for Individual mode
         is_individual = (self.ui.modeComboBox.currentText() == "Individual")
         self.ui.trialIndexSpinBox.setEnabled(is_individual)
@@ -226,7 +248,7 @@ class Psd_plugin(IPlugin):
             
             # Mode parameters
             mode = self.ui.modeComboBox.currentText()
-            trial_idx = self.ui.trialIndexSpinBox.value()
+            trial_idx = self.ui.trialIndexSpinBox.value() - 1   # 0-based column
 
             if lo > hi:
                 lo, hi = hi, lo
@@ -239,7 +261,7 @@ class Psd_plugin(IPlugin):
             # The noverlap>=nperseg adjustment is handled inside _compute_psd
             
         except Exception as e:
-            self.alerts.error(f"Parameter error: {str(e)}")
+            self.alerts.warning(f"Parameter error: {str(e)}", "Invalid parameters")
             return
 
         # 3) PSD (always compute for all trials)
@@ -259,31 +281,39 @@ class Psd_plugin(IPlugin):
         power_to_plot = None
         plot_title = ""
         
+        used = None
         if mode == "All Trials":
             power_to_plot = power_all_trials
-            plot_title = f"PSD (All Trials) - {ch_name}"
+            used = trials_used(None, num_trials, "all")
+            plot_title = f"PSD (All Trials) - {ch_name} — {used['label']}"
+            if num_trials > self.MAX_PLOTS:
+                plot_title += f", se dibujan {self.MAX_PLOTS}"
             
         elif mode == "Average":
             # Per-frequency average (axis=1)
             power_to_plot = np.mean(power_all_trials, axis=1, keepdims=True)
-            plot_title = f"PSD (Average) - {ch_name}"
+            used = trials_used(None, num_trials, "average")
+            plot_title = f"PSD (Average) - {ch_name} — {used['label']}"
             
         elif mode == "Individual":
             if not (0 <= trial_idx < num_trials):
-                self._notify(f"Error: Trial index {trial_idx} out of range.")
+                self._notify(f"Trial {trial_idx + 1} out of range (1–{num_trials}).", "warning")
                 return
             # Pick only that trial column
             power_to_plot = power_all_trials[:, trial_idx:trial_idx+1]
-            plot_title = f"PSD (Trial {trial_idx}) - {ch_name}"
+            used = trials_used([trial_idx + 1], num_trials, "single")
+            plot_title = f"PSD - {ch_name} — {used['label']}"
             
 
         # 4) Plot
         if power_to_plot is not None:
             self._plot_psd(freq, power_to_plot, plot_title, lo, hi, ch_name)
-            self._notify(f"PSD ({mode}) ready: fs_eff={fs_eff:.2f} Hz, {freq.size} bins")
+            self._trials_used = used
+            self._notify(f"PSD ({mode}) ready with {used['label']}: fs_eff={fs_eff:.2f} Hz, {freq.size} bins")
+            self.publish_current_trial()
             self.mark_project_dirty()
         else:
-            self._notify(f"Error: Calculation mode '{mode}' not recognized.")
+            self._notify(f"Calculation mode '{mode}' not recognized.", "error")
 
     # ====== Project save/restore ======
     def get_analysis_params(self) -> dict:
@@ -297,7 +327,8 @@ class Psd_plugin(IPlugin):
             "nfft": self.ui.nfftSpinBox.value(),
             "detrend": self.ui.detrendComboBox.currentText(),
             "mode": self.ui.modeComboBox.currentText(),
-            "trial_index": self.ui.trialIndexSpinBox.value(),
+            "trial_index": self.ui.trialIndexSpinBox.value() - 1,   # stored 0-based
+            "trials_used": self._trials_used,
         }
 
     def apply_analysis_params(self, params: dict):
@@ -325,8 +356,8 @@ class Psd_plugin(IPlugin):
 
         # Widen the range first so the saved index isn't clamped before
         # _on_calculate_clicked() sets the real range from the trial count.
-        trial_index = int(params.get("trial_index", 0))
-        self.ui.trialIndexSpinBox.setRange(0, max(self.ui.trialIndexSpinBox.maximum(), trial_index))
+        trial_index = int(params.get("trial_index", 0)) + 1   # stored 0-based, shown 1-based
+        self.ui.trialIndexSpinBox.setRange(1, max(self.ui.trialIndexSpinBox.maximum(), trial_index))
         self.ui.trialIndexSpinBox.setValue(trial_index)
 
         self._on_calculate_clicked()
@@ -431,7 +462,7 @@ class Psd_plugin(IPlugin):
 
         # Limit number of curves if too many trials
         num_curves = power_v.shape[1]
-        MAX_PLOTS = 200
+        MAX_PLOTS = self.MAX_PLOTS
         if num_curves > MAX_PLOTS:
             self._log(f"There are {num_curves} trials → showing {MAX_PLOTS}")
             power_v = power_v[:, :MAX_PLOTS]

@@ -12,6 +12,7 @@ from core.model.signal_dataset import SignalDataset
 # UI and VTK adapter
 from plugins.analysis.frequency.psd_average.psd_average_plugin_ui import Ui_Psd_average
 from core.utils.adapters import trials_matrix_to_vtk_table
+from core.utils.trial_labels import trials_used
 
 class Psd_average_plugin(IPlugin):
     """
@@ -173,7 +174,7 @@ class Psd_average_plugin(IPlugin):
                  raise ValueError("N-overlap must be lower than N-per-seg.")
         
         except Exception as e:
-            self.alerts.error(f"Parameter error: {e}")
+            self.alerts.warning(f"Parameter error: {e}", "Invalid parameters")
             return
 
         # 3) PSD (always compute for all trials)
@@ -191,11 +192,14 @@ class Psd_average_plugin(IPlugin):
         # Per-frequency mean across trials (axis=1)
         # Equivalent to mean(pxx') in MATLAB
         power_to_plot = np.mean(power_all_trials, axis=1, keepdims=True)
-        plot_title = f"PSD (Average) - {ch_name}"
+        self._trials_used = trials_used(None, X.shape[1], "average", channel=ch_name)
+        plot_title = f"PSD (Average) - {ch_name} — {self._trials_used['label']}"
 
         # 4) Plot
         self._plot_psd(freq, power_to_plot, plot_title, lo, hi, ch_name)
-        self._notify(f"PSD (Average) ready: fs_eff={fs_eff:.2f} Hz, {freq.size} bins")
+        self._notify(f"PSD (Average) ready with {self._trials_used['label']}: "
+                     f"fs_eff={fs_eff:.2f} Hz, {freq.size} bins")
+        self.publish_current_trial()
         self.mark_project_dirty()
 
     # ====== Project save/restore ======
@@ -208,6 +212,7 @@ class Psd_average_plugin(IPlugin):
             "nperseg": self.ui.npersegSpinBox.value(),
             "noverlap": self.ui.noverlapSpinBox.value(),
             "nfft": self.ui.nfftSpinBox.value(),
+            "trials_used": self._trials_used,
         }
 
     def apply_analysis_params(self, params: dict):
@@ -238,15 +243,6 @@ class Psd_average_plugin(IPlugin):
             else:
                 self.ui.lowFrequencySpinBox.setValue(hi)
         self._log(f"range sync: low={lo}, high={hi}")
-
-    def _notify(self, msg: str):
-        if self.mainwin:
-            try:
-                self.mainwin.statusBar().showMessage(msg, 3000)
-                return
-            except Exception:
-                pass
-        self._log(msg)
 
     # ====== DATA ======
     def _load_trials_from_store(self):
