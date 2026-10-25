@@ -122,11 +122,46 @@ class IPlugin(ABC):
         
 
             return td
-        
+
         except Exception as e:
             self.alerts.error(f"Error obtaining trials: {e}")
             return None
-        
+
+    def get_trials_de_canal(self, channel_name: str,
+                            signal: SignalDataset | None = None) -> TrialDataset | None:
+        """Los trials de **un canal concreto**, no los del último generado.
+
+        `get_active_trials` devuelve siempre el canal activo, que es lo que
+        quieren los análisis de un canal. PPC necesita dos a la vez, así que
+        tiene que poder nombrarlos.
+
+        El usuario genera los trials del canal 1, después los del canal 2 —el
+        plugin *Trials* corta uno por vez— y los dos quedan guardados. Para que
+        PPC sirva de algo, **los dos cortes tienen que ser el mismo**: mismos
+        `onsets`, mismo `t0`/`t1` y mismo umbral, cambiando solo el canal. Si no,
+        los trials no están alineados muestra a muestra y la diferencia de fase
+        no significa nada. Quien llame a esto lo comprueba antes de calcular.
+
+        Devuelve `None` y avisa si ese canal no tiene trials, que es el caso
+        normal de «todavía no los has generado».
+        """
+        try:
+            sig = signal or self.active_signal or self.get_active_signal()
+            if sig is None:
+                return None
+
+            td: TrialDataset = sig.get_active_trials(sig.name, channel_name)
+            if td is None or td.trials.size == 0:
+                self.alerts.warning(
+                    f"El canal '{channel_name}' no tiene trials generados. "
+                    f"Genéralos en Trials antes de usarlo aquí.")
+                return None
+            return td
+
+        except Exception as e:
+            self.alerts.error(f"Error al obtener los trials del canal '{channel_name}': {e}")
+            return None
+
     def on_kernel_event(self, topic: str, payload: object):
 
     

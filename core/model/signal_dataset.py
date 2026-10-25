@@ -115,26 +115,32 @@ class SignalDataset:
         return {k: set(v) for k, v in self.__discarded_trials.items()}
 
     def get_active_trials(self, file_name: str, channel_name: str = None):
+        """Los trials activos de un archivo y un canal, ya sin los descartados.
+
+        `channel_name = None` devuelve los del **último canal generado**, que es
+        el que la aplicación considera activo. Es lo que piden los nueve plugins
+        de análisis: trabajan sobre un canal, el que el usuario acaba de cortar.
+
+        **Pasar un nombre devuelve el de ese canal**, aunque no sea el último.
+        Hasta la Fase 2 del plan de PPC el argumento se recibía y se tiraba:
+
+            '''Change in future developments'''
+            channel_name = self.__trials_dataset[-1].channel_name
+
+        —una línea que los autores originales dejaron marcada—. La lista **ya**
+        guardaba un juego por canal, porque `add_trial_dataset` reemplaza por
+        `(archivo, canal)` y no borra los demás; lo que faltaba era poder
+        pedirlos. PPC los necesita de dos canales a la vez, y recortar primero
+        uno y luego el otro dejaba los dos guardados pero solo uno alcanzable.
+
+        Devuelve `None` si no hay trials, o si no hay ninguno de ese canal.
         """
-        Return the active TrialDataset for a specific file and channel,
-        applying discards defined in self.__discarded_trials.
-
-        Parameters:
-            name (str): Source file name.
-            channel_name (str): Channel name.
-
-        Returns:
-            TrialDataset | None: The filtered dataset or None if it does not exist.
-        """
-
-        '''Change in future developments'''
-        # Take the last TD if channel_name is not provided
-
         if not self.__trials_dataset or len(self.__trials_dataset) == 0:
             print(f"[SignalDataset] The signal '{self.name}' has no TrialDataset loaded yet.")
             return None
-        
-        channel_name = self.__trials_dataset[-1].channel_name
+
+        if channel_name is None:
+            channel_name = self.__trials_dataset[-1].channel_name
 
         key = (file_name, channel_name)
 
