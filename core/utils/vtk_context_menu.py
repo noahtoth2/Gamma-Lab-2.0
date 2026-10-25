@@ -289,6 +289,9 @@ class VTKContextMenu:
         export_img_menu.addAction("jpeg", lambda: self.export_service.export_image("jpeg"))  # fix: 'jpegpg' -> 'jpeg'
         export_img_menu.addAction("bmp",  lambda: self.export_service.export_image("bmp"))
         export_img_menu.addAction("tiff", lambda: self.export_service.export_image("tiff"))
+        export_img_menu.addSeparator()
+        act_emf = export_img_menu.addAction("emf (vector)", self.export_service.export_emf)
+        act_emf.setEnabled(any(hasattr(ch, "GetAxis") for ch in self._get_charts()))
 
         export_table_menu = menu.addMenu("Export table")
         export_table_menu.addAction("csv",  lambda: self.export_service.export_table("csv"))

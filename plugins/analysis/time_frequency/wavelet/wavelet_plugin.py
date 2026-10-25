@@ -7,6 +7,8 @@ from vtkmodules.util import numpy_support
 import vtk
 import numpy as np
 
+from core.utils.emf_writer import anotar_mapa
+from core.utils.heatmap_export import secciones_de_mapa
 from core.plugins.interfaces import IPlugin
 from core.plugins.meta import PluginMeta
 from core.utils.vtk_context_menu import VTKContextMenu
@@ -25,6 +27,8 @@ class Wavelet_plugin(IPlugin):
         self.renwin = None
         self.ui = None
         self.vtk_menu = None
+        self._ultimo = None
+        self._contexto = {}
         self._context_view = None
         self._vtk_renderer = None
         self._handle = None
@@ -180,6 +184,7 @@ class Wavelet_plugin(IPlugin):
         trials = self.get_active_trials()
         if trials is None:
             return
+        self._contexto = {"señal": signal.name, "canal": getattr(trials, "channel_name", None)}
         
         t = trials.time_rel
         if t is None or len(t) < 2:
@@ -283,6 +288,10 @@ class Wavelet_plugin(IPlugin):
             if self.ui is None:
                 return
             times, freqs, scalogram, scaled = result
+            self._ultimo = {"parametros": {"señal": self._contexto.get("señal"), "canal": self._contexto.get("canal"),
+                                          **self.get_analysis_params()},
+                            "frecuencias": np.asarray(freqs), "tiempos": np.asarray(times),
+                            "matriz": np.asarray(scalogram), "logaritmica": scaled}
 
             self.ensure_vtk()
 
@@ -332,6 +341,22 @@ class Wavelet_plugin(IPlugin):
     # =====================================================
     # === Wavelet Calculation
     # =====================================================
+    # =====================================================
+    # === Exportación
+    # =====================================================
+    def exportar_resultados(self, fmt: str):
+        """Exporta la matriz de la última ejecución, con los parámetros que la produjeron."""
+        if not self._ultimo or self.vtk_menu is None:
+            self.alerts.info("Primero genera el análisis para poder exportar sus resultados.")
+            return
+        u = self._ultimo
+        params = dict(u["parametros"])
+        resumen = [["n_frecuencias", int(u["frecuencias"].size)], ["n_tiempos", int(u["tiempos"].size)],
+                   ["escala_logaritmica", bool(u["logaritmica"])]]
+        secciones = secciones_de_mapa(params, resumen, u["frecuencias"], u["tiempos"], u["matriz"],
+                                      fmt, nombre="Escalograma")
+        self.vtk_menu.export_service.export_sections(secciones, fmt)
+
     def compute_wavelet(self, sig, fs_calculado, fs, fmin, fmax, num_cycles, escala_log=False, t0=0.0):
         return cw.compute_wavelet(sig, fs_calculado, fs, fmin, fmax, num_cycles,
                                   escala_log=escala_log, t0=t0)
@@ -416,6 +441,7 @@ class Wavelet_plugin(IPlugin):
         chart = vtk.vtkChartHistogram2D()
         chart.SetInputData(img, 0)
         chart.SetTransferFunction(lut)
+        anotar_mapa(chart, img, lut)
 
         ax_bottom, ax_left = chart.GetAxis(vtk.vtkAxis.BOTTOM), chart.GetAxis(vtk.vtkAxis.LEFT)
         ax_bottom.SetBehavior(vtk.vtkAxis.FIXED)
@@ -453,7 +479,11 @@ class Wavelet_plugin(IPlugin):
         
         # --- Contextual menu ---
         try:
-            self.vtk_menu = VTKContextMenu(chart, self.vtk_widget, parent=self.widget)
+            ctx = self._contexto
+            self.vtk_menu = VTKContextMenu(chart, self.vtk_widget, ctx.get("señal"), ctx.get("canal"),
+                                           "Wavelet", parent=self.widget)
+            for fmt in ("csv", "xlsx", "json"):
+                self.vtk_menu.add_action(f"Export Wavelet results ({fmt})", partial(self.exportar_resultados, fmt))
             self.vtk_menu.set_datastore(self.kernel.get_service("DataStore"))
 
         except Exception as e:

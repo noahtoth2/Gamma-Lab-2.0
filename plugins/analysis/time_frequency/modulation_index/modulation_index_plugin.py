@@ -6,6 +6,8 @@ from PyQt5.QtWidgets import QScrollArea, QVBoxLayout, QWidget
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from vtkmodules.util import numpy_support
 
+from core.utils.emf_writer import anotar_mapa
+from core.utils.vtk_context_menu import VTKContextMenu
 from core.plugins.interfaces import IPlugin
 from plugins.analysis.time_frequency.modulation_index import compute as cm
 from plugins.analysis.time_frequency.modulation_index.modulation_index_plugin_ui import (
@@ -36,6 +38,9 @@ class Modulation_index_plugin(IPlugin):
         self._scroll = None
         self._handle = None
         self._calculando = False
+        self.vtk_menu = None
+        self._ultimo = None
+        self._contexto = {}
 
     # =====================================================
     # === Ciclo de vida
@@ -140,6 +145,8 @@ class Modulation_index_plugin(IPlugin):
         trials = self.get_active_trials()
         if trials is None:
             return
+        self._contexto = {"señal": getattr(self.get_active_signal(), "name", None),
+                          "canal": getattr(trials, "channel_name", None)}
 
         t = trials.time_rel
         if t is None or len(t) < 2:
@@ -219,6 +226,10 @@ class Modulation_index_plugin(IPlugin):
                 return
             self.ensure_vtk()
             self.render_resultado(resultado, indice)
+            self._ultimo = {"parametros": {"señal": self._contexto.get("señal"), "canal": self._contexto.get("canal"),
+                                          **self.get_analysis_params()},
+                            "resultado": resultado, "indice": indice, "contexto": dict(self._contexto)}
+            self._actualizar_menu()
 
             self._avisar_de_los_limites(resultado)
             self.mark_project_dirty()
@@ -313,6 +324,13 @@ class Modulation_index_plugin(IPlugin):
         self.vtk_widget.Initialize()
         self.vtk_widget.Start()
 
+        self.vtk_menu = VTKContextMenu(
+            chart=[], vtk_widget=self.vtk_widget, plugin_name="MI",
+            measurements_enabled=False, parent=self.widget)
+        self.vtk_menu.set_datastore(self.kernel.get_service("DataStore"))
+        for fmt in ("csv", "xlsx", "json"):
+            self.vtk_menu.add_action(f"Export MI results ({fmt})", partial(self.exportar_resultados, fmt))
+
     def render_resultado(self, r, indice=0):
         escena = self._context_view.GetScene()
         escena.ClearItems()
@@ -367,6 +385,7 @@ class Modulation_index_plugin(IPlugin):
         chart = vtk.vtkChartHistogram2D()
         chart.SetInputData(img, 0)
         chart.SetTransferFunction(lut)
+        anotar_mapa(chart, img, lut)
         chart.SetTitle(f"Índice de modulación — trial {indice + 1}")
         eje_x = chart.GetAxis(vtk.vtkAxis.BOTTOM)
         eje_x.SetTitle("Frecuencia de fase (Hz)")
@@ -389,6 +408,50 @@ class Modulation_index_plugin(IPlugin):
         self._charts[0].SetSize(vtk.vtkRectf(
             float(margen), float(alto - margen - self.ALTO_COMODULOGRAMA),
             float(ancho - 2 * margen), float(self.ALTO_COMODULOGRAMA)))
+
+    # =====================================================
+    # === Exportación
+    # =====================================================
+    def _actualizar_menu(self):
+        if self.vtk_menu is None:
+            return
+        self.vtk_menu.set_chart([c for c in self._charts if isinstance(c, vtk.vtkChart)])
+        ctx = (self._ultimo or {}).get("contexto") or {}
+        self.vtk_menu.set_signal_name(ctx.get("señal") or "signal")
+        self.vtk_menu.set_channel_name(ctx.get("canal"))
+
+    @staticmethod
+    def _num(x):
+        x = float(x)
+        return x if np.isfinite(x) else None
+
+    def _secciones_resultado(self) -> dict:
+        r = self._ultimo["resultado"]
+        n = self._num
+        fase = np.asarray(r.frecuencias_fase, dtype=float)
+        amp = np.asarray(r.frecuencias_amplitud, dtype=float)
+
+        def matriz(m):
+            return (["frecuencia_amplitud_hz"] + [f"fase_{f:g}hz" for f in fase],
+                    [[n(fa)] + [n(v) for v in fila] for fa, fila in zip(amp, np.asarray(m))])
+
+        resumen = [["trial", int(self._ultimo["indice"]) + 1],
+                   ["fs_efectiva_hz", n(r.fs_efectiva)], ["duracion_s", n(r.duracion_s)],
+                   ["bandas_de_amplitud_calculadas", int(r.bandas_calculadas)],
+                   ["ciclos_de_la_banda_lenta", n(r.ciclos_banda_lenta)]]
+        return {
+            "Parametros": (["parametro", "valor"], [[k, v] for k, v in self._ultimo["parametros"].items()]),
+            "Resumen": (["medida", "valor"], resumen),
+            "MI_normalizado": matriz(r.mi_norm),
+            "MI_Canolty": matriz(r.mi),
+        }
+
+    def exportar_resultados(self, fmt: str):
+        """Exporta los números de la última ejecución, con los parámetros que la produjeron."""
+        if not self._ultimo or self.vtk_menu is None:
+            self.alerts.info("Primero genera el comodulograma para poder exportar sus resultados.")
+            return
+        self.vtk_menu.export_service.export_sections(self._secciones_resultado(), fmt)
 
     # =====================================================
     # === Guardar y restaurar el análisis en el proyecto
