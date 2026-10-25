@@ -88,6 +88,9 @@
 \contentsline {subsubsection}{\numberline {5.3.8}Documentación de ayuda}{47}{subsubsection.5.3.8}%
 \contentsline {subsubsection}{\numberline {5.3.9}Flujo general}{47}{subsubsection.5.3.9}%
 \contentsline {subsection}{\numberline {5.4}Vista de Procesos}{48}{subsection.5.4}%
+\contentsline {subsubsection}{\numberline {5.4.1}Propósito}{48}{subsubsection.5.4.1}%
+\contentsline {subsubsection}{\numberline {5.4.2}Notación}{48}{subsubsection.5.4.2}%
+\contentsline {subsubsection}{\numberline {5.4.3}Visión general del modelo}{48}{subsubsection.5.4.3}%
 \contentsline {subsection}{\numberline {5.5}Vista F\'isica}{50}{subsection.5.5}%
 \contentsline {subsubsection}{\numberline {5.5.1}Propósito}{50}{subsubsection.5.5.1}%
 \contentsline {subsubsection}{\numberline {5.5.2}Notación}{50}{subsubsection.5.5.2}%
@@ -108,9 +111,15 @@
 \contentsline {subsection}{\numberline {6.3}M\'etricas y plan de verificaci\'on}{58}{subsection.6.3}%
 \contentsline {subsection}{\numberline {6.4}Plan de evidencia}{59}{subsection.6.4}%
 \contentsline {subsection}{\numberline {6.5}Conclusi\'on}{59}{subsection.6.5}%
-\contentsline {section}{\numberline {7}Anexos}{60}{section.7}%
-\contentsline {subsection}{\numberline {7.1}Anexo A --- Relaci\'on con el SRS}{60}{subsection.7.1}%
-\contentsline {subsection}{\numberline {7.2}Anexo B --- Relaci\'on con el SDD}{60}{subsection.7.2}%
-\contentsline {subsection}{\numberline {7.3}Anexo C --- Trazabilidad global de artefactos}{60}{subsection.7.3}%
-\contentsline {subsection}{\numberline {7.4}Anexo D --- Diagramas y tablas de referencia}{60}{subsection.7.4}%
-\contentsline {section}{\numberline {8}Referencias}{60}{section.8}%
+\contentsline {section}{\numberline {7}Trazabilidad de requerimientos y casos de uso}{60}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Fuentes y criterio de construcción}{60}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}De los casos de uso a los requerimientos}{60}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}De los requerimientos a los casos de uso}{61}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.4}De los casos de uso a las decisiones arquitectónicas}{63}{subsection.7.4}%
+\contentsline {subsection}{\numberline {7.5}Análisis de cobertura}{64}{subsection.7.5}%
+\contentsline {section}{\numberline {8}Anexos}{64}{section.8}%
+\contentsline {subsection}{\numberline {8.1}Anexo A --- Relaci\'on con el SRS}{64}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}Anexo B --- Relaci\'on con el SDD}{64}{subsection.8.2}%
+\contentsline {subsection}{\numberline {8.3}Anexo C --- Trazabilidad global de artefactos}{65}{subsection.8.3}%
+\contentsline {subsection}{\numberline {8.4}Anexo D --- Diagramas y tablas de referencia}{65}{subsection.8.4}%
+\contentsline {section}{\numberline {9}Referencias}{65}{section.9}%
