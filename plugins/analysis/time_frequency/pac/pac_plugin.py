@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QScrollArea, QVBoxLayout, QWidget
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from vtkmodules.util import numpy_support
 
+from core.utils.emf_writer import anotar_mapa
 from core.plugins.interfaces import IPlugin
 from core.utils.vtk_context_menu import VTKContextMenu
 from core.utils.trial_labels import trials_used
@@ -842,6 +843,7 @@ class Pac_plugin(IPlugin):
         chart = vtk.vtkChartHistogram2D()
         chart.SetInputData(img, 0)
         chart.SetTransferFunction(lut)
+        anotar_mapa(chart, img, lut)
         chart.SetTitle(titulo)
         eje_horizontal = chart.GetAxis(vtk.vtkAxis.BOTTOM)
         eje_horizontal.SetTitle(etiqueta_x)
@@ -905,6 +907,7 @@ class Pac_plugin(IPlugin):
         chart = vtk.vtkChartHistogram2D()
         chart.SetInputData(img, 0)
         chart.SetTransferFunction(lut)
+        anotar_mapa(chart, img, lut)
         chart.SetTitle(f"{titulo} — mapa fase/frecuencia")
         chart.GetAxis(vtk.vtkAxis.BOTTOM).SetTitle("Fase (°)")
         chart.GetAxis(vtk.vtkAxis.LEFT).SetTitle("Frecuencia (Hz)")

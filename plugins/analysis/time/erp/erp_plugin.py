@@ -7,6 +7,7 @@ import numpy as np
 from vtkmodules.util import numpy_support
 from typing import Tuple
 
+from core.utils.emf_writer import anotar_mapa
 from core.plugins.interfaces import IPlugin
 from core.plugins.meta import PluginMeta
 from core.utils.vtk_context_menu import VTKContextMenu
@@ -339,6 +340,8 @@ class Erp_plugin(IPlugin):
         ax_bottom = chart.GetAxis(vtk.vtkAxis.BOTTOM)
         ax_left = chart.GetAxis(vtk.vtkAxis.LEFT)
         
+        # R32: the superposition of all trials is named as such on screen
+        chart.SetTitle("Butterfly Plot")
         ax_bottom.SetTitle("Time (s)")
         ax_left.SetTitle("Amplitude")
         if title:
@@ -388,6 +391,7 @@ class Erp_plugin(IPlugin):
         chart = vtk.vtkChartHistogram2D()
         chart.SetInputData(img, 0)
         chart.SetTransferFunction(lut)
+        anotar_mapa(chart, img, lut)
         
         # Configure axes - should now show time correctly
         ax_bottom = chart.GetAxis(vtk.vtkAxis.BOTTOM)

@@ -225,6 +225,9 @@ class MainWindow(QMainWindow):
 
         # Build each subcategory and put a divider between them
         subcats = list(subcategories.items())
+        if section == "Analysis":
+            # Connectivity (PPC) goes last; the rest keep their order
+            subcats.sort(key=lambda kv: kv[0] == "Connectivity")
         measurements_row = None
         for idx, (subcat, plugins) in enumerate(subcats):
             group_box = QGroupBox(subcat, self.ui.buttonContainer)
@@ -1293,6 +1296,7 @@ class MainWindow(QMainWindow):
         self.ui.resultsCloseBtn.clicked.connect(lambda: self.ui.resultsPanel.setVisible(False))
         results_menu = QMenu(self.ui.resultsMenuBtn)
         results_menu.addAction("Export CSV", self._on_export_results_csv)
+        results_menu.addAction("Export Excel (.xlsx)", self._on_export_results_xlsx)
         self.ui.resultsMenuBtn.setMenu(results_menu)
         self.ui.resultsMenuBtn.setPopupMode(QToolButton.InstantPopup)
 
@@ -1386,6 +1390,17 @@ class MainWindow(QMainWindow):
             plugin = self.kernel.get_plugin(plugin_name)
             if plugin and getattr(plugin, "widget", None) is widget:
                 plugin.export_csv()
+                return
+
+    def _on_export_results_xlsx(self):
+        """'...' menu: export whichever results tab (Slope/Amplitude) is active to Excel."""
+        widget = self.ui.resultsTabs.currentWidget()
+        if widget is None:
+            return
+        for plugin_name in ("Slope Results", "Amplitude Results"):
+            plugin = self.kernel.get_plugin(plugin_name)
+            if plugin and getattr(plugin, "widget", None) is widget:
+                plugin.export_xlsx()
                 return
 
     def setup_explorer_section(self):

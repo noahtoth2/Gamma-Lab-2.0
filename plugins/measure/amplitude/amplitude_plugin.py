@@ -301,6 +301,30 @@ class AmplitudePlugin(IPlugin):
             pass
         return self.settings.get("last_export_dir", os.getcwd())
 
+    def _tabla_exportable(self):
+        """(headers, rows) of the measurements, as CSV and Excel write them."""
+        out = []
+        for r in self.model.get_all_rows():
+            p1 = f"({r.get('p1x', '')},{r.get('p1y', '')})" if r.get("p1x") is not None and r.get("p1y") is not None else ""
+            p2 = f"({r.get('p2x', '')},{r.get('p2y', '')})" if r.get("p2x") is not None and r.get("p2y") is not None else ""
+            out.append([
+                r.get("id", ""),
+                r.get("ctx_channel", ""),
+                r.get("ctx_graph", ""),
+                p1,
+                p2,
+                r.get("x1", ""),
+                r.get("x2", ""),
+                r.get("n", ""),
+                r.get("y_min", ""),
+                r.get("y_max", ""),
+                r.get("amp_pp", ""),
+                r.get("x_at_min", ""),
+                r.get("x_at_max", ""),
+                r.get("timestamp", ""),
+            ])
+        return list(AmplitudeTableModel.HEADERS), out
+
     def export_csv(self):
         if not self.model:
             return
@@ -324,29 +348,37 @@ class AmplitudePlugin(IPlugin):
             with open(path, "w", newline="", encoding="utf-8") as f:
                 w = csv.writer(f)
                 # Header: same order as UI
-                w.writerow(AmplitudeTableModel.HEADERS)
-                for r in rows:
-                    p1 = f"({r.get('p1x', '')},{r.get('p1y', '')})" if r.get("p1x") is not None and r.get("p1y") is not None else ""
-                    p2 = f"({r.get('p2x', '')},{r.get('p2y', '')})" if r.get("p2x") is not None and r.get("p2y") is not None else ""
-                    w.writerow([
-                        r.get("id", ""),
-                        r.get("ctx_channel", ""),
-                        r.get("ctx_graph", ""),
-                        p1,
-                        p2,
-                        r.get("x1", ""),
-                        r.get("x2", ""),
-                        r.get("n", ""),
-                        r.get("y_min", ""),
-                        r.get("y_max", ""),
-                        r.get("amp_pp", ""),
-                        r.get("x_at_min", ""),
-                        r.get("x_at_max", ""),
-                        r.get("timestamp", ""),
-                    ])
+                headers, filas = self._tabla_exportable()
+                w.writerow(headers)
+                w.writerows(filas)
             self._notify(f"CSV exported: {path}")
         except Exception as e:
             self.alerts.error(f"Failed to export CSV:\n{e}")
+
+    def export_xlsx(self):
+        if not self.model:
+            return
+        if not self.model.get_all_rows():
+            self.alerts.error("No measurements to export.")
+            return
+
+        default_path = os.path.join(self._export_dir(), "amplitude_measurements.xlsx")
+        path, _ = QFileDialog.getSaveFileName(
+            self.widget,
+            "Export amplitude measurements to Excel",
+            default_path,
+            "Excel (*.xlsx)"
+        )
+        if not path:
+            return
+
+        try:
+            import pandas as pd
+            headers, filas = self._tabla_exportable()
+            pd.DataFrame(filas, columns=headers).to_excel(path, index=False, sheet_name="Measurements")
+            self._notify(f"Excel exported successfully: {path}")
+        except Exception as e:
+            self.alerts.error(f"Failed to export Excel:\n{e}")
 
 
 # --- Local helpers for safe casting ---
