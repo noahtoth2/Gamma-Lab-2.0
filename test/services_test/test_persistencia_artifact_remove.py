@@ -67,13 +67,20 @@ def _entorno(senal_real, descartes=()):
     return kernel, sd, td
 
 
+def _der(sd, td):
+    """El conjunto derivado donde quedo el resultado (R79): el original no se toca."""
+    d = sd.get_derived_trials(Path(td.source).name, td.channel_name)
+    assert d is not None, "aplicar una modificacion debe registrar un conjunto derivado"
+    return d
+
+
 # ---------------------------------------------------------------- la receta
 
 def test_aplicar_deja_la_receta_en_los_metadatos(senal_real):
-    kernel, _, td = _entorno(senal_real)
+    kernel, sd, td = _entorno(senal_real)
     assert apply_modification_to_all_valid(kernel, **PARAMS) is True
 
-    recetas = td.metadata.get("modificaciones")
+    recetas = _der(sd, td).metadata.get("modificaciones")
     assert recetas, "aplicar una modificacion debe dejar su receta en los metadatos"
     assert len(recetas) == 1
     r = recetas[0]
@@ -84,18 +91,18 @@ def test_aplicar_deja_la_receta_en_los_metadatos(senal_real):
 
 
 def test_la_receta_guarda_los_descartes_vigentes(senal_real):
-    kernel, _, td = _entorno(senal_real, descartes=(3, 10, 25))
+    kernel, sd, td = _entorno(senal_real, descartes=(3, 10, 25))
     assert apply_modification_to_all_valid(kernel, **PARAMS) is True
 
-    r = td.metadata["modificaciones"][0]
+    r = _der(sd, td).metadata["modificaciones"][0]
     assert r["discarded_indices"] == [3, 10, 25], \
         "sin los descartes vigentes, reaplicar tocaria columnas distintas"
 
 
 def test_la_receta_sobrevive_a_json(senal_real):
-    kernel, _, td = _entorno(senal_real, descartes=(7,))
+    kernel, sd, td = _entorno(senal_real, descartes=(7,))
     apply_modification_to_all_valid(kernel, **PARAMS)
-    r = td.metadata["modificaciones"][0]
+    r = _der(sd, td).metadata["modificaciones"][0]
     assert json.loads(json.dumps(r)) == r, "la receta debe ser serializable tal cual"
 
 
@@ -104,10 +111,10 @@ def test_la_receta_sobrevive_a_json(senal_real):
 @pytest.mark.parametrize("descartes", [(), (3, 10, 25), (0,), (0, 1, 2, 58, 59)])
 def test_reaplicar_reconstruye_bit_a_bit(senal_real, descartes):
     # 1) Sesion de trabajo: se modifica y se guarda la receta
-    kernel, _, td = _entorno(senal_real, descartes=descartes)
+    kernel, sd, td = _entorno(senal_real, descartes=descartes)
     assert apply_modification_to_all_valid(kernel, **PARAMS) is True
-    esperado = np.array(td.trials, copy=True)
-    recetas = [json.loads(json.dumps(r)) for r in td.metadata["modificaciones"]]
+    esperado = np.array(_der(sd, td).trials, copy=True)
+    recetas = [json.loads(json.dumps(r)) for r in _der(sd, td).metadata["modificaciones"]]
 
     # 2) Reapertura: los trials se recortan de cero y se reaplica la receta
     _, td2 = _cortar(senal_real, descartes=descartes)
@@ -124,11 +131,11 @@ def test_reaplicar_reconstruye_bit_a_bit(senal_real, descartes):
 def test_dos_modificaciones_disjuntas_se_reaplican_las_dos(senal_real):
     """Ventanas que no se tocan: el resultado no depende del orden, pero las dos
     recetas tienen que quedar guardadas y volver a aplicarse."""
-    kernel, _, td = _entorno(senal_real)
+    kernel, sd, td = _entorno(senal_real)
     assert apply_modification_to_all_valid(kernel, mode="interpolate", point_a=1.00, point_b=1.20) is True
     assert apply_modification_to_all_valid(kernel, mode="blank", point_a=2.00, point_b=2.10) is True
-    esperado = np.array(td.trials, copy=True)
-    recetas = [json.loads(json.dumps(r)) for r in td.metadata["modificaciones"]]
+    esperado = np.array(_der(sd, td).trials, copy=True)
+    recetas = [json.loads(json.dumps(r)) for r in _der(sd, td).metadata["modificaciones"]]
     assert len(recetas) == 2
 
     _, td2 = _cortar(senal_real)
@@ -140,11 +147,11 @@ def test_dos_modificaciones_disjuntas_se_reaplican_las_dos(senal_real):
 def test_el_orden_se_respeta_con_ventanas_solapadas(senal_real):
     """Con ventanas que se solapan el resultado si depende del orden, asi que
     reaplicar al reves tiene que dar algo distinto."""
-    kernel, _, td = _entorno(senal_real)
+    kernel, sd, td = _entorno(senal_real)
     assert apply_modification_to_all_valid(kernel, mode="interpolate", point_a=1.00, point_b=1.40) is True
     assert apply_modification_to_all_valid(kernel, mode="blank", point_a=1.20, point_b=1.60) is True
-    esperado = np.array(td.trials, copy=True)
-    recetas = [json.loads(json.dumps(r)) for r in td.metadata["modificaciones"]]
+    esperado = np.array(_der(sd, td).trials, copy=True)
+    recetas = [json.loads(json.dumps(r)) for r in _der(sd, td).metadata["modificaciones"]]
 
     _, td2 = _cortar(senal_real)
     assert reaplicar_modificaciones(td2, recetas) == 2
@@ -158,9 +165,9 @@ def test_el_orden_se_respeta_con_ventanas_solapadas(senal_real):
 
 
 def test_reaplicar_marca_los_trials_modificados(senal_real):
-    kernel, _, td = _entorno(senal_real, descartes=(5,))
+    kernel, sd, td = _entorno(senal_real, descartes=(5,))
     apply_modification_to_all_valid(kernel, **PARAMS)
-    recetas = [json.loads(json.dumps(r)) for r in td.metadata["modificaciones"]]
+    recetas = [json.loads(json.dumps(r)) for r in _der(sd, td).metadata["modificaciones"]]
 
     _, td2 = _cortar(senal_real, descartes=(5,))
     reaplicar_modificaciones(td2, recetas)

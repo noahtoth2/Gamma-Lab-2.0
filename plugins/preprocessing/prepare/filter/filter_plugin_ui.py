@@ -162,6 +162,29 @@ class Ui_Filter(object):
         self.orderSpinBox.setAlignment(QtCore.Qt.AlignCenter)
         self.paramsLayout.addWidget(self.orderSpinBox)
 
+        # === Actions: the header "Filter" filters the trials (R79); these two are secondary ===
+        self.actionsLabel = QtWidgets.QLabel(self.layoutWidget)
+        self.actionsLabel.setObjectName("actionsLabel")
+        self.actionsLabel.setProperty("variant", "subtitle")
+        self.paramsLayout.addWidget(self.actionsLabel)
+
+        self.actionsLine = QtWidgets.QFrame(self.layoutWidget)
+        self.actionsLine.setFrameShape(QtWidgets.QFrame.HLine)
+        self.actionsLine.setObjectName("actionsLine")
+        self.actionsLine.setProperty("role", "divider")
+        self.paramsLayout.addWidget(self.actionsLine)
+
+        # Same outlined style as the trial navigation buttons (#trialNavButton)
+        self.previewButton = QtWidgets.QPushButton(self.layoutWidget)
+        self.previewButton.setObjectName("trialNavButton")
+        self.previewButton.setMinimumHeight(32)
+        self.paramsLayout.addWidget(self.previewButton)
+
+        self.restoreOriginalButton = QtWidgets.QPushButton(self.layoutWidget)
+        self.restoreOriginalButton.setObjectName("trialNavButton")
+        self.restoreOriginalButton.setMinimumHeight(32)
+        self.paramsLayout.addWidget(self.restoreOriginalButton)
+
         self.paramsLayout.addStretch(1)
 
         self.main_splitter.widget(1).setMaximumWidth(300)
@@ -184,3 +207,13 @@ class Ui_Filter(object):
         self.lowLabel.setText(_translate("Filter", "Low"))
         self.highLabel.setText(_translate("Filter", "High"))
         self.orderLabel.setText(_translate("Filter", "Order"))
+        self.applyFilterButton.setToolTip(_translate(
+            "Filter", "Filter every valid trial of the channel. The result is a derived set that the "
+                      "analyses read; the trials as they were cut are never overwritten."))
+        self.actionsLabel.setText(_translate("Filter", "Actions"))
+        self.previewButton.setText(_translate("Filter", "Preview"))
+        self.previewButton.setToolTip(_translate(
+            "Filter", "Draw the filter on the whole signal and on the first trial. Nothing is changed."))
+        self.restoreOriginalButton.setText(_translate("Filter", "Restore original trials"))
+        self.restoreOriginalButton.setToolTip(_translate(
+            "Filter", "Discard the filtering (and any artifact removal) and go back to the trials as they were cut."))

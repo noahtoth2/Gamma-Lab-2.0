@@ -12,6 +12,38 @@ from core.utils.vtk_context_menu import VTKContextMenu
 from plugins.analysis.frequency.psd.psd_plugin_ui import Ui_Psd
 from core.utils.adapters import trials_matrix_to_vtk_table
 from core.utils.trial_labels import trials_used
+from functools import partial
+
+
+def calcular_psd(X, fs, target_fs, window, nperseg, noverlap, nfft, detrend, ctx=None, log=None):
+    """Welch PSD of every trial: returns (freq, power, fs_eff). Pure, for the TaskService."""
+    log = log or (lambda *a: None)
+    Ns, T = X.shape
+    srt = max(1, int(round(fs / float(target_fs)))) if (target_fs and target_fs > 0) else 1
+    fs_eff = fs / srt
+    Xds = X[::srt, :] if srt > 1 else X
+    Ns_eff = Xds.shape[0]
+
+    if nperseg > Ns_eff:
+        log(f"Warning: nperseg ({nperseg}) > Ns_eff ({Ns_eff}). Adjusting to {Ns_eff}.")
+        nperseg = Ns_eff
+    if noverlap >= nperseg:
+        log("Warning: noverlap >= nperseg. Adjusting to nperseg//2.")
+        noverlap = nperseg // 2
+    if nfft < nperseg:
+        log("Adjusting nfft to nperseg to satisfy SciPy.")
+        nfft = nperseg
+    detrend_arg = False if detrend == "none" else detrend
+    log(f"Welch params: fs_eff={fs_eff}, window={window}, nperseg={nperseg}, "
+        f"noverlap={noverlap}, nfft={nfft}, detrend={detrend_arg}, axis=0")
+
+    freq, power = welch(Xds, fs=fs_eff, window=window, nperseg=nperseg, noverlap=noverlap,
+                        nfft=nfft, detrend=detrend_arg, scaling='density', axis=0)
+    power = np.nan_to_num(power, nan=0.0, posinf=np.inf, neginf=0.0).astype(np.float64)
+    freq = freq.astype(np.float64)
+    log(f"PSD: srt={srt}, fs_eff={fs_eff:.3f} Hz, Nf={freq.size}, T={power.shape[1]}")
+    return freq, power, fs_eff
+
 
 class Psd_plugin(IPlugin):
     """
@@ -264,19 +296,18 @@ class Psd_plugin(IPlugin):
             self.alerts.warning(f"Parameter error: {str(e)}", "Invalid parameters")
             return
 
-        # 3) PSD (always compute for all trials)
-        try:
-            freq, power_all_trials, fs_eff = self._compute_psd(
-                X, fs, target_fs, window, nperseg, noverlap, nfft, detrend
-            )
-            # power_all_trials has shape (Nf, T)
-            
-        except Exception as e:
-            self._log(f"Error in _compute_psd: {e}")
-            self.alerts.error(f"Could not compute PSD: {e}")
-                                 
-            return
-            
+        # 3) PSD (always for all trials) in the TaskService (R71); 4) plot when it finishes
+        p = dict(mode=mode, trial_idx=trial_idx, num_trials=num_trials, lo=lo, hi=hi, ch_name=ch_name)
+        self.run_task(calcular_psd, partial(self._on_psd_done, p),
+                      on_failed=lambda m: self.alerts.error(f"Could not compute PSD: {m}"),
+                      X=X, fs=fs, target_fs=target_fs, window=window, nperseg=nperseg,
+                      noverlap=noverlap, nfft=nfft, detrend=detrend)
+
+    def _on_psd_done(self, p, resultado):
+        mode, trial_idx, num_trials = p["mode"], p["trial_idx"], p["num_trials"]
+        lo, hi, ch_name = p["lo"], p["hi"], p["ch_name"]
+        freq, power_all_trials, fs_eff = resultado     # power_all_trials: (Nf, T)
+
         # Choose what to plot based on mode
         power_to_plot = None
         plot_title = ""
@@ -399,49 +430,7 @@ class Psd_plugin(IPlugin):
     def _compute_psd(self, X: np.ndarray, fs: float, target_fs: float,
                      window: str, nperseg: int, noverlap: int, nfft: int, detrend: str):
         
-        Ns, T = X.shape
-        # Downsample
-        srt = max(1, int(round(fs / float(target_fs)))) if (target_fs and target_fs > 0) else 1
-        fs_eff = fs / srt
-        Xds = X[::srt, :] if srt > 1 else X
-        Ns_eff = Xds.shape[0]
-        
-        # --- Robust clamps ---
-        if nperseg > Ns_eff:
-            self._log(f"Warning: nperseg ({nperseg}) > Ns_eff ({Ns_eff}). Adjusting to {Ns_eff}.")
-            nperseg = Ns_eff
-        if noverlap >= nperseg:
-            self._log("Warning: noverlap >= nperseg. Adjusting to nperseg//2.")
-            noverlap = nperseg // 2
-        # nfft < nperseg clamp (fuerza nfft = max(nfft, nperseg))
-        if nfft < nperseg:
-            self._log("Adjusting nfft to nperseg to satisfy SciPy.")
-            nfft = nperseg
-
-        # Detrend SciPy: False for 'none', string for 'constant'/'linear'
-        detrend_arg = False if detrend == "none" else detrend
-
-        self._log(f"Welch params: fs_eff={fs_eff}, window={window}, nperseg={nperseg}, "
-                  f"noverlap={noverlap}, nfft={nfft}, detrend={detrend_arg}, axis=0")
-
-        freq, power = welch(
-            Xds,
-            fs=fs_eff,
-            window=window,
-            nperseg=nperseg,
-            noverlap=noverlap,
-            nfft=nfft,
-            detrend=detrend_arg,  # detrend argument
-            scaling='density', # V^2/Hz
-            axis=0
-        )
-        
-        # Clean NaN/Inf artifacts from output
-        power = np.nan_to_num(power, nan=0.0, posinf=np.inf, neginf=0.0).astype(np.float64)
-        freq = freq.astype(np.float64) # (Nf,)
-
-        self._log(f"PSD: srt={srt}, fs_eff={fs_eff:.3f} Hz, Nf={freq.size}, T={power.shape[1]}")
-        return freq, power, fs_eff
+        return calcular_psd(X, fs, target_fs, window, nperseg, noverlap, nfft, detrend, log=self._log)
 
     # ====== Plot in VTK ======
     def _plot_psd(self, freq: np.ndarray, power: np.ndarray, 

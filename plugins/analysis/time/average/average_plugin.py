@@ -4,6 +4,7 @@ from core.plugins.meta import PluginMeta
 from core.utils.vtk_context_menu import VTKContextMenu
 from core.utils.trial_labels import trials_used
 from PyQt5 import QtCore
+from functools import partial
 from PyQt5.QtWidgets import QListWidgetItem
 
 from plugins.analysis.time.average import compute as ca
@@ -92,13 +93,12 @@ class Average_plugin(IPlugin):
         if trials is None:
             return
 
-        # Compute per-sample average across trials
-        try:
-            av_data = ca.promedio_trials(trials.trials)
-        except Exception as e:
-            self._log("_on_calculate_average:", e)
-            self.alerts.error(f"No se pudo calcular el promedio: {e}")
-            return
+        # Per-sample average across trials, in the TaskService (R71)
+        self.run_task(ca.promedio_trials, partial(self._on_average_done, trials),
+                      on_failed=lambda m: self.alerts.error(f"No se pudo calcular el promedio: {m}"),
+                      trials=np.array(trials.trials, copy=True))
+
+    def _on_average_done(self, trials, av_data):
         t = trials.time_rel
 
         # Siempre promedia TODOS los trials validos: la seleccion del panel

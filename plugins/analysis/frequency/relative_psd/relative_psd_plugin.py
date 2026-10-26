@@ -12,6 +12,35 @@ from core.model.signal_dataset import SignalDataset
 from plugins.analysis.frequency.relative_psd.relative_psd_plugin_ui import Ui_Relative_psd
 from core.utils.adapters import trials_matrix_to_vtk_table
 from core.utils.trial_labels import trials_used
+from functools import partial
+
+
+def calcular_psd(X, fs, target_fs, window, nperseg, noverlap, nfft, detrend, ctx=None, log=None):
+    """Welch PSD of every trial: returns (freq, pxx, fs_eff). Pure, for the TaskService."""
+    log = log or (lambda *a: None)
+    srt = max(1, int(round(fs / float(target_fs)))) if (target_fs and target_fs > 0) else 1    # integer downsample like MATLAB
+    fs_eff = fs / srt
+    Xds = X[::srt, :] if srt > 1 else X
+    Xds = np.nan_to_num(Xds, copy=True, nan=0.0, posinf=0.0, neginf=0.0)        # a copy: the trials stay untouched
+
+    Ns_eff = Xds.shape[0]
+    if nperseg > Ns_eff:
+        nperseg = Ns_eff
+    if noverlap >= nperseg:
+        noverlap = nperseg // 2
+    if nfft < nperseg:
+        nfft = nperseg
+    detrend_arg = False if detrend == "none" else detrend
+    log(f"Welch params: fs_eff={fs_eff}, window={window}, nperseg={nperseg}, "
+        f"noverlap={noverlap}, nfft={nfft}, detrend={detrend_arg}, axis=0")
+
+    freq, pxx = welch(Xds, fs=fs_eff, window=window, nperseg=nperseg, noverlap=noverlap,
+                      nfft=nfft, detrend=detrend_arg, scaling='density', axis=0)
+    pxx = np.nan_to_num(pxx, nan=0.0, posinf=0.0, neginf=0.0).astype(np.float64)    # (Nf, T)
+    freq = freq.astype(np.float64)
+    log(f"PSD: srt={srt}, fs_eff={fs_eff:.3f} Hz, Nf={freq.size}, T_calc={pxx.shape[1]}")
+    return freq, pxx, fs_eff
+
 
 
 class Relative_psd_plugin(IPlugin):
@@ -225,14 +254,16 @@ class Relative_psd_plugin(IPlugin):
             self.alerts.warning(f"Parameter error: {str(e)}", "Invalid parameters")
             return
 
-        try:
-            freq, pxx_all, fs_eff = self._compute_psd(
-                X, fs, target_fs, window, nperseg, noverlap, nfft, detrend
-            )
-        except Exception as e:
-            self._log("Error in _compute_psd:", e)
-            self.alerts.error(f"Could not compute PSD: {e}")
-            return
+        # PSD in the TaskService (R71); the band ratios and the UI update follow when it finishes
+        p = dict(f1=f1, f2=f2, GF=GF, ch_name=ch_name, n_trials=X.shape[1])
+        self.run_task(calcular_psd, partial(self._on_psd_done, p),
+                      on_failed=lambda m: self.alerts.error(f"Could not compute PSD: {m}"),
+                      X=X, fs=fs, target_fs=target_fs, window=window, nperseg=nperseg,
+                      noverlap=noverlap, nfft=nfft, detrend=detrend)
+
+    def _on_psd_done(self, p, resultado):
+        f1, f2, GF, ch_name = p["f1"], p["f2"], p["GF"], p["ch_name"]
+        freq, pxx_all, fs_eff = resultado
 
         # --- Relative PSD (GF) ---
         abs_power, rel_power = self._compute_relative_psd(freq, pxx_all, f1, f2, GF)
@@ -242,7 +273,7 @@ class Relative_psd_plugin(IPlugin):
         self.ui.relPowerValue.setText(f"{rel_power: .4f}")
 
         # GF solo cambia como se combinan (promedio o todos); entran todos los validos
-        self._trials_used = trials_used(None, X.shape[1], "all" if GF == 1 else "average",
+        self._trials_used = trials_used(None, p["n_trials"], "all" if GF == 1 else "average",
                                         channel=ch_name)
         for lbl in (self.ui.absPowerValue, self.ui.relPowerValue):
             lbl.setToolTip(f"Calculado con {self._trials_used['label']} — {ch_name}")
@@ -486,32 +517,4 @@ class Relative_psd_plugin(IPlugin):
     # ---------- Welch ----------
     def _compute_psd(self, X: np.ndarray, fs: float, target_fs: float,
                      window: str, nperseg: int, noverlap: int, nfft: int, detrend: str):
-        # Integer downsample like MATLAB
-        srt = max(1, int(round(fs / float(target_fs)))) if (target_fs and target_fs > 0) else 1
-        fs_eff = fs / srt
-        Xds = X[::srt, :] if srt > 1 else X
-
-        # Clean NaN/Inf
-        np.nan_to_num(Xds, copy=False, nan=0.0, posinf=0.0, neginf=0.0)
-
-        Ns_eff = Xds.shape[0]
-        if nperseg > Ns_eff:
-            nperseg = Ns_eff
-        if noverlap >= nperseg:
-            noverlap = nperseg // 2
-        if nfft < nperseg:
-            nfft = nperseg
-        detrend_arg = False if detrend == "none" else detrend
-
-        self._log(f"Welch params: fs_eff={fs_eff}, window={window}, nperseg={nperseg}, "
-                  f"noverlap={noverlap}, nfft={nfft}, detrend={detrend_arg}, axis=0")
-
-        freq, pxx = welch(
-            Xds, fs=fs_eff, window=window, nperseg=nperseg, noverlap=noverlap,
-            nfft=nfft, detrend=detrend_arg, scaling='density', axis=0
-        )
-
-        pxx = np.nan_to_num(pxx, nan=0.0, posinf=0.0, neginf=0.0).astype(np.float64) 	# (Nf, T)
-        freq = freq.astype(np.float64)
-        self._log(f"PSD: srt={srt}, fs_eff={fs_eff:.3f} Hz, Nf={freq.size}, T_calc={pxx.shape[1]}")
-        return freq, pxx, fs_eff
+        return calcular_psd(X, fs, target_fs, window, nperseg, noverlap, nfft, detrend, log=self._log)

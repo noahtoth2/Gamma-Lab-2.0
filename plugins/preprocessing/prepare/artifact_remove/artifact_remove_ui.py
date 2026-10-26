@@ -204,6 +204,12 @@ class Ui_ArtifactRemove(object):
 
         self.paramsLayout.addLayout(self.navigationLayout)
 
+        # R79: removing an artifact creates a derived set; this goes back to the original trials
+        self.restore_button = QtWidgets.QPushButton(self.layoutWidget)
+        self.restore_button.setObjectName("trialNavButton")      # same outlined style as Previous / Next
+        self.restore_button.setMinimumHeight(32)
+        self.paramsLayout.addWidget(self.restore_button)
+
         self.paramsLayout.addStretch(1)
 
         self.splitter.setSizes([700, 300])
@@ -241,6 +247,10 @@ class Ui_ArtifactRemove(object):
         self.trialsLabel.setText(_translate("ArtifactRemove", "Trials"))
         self.prev_button.setText(_translate("ArtifactRemove", "Previous"))
         self.next_button.setText(_translate("ArtifactRemove", "Next"))
+        self.restore_button.setText(_translate("ArtifactRemove", "Restore original trials"))
+        self.restore_button.setToolTip(_translate(
+            "ArtifactRemove", "Discard the modifications and go back to the trials as they were cut. "
+                              "The original trials are never overwritten."))
         self.trial_status_label.setText(_translate("ArtifactRemove", "Trial: - / -"))
         self.label_a.setText(_translate("ArtifactRemove", "Point A (s):"))
         self.label_b.setText(_translate("ArtifactRemove", "Point B (s):"))

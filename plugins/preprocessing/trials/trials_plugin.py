@@ -13,6 +13,13 @@ from core.model.trial_dataset import TrialDataset
 from core.filters.trials import cut_trials_single_channel
 from core.utils.adapters import trials_matrix_to_vtk_table
 from plugins.preprocessing.trials.trial_plugin_ui import Ui_Trials
+from functools import partial
+
+
+def cortar_trials(ds, ctx=None, **params):
+    """Cuts the trials of one channel. Reads `ds`, never writes it, so it can run in the TaskService."""
+    return cut_trials_single_channel(ds=ds, **params)
+
 
 class TrialsPlugin(IPlugin):
 
@@ -332,33 +339,26 @@ class TrialsPlugin(IPlugin):
         self._log("params →", dict(channel=int(ch), threshold=th, t0=t0, t1=t1,
                                 end_mode=mode, stim_expected=stim, inter_stim_time=inter_stim_time))
 
-        try:
-            td = cut_trials_single_channel(
-            ds=ds,
-            channel=int(ch),                  # target channel to cut
-            stim_channel=None if stim_ch is None else int(stim_ch),  # stimulus channel to detect onsets
-            threshold=th,
-            t0=t0, t1=t1,
-            end_mode=mode,
-            stim_expected=stim,
-            inter_stim_time=inter_stim_time
-        )
-        except Exception as e:
-            self._log("cut_trials_single_channel error:", e)
-            self.alerts.error(f"Error generating trials: {e}")
-            return
-
-        #self._log("TD listo:", td.trials.shape, td.time_rel.shape, "onsets:", len(td.onsets_s))
-
-        td.metadata["generation_params"] = {
-            "channel": int(ch),
-            "stim_channel": None if stim_ch is None else int(stim_ch),
+        params = {
+            "channel": int(ch),                  # target channel to cut
+            "stim_channel": None if stim_ch is None else int(stim_ch),   # stimulus channel to detect onsets
             "threshold": th,
             "t0": t0, "t1": t1,
             "end_mode": mode,
             "stim_expected": stim,
             "inter_stim_time": inter_stim_time,
         }
+
+        # The cut runs in the TaskService (R71); the dataset is updated when it finishes
+        def al_fallar(m):
+            self._log("cut_trials_single_channel error:", m)
+            self.alerts.error(f"Error generating trials: {m}")
+
+        self.run_task(cortar_trials, partial(self._on_trials_cut, ds, params), on_failed=al_fallar,
+                      ds=ds, **params)
+
+    def _on_trials_cut(self, ds, params, td):
+        td.metadata["generation_params"] = dict(params)
 
         try:
             ds.add_trial_dataset(td)
