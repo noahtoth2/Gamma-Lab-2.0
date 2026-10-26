@@ -15,6 +15,21 @@ from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from scipy.signal import butter, sosfiltfilt
 
 import numpy as np
+from functools import partial
+
+from core.filters.artifacts import receta_filtro
+from core.filters.bandpass import filtrar_banda, filtrar_columnas
+from plugins.preprocessing.prepare.artifact_remove.artifact_logic import (
+    descartar_derivado, escribir_modificacion, preparar_modificacion)
+
+
+def filtrar_vista_previa(signal, trial, low, high, order, fs, type="butterworth", ctx=None):
+    """The two traces the preview shows: (filtered signal, filtered first trial)."""
+    sig = filtrar_banda(signal, low, high, order, fs, type)
+    if ctx is not None:
+        ctx.progress(50, "Filtered signal")
+    return sig, filtrar_banda(trial, low, high, order, fs, type)
+
 
 class Filter_plugin(IPlugin):
     """Filter plugin for signal processing"""
@@ -99,7 +114,10 @@ class Filter_plugin(IPlugin):
         self.ui.orderSpinBox.setValue(8)
         self.ui.typeSelectComboBox.addItems(["Butterworth", "Chebyshev", "Elliptic"])
 
-        self.ui.applyFilterButton.clicked.connect(self.on_apply_filter)
+        # "Filter" filters the trials for real (R79); "Preview" only draws the result
+        self.ui.applyFilterButton.clicked.connect(self.on_apply_to_trials)
+        self.ui.previewButton.clicked.connect(self.on_apply_filter)
+        self.ui.restoreOriginalButton.clicked.connect(self.on_restore_original)
         self.ui.Btn_clear_params.clicked.connect(self._on_clear_clicked)
     # end def
 
@@ -172,16 +190,12 @@ class Filter_plugin(IPlugin):
             order = int(self.ui.orderSpinBox.value())
             type_filter = self.ui.typeSelectComboBox.currentText().lower()
 
-            filtered_signal = self.run_filter(signal_data, low, high, order, fs, type_filter)
-            filtered_trial = self.run_filter(trial_data, low, high, order, fs, type_filter)
-
-            self._render_filtered(filtered_signal, self.active_signal.sampling_rate, unit="mV", type = "signal",
-                                  title=f"Filtered Signal — {canal_senal} (señal completa)")
-            self._render_filtered(filtered_trial, self.active_signal.sampling_rate, unit="mV", type = "trial",
-                                  title=f"Filtered Trial — {self._trials_used['label']} — {trials.channel_name}")
-            self._notify(f"Filtro aplicado a {canal_senal} (señal completa) y a "
-                         f"{self._trials_used['label']} de {trials.channel_name} (vista previa)")
-            self.publish_current_trial()
+            # Filtering in the TaskService (R71); the preview is drawn when it finishes
+            self.run_task(filtrar_vista_previa,
+                          partial(self._on_filter_done, canal_senal, trials.channel_name),
+                          on_failed=lambda m: self.alerts.warning(m, "Invalid parameters"),
+                          signal=np.array(signal_data, copy=True), trial=np.array(trial_data, copy=True),
+                          low=low, high=high, order=order, fs=fs, type=type_filter)
 
         except ValueError as ve:
             self.alerts.warning(str(ve), "Invalid parameters")
@@ -189,6 +203,63 @@ class Filter_plugin(IPlugin):
             self.alerts.error(f"Unexpected error in on_apply_filter: {str(e)}")
             self._log("Unexpected error in on_apply_filter:", e)
     # end def
+
+    # ---- R79: filtering the trials leaves a derived set; the originals are never written ----
+    def on_apply_to_trials(self):
+        try:
+            if self.get_active_signal() is None:
+                return
+            low = float(self.ui.lowFrequencySpinBox.value())
+            high = float(self.ui.highFrequencySpinBox.value())
+            order = int(self.ui.orderSpinBox.value())
+            tipo = self.ui.typeSelectComboBox.currentText().lower()
+            prep = preparar_modificacion(self.kernel)
+            if prep is None:
+                self.alerts.info("No hay trials para filtrar.")
+                return
+            fs = float(prep.td_base.sampling_rate)
+            self.run_task(filtrar_columnas, partial(self._on_trials_filtered, prep, low, high, order, tipo, fs),
+                          on_failed=lambda m: self.alerts.warning(m, "Invalid parameters"),
+                          trials=prep.trials, low=low, high=high, order=order, fs=fs, type=tipo)
+        except Exception as e:
+            self.alerts.error(f"No se pudo filtrar los trials: {e}")
+
+    def _on_trials_filtered(self, prep, low, high, order, tipo, fs, salida):
+        try:
+            escribir_modificacion(self.kernel, prep, salida, "filter",
+                                  receta_dict=receta_filtro(low, high, order, tipo, fs, prep.discarded))
+            self.mark_project_dirty()
+            self._notify(f"Filtro {low:g}-{high:g} Hz aplicado a los trials de {prep.channel_name}; "
+                         f"los originales se conservan")
+        except Exception as e:
+            self.alerts.error(f"No se pudo registrar el filtrado: {e}", "Error al aplicar")
+
+    def on_restore_original(self):
+        try:
+            _, canal, hubo = descartar_derivado(self.kernel)
+        except Exception as e:
+            self.alerts.error(f"No se pudieron restaurar los trials originales: {e}")
+            return
+        if not hubo:
+            self.alerts.info("Este canal no tiene modificaciones que deshacer.")
+            return
+        self.mark_project_dirty()
+        if hasattr(self.kernel, "event"):
+            try:
+                self.kernel.event.emit("trials_generated", {"channel": canal})
+            except Exception:
+                pass
+        self._notify(f"Trials originales restaurados en {canal}")
+
+    def _on_filter_done(self, canal_senal, canal_trials, resultado):
+        filtered_signal, filtered_trial = resultado
+        self._render_filtered(filtered_signal, self.active_signal.sampling_rate, unit="mV", type="signal",
+                              title=f"Filtered Signal — {canal_senal} (señal completa)")
+        self._render_filtered(filtered_trial, self.active_signal.sampling_rate, unit="mV", type="trial",
+                              title=f"Filtered Trial — {self._trials_used['label']} — {canal_trials}")
+        self._notify(f"Filtro aplicado a {canal_senal} (señal completa) y a "
+                     f"{self._trials_used['label']} de {canal_trials} (vista previa)")
+        self.publish_current_trial()
 
     def current_trial_state(self):
         """La vista previa del filtro usa siempre el primer trial valido."""
@@ -201,28 +272,7 @@ class Filter_plugin(IPlugin):
     def run_filter(self, signal, low, high, order, fs, type="butterworth"):
         """ Applies a bandpass filter to the signal."""
         try:
-            signal = np.asarray(signal, dtype=np.float64)
-            nyq = 0.5 * fs
-            lowcut = low / nyq
-            highcut = high / nyq
-
-            # Sanity check: ensure frequencies are valid
-            if lowcut <= 0 or highcut >= 1 or lowcut >= highcut:
-                raise ValueError(f"Invalid cutoff frequencies: low={lowcut}, high={highcut}")
-
-            if type.lower() == "butterworth":
-                sos = butter(order, [lowcut, highcut], btype="band", output="sos")
-            else:
-                raise NotImplementedError(f"Filter '{type}' not implemented.")
-
-            # Use sosfiltfilt for numerical stability (zero-phase)
-            filtered = sosfiltfilt(sos, signal)
-
-            if np.any(np.isnan(filtered)):
-                raise ValueError("Filter output contains NaN values.")
-
-            return filtered
-
+            return filtrar_banda(signal, low, high, order, fs, type)
         except Exception as e:
             self._log("Error running filter:", e)
             return np.zeros_like(signal)

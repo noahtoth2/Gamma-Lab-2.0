@@ -11,6 +11,21 @@ from core.model.signal_dataset import SignalDataset
 from plugins.analysis.frequency.fft.fft_plugin_ui import Ui_Fft
 from core.utils.adapters import trials_matrix_to_vtk_table
 from core.utils.trial_labels import trials_used
+from functools import partial
+
+
+def calcular_fft(X, fs, target_fs, ctx=None):
+    """FFT of every trial: returns (freq, mag, fs_eff). Pure, so it can run in the TaskService."""
+    if target_fs and target_fs > 0:
+        srt = max(1, int(round(fs / float(target_fs))))
+    else:
+        srt = 1
+    fs_eff = fs / srt
+    Xds = X[::srt, :] if srt > 1 else X
+    mag = np.abs(np.fft.rfft(Xds, axis=0)).astype(np.float64)       # (Nf, T)
+    freq = np.fft.rfftfreq(Xds.shape[0], d=1.0 / fs_eff)           # (Nf,)
+    return freq, mag, fs_eff
+
 
 class Fft_plugin(IPlugin):
     MAX_PLOTS = 200
@@ -124,11 +139,13 @@ class Fft_plugin(IPlugin):
             if lo > hi:
                 lo, hi = hi, lo
 
-            # 3) FFT
-            freq, mag, fs_eff = self._compute_fft(X, fs, target_fs)
+            # 3) FFT in the TaskService (R71), 4) plot when it finishes
+            self.run_task(calcular_fft, partial(self._on_fft_done, ch_name, lo, hi, X.shape[1]),
+                          X=X, fs=fs, target_fs=target_fs)
 
-            # 4) Plot
-            self._trials_used = trials_used(None, X.shape[1], "all", channel=ch_name)
+    def _on_fft_done(self, ch_name, lo, hi, n_trials, resultado):
+            freq, mag, fs_eff = resultado
+            self._trials_used = trials_used(None, n_trials, "all", channel=ch_name)
             self._plot_fft(freq, mag, ch_name, lo, hi)
             dibujados = f", se dibujan {self.MAX_PLOTS}" if mag.shape[1] > self.MAX_PLOTS else ""
             self._notify(f"FFT ready with {self._trials_used['label']}{dibujados}: "
@@ -197,21 +214,8 @@ class Fft_plugin(IPlugin):
         """
         Returns (freq:(Nf,), mag:(Nf,T), fs_eff:float)
         """
-        Ns, T = X.shape
-        if target_fs and target_fs > 0:
-            srt = max(1, int(round(fs / float(target_fs))))
-        else:
-            srt = 1
-
-        fs_eff = fs / srt
-        Xds = X[::srt, :] if srt > 1 else X
-        Ns_eff = Xds.shape[0]
-
-        mFourier = np.fft.rfft(Xds, axis=0)             # (Nf, T)
-        mag = np.abs(mFourier).astype(np.float64)       # (Nf, T)
-        freq = np.fft.rfftfreq(Ns_eff, d=1.0/fs_eff)    # (Nf,)
-
-        self._log(f"FFT: srt={srt}, fs_eff={fs_eff:.3f} Hz, Nf={freq.size}, T={mag.shape[1]}")
+        freq, mag, fs_eff = calcular_fft(X, fs, target_fs)
+        self._log(f"FFT: fs_eff={fs_eff:.3f} Hz, Nf={freq.size}, T={mag.shape[1]}")
         return freq, mag, fs_eff
 
     # ====== Plot in VTK using the adapter ======
