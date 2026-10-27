@@ -22,12 +22,9 @@ from vtkmodules.util import numpy_support
 
 from core.filters.trials import cut_trials_single_channel
 from core.plugins.interfaces import IPlugin
-<<<<<<< HEAD
-from core.utils.trial_labels import trials_used
-=======
 from core.utils.emf_writer import anotar_mapa
+from core.utils.trial_labels import trials_used
 from core.utils.vtk_context_menu import VTKContextMenu
->>>>>>> 5a037ba8518fe7b0e916305095353e2dacd8532a
 from plugins.analysis.connectivity.ppc import compute as cp
 from plugins.analysis.connectivity.ppc.ppc_plugin_ui import Ui_Ppc
 from plugins.analysis.time_frequency.pac.compute import remuestrear_en_log
@@ -309,7 +306,8 @@ class Ppc_plugin(IPlugin):
             avisos = cp.avisos(resultado)
             for aviso in avisos:
                 self._log(aviso)
-<<<<<<< HEAD
+            self._mostrar_avisos(avisos)
+            self._actualizar_menu()
             self._trials_used = getattr(self, "_trials_en_curso", None)
             usados = (self._trials_used or {}).get("label", f"{resultado.n_trials} trial(s)")
             self._notify(
@@ -317,17 +315,8 @@ class Ppc_plugin(IPlugin):
                 f"{resultado.frecuencias.size} frecuencias × "
                 f"{resultado.tiempos.size} ventanas, trials: {usados}")
             self.publish_current_trial()
-            self.mark_project_dirty()
-=======
-            self._mostrar_avisos(avisos)
-            self._actualizar_menu()
-            self._notify(
-                f"PPC {resultado.canal_1} ↔ {resultado.canal_2}: "
-                f"{resultado.frecuencias.size} frecuencias × "
-                f"{resultado.tiempos.size} ventanas, {resultado.n_trials} trial(s)")
             if not self._corrida_restaura:
                 self.mark_project_dirty()
->>>>>>> 5a037ba8518fe7b0e916305095353e2dacd8532a
         except Exception as e:
             self._log("render_resultado:", e)
             self.alerts.error(f"No se pudo dibujar el PPC: {e}")
@@ -337,15 +326,12 @@ class Ppc_plugin(IPlugin):
     # =====================================================
     # === VTK
     # =====================================================
-<<<<<<< HEAD
     def current_trial_state(self):
         """PPC trabaja con dos canales a la vez: se muestran los dos."""
         if self._trials_used:
             return self.trial_state_from_used(self._trials_used)
         return super().current_trial_state()
 
-    def render_resultado(self, resultado):
-=======
     FONDO = (0.98, 0.98, 0.98)
     # Como el MATLAB: `clim [0 0.5]`, una marca cada 0,5 en log10 etiquetada con
     # `round(10.^v)` (0, 0, 1, 3, 10, 32, 100, 316 Hz) y los mismos títulos.
@@ -395,7 +381,6 @@ class Ppc_plugin(IPlugin):
         self._avisos_label.setVisible(bool(avisos))
 
     def render_resultado(self, r):
->>>>>>> 5a037ba8518fe7b0e916305095353e2dacd8532a
         """Un mapa de frecuencia logarítmica contra tiempo, con barra de color.
 
         Las celdas que no se pudieron medir (NaN) van **transparentes**, como

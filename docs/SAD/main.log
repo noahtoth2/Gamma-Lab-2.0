@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.9.2)  25 OCT 2026 19:00
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.9.2)  26 OCT 2026 20:33
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -761,4 +761,690 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 [25]
 c:/Users/basti/Univesidad/tesis/Gamma-Lab-2.0/docs/SAD/main.tex:989: ignored error: Infinite glue shrinkage found in box being split
 
-Package fancyhdr War
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[26]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[27]
+Underfull \hbox (badness 10000) in paragraph at lines 1038--1038
+[]|\T1/cmr/m/n/10 Solo el Tas-kOr-ches-tra-tor es-cri-be en el
+ []
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[28]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[29]
+<diagrama_casos_de_uso_sistema_completo.png, id=796, 10169.995pt x 6275.445pt>
+File: diagrama_casos_de_uso_sistema_completo.png Graphic file (type png)
+<use diagrama_casos_de_uso_sistema_completo.png>
+Package pdftex.def Info: diagrama_casos_de_uso_sistema_completo.png  used on input line 1126.
+(pdftex.def)             Requested size: 432.48051pt x 266.7747pt.
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[30]
+Underfull \hbox (badness 1817) in paragraph at lines 1146--1146
+[]|\T1/cmr/m/n/10.95 Navegar y cam-biar de
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1148--1148
+[]|\T1/cmr/m/n/10.95 Limpiar for-mu-la-rio
+ []
+
+
+Underfull \hbox (badness 2326) in paragraph at lines 1152--1152
+[]|\T1/cmr/m/n/10.95 Interactuar vi-sual-men-te
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1154--1154
+[]|\T1/cmr/m/n/10.95 Optimizar ren-de-ri-za-do
+ []
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[31 <./diagrama_casos_de_uso_sistema_completo.png>]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[32]
+Underfull \hbox (badness 1152) in paragraph at lines 1189--1189
+[]|\T1/cmr/m/n/10.95 Orquestador del nú-cleo
+ []
+
+
+Underfull \hbox (badness 2326) in paragraph at lines 1191--1191
+[]|\T1/cmr/m/n/10.95 Cancelar pro-ce-sa-mien-to
+ []
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[33]
+Underfull \hbox (badness 10000) in paragraph at lines 1216--1216
+[]|\T1/cmr/m/n/10.95 Generar y mo-di-fi-car
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1218--1218
+[]|\T1/cmr/m/n/10.95 Ajustar fre-cuen-cia de
+ []
+
+
+Underfull \hbox (badness 2894) in paragraph at lines 1222--1222
+[]|\T1/cmr/m/n/10.95 Remover ar-te-fac-to con
+ []
+
+
+Underfull \hbox (badness 4634) in paragraph at lines 1224--1224
+[]|\T1/cmr/m/n/10.95 Seleccionar trials pa-ra
+ []
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[34]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[35]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[36]
+<diagrama_clases_sistema_completo.png, id=836, 12639.22pt x 6520.36pt>
+File: diagrama_clases_sistema_completo.png Graphic file (type png)
+<use diagrama_clases_sistema_completo.png>
+Package pdftex.def Info: diagrama_clases_sistema_completo.png  used on input line 1334.
+(pdftex.def)             Requested size: 432.48051pt x 223.0623pt.
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[37 <./diagrama_clases_sistema_completo.png>]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[38]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[39]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[40]
+Underfull \hbox (badness 10000) in paragraph at lines 1501--1501
+[]|\T1/cmr/m/n/10.95 SettingsService, Fi-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1501--1501
+[]|\T1/cmr/m/n/10.95 FileIOService, Da-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1501--1501
+[]|\T1/cmr/m/n/10.95 VTKContextMenu,
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1501--1501
+[]|\T1/cmr/m/n/10.95 Extensiones con-cre-
+ []
+
+
+Underfull \hbox (badness 1824) in paragraph at lines 1501--1501
+\T1/cmr/m/n/10.95 tas y PA-CA-naly-sis-
+ []
+
+
+Overfull \hbox (21.56555pt too wide) in paragraph at lines 1501--1501
+[]|\T1/cmr/m/n/10.95 PACSingleChannelPlugin,
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1501--1501
+\T1/cmr/m/n/10.95 PA-CIn-ter-Chan-nel-
+ []
+
+
+Overfull \hbox (1.3544pt too wide) in paragraph at lines 1501--1501
+[]|\T1/cmr/m/n/10.95 Generalización| 
+ []
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[41]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[42]
+Underfull \hbox (badness 1242) in paragraph at lines 1542--1542
+[]|\T1/cmr/bx/n/10.95 Caso de uso o re-que-ri-
+ []
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[43]
+<diagrama_componentes_sistema_completo.png, id=886, 5542.20563pt x 3609.73593pt>
+File: diagrama_componentes_sistema_completo.png Graphic file (type png)
+<use diagrama_componentes_sistema_completo.png>
+Package pdftex.def Info: diagrama_componentes_sistema_completo.png  used on input line 1579.
+(pdftex.def)             Requested size: 432.48051pt x 281.67944pt.
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[44]
+Overfull \hbox (39.49403pt too wide) in paragraph at lines 1593--1594
+[]\T1/cmr/m/n/10.95 Registrar los plu-gins y ser-vi-cios me-dian-te ope-ra-cio-nes co-mo \T1/cmtt/m/n/10.95 register_plugin \T1/cmr/m/n/10.95 y \T1/cmtt/m/n/10.95 register_service\T1/cmr/m/n/10.95 . 
+ []
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[45 <./diagrama_componentes_sistema_completo.png>]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[46]
+LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10.95> not available
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 1653.
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[47]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[48]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[49]
+<diagrama_actividad_sistema_completo.png, id=921, 6905.8pt x 8736.64pt>
+File: diagrama_actividad_sistema_completo.png Graphic file (type png)
+<use diagrama_actividad_sistema_completo.png>
+Package pdftex.def Info: diagrama_actividad_sistema_completo.png  used on input line 1744.
+(pdftex.def)             Requested size: 432.48051pt x 547.10515pt.
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[50]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[51 <./diagrama_actividad_sistema_completo.png>]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[52]
+<diagrama_despliegue_sistema_completo.png, id=943, 4617.25pt x 3131.7pt>
+File: diagrama_despliegue_sistema_completo.png Graphic file (type png)
+<use diagrama_despliegue_sistema_completo.png>
+Package pdftex.def Info: diagrama_despliegue_sistema_completo.png  used on input line 1811.
+(pdftex.def)             Requested size: 386.96027pt x 262.43979pt.
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[53 <./diagrama_despliegue_sistema_completo.png>]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[54]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[55]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[56]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[57]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[58]
+Overfull \hbox (10.95651pt too wide) in paragraph at lines 2172--2173
+[]\T1/cmr/bx/n/10.95 Metadatos \T1/cmtt/m/n/10.95 properties.yml\T1/cmr/bx/n/10.95 . \T1/cmr/m/n/10.95 Los cam-pos re-que-ri-dos (\T1/cmtt/m/n/10.95 id, name, category, subcategory,
+ []
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[59]
+Underfull \hbox (badness 10000) in paragraph at lines 2239--2239
+[]|\T1/cmr/m/n/10 Extensibilidad
+ []
+
+
+Underfull \hbox (badness 3260) in paragraph at lines 2240--2240
+[]|\T1/cmr/m/n/10 Tiempo de apa-ri-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2241--2241
+[]|\T1/cmr/m/n/10 Agregar un plu-
+ []
+
+
+Underfull \hbox (badness 3000) in paragraph at lines 2241--2241
+\T1/cmr/m/n/10 gin vá-li-do y co-rrer
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2242--2243
+[]|$\OML/cmm/m/it/10 <$\T1/cmr/m/n/10 1min; 0 plu-gins fa-llan
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2245--2245
+[]|\T1/cmr/m/n/10 Rendimiento --
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2245--2245
+\T1/cmr/m/n/10 car-ga gran-de
+ []
+
+
+Underfull \hbox (badness 5008) in paragraph at lines 2246--2246
+[]|\T1/cmr/m/n/10 Tiempo a pri-mer
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2247--2247
+[]|\T1/cmtt/m/n/10 performance_test\T1/cmr/m/n/10 ;
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2247--2247
+\T1/cmr/m/n/10 me-di-do: 78.4ms
+ []
+
+
+Underfull \hbox (badness 5119) in paragraph at lines 2251--2251
+[]|\T1/cmr/m/n/10 Confiabilidad --
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2253--2253
+[]|\T1/cmr/m/n/10 Inyección de fa-llos
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2257--2257
+[]|\T1/cmr/m/n/10 Confiabilidad
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2257--2257
+\T1/cmr/m/n/10 -- ex-por-ta-ción
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2263--2263
+[]|\T1/cmr/m/n/10 Usabilidad
+ []
+
+
+Underfull \hbox (badness 1596) in paragraph at lines 2266--2267
+[]|$\OML/cmm/m/it/10 <$\T1/cmr/m/n/10 5min; ba-jas con-sul-tas al
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2269--2269
+[]|\T1/cmr/m/n/10 Rendimiento --
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2270--2270
+[]|\T1/cmr/m/n/10 Tiempo de
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2270--2270
+\T1/cmr/m/n/10 cambio;$ $% de
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2271--2271
+[]|\T1/cmr/m/n/10 Benchmark de
+ []
+
+
+Underfull \hbox (badness 1629) in paragraph at lines 2272--2273
+[]|$\OML/cmm/m/it/10 <$\T1/cmr/m/n/10 1s cam-bio; me-mo-ria 70--
+ []
+
+
+Underfull \hbox (badness 5119) in paragraph at lines 2275--2275
+[]|\T1/cmr/m/n/10 Confiabilidad --
+ []
+
+
+Underfull \hbox (badness 2302) in paragraph at lines 2276--2276
+[]|\T1/cmr/m/n/10 Tiempo del error;
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2277--2277
+[]|\T1/cmtt/m/n/10 test_fileio_
+ []
+
+
+Underfull \hbox (badness 1406) in paragraph at lines 2278--2279
+[]|\T1/cmr/m/n/10 Mensaje $\OML/cmm/m/it/10 <$\T1/cmr/m/n/10 2s; 0$ $% pér-di-da
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2281--2281
+\T1/cmr/m/n/10 Usabilidad
+ []
+
+
+Underfull \hbox (badness 7168) in paragraph at lines 2289--2289
+[]|\T1/cmtt/m/n/10 pytest \T1/cmr/m/n/10 --\T1/cmtt/m/n/10 cov \T1/cmr/m/n/10 so-bre
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2293--2293
+[]|\T1/cmr/m/n/10 Rendimiento --
+ []
+
+
+Underfull \hbox (badness 2469) in paragraph at lines 2296--2297
+[]|\T1/cmr/m/n/10 Nada em-peo-ra; ren-der sin
+ []
+
+
+Underfull \hbox (badness 1107) in paragraph at lines 2300--2300
+[]|\T1/cmr/m/n/10 Éxito de arran-que
+ []
+
+
+Underfull \hbox (badness 2277) in paragraph at lines 2301--2301
+[]|\T1/cmr/m/n/10 Instalación en Win-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2301--2301
+\T1/cmr/m/n/10 dows lim-pio sin
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2305--2305
+\T1/cmr/m/n/10 cancelación
+ []
+
+c:/Users/basti/Univesidad/tesis/Gamma-Lab-2.0/docs/SAD/main.tex:2311: ignored error: Infinite glue shrinkage found in box being split
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[60]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[61]
+c:/Users/basti/Univesidad/tesis/Gamma-Lab-2.0/docs/SAD/main.tex:2411: ignored error: Infinite glue shrinkage found in box being split
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[62]
+c:/Users/basti/Univesidad/tesis/Gamma-Lab-2.0/docs/SAD/main.tex:2600: ignored error: Infinite glue shrinkage found in box being split
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[63]
+c:/Users/basti/Univesidad/tesis/Gamma-Lab-2.0/docs/SAD/main.tex:2600: ignored error: Infinite glue shrinkage found in box being split
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[64]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[65]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[66]
+Underfull \hbox (badness 10000) in paragraph at lines 2723--2724
+[]\T1/cmr/m/n/10.95 Riverbank Com-pu-ting. \T1/cmr/m/it/10.95 PyQt5 Re-fe-ren-ce Gui-de\T1/cmr/m/n/10.95 . Dis-po-ni-ble en: [][]$\T1/cmtt/m/n/10.95 https : / / www .
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2729--2730
+\T1/cmtt/m/n/10.95 latest / api / python / vtkmodules . vtkChartsCore . html # vtkmodules . vtkChartsCore .
+ []
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[67]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 13.59999pt, for example:
+(fancyhdr)                \setlength{\headheight}{13.59999pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-1.59999pt}.
+
+[68] (main.aux
+LaTeX Info: Redefining \. on input line 11.
+LaTeX Info: Redefining \% on input line 11.
+)
+ ***********
+LaTeX2e <2025-11-01>
+L3 programming layer <2025-12-24>
+ ***********
+
+
+Package rerunfilecheck Warning: File `main.out' has changed.
+(rerunfilecheck)                Rerun to get outlines right
+(rerunfilecheck)                or use package `bookmark'.
+
+Package rerunfilecheck Info: Checksums for `main.out':
+(rerunfilecheck)             Before: 0389C6EFC20D9BDC8766FFD581E13330;22073
+(rerunfilecheck)             After:  4470DB593EE9929A6314F494363AABFE;23713.
+ ) 
+Here is how much of TeX's memory you used:
+ 15112 strings out of 467871
+ 243001 string characters out of 5418377
+ 786768 words of memory out of 5000000
+ 43540 multiletter control sequences out of 15000+600000
+ 641310 words of font info for 68 fonts, out of 8000000 for 9000
+ 1141 hyphenation exceptions out of 8191
+ 75i,12n,79p,1534b,802s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ <C:\Users\basti\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecti1000.pk> <C:\Users\basti\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ectt1000.pk> <C:\Users\basti\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1000.pk> <C:\Users\basti\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1000.pk> <C:\Users\basti\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecti1095.pk> <C:\Users\basti\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ectt1095.pk> <C:\Users\basti\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1095.pk> <C:\Users\basti\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1095.pk> <C:\Users\basti\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx2488.pk> <C:\Users\basti\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1440.pk> <C:\Users\basti\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1200.pk> <C:\Users\basti\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1200.pk><C:/Users/basti/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/basti/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/basti/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
+Output written on main.pdf (69 pages, 5950746 bytes).
+PDF statistics:
+ 1811 PDF objects out of 2073 (max. 8388607)
+ 267 named destinations out of 1000 (max. 500000)
+ 903 words of extra memory for PDF output out of 10000 (max. 10000000)
+
