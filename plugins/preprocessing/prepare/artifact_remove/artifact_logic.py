@@ -10,6 +10,8 @@ toquen desde el hilo de la interfaz (regla de escritura única del orquestador):
 """
 from dataclasses import dataclass
 from pathlib import Path
+from core.filters.artifacts import crear_derivado, receta_filtro
+from core.filters.bandpass import filtrar_columnas
 
 import numpy as np
 
@@ -73,7 +75,7 @@ def _get_current_channel_name(sd) -> str:
 
 def _discarded_for(sd, file_name: str, channel_name: str) -> frozenset:
     """Descartes de (archivo, canal); si no hay, prueba con el nombre del archivo sin extensión."""
-    discarded_dict = getattr(sd, "_SignalDataset__discarded_trials", {})
+    discarded_dict = sd.get_discarded_trials_map()
     discarded = discarded_dict.get((file_name, channel_name), set()) or set()
     if not discarded and isinstance(discarded_dict, dict):
         # Try alternate keys by filename stem
@@ -136,7 +138,7 @@ def preparar_modificacion(kernel):
         pass
 
     # 2) Find BASE TrialDataset (unfiltered) for this file+channel
-    td_list = getattr(sd, "_SignalDataset__trials_dataset", [])
+    td_list = sd.get_all_trials_datasets()
     td_base = next(
         (tdb for tdb in td_list
          if Path(getattr(tdb, "source", "")).name == file_name and getattr(tdb, "channel_name", None) == channel_name),
@@ -174,8 +176,32 @@ def preparar_modificacion(kernel):
                                  discarded=discarded, base_shape=td_base.trials.shape)
 
 
+def apply_filter_to_all_valid(kernel, *, low: float, high: float, order: int, tipo: str = "butterworth"):
+    """Filtra los trials válidos y registra el resultado como derivado (R79), sin orquestador.
+
+    Devuelve True si filtró y None si no había trials.
+    """
+    prep = preparar_modificacion(kernel)
+    if prep is None:
+        return None
+    fs = float(prep.td_base.sampling_rate)
+    out_active = filtrar_columnas(prep.trials, low, high, order, fs, tipo)
+    if out_active is None:
+        return None
+    escribir_modificacion(kernel, prep, out_active, "filter",
+                          receta_dict=receta_filtro(low, high, order, tipo, fs, prep.discarded))
+    return True
+
+
+def descartar_derivado(kernel):
+    """Descarta el conjunto derivado del canal activo (R79). Devuelve (archivo, canal, había_derivado)."""
+    sd, nombre = _get_active_signal_and_name(kernel)
+    canal = _get_current_channel_name(sd)
+    return nombre, canal, sd.discard_derived_trials(nombre, canal)
+
+
 def escribir_modificacion(kernel, prep: ModificacionPreparada, out_active: np.ndarray, mode: str,
-                          point_a: float = 0.0, point_b: float = 0.0):
+                          point_a: float = 0.0, point_b: float = 0.0, receta_dict: dict | None = None):
     """
     Paso 3, en el hilo de la interfaz: escribe las columnas modificadas en el
     TrialDataset base, invalida la caché de trials activos y avisa a los plugins.
@@ -189,7 +215,7 @@ def escribir_modificacion(kernel, prep: ModificacionPreparada, out_active: np.nd
     sd = store.get_active_signal() if store else None
     vigente = (
         sd is prep.sd
-        and any(td is prep.td_base for td in getattr(sd, "_SignalDataset__trials_dataset", []))
+        and any(td is prep.td_base for td in sd.get_all_trials_datasets())
         and prep.td_base.trials.shape == prep.base_shape
         and _discarded_for(sd, prep.file_name, prep.channel_name) == prep.discarded
     )
@@ -200,41 +226,28 @@ def escribir_modificacion(kernel, prep: ModificacionPreparada, out_active: np.nd
     td_base = prep.td_base
     orig_indices = prep.orig_indices
 
-    # 5) Write changes into the BASE TrialDataset (by mapped columns)
+    # 5) R79: the result goes into a DERIVED set; the original trials are never written.
+    # Successive modifications accumulate in the same derived set.
+    derivado = sd.get_derived_trials(prep.file_name, prep.channel_name)
+    if derivado is None:
+        derivado = crear_derivado(td_base)
     for k, orig_col in enumerate(orig_indices):
-        if 0 <= orig_col < td_base.trials.shape[1]:
-            td_base.trials[:, orig_col] = out_active[:, k]
+        if 0 <= orig_col < derivado.trials.shape[1]:
+            derivado.trials[:, orig_col] = out_active[:, k]
 
-    # 5.5) Invalidate filtered cache so get_active_trials recomputes arrays after edits
-    key = (prep.file_name, prep.channel_name)
-    try:
-        cache = getattr(sd, "_SignalDataset__filtered_cache", None)
-        if isinstance(cache, dict):
-            cache.pop(key, None)
-        versions = getattr(sd, "_SignalDataset__discard_versions", None)
-        if isinstance(versions, dict):
-            versions.pop(key, None)
-    except Exception:
-        pass
-
-    # 6) Mark metadata of modified trials (optional)
-    try:
-        mods = td_base.metadata.get("modified_trials", set())
-        mods = set(mods)
-        mods.update(orig_indices)
-        td_base.metadata["modified_trials"] = mods
-    except Exception:
-        td_base.metadata = getattr(td_base, "metadata", {}) or {}
-        td_base.metadata["modified_trials"] = set(orig_indices)
+    # 6) Mark which trials were modified
+    marcados = set(derivado.metadata.get("modified_trials", set()))
+    marcados.update(orig_indices)
+    derivado.metadata["modified_trials"] = marcados
 
     # 6.5) Guardar la receta, en orden, para que el proyecto pueda reconstruirla.
     # Sin esto las modificaciones se pierden al reabrir: el proyecto guarda cómo
     # se generaron los trials, no sus valores (problema nº 21).
-    try:
-        td_base.metadata.setdefault("modificaciones", []).append(
-            receta(mode, point_a, point_b, prep.discarded))
-    except Exception as e:
-        print(f"{LOGL} No se pudo guardar la receta de la modificación: {e}")
+    derivado.metadata.setdefault("modificaciones", []).append(
+        receta_dict if receta_dict is not None else receta(mode, point_a, point_b, prep.discarded))
+
+    # 5.5) Registering it also invalidates the cache, so get_active_trials serves the derived set
+    sd.register_derived_trials(derivado)
 
     # 7) Notify the UI (if the pipeline uses it)
     if hasattr(kernel, "event"):

@@ -223,6 +223,25 @@ class ExportService:
             return
         self.export_sections(secciones, fmt, filename)
 
+    @staticmethod
+    def _share_x_axis(chart, series, headers, data_rows):
+        """One X column plus one Y column per series, if all series share the same X.
+
+        Returns the input unchanged when there is a single series or the axes differ.
+        """
+        if len(series) < 2:
+            return headers, data_rows
+        x0 = series[0][1]
+        if any(xs != x0 for _, xs, _ in series[1:]):
+            return headers, data_rows
+        try:
+            x_title = chart.GetAxis(vtk.vtkAxis.BOTTOM).GetTitle() or "X"
+        except Exception:
+            x_title = "X"
+        new_headers = [x_title] + [f"{name}_Y" for name, _, _ in series]
+        new_rows = [[x0[r]] + [ys[r] for _, _, ys in series] for r in range(len(x0))]
+        return new_headers, new_rows
+
     def export_table(self, fmt: str, filename: str = None):
         """
         Export data (all series) from the active chart to csv/xlsx/json.
@@ -263,7 +282,7 @@ class ExportService:
 
             self._set_last_dir(os.path.dirname(filename))
 
-            data_rows, headers = [], []
+            data_rows, headers, series = [], [], []
             for i in range(chart.GetNumberOfPlots()):
                 plot = chart.GetPlot(i)
                 table = plot.GetInput()
@@ -274,15 +293,19 @@ class ExportService:
                 num_points = table.GetNumberOfRows()
                 series_name = plot.GetLabel() or f"Series_{i + 1}"
                 headers.extend([f"{series_name}_X", f"{series_name}_Y"])
+                xs = [x_col.GetValue(r) for r in range(num_points)]
+                ys = [y_col.GetValue(r) for r in range(num_points)]
+                series.append((series_name, xs, ys))
                 for r in range(num_points):
-                    x_val = x_col.GetValue(r)
-                    y_val = y_col.GetValue(r)
                     if len(data_rows) <= r:
                         data_rows.append([])
-                    data_rows[r].extend([x_val, y_val])
+                    data_rows[r].extend([xs[r], ys[r]])
+
+            if fmt in ("csv", "xlsx"):
+                # R09: when every series shares the X axis, one X column is enough
+                headers, data_rows = self._share_x_axis(chart, series, headers, data_rows)
 
             if fmt == "csv":
-                import io
                 with open(filename, mode="w", newline="", encoding="utf-8") as f:
                     w = csv.writer(f)
                     w.writerow(headers)

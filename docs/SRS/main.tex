@@ -1661,7 +1661,7 @@ NFR-S-02 & R67 & El sistema debe ofrecer una vía pública y única para leer, m
 \hline
 NFR-S-03 & R69 & El sistema debe registrar en el núcleo los servicios compartidos de exportación, medición y ajustes, y entregarlos a los módulos con una única instancia de cada uno, sin que ningún módulo los construya por su cuenta. \\
 \hline
-NFR-S-04 & R70 & El sistema debe ejecutar toda operación de cómputo pesada a través de un servicio de tareas registrado en el núcleo, que gestione la cola, la cancelación y la notificación de progreso. \\
+NFR-S-04 & R70 & El sistema debe ejecutar toda operación de cómputo pesada a través de un servicio de tareas registrado en el núcleo, que gestione la cola, la cancelación y la notificación de progreso. Se considera pesada toda operación que, con los datos típicos del laboratorio (una señal de hasta 1,8 millones de muestras por canal y hasta 60 trials de 30 501 muestras), pueda tardar más de 1 segundo en el hardware de referencia; R71 enumera además las operaciones que se despachan siempre por el servicio, sin importar su duración. \\
 \hline
 NFR-S-05 & R77 & El sistema debe permitir incorporar un nuevo plugin de análisis registrándolo en el núcleo y despachando su cómputo por el orquestador, sin modificar el núcleo ni los plugins existentes. \\
 

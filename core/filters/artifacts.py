@@ -8,10 +8,14 @@ situación de `core/filters/trials.py`, que comparten plugins y servicios.
 Recibe arreglos de NumPy y devuelve arreglos de NumPy: no toca el Kernel, el
 DataStore ni ningún widget.
 """
+import copy
+import dataclasses
 from typing import Tuple
 
 import numpy as np
 from scipy.interpolate import CubicSpline
+
+from core.filters.bandpass import filtrar_columnas
 
 
 def _time_window_indices(t: np.ndarray, a: float, b: float) -> Tuple[int, int]:
@@ -45,6 +49,41 @@ def _fill_nan_segments(t: np.ndarray, data: np.ndarray) -> np.ndarray:
             continue
         data[:, col] = np.interp(t, t[idx], y[idx])
     return data
+
+
+def medidas_del_segmento(t, trials, *, mode: str, point_a: float, point_b: float = 0.0):
+    """Medidas del segmento que `calcular_modificacion` va a tocar, sin tocarlo.
+
+    Se calculan sobre el **promedio de los trials activos**, que es lo que el
+    usuario ve cuando elige el rango, y se muestran antes de aplicar el cambio
+    para que decida con criterio (R40). Usa la misma ventana que la modificación:
+    [A, B] si hay B, o desde el inicio hasta A en el modo de corte.
+
+    Devuelve None si la ventana no contiene muestras (rango fuera del trial).
+    """
+    t = np.asarray(t, dtype=float)
+    datos = np.asarray(trials, dtype=float)
+    if mode == "interpolate" or (point_b and point_b != point_a):
+        i_a, i_b = _time_window_indices(t, point_a, point_b)
+    else:
+        i_a, i_b = 0, int(np.searchsorted(t, point_a, side="left"))
+    if i_b <= i_a:
+        return None
+
+    media = np.nanmean(datos, axis=1) if datos.ndim == 2 else datos
+    seg = media[i_a:i_b]
+    seg_t = t[i_a:i_b]
+    if not np.isfinite(seg).any():
+        return None
+    k_min, k_max = int(np.nanargmin(seg)), int(np.nanargmax(seg))
+    return {
+        "inicio_s": float(seg_t[0]), "fin_s": float(seg_t[-1]),
+        "duracion_s": float(seg_t[-1] - seg_t[0]), "n_muestras": int(i_b - i_a),
+        "n_trials": int(datos.shape[1]) if datos.ndim == 2 else 1,
+        "y_min": float(seg[k_min]), "y_max": float(seg[k_max]),
+        "amplitud_pp": float(seg[k_max] - seg[k_min]), "media": float(np.nanmean(seg)),
+        "x_en_min": float(seg_t[k_min]), "x_en_max": float(seg_t[k_max]),
+    }
 
 
 def calcular_modificacion(t, trials, *, mode: str, point_a: float, point_b: float = 0.0, ctx=None):
@@ -130,6 +169,12 @@ def calcular_modificacion(t, trials, *, mode: str, point_a: float, point_b: floa
 # Persistencia: la "receta" de una modificación
 # --------------------------------------------------------------------------
 
+def crear_derivado(td):
+    """A copy of a TrialDataset that owns its data, to write a preprocessing result into (R79)."""
+    return dataclasses.replace(td, trials=np.array(td.trials, copy=True),
+                               metadata=copy.deepcopy(td.metadata or {}))
+
+
 def receta(mode: str, point_a: float, point_b: float, discarded) -> dict:
     """Describe una modificación con lo justo para poder repetirla.
 
@@ -141,6 +186,16 @@ def receta(mode: str, point_a: float, point_b: float, discarded) -> dict:
         "mode": str(mode),
         "point_a": float(point_a),
         "point_b": float(point_b),
+        "discarded_indices": sorted(int(i) for i in (discarded or ())),
+    }
+
+
+def receta_filtro(low: float, high: float, order: int, tipo: str, fs: float, discarded) -> dict:
+    """Receta de un filtrado aplicado a los trials (R79): se reaplica igual que las de artefactos."""
+    return {
+        "mode": "filter",
+        "low": float(low), "high": float(high), "order": int(order),
+        "type": str(tipo), "fs": float(fs),
         "discarded_indices": sorted(int(i) for i in (discarded or ())),
     }
 
@@ -171,12 +226,16 @@ def reaplicar_modificaciones(td, recetas) -> int:
             if not cols:
                 continue
             activos = np.array(td.trials[:, cols], copy=True)
-            salida = calcular_modificacion(
-                t, activos,
-                mode=r.get("mode", ""),
-                point_a=float(r.get("point_a", 0.0)),
-                point_b=float(r.get("point_b", 0.0)),
-            )
+            if r.get("mode") == "filter":
+                salida = filtrar_columnas(activos, float(r["low"]), float(r["high"]), int(r["order"]),
+                                          float(r["fs"]), r.get("type", "butterworth"))
+            else:
+                salida = calcular_modificacion(
+                    t, activos,
+                    mode=r.get("mode", ""),
+                    point_a=float(r.get("point_a", 0.0)),
+                    point_b=float(r.get("point_b", 0.0)),
+                )
             if salida is None:
                 continue
             for k, col in enumerate(cols):

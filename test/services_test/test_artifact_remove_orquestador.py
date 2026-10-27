@@ -70,10 +70,10 @@ PARAMS = dict(mode="interpolate", point_a=1.00, point_b=1.20)
 
 
 def test_por_el_orquestador_da_lo_mismo_que_sin_el(qt_app, senal_real):
-    kernel_a, _, td_a = entorno(senal_real, descartes=(3, 10, 25))
+    kernel_a, sd_a, td_a = entorno(senal_real, descartes=(3, 10, 25))
     assert apply_modification_to_all_valid(kernel_a, **PARAMS) is True
 
-    kernel_b, _, td_b = entorno(senal_real, descartes=(3, 10, 25))
+    kernel_b, sd_b, td_b = entorno(senal_real, descartes=(3, 10, 25))
     prep = preparar_modificacion(kernel_b)
     tasks = kernel_b.get_service("TaskService")
     h = tasks.submit(calcular_modificacion, owner="artifact_remove", t=prep.t, trials=prep.trials, **PARAMS)
@@ -82,9 +82,12 @@ def test_por_el_orquestador_da_lo_mismo_que_sin_el(qt_app, senal_real):
                                     escrito.append(True)))
     assert wait_for(lambda: escrito)
 
-    assert np.array_equal(td_a.trials, td_b.trials, equal_nan=True)
-    assert td_a.metadata["modified_trials"] == td_b.metadata["modified_trials"]
-    assert not {3, 10, 25} & td_b.metadata["modified_trials"], "los descartados no se modifican"
+    # R79: the result lives in the derived set; the original trials are not touched
+    d_a = sd_a.get_derived_trials(Path(td_a.source).name, td_a.channel_name)
+    d_b = sd_b.get_derived_trials(Path(td_b.source).name, td_b.channel_name)
+    assert np.array_equal(d_a.trials, d_b.trials, equal_nan=True)
+    assert d_a.metadata["modified_trials"] == d_b.metadata["modified_trials"]
+    assert not {3, 10, 25} & d_b.metadata["modified_trials"], "los descartados no se modifican"
 
 
 def test_el_calculo_no_toca_los_datos_compartidos(qt_app, senal_real):
@@ -141,8 +144,10 @@ def test_funciona_con_trials_de_otro_canal(qt_app, senal_real):
     esperado = calcular_modificacion(td.time_rel, antes, **PARAMS)
 
     assert apply_modification_to_all_valid(kernel, **PARAMS) is True
-    assert np.array_equal(td.trials, esperado, equal_nan=True)
-    assert not np.array_equal(td.trials, antes)
+    derivado = sd.get_derived_trials(Path(td.source).name, td.channel_name)
+    assert np.array_equal(derivado.trials, esperado, equal_nan=True)
+    assert not np.array_equal(derivado.trials, antes)
+    assert np.array_equal(td.trials, antes), "R79: el original no se modifica"
 
 
 def test_ningun_plugin_crea_hilos_propios():

@@ -925,7 +925,7 @@ Los principios se agrupan en las mismas cuatro áreas del diagnóstico. Cada uno
 \subsubsection{Concurrencia}
 
 \begin{itemize}
-    \item \textbf{La ejecución de los cómputos pesados está centralizada y es cancelable:} Ninguna extensión crea hilos ni procesos. Toda operación de cómputo pesado se solicita al TaskOrchestrator, que la encola, la ejecuta fuera del hilo de la interfaz y de a una a la vez (R70), presenta un indicador de progreso cuando supera un segundo y permite cancelarla (CU-014). La cancelación es cooperativa: el cómputo consulta periódicamente una señal de cancelación. Si no responde dentro de un tiempo acotado, el orquestador fuerza su terminación. \textit{Responde a: D9, D10, D11.}
+    \item \textbf{La ejecución de los cómputos pesados está centralizada y es cancelable:} Ninguna extensión crea hilos ni procesos. Toda operación de cómputo pesado se solicita al TaskOrchestrator (se considera pesada la que, con los datos típicos del laboratorio, puede tardar más de 1 segundo en el hardware de referencia), que la encola, la ejecuta fuera del hilo de la interfaz y de a una a la vez (R70), presenta un indicador de progreso cuando supera un segundo y permite cancelarla (CU-014). La cancelación es cooperativa: el cómputo consulta periódicamente una señal de cancelación. Si no responde dentro de un tiempo acotado, el orquestador fuerza su terminación. \textit{Responde a: D9, D10, D11.}
     \item \textbf{Antes de ejecutar se estima el costo:} El orquestador estima la memoria que requiere un cómputo a partir de las dimensiones de la entrada y de sus parámetros, por ejemplo, el número de canales, muestras y frecuencias de una transformada wavelet o de un análisis PAC, y la compara con la memoria disponible. Si la estimación supera lo disponible, el sistema advierte al usuario y le propone reducir los parámetros; si la ejecución es claramente inviable, la rechaza antes de iniciarla. \textit{Responde a: D12.}
 \end{itemize}
 
@@ -1747,7 +1747,9 @@ La Figura \ref{fig:vistaprocesos} presenta el modelo completo, incluyendo las de
 \end{figure}
 
 \subsubsection{Inicio de la aplicación}
-
+El flujo de ejecución comienza con la inicialización de GammaLab v2.0. Durante esat aetapa, el sistema premara los componentes centrales necesarios para el funcinamiento del sistema y registra los servicios que estará disponibles para lso demás módulos.
+Luego, se lleva a cabo la descubrimiento de los plugins mediante los mecanismos de configuración YAML. Esto permite identificar las extensione disponibles y peraparaa su integración cpon el núcleo del sistema.
+La inicialización establece las condiciones necesarias para que el investigador pueda acceder a las funcionalidades de carga, procesamiento y análisis de señales. Asimismo, prepara la infraestructura de servicios que permite compartir datos y coordinar las operaciones ejecutadas durante la sesión.
 
 \subsubsection{Apertura de proyecto o carga de una señal}
 

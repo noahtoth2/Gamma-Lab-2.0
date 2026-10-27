@@ -17,6 +17,14 @@ from plugins.analysis.time.erp import compute as ce
 from plugins.analysis.time.erp.erp_plugin_ui import Ui_ErpPlot
 from core.utils.adapters import trials_matrix_to_vtk_table
 from core.utils.trial_labels import trials_used
+from functools import partial
+
+
+def calcular_erp(t, M, idx, ctx=None):
+    """Selects the trials (1-based `idx`) and prepares the heat map. Pure, for the TaskService."""
+    sel = M[np.array(idx) - 1, :]                      # (K, Ns)
+    return sel, ce.preparar_mapa_calor(t, sel)
+
 
 class Erp_plugin(IPlugin):
     def __init__(self, meta: PluginMeta):
@@ -218,15 +226,17 @@ class Erp_plugin(IPlugin):
             self._notify("No trials selected.", "warning")
             return
 
-        # indices 1-based → 0-based
-        sel = M[np.array(idx) - 1, :]  # (K, Ns)
-
         self.ch_name = getattr(td, "channel_name", "")
         used = trials_used(idx, n_trials, channel=self.ch_name)
 
-        # 3) render
+        # 3) selection + heat-map preparation in the TaskService (R71), render when it finishes
+        self.run_task(calcular_erp, partial(self._on_erp_done, t, used, n_trials),
+                      t=t, M=M, idx=list(idx))
+
+    def _on_erp_done(self, t, used, n_trials, resultado):
+        sel, mapa = resultado
         self._render_butterfly(t, sel, title=f"ERP — {self.ch_name} — {used['label']}")
-        self._render_heatmap(t, sel, title=f"Trials: {used['label']}")
+        self._render_heatmap(t, sel, title=f"Trials: {used['label']}", preparado=mapa)
 
         self._trials_used = used
         self._notify(f"ERP: {used['label']} plotted. Channel: {self.ch_name}")
@@ -355,14 +365,14 @@ class Erp_plugin(IPlugin):
 
         self.view_top.GetRenderWindow().Render()
 
-    def _render_heatmap(self, t: np.ndarray, sel: np.ndarray, title: str = None):
+    def _render_heatmap(self, t: np.ndarray, sel: np.ndarray, title: str = None, preparado=None):
         """2D heatmap with correct time axes"""
         assert self.view_bot is not None
         scene = self.view_bot.GetScene()
         scene.ClearItems()
 
         # Data
-        X, t, vmin, vmax, t0, t_end, dt, factor = ce.preparar_mapa_calor(t, sel)
+        X, t, vmin, vmax, t0, t_end, dt, factor = preparado or ce.preparar_mapa_calor(t, sel)
         K, Tn = X.shape
         self._log(f"Heatmap: {K} trials x {Tn} muestras, submuestreo x{factor}, "
                   f"rango [{vmin:.3f}, {vmax:.3f}], t0={t0:.3f}s, dt={dt:.6f}s")

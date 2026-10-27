@@ -92,6 +92,80 @@ class IPlugin(ABC):
             self.alerts.error(f"Error accessing DataStore: {e}")
             return None
 
+    def run_task(self, fn, on_done, *, on_failed=None, on_cancelled=None, on_finished=None, **kwargs):
+        """Runs `fn(**kwargs)` in the TaskService and calls `on_done(result)` on the UI thread.
+
+        This is the one place that knows the task pattern (R70/R71): queue, progress bar
+        and Cancel come with the service, and the four signals are connected here with
+        the "is this still my current task?" guard, so a plugin only writes its compute
+        function (pure: arrays in, arrays out, optional `ctx` kwarg) and its drawing.
+
+        - A new call cancels the one still running for this plugin.
+        - `on_finished()` runs after done, failed or cancelled (re-enable buttons...).
+        - Without a TaskService (headless tests) `fn` runs inline, with the same callbacks.
+        """
+        def fallo(msg):
+            if on_failed is not None:
+                on_failed(msg)
+            else:
+                self.alerts.error(f"No se pudo calcular: {msg}")
+
+        tasks = self.kernel.get_service("TaskService") if self.kernel else None
+        if tasks is None:
+            try:
+                result = fn(**kwargs)
+            except Exception as e:
+                fallo(str(e))
+            else:
+                if result is not None:
+                    on_done(result)
+            finally:
+                if on_finished is not None:
+                    on_finished()
+            return None
+
+        tasks.cancel_all_from(self.meta.id)
+        handle = tasks.submit(fn, owner=self.meta.id, **kwargs)
+        self._task_handle = handle
+
+        def vigente():
+            return handle is getattr(self, "_task_handle", None)
+
+        def terminar():
+            self._task_handle = None
+            if on_finished is not None:
+                on_finished()
+
+        def al_progreso(pct, msg):
+            if vigente():
+                self._notify(f"{msg} ({pct}%)" if msg else f"{pct}%")
+
+        def al_terminar(result):
+            if not vigente():
+                return
+            terminar()
+            if result is not None:
+                on_done(result)
+
+        def al_fallar(msg):
+            if not vigente():
+                return
+            terminar()
+            fallo(msg)
+
+        def al_cancelar():
+            if not vigente():
+                return
+            terminar()
+            if on_cancelled is not None:
+                on_cancelled()
+
+        handle.progress.connect(al_progreso)
+        handle.finished.connect(al_terminar)
+        handle.failed.connect(al_fallar)
+        handle.cancelled.connect(al_cancelar)
+        return handle
+
     def mark_project_dirty(self):
 
         try:
