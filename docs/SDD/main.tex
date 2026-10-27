@@ -107,29 +107,32 @@ Gamma Lab, en coherencia con el SAD y el SRS previamente definidos.
 \section{Introducci\'on}
 
     \subsection{Prop\'osito del documento}
-    El presente Sodtware Design Document (SDD) tiene como prop\'osito describir la arquitectura y el dise\~no detallado del sistema Gamma Lab v2.0, incluyendo la estructura de sus componentes, la persistencia de datos, las relaciones entre los m\'odulos y la interfaz de usuario. 
-    Este documento sirve como referencia para los desarrolladores, testers y otros miembros del equipo de proyecto, asegurando que todos comprendan la implementaci\'on t\'ecnica y funcional del sistema definida em el Software Architecture Document (SAD) y el Software Requirements Specification (SRS).
+    El presente \textbf{Software Design Document (SDD)} tiene como propósito documentar el diseño técnico de GammaLab v2.0, describiendo la organización de sus componentes, las responsabilidades de sus módulos, las relaciones entre ellos y los mecanismos que permiten su interacción. El documento profundiza en las decisiones de diseño que orientan la implementación del sistema, complementando la descripción arquitectónica establecida en el \textbf{Software Architecture Document (SAD)} y los requisitos definidos en el \textbf{Software Requirements Specification (SRS)}.
 
+    Asimismo, el SDD proporciona una referencia técnica para comprender la estructura interna del software, analizar sus flujos de ejecución y orientar el desarrollo, mantenimiento y validación de sus funcionalidades.
 
     \subsection{Alcance}
-    El SDD abarca todos loas aspctos técnicos y de diseño del sistema necearios para su aplicación.
+    El alcance de este documento comprende la descripción de la arquitectura y el diseño detallado de GammaLab v2.0, desde la organización general de sus componentes hasta los elementos técnicos que intervienen en su funcionamiento. Para ello, incluye los siguientes aspectos:
+
     \begin{itemize}
-        \item Descripción de la arquitectura del sistema.
-        \item Detalle de los componentes y módulos del sistema.
-        \item Especificación de la persistencia de datos y modelos de datos.
-        \item Definición de las relaciones entre los componentes.
-        \item Descripción de la interfaz de usuario y su organización.
+        \item \textbf{Arquitectura del sistema:} Descripción de las vistas de escenarios, lógica, de despliegue, de procesos y física, así como de los principales componentes y sus responsabilidades.
+        \item \textbf{Estructura del sistema:} Documentación de las clases, atributos, métodos y responsabilidades asociadas a los componentes principales.
+        \item \textbf{Comportamiento del sistema:} Descripción de los flujos de ejecución y de las interacciones entre los componentes durante las operaciones principales.
+        \item \textbf{Persistencia y modelos de datos:} Identificación de las estructuras utilizadas para representar y almacenar las señales, los ensayos \textit{(trials)} y otros datos relevantes del sistema.
+        \item \textbf{Relaciones entre componentes:} Descripción de las dependencias, los mecanismos de comunicación y la utilización de los servicios compartidos.
+        \item \textbf{Interfaz de usuario:} Descripción de la organización de la interfaz, sus elementos de navegación y las principales funcionalidades disponibles para la gestión, el preprocesamiento y el análisis de señales.
     \end{itemize}
 
     \subsection{Audiencia}
     La audiencia principal de este documento incluye:
     \begin{itemize}
-        \item Desarrolladores de software: para comprender la estructura y el diseño del sistema.
-        \item Testers: para validar la implementación del sistema según los requisitos.
-        \item Directora de tesis: para supervisar el progreso y la coherencia del desarrollo.
-        \item Stakeholders: para entender cómo se implementarán los requisitos funcionales y no funcionales.
+        \item \textbf{Desarrolladores de software:} Proporciona información sobre la estructura interna del sistema, las responsabilidades de las clases, las dependencias entre componentes y los criterios de diseño que orientan la implementación y el mantenimiento.
+        \item \textbf{Equipo de QA:} Sirve como referencia para contrastar el diseño y el comportamiento del sistema con los requisitos especificados, así como para identificar posibles inconsistencias entre lo definido y lo implementado.
+        \item \textbf{Directora de tesis:} Permite evaluar la coherencia técnica del diseño, su correspondencia con los requisitos establecidos y el avance de las funcionalidades contempladas para GammaLab v2.0.
+        \item \textbf{Stakeholders:} Ofrece una descripción técnica general de la solución, sus principales componentes y las funcionalidades que contempla, facilitando la comprensión de su organización y evolución.+
     \end{itemize}
 
+\clearpage
 
 \section{Arquitectura}
 
