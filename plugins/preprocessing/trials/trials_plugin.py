@@ -10,7 +10,7 @@ from core.utils.vtk_context_menu import VTKContextMenu
 from core.services.data_store import DataStore
 from core.model.signal_dataset import SignalDataset
 from core.model.trial_dataset import TrialDataset
-from core.filters.trials import cut_trials_single_channel
+from core.filters.trials import cut_trials_single_channel, mv_to_unit
 from core.utils.adapters import trials_matrix_to_vtk_table
 from plugins.preprocessing.trials.trial_plugin_ui import Ui_Trials
 
@@ -160,6 +160,52 @@ class TrialsPlugin(IPlugin):
         self.ui.stimNumberSpinBox.valueChanged.connect(self._on_stim_count_changed)
         self._apply_interstim_ui_rules(self.ui.stimNumberSpinBox.value())
 
+        self.ui.stimChannelComboBox.currentIndexChanged.connect(lambda _: self._update_threshold_unit())
+        self._update_threshold_unit()
+
+    # -------------- Threshold units -----------------
+    def _stim_unit(self) -> str:
+        """Unit of the selected stimulus channel ("" if unknown)."""
+        ds = self.get_active_signal(silent=True) if self.mainwin else None
+        idx = self.ui.stimChannelComboBox.currentData()
+        if ds is None or idx is None:
+            return ""
+        units = list(getattr(ds, "units", []) or [])
+        return str(units[idx]) if 0 <= idx < len(units) else ""
+
+    def _update_threshold_unit(self):
+        """The threshold is shown in mV and converted to the stimulus channel's
+        unit before detecting. A channel without a voltage unit (a.u., pA...)
+        cannot be expressed in mV, so its own unit is shown instead."""
+        spin = self.ui.thresholdDoubleSpinBox
+        unit = self._stim_unit()
+        ch_name = self.ui.stimChannelComboBox.currentText()
+        if not unit or mv_to_unit(1.0, unit) is not None:
+            spin.setSuffix(" mV")
+            extra = (f"\nThe stimulus channel '{ch_name}' is in {unit}; the value is converted."
+                     if unit and unit.strip().lower() != "mv" else "")
+            spin.setToolTip("Stimulus detection threshold in mV (absolute value)." + extra)
+        else:
+            spin.setSuffix(f" {unit}")
+            spin.setToolTip(f"The stimulus channel '{ch_name}' is in {unit}, which is not a "
+                            f"voltage: the threshold is applied in {unit}, not in mV.")
+
+    def _show_recipe_threshold(self, td: TrialDataset):
+        """Show the stimulus channel and threshold the trials were cut with,
+        back in mV (the recipe stores it in the stimulus channel's unit)."""
+        params = (td.metadata or {}).get("generation_params") or {}
+        if "threshold" not in params:
+            return
+        stim = params.get("stim_channel")
+        if stim is not None:
+            i = self.ui.stimChannelComboBox.findData(int(stim))
+            if i >= 0:
+                self.ui.stimChannelComboBox.setCurrentIndex(i)
+        factor = mv_to_unit(1.0, self._stim_unit())
+        value = float(params["threshold"])
+        self.ui.thresholdDoubleSpinBox.setValue(value / factor if factor else value)
+        self._update_threshold_unit()
+
     def _on_clear_params_clicked(self):
         self.ui.thresholdDoubleSpinBox.setValue(self.params["threshold"])
         self.ui.initialTimeDoubleSpinBox.setValue(self.params["t0"])
@@ -262,6 +308,7 @@ class TrialsPlugin(IPlugin):
             cb_stim.setCurrentIndex(default_idx)
             cb_stim.setToolTip("Channel used to detect onsets/stimuli")
             cb_stim.blockSignals(False)
+            self._update_threshold_unit()
 
 
     def _populate_channels_once(self):
@@ -282,6 +329,7 @@ class TrialsPlugin(IPlugin):
         idx = self.ui.channelComboBox.findText(td.channel_name)
         if idx >= 0:
             self.ui.channelComboBox.setCurrentIndex(idx)
+        self._show_recipe_threshold(td)
         self.last_td = td
         self.visible_trials = [0]
         self._render_trials(td)
@@ -316,7 +364,18 @@ class TrialsPlugin(IPlugin):
 
             return
 
-        th   = float(self.ui.thresholdDoubleSpinBox.value())
+        # The threshold is entered in mV; detection compares it against the raw
+        # stimulus channel, so it goes in that channel's unit. A channel without
+        # a voltage unit has no mV equivalent and keeps the value as entered.
+        th_shown = float(self.ui.thresholdDoubleSpinBox.value())
+        stim_unit = self._stim_unit()
+        th_native = mv_to_unit(th_shown, stim_unit) if stim_unit else th_shown
+        if th_native is None:
+            th_native = th_shown
+            th_text = f"{th_shown:g} {stim_unit}"
+        else:
+            th_text = f"{th_shown:g} mV"
+        th = th_native
         t0   = float(self.ui.initialTimeDoubleSpinBox.value())
         t1   = float(self.ui.finalTimeDoubleSpinBox.value())
         mode = self.ui.endModeCombo.currentData() or "fixed"
@@ -350,6 +409,9 @@ class TrialsPlugin(IPlugin):
 
         #self._log("TD listo:", td.trials.shape, td.time_rel.shape, "onsets:", len(td.onsets_s))
 
+        # The recipe keeps the threshold in the stimulus channel's unit: it is
+        # passed straight back to cut_trials_single_channel on project open.
+        td.metadata["threshold_display"] = th_text
         td.metadata["generation_params"] = {
             "channel": int(ch),
             "stim_channel": None if stim_ch is None else int(stim_ch),
@@ -378,7 +440,7 @@ class TrialsPlugin(IPlugin):
         self.kernel.emit_event("trials_generated", {"signal": ds.name, "channel": td.channel_name})
 
         self._notify(f"Trials: {td.trials.shape[1]} trials generados en '{td.channel_name}' "
-                     f"(Ns={td.trials.shape[0]}); descartes reiniciados")
+                     f"con umbral {th_text} (Ns={td.trials.shape[0]}); descartes reiniciados")
    
 
     # -------------- Navigation between trials ----------------------

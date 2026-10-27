@@ -1710,9 +1710,34 @@ Dos hallazgos relevantes para la planificaci\'on de la implementaci\'on:
 \subsection{Vista de Procesos}
 
 \subsubsection{Propósito}
+La vista de procesos permite comprender cómo se organiza el flujo de trabajo entre el investigador y el sistema de GammaLab v2.0 durante una sesión de trabajo, desde el inicio de la aplicación hasta la exportación de los resultados, guardado y el cierre del proyecto.
+
+Asimismo, el diagrama que se presentara más adelante permite identificar las responsabilidades del usuario y del sistejma, las descisiones que condicionan la ejecución del flujo de trabajo y los mecanismos mediante los cuales se gestionan los cálculos asociados al procesamiento de señales.
+
+Esta vista permite el entendimiento del comportamiento dinámico del sistema desde una perspectiva arquitectónica, mostrando cómo el flujo que siga el investigador desencadena las operacione sinternas y los resultados generados se ponene a disposición de este.
+
 \subsubsection{Notación}
+La leyenda del diagrama distingue los elementos según su estado de implementación:
+
+\begin{itemize}
+    \item \textbf{Verde - Ya existe:} representa las actividades o funcionalidades que ya se encuentran disponibles en la aplicación.
+    
+    \item \textbf{Rojo - Nuevo:} identifica las actividades asociadas a componentes o funcionalidades nuevas contempladas para GammaLab 2.0.
+    
+    \item \textbf{Gris - Mixto:} corresponde a actividades cuyo funcionamiento combina elementos existentes con nuevas incorporaciones, según la descripción asociada al diagrama.
+
+\end{itemize}
+
 \subsubsection{Visión general del modelo}
-La vista de procesos describe el comportamiento din\'amico del sistema completo como un \'unico flujo maestro de sesi\'on, construido a partir de las cadenas de precondici\'on declaradas por las propias 23 fichas (p.\,ej. CU-006 exige trials generados por CU-004, que a su vez exige una se\~nal cargada por CU-003) --- no es una fusi\'on literal de los 23 flujos detallados, que ser\'ia ileg\'ible.
+El modelo representa el flujo de trabajo general de GammaLab 2.0, desde el inicio de la aplicación hasta el cierre de la sesión. Su propósito es mostrar cómo se relacionan las acciones del investigador con los procesos internos del sistema y cómo se desarrolla una sesión de análisis de señales neurofisiológicas.
+
+El flujo comienza con la inicialización de la aplicación, durante la cual se registran los servicios disponibles y se descubren los plugins mediante los mecanismos de configuración YAML. Posteriormente, el investigador puede elegir entre abrir un proyecto previamente guardado o comenzar una sesión cargando una señal desde un archivo. En ambos casos, el sistema prepara los datos y los publica en el \texttt{DataStore} para que puedan utilizarse en las etapas posteriores.
+
+Una vez disponible la señal, el investigador puede realizar operaciones de preprocesamiento, ejecutar los análisis necesarios e interactuar visualmente con los resultados. El modelo también contempla decisiones que permiten regresar a etapas anteriores para continuar trabajando con la señal activa o avanzar hacia la exportación de resultados y el guardado del proyecto.
+
+Para representar estas interacciones, el diagrama se organiza en dos carriles: \textit{Investigador} y \textit{Sistema}. El primero agrupa las acciones y decisiones que corresponden al usuario, mientras que el segundo representa las operaciones que ejecuta la aplicación para responder a dichas acciones. Esta separación permite identificar las responsabilidades de cada participante y comprender cómo se coordinan durante una sesión de trabajo.
+
+La Figura \ref{fig:vistaprocesos} presenta el modelo completo, incluyendo las decisiones que controlan el flujo, las actividades principales y las relaciones entre las acciones del investigador y los procesos internos de GammaLab 2.0.
 
 \begin{figure}[H]
     \centering
@@ -1721,21 +1746,22 @@ La vista de procesos describe el comportamiento din\'amico del sistema completo 
     \label{fig:vistaprocesos}
 \end{figure}
 
-El flujo de la Figura \ref{fig:vistaprocesos} se organiza en las siguientes etapas:
+\subsubsection{Inicio de la aplicación}
 
-\begin{enumerate}[nosep]
-    \item \textbf{Inicio.} El sistema registra los servicios del n\'ucleo y descubre los plugins v\'ia YAML (CU-011); el registro del servicio de tareas en este paso es nuevo, el resto ya existe en \texttt{main.py}.
-    \item \textbf{Apertura o carga.} Seg\'un si el investigador abre un \texttt{.glab} (CU-023, nuevo) o carga una se\~nal desde Home vac\'io (CU-003, ya existe v\'ia \texttt{FileIOService}), la se\~nal activa termina public\'andose en \texttt{DataStore}.
-    \item \textbf{Preprocesamiento.} Generaci\'on/edici\'on de trials, selecci\'on de trials, remoci\'on de artefactos, filtrado y ajuste de frecuencia de muestreo (CU-004, CU-006, CU-007, CU-016, CU-018) --- los cuatro plugins ya existen en el c\'odigo.
-    \item \textbf{An\'alisis.} PAC/PPC (CU-001, CU-002, nuevos), Wavelet (CU-013), promedio de trials (CU-015).
-    \item \textbf{Orquestaci\'on.} Todo c\'omputo pesado se despacha al orquestador del n\'ucleo (CU-020, nuevo), cancelable en cualquier momento (CU-014, nuevo).
-    \item \textbf{Visualizaci\'on.} Interacci\'on visual con el resultado, con submuestreo si la se\~nal es pesada (CU-012 parcial + CU-019, nuevo).
-    \item \textbf{Iteraci\'on o cierre.} Si el investigador contin\'ua trabajando, el flujo retorna al preprocesamiento; de lo contrario, exporta y/o guarda el proyecto (CU-005 parcial, CU-017 nuevo) y cierra el proyecto y/o la aplicaci\'on (CU-021 nuevo, CU-022 parcial).
-\end{enumerate}
 
-A diferencia de Gamma Lab 1.0, los casos de uso de navegaci\'on (CU-008), limpieza de formulario (CU-009, 0\% implementado) y ayuda contextual (CU-010, cobertura parcial en solo 2 de m\'as de 15 plugins) son transversales a toda la sesi\'on: no ocupan un lugar fijo en la secuencia y se documentan como notas adjuntas al diagrama en lugar de forzarlas dentro del flujo principal.
+\subsubsection{Apertura de proyecto o carga de una señal}
 
-\subsection{Vista F\'isica}
+\subsubsection{Procesamiento de señales}
+
+\subsubsection{Ejecución de análisis y coordinación de tareas}
+
+\subsubsection{Visualización e interacción con los resultados}
+
+\subsubsection{Continuación del trabajo, guardado y cierre}
+
+
+
+\subsection{Vista f\'isica}
 
 \subsubsection{Propósito}
 
