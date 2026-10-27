@@ -231,7 +231,7 @@ def test_export_table_chart_with_zero_plots_triggers_warning(tmp_path):
 
 
 def test_export_table_csv_writes_headers_and_rows(tmp_path):
-    # Two plots → headers: P1_X,P1_Y,P2_X,P2_Y
+    # Two plots with the same X axis → one X column (R09): X,P1_Y,P2_Y
     xs1, ys1 = [0.0, 1.0, 2.0], [10.0, 11.0, 12.0]
     xs2, ys2 = [0.0, 1.0, 2.0], [20.0, 21.0, 22.0]
     plots = [DummyPlot(xs1, ys1, "P1"), DummyPlot(xs2, ys2, "P2")]
@@ -248,11 +248,11 @@ def test_export_table_csv_writes_headers_and_rows(tmp_path):
         rows = list(r)
 
     # header
-    assert rows[0] == ["P1_X", "P1_Y", "P2_X", "P2_Y"]
+    assert rows[0] == ["X", "P1_Y", "P2_Y"]
     # 3 data rows
     assert len(rows) == 1 + 3
     # first data row aligned
-    assert rows[1] == ["0.0", "10.0", "0.0", "20.0"]
+    assert rows[1] == ["0.0", "10.0", "20.0"]
 
     # success alert and last_dir set
     svc.alerts.info.assert_called_once()
@@ -290,3 +290,34 @@ def test_export_table_uses_dialog_and_respects_cancel(mock_dlg, tmp_path):
 
     svc.alerts.info.assert_not_called()
     svc.alerts.error.assert_not_called()
+
+
+def test_export_table_csv_keeps_one_x_column_per_series_when_axes_differ(tmp_path):
+    plots = [DummyPlot([0.0, 1.0, 2.0], [10.0, 11.0, 12.0], "P1"),
+             DummyPlot([0.0, 2.0, 4.0], [20.0, 21.0, 22.0], "P2")]
+    svc = make_service(tmp_path, chart_cb=lambda: DummyChart(plots))
+    out = tmp_path / "out.csv"
+    svc.export_table(fmt="csv", filename=str(out))
+    with open(out, newline="", encoding="utf-8") as f:
+        rows = list(csv.reader(f))
+    assert rows[0] == ["P1_X", "P1_Y", "P2_X", "P2_Y"]
+    assert rows[1] == ["0.0", "10.0", "0.0", "20.0"]
+
+
+def test_export_table_json_is_not_changed_by_shared_axis(tmp_path):
+    plots = [DummyPlot([0.0, 1.0], [1.0, 2.0], "P1"), DummyPlot([0.0, 1.0], [3.0, 4.0], "P2")]
+    svc = make_service(tmp_path, chart_cb=lambda: DummyChart(plots))
+    out = tmp_path / "out.json"
+    svc.export_table(fmt="json", filename=str(out))
+    with open(out, encoding="utf-8") as f:
+        data = json.load(f)
+    assert set(data[0].keys()) == {"P1_X", "P1_Y", "P2_X", "P2_Y"}
+
+
+def test_export_table_xlsx_uses_one_x_column(tmp_path):
+    import pandas as pd
+    plots = [DummyPlot([0.0, 1.0], [1.0, 2.0], "P1"), DummyPlot([0.0, 1.0], [3.0, 4.0], "P2")]
+    svc = make_service(tmp_path, chart_cb=lambda: DummyChart(plots))
+    out = tmp_path / "out.xlsx"
+    svc.export_table(fmt="xlsx", filename=str(out))
+    assert list(pd.read_excel(out).columns) == ["X", "P1_Y", "P2_Y"]

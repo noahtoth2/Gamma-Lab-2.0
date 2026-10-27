@@ -14,6 +14,39 @@ from plugins.analysis.frequency.psd_average.psd_average_plugin_ui import Ui_Psd_
 from core.utils.adapters import trials_matrix_to_vtk_table
 from core.utils.trial_labels import trials_used
 
+from functools import partial
+
+
+def calcular_psd(X, fs, target_fs, window, nperseg, noverlap, nfft, ctx=None, log=None):
+    """Welch PSD of every trial: returns (freq, power, fs_eff). Pure, for the TaskService."""
+    log = log or (lambda *a: None)
+    srt = max(1, int(round(fs / float(target_fs)))) if (target_fs and target_fs > 0) else 1
+    fs_eff = fs / srt
+    Xds = X[::srt, :] if srt > 1 else X
+    Ns_eff = Xds.shape[0]
+
+    num_nans = int(np.isnan(Xds).sum())
+    if num_nans > 0:
+        log(f"Warning: found {num_nans} NaN points. Replacing with 0.")
+        Xds = np.nan_to_num(Xds, copy=True, nan=0.0, posinf=0.0, neginf=0.0)   # a copy: the trials stay untouched
+
+    if nperseg > Ns_eff:
+        log(f"Warning: nperseg ({nperseg}) > Ns_eff ({Ns_eff}). Adjusting nperseg to {Ns_eff}.")
+        nperseg = Ns_eff
+    if noverlap >= nperseg:
+        log("Warning: noverlap >= nperseg. Adjusting noverlap.")
+        noverlap = nperseg // 2
+    log(f"Welch params: fs_eff={fs_eff}, window={window}, nperseg={nperseg}, "
+        f"noverlap={noverlap}, nfft={nfft}, axis=0")
+
+    freq, power = welch(Xds, fs=fs_eff, window=window, nperseg=nperseg, noverlap=noverlap,
+                        nfft=nfft, scaling='density', axis=0)
+    power = power.astype(np.float64)
+    freq = freq.astype(np.float64)
+    log(f"PSD: srt={srt}, fs_eff={fs_eff:.3f} Hz, Nf={freq.size}, T_calc={power.shape[1]}")
+    return freq, power, fs_eff
+
+
 class Psd_average_plugin(IPlugin):
     """
     Plugin to compute Average Power Spectral Density (PSD)
@@ -177,22 +210,20 @@ class Psd_average_plugin(IPlugin):
             self.alerts.warning(f"Parameter error: {e}", "Invalid parameters")
             return
 
-        # 3) PSD (always compute for all trials)
-        try:
-            freq, power_all_trials, fs_eff = self._compute_psd(X, fs, target_fs,
-                                                    window, nperseg, noverlap, nfft)
-            # power_all_trials shape: (Nf, T) -> equivalent to 'pxx'
-            
-        except Exception as e:
-            self._log(f"Error in _compute_psd: {str(e)}")
-            self.alerts.error(f"Could not compute PSD: {str(e)}", "Computation Error")
-            return
-            
+        # 3) PSD (always for all trials) in the TaskService (R71); 4) plot when it finishes
+        self.run_task(calcular_psd, partial(self._on_psd_done, ch_name, lo, hi, X.shape[1]),
+                      on_failed=lambda m: self.alerts.error(f"Could not compute PSD: {m}", "Computation Error"),
+                      X=X, fs=fs, target_fs=target_fs, window=window, nperseg=nperseg,
+                      noverlap=noverlap, nfft=nfft)
+
+    def _on_psd_done(self, ch_name, lo, hi, n_trials, resultado):
+        freq, power_all_trials, fs_eff = resultado     # (Nf, T) -> equivalent to 'pxx'
+
         # --- Average logic ---
         # Per-frequency mean across trials (axis=1)
         # Equivalent to mean(pxx') in MATLAB
         power_to_plot = np.mean(power_all_trials, axis=1, keepdims=True)
-        self._trials_used = trials_used(None, X.shape[1], "average", channel=ch_name)
+        self._trials_used = trials_used(None, n_trials, "average", channel=ch_name)
         plot_title = f"PSD (Average) - {ch_name} — {self._trials_used['label']}"
 
         # 4) Plot
@@ -271,56 +302,7 @@ class Psd_average_plugin(IPlugin):
     def _compute_psd(self, X: np.ndarray, fs: float, target_fs: float,
                      window: str, nperseg: int, noverlap: int, nfft: int):
         
-        Ns, T = X.shape
-        if target_fs and target_fs > 0:
-            srt = max(1, int(round(fs / float(target_fs))))
-        else:
-            srt = 1
-
-        fs_eff = fs / srt
-        Xds = X[::srt, :] if srt > 1 else X
-        Ns_eff = Xds.shape[0]
-        
-        # Replace NaNs/Inf with zeros
-        # 1) Find NaNs
-        nan_mask = np.isnan(Xds)
-        num_nans = np.sum(nan_mask)
-        if num_nans > 0:
-            self._log(f"Warning: found {num_nans} NaN points. Replacing with 0.")
-            # 2) Replace NaNs with 0 (in-place)
-            np.nan_to_num(Xds, copy=False, nan=0.0, posinf=0.0, neginf=0.0)
-        
-        # 3) Use all trials
-        X_clean = Xds
-
-        if nperseg > Ns_eff:
-            self._log(f"Warning: nperseg ({nperseg}) > Ns_eff ({Ns_eff}). "
-                      f"Adjusting nperseg to {Ns_eff}.")
-            nperseg = Ns_eff
-        if noverlap >= nperseg:
-            self._log(f"Warning: noverlap >= nperseg. Adjusting noverlap.")
-            noverlap = nperseg // 2
-
-        self._log(f"Welch params: fs_eff={fs_eff}, window={window}, nperseg={nperseg}, "
-                  f"noverlap={noverlap}, nfft={nfft}, axis=0")
-
-        # 4) Run Welch on cleaned data
-        freq, power = welch(
-            X_clean, # <-- Usar X_clean
-            fs=fs_eff,
-            window=window,
-            nperseg=nperseg,
-            noverlap=noverlap,
-            nfft=nfft,
-            scaling='density', # V^2/Hz
-            axis=0
-        )
-        
-        power = power.astype(np.float64) # (Nf, T)
-        freq = freq.astype(np.float64)   # (Nf,)
-
-        self._log(f"PSD: srt={srt}, fs_eff={fs_eff:.3f} Hz, Nf={freq.size}, T_calc={power.shape[1]}")
-        return freq, power, fs_eff
+        return calcular_psd(X, fs, target_fs, window, nperseg, noverlap, nfft, log=self._log)
 
     # ====== Plot en VTK ======
     def _plot_psd(self, freq: np.ndarray, power: np.ndarray, 

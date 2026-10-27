@@ -18,6 +18,7 @@ from plugins.preprocessing.prepare.artifact_remove.artifact_remove_ui import Ui_
 # Leer y escribir los trials (hilo de la interfaz) y calcular (orquestador)
 from plugins.preprocessing.prepare.artifact_remove.artifact_logic import preparar_modificacion, escribir_modificacion
 from plugins.preprocessing.prepare.artifact_remove.compute import calcular_modificacion
+from core.filters.artifacts import medidas_del_segmento
 
 # Optional import for custom context menu
 try:
@@ -195,6 +196,7 @@ class ArtifactRemovePlugin(IPlugin):
             return
 
         self.ui.apply_button.clicked.connect(self._on_apply_changes)
+        self.ui.restore_button.clicked.connect(self._on_restore_original)
         self.ui.prev_button.clicked.connect(self._go_to_previous_trial)
         self.ui.next_button.clicked.connect(self._go_to_next_trial)
         self.ui.mode_combo.currentTextChanged.connect(self._on_mode_changed)
@@ -239,6 +241,36 @@ class ArtifactRemovePlugin(IPlugin):
             return float(text)
         except ValueError:
             raise ValueError(f"El punto {name} debe ser un número (se recibió «{text}»).") from None
+
+    @staticmethod
+    def _texto_de_medidas(m: dict, accion: str) -> str:
+        n = '\n'
+        return n.join([
+            accion, '',
+            f"Segmento: {m['inicio_s']:.4f} a {m['fin_s']:.4f} s "
+            f"({m['duracion_s'] * 1000:.1f} ms, {m['n_muestras']} muestras)",
+            f"Trials activos: {m['n_trials']}", '',
+            'Sobre el promedio del segmento:',
+            f"  Mínimo: {m['y_min']:.4g} (en {m['x_en_min']:.4f} s)",
+            f"  Máximo: {m['y_max']:.4g} (en {m['x_en_max']:.4f} s)",
+            f"  Pico a pico: {m['amplitud_pp']:.4g}",
+            f"  Media: {m['media']:.4g}", '',
+            '¿Aplicar el cambio?'])
+
+    def _confirmar_con_medidas(self, prep, mode, mode_text, point_a, point_b) -> bool:
+        """Muestra las medidas del segmento y pide confirmar antes de modificar nada."""
+        m = medidas_del_segmento(prep.t, prep.trials, mode=mode, point_a=point_a, point_b=point_b)
+        if m is None:
+            self.alerts.warning(
+                f"El rango seleccionado no contiene muestras: los trials van de "
+                f"{float(prep.t[0]):.4f} a {float(prep.t[-1]):.4f} s. No se aplicó ningún cambio.",
+                "Rango fuera de los límites")
+            return False
+        accion = "Se va a anular el segmento." if mode == "blank" else "Se va a interpolar el segmento."
+        r = QtWidgets.QMessageBox.question(
+            self.widget, "Medidas del segmento", self._texto_de_medidas(m, accion),
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
+        return r == QtWidgets.QMessageBox.Yes
 
     def _on_apply_changes(self):
         """Lee los trials aquí, calcula la modificación en el orquestador y la escribe al volver."""
@@ -289,6 +321,10 @@ class ArtifactRemovePlugin(IPlugin):
                 self.alerts.info("No se aplicó ninguna modificación.")
                 return
 
+            # R40: las medidas del segmento se ven y se confirman antes de modificar
+            if not self._confirmar_con_medidas(prep, mode, mode_text, point_a, point_b):
+                return
+
             handle = tasks.submit(
                 calcular_modificacion, owner=self.meta.id,
                 t=prep.t, trials=prep.trials, mode=mode, point_a=point_a, point_b=point_b,
@@ -309,6 +345,32 @@ class ArtifactRemovePlugin(IPlugin):
         except Exception as e:
             self.alerts.error(f"Ocurrió un error inesperado: {e}")
             print(f"{LOGP} Error on apply: {e}")
+
+    def _on_restore_original(self):
+        """R79: drops the derived set of the current channel; the analyses read the original again."""
+        if not self.ui or not self.widget:
+            return
+        if self._apply_handle is not None:
+            self.alerts.warning("Espera a que termine la modificación en curso.")
+            return
+        try:
+            sd, nombre = self._get_active_signal_and_name()
+            canal = self._get_current_channel_name(sd)
+            if not sd.discard_derived_trials(nombre, canal):
+                self.alerts.info("Este canal no tiene modificaciones que deshacer.")
+                return
+            self.mark_project_dirty()
+            if hasattr(self.kernel, "event"):
+                try:
+                    self.kernel.event.emit("trials_generated", {"signal": nombre, "channel": canal})
+                except Exception:
+                    pass
+            self._notify(f"Trials originales restaurados en {canal}")
+            self._reset_state()
+            self._load_and_display_trials()
+            QtCore.QTimer.singleShot(50, self._force_render)
+        except Exception as e:
+            self.alerts.error(f"No se pudieron restaurar los trials originales: {e}")
 
     def _go_to_previous_trial(self):
         num_valid = len(self.valid_indices)

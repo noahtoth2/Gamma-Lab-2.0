@@ -11,6 +11,24 @@ from core.utils.vtk_context_menu import VTKContextMenu
 from core.model.signal_dataset import SignalDataset
 from core.utils.adapters import trials_matrix_to_vtk_table
 from core.utils.trial_labels import trials_used
+from functools import partial
+
+
+def calcular_fft_average(X, fs, target_fs, per_trial=False, ctx=None):
+    """MATLAB-style FFT, averaged across trials unless `per_trial`. Pure, for the TaskService."""
+    if target_fs and target_fs > 0:
+        srt = max(1, int(round(fs / float(target_fs))))
+    else:
+        srt = 1
+    fs_eff = fs / srt
+    Xds = X[::srt, :] if srt > 1 else X
+    Ns_eff = Xds.shape[0]
+    mFourier = np.fft.fft(Xds, n=Ns_eff, axis=0)[: (Ns_eff // 2) + 1, :]     # (Nf, T)
+    mag = np.abs(mFourier).astype(np.float64)
+    freq = np.linspace(0.0, fs_eff / 2.0, mFourier.shape[0])
+    if per_trial:
+        return freq, mag, fs_eff
+    return freq, np.nanmean(mag, axis=1)[:, None], fs_eff              # (Nf, 1): same plotter
 from plugins.analysis.frequency.fft_average.fft_average_plugin_ui import Ui_Fft_Average
 
 class Fft_average_plugin(IPlugin):
@@ -92,12 +110,13 @@ class Fft_average_plugin(IPlugin):
             if lo > hi:
                 lo, hi = hi, lo
 
-            # 3) FFT
-            per_trial = False
-            freq, mag_avg, fs_eff = self._compute_fft_average(X, fs, target_fs, per_trial = per_trial)
+            # 3) FFT in the TaskService (R71), 4) plot when it finishes
+            self.run_task(calcular_fft_average, partial(self._on_fft_average_done, ch_name, lo, hi, X.shape[1]),
+                          X=X, fs=fs, target_fs=target_fs, per_trial=False)
 
-            # 4) Plot
-            self._trials_used = trials_used(None, X.shape[1], "average", channel=ch_name)
+    def _on_fft_average_done(self, ch_name, lo, hi, n_trials, resultado):
+            freq, mag_avg, fs_eff = resultado
+            self._trials_used = trials_used(None, n_trials, "average", channel=ch_name)
             self._plot_fft_average(freq, mag_avg, ch_name, lo, hi, fs_eff)
             self._notify(f"FFT Average ready with {self._trials_used['label']}: "
                          f"fs_eff={fs_eff:.2f} Hz, {freq.size} bins")
@@ -191,33 +210,8 @@ class Fft_average_plugin(IPlugin):
         mag:  (Nf, T) if per_trial=True, or (Nf, 1) if averaged
         fs_eff: float
         """
-        Ns, T = X.shape
-        # Decimation as in MATLAB
-        if target_fs and target_fs > 0:
-            srt = max(1, int(round(fs / float(target_fs))))
-        else:
-            srt = 1
-        fs_eff = fs / srt
-        Xds = X[::srt, :] if srt > 1 else X
-
-        # === FFT mean ===
-        Ns_eff = Xds.shape[0]
-        mFourier = np.fft.fft(Xds, n=Ns_eff, axis=0)           # (Ns_eff, T)
-        mFourier = mFourier[: (Ns_eff // 2) + 1, :]            # (Nf, T)
-        mag = np.abs(mFourier).astype(np.float64)              # (Nf, T)
-        freq = np.linspace(0.0, fs_eff/2.0, mFourier.shape[0])
-
-        if per_trial:
-            # Equivalent to GF==1 in MATLAB: return all curves
-            mag_out = mag  # (Nf, T)
-        else:
-            # Average across trials (like mean(m_FFT',1) in MATLAB)
-            # Use nanmean to ignore NaNs if any
-            mag_mean = np.nanmean(mag, axis=1)        # (Nf,)
-            mag_out  = mag_mean[:, None]              # (Nf, 1) para reutilizar el mismo plotter
-
-        self._log(f"FFT_AVG: srt={srt}, fs_eff={fs_eff:.3f} Hz, Nf={freq.size}, "
-                f"T={T}, per_trial={per_trial}")
+        freq, mag_out, fs_eff = calcular_fft_average(X, fs, target_fs, per_trial=per_trial)
+        self._log(f"FFT_AVG: fs_eff={fs_eff:.3f} Hz, Nf={freq.size}, T={X.shape[1]}, per_trial={per_trial}")
         return freq, mag_out, fs_eff
 
     # ====== Plot in VTK ======

@@ -35,6 +35,11 @@ class SignalDataset:
     __filtered_cache: Dict[tuple[str, str], TrialDataset] = field(default_factory=dict, init=False, repr=False)
     __discard_versions: Dict[tuple[str, str], int] = field(default_factory=dict, init=False, repr=False)
 
+    # R79: preprocessing never writes into the cut trials. Its result is a derived
+    # TrialDataset (same shape, same discards) kept apart, one per (file, channel);
+    # `get_active_trials` serves it, and the original stays available.
+    __derived_trials: Dict[tuple[str, str], TrialDataset] = field(default_factory=dict, init=False, repr=False)
+
     # Add a trial_dataset to the trials list
     def add_trial_dataset(self, trial: "TrialDataset"):
         """Guarda un juego de trials, **reemplazando** el anterior del mismo canal.
@@ -69,7 +74,7 @@ class SignalDataset:
     def __olvidar_derivados(self, channel_name: str):
         """Descartes y cachés de un canal, fuera: ya no corresponden a nada."""
         for diccionario in (self.__discarded_trials, self.__filtered_cache,
-                            self.__discard_versions):
+                            self.__discard_versions, self.__derived_trials):
             for clave in [k for k in diccionario if k[1] == channel_name]:
                 diccionario.pop(clave, None)
 
@@ -81,6 +86,7 @@ class SignalDataset:
         self.__discarded_trials.clear()
         self.__filtered_cache.clear()
         self.__discard_versions.clear()
+        self.__derived_trials.clear()
 
     # ---------------- sampling rate (CU-018) ----------------
     def set_sampling_rate(self, new_fs: float):
@@ -105,6 +111,55 @@ class SignalDataset:
 
     def number_of_trials_dataset(self):
         return len(self.__trials_dataset)
+
+    # ---------------- derived trial sets (R79) ----------------
+    def get_original_trials(self, file_name: str, channel_name: str = None):
+        """The cut trials as they were generated, never modified by preprocessing."""
+        if not self.__trials_dataset:
+            return None
+        if channel_name is None:
+            channel_name = self.__trials_dataset[-1].channel_name
+        coincidencias = [t for t in self.__trials_dataset
+                         if Path(t.source).name == file_name and t.channel_name == channel_name]
+        return coincidencias[-1] if coincidencias else None
+
+    def get_derived_trials(self, file_name: str, channel_name: str = None):
+        """The derived set of a (file, channel), or None if nothing was derived."""
+        if channel_name is None and self.__trials_dataset:
+            channel_name = self.__trials_dataset[-1].channel_name
+        return self.__derived_trials.get((file_name, channel_name))
+
+    def register_derived_trials(self, derived: "TrialDataset"):
+        """Registers the result of a preprocessing operation as the active set of its channel.
+
+        It must come from an existing original (same file, channel and shape). The
+        original is left untouched and stays reachable with `get_original_trials`;
+        `discard_derived_trials` goes back to it.
+        """
+        if not isinstance(derived, TrialDataset):
+            raise ValueError("derived must be of type TrialDataset")
+        archivo = Path(derived.source).name
+        original = self.get_original_trials(archivo, derived.channel_name)
+        if original is None:
+            raise ValueError(f"There are no original trials for ({archivo}, {derived.channel_name}).")
+        if derived.trials.shape != original.trials.shape:
+            raise ValueError("A derived set keeps the shape of its original "
+                             f"({original.trials.shape}); got {derived.trials.shape}.")
+        if derived.trials is original.trials:
+            raise ValueError("A derived set must own its data, not share the original's array.")
+        derived.metadata = derived.metadata or {}
+        derived.metadata["derived_from"] = {"source": archivo, "channel": derived.channel_name}
+        key = (archivo, derived.channel_name)
+        self.__derived_trials[key] = derived
+        self.__invalidate_cache(key)
+
+    def discard_derived_trials(self, file_name: str, channel_name: str) -> bool:
+        """Drops the derived set so the original is served again. True if there was one."""
+        key = (file_name, channel_name)
+        existia = self.__derived_trials.pop(key, None) is not None
+        if existia:
+            self.__invalidate_cache(key)
+        return existia
 
     def get_all_trials_datasets(self) -> List["TrialDataset"]:
         """All generated TrialDatasets, in generation order (for project save/restore)."""
@@ -157,6 +212,9 @@ class SignalDataset:
         if td is None:
             print(f"[SignalDataset] No dataset found for {key}")
             return None
+
+        # R79: if preprocessing derived this channel, that is what the analyses read
+        td = self.__derived_trials.get(key, td)
 
         # Get the discards specific to that dataset
         discarded = self.__discarded_trials.get(key, set())

@@ -7,7 +7,7 @@ from pathlib import Path
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
 from PyQt5.QtCore import QStandardPaths
 
-from core.filters.artifacts import reaplicar_modificaciones
+from core.filters.artifacts import crear_derivado, reaplicar_modificaciones
 from core.filters.trials import cut_trials_single_channel
 
 SCHEMA_VERSION = "1.0"
@@ -226,7 +226,9 @@ class ProjectService:
             entry = {"generation_params": params, "discarded_indices": discarded}
             # Las modificaciones de artifact_remove se guardan como receta, no
             # como datos: el proyecto guarda cómo se generó cada cosa (nº 21).
-            mods = (td.metadata or {}).get("modificaciones")
+            # R79: the recipes live in the derived set, not in the original trials
+            derivado = ds.get_derived_trials(ds.name, td.channel_name) if hasattr(ds, "get_derived_trials") else None
+            mods = ((derivado.metadata if derivado is not None else td.metadata) or {}).get("modificaciones")
             if mods:
                 entry["modifications"] = list(mods)
             entries.append(entry)
@@ -343,7 +345,11 @@ class ProjectService:
                 # descartes que estaban vigentes cuando se aplicó (nº 21).
                 recetas = entry.get("modifications") or []
                 if recetas:
-                    n = reaplicar_modificaciones(td, recetas)
+                    # R79: the recipes are replayed on a derived copy; the cut trials stay as generated
+                    derivado = crear_derivado(td)
+                    n = reaplicar_modificaciones(derivado, recetas)
+                    if n:
+                        ds.register_derived_trials(derivado)
                     if n != len(recetas):
                         print(f"[ProjectService] Se reaplicaron {n} de {len(recetas)} "
                               f"modificaciones de artefactos en el canal {td.channel_name}.")

@@ -1,12 +1,13 @@
 import numpy as np
 
 
-def promedio_trials(trials):
+def promedio_trials(trials, ctx=None):
     """Promedio muestra a muestra entre los trials.
 
     Recibe la matriz (muestras, trials) y devuelve un vector de una muestra por
-    fila. No se encola en el orquestador: con el archivo de prueba tarda menos
-    de un milisegundo.
+    fila. El plugin la despacha por el orquestador (R71) aunque con el archivo
+    de prueba tarde menos de un milisegundo, para que todas las operaciones
+    tengan el mismo progreso y cancelación.
     """
     datos = np.asarray(trials)
     if datos.size == 0:
