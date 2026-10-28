@@ -133,3 +133,117 @@ def test_con_datos_de_verdad_la_brujula_cae_sobre_el_maximo():
     distancia = abs((del_histograma - de_la_brujula + 180.0) % 360.0 - 180.0)
     assert distancia <= paso, (
         f"la brújula dice {de_la_brujula:.1f}° y el histograma {del_histograma:.1f}°")
+
+
+# ============================================================
+#   La casilla de unidades
+# ============================================================
+# Marcada: grados de 0 a 360. Sin marcar: radianes de −π a π, que es lo que
+# dibuja el `bar(index_pi, ...)` del MATLAB. Lo que no puede pasar es que
+# queden mezcladas, que era el problema original: la brújula en 280,6° y el
+# histograma en −79,4°, el mismo ángulo escrito de dos formas.
+
+class _Casilla:
+    def __init__(self, marcada=True):
+        self._v = marcada
+
+    def isChecked(self):
+        return self._v
+
+    def setChecked(self, v):
+        self._v = bool(v)
+
+
+class _UiMinima:
+    def __init__(self, marcada=True):
+        self.degreesCheckBox = _Casilla(marcada)
+
+
+def plugin_con_casilla(marcada):
+    p = object.__new__(Pac_plugin)
+    p.ui = _UiMinima(marcada)
+    return p
+
+
+def test_marcada_da_grados_y_sin_marcar_radianes():
+    fases = cp.centros_bins()
+    grados = plugin_con_casilla(True)._eje_de_fase(fases)[0]
+    radianes = plugin_con_casilla(False)._eje_de_fase(fases)[0]
+
+    assert grados[0] == 0.0 and grados.max() < 360.0
+    assert np.allclose(radianes, fases), "en radianes se devuelve tal cual"
+    assert radianes.min() < 0, "de −π a π, como MATLAB"
+
+
+def test_sin_marcar_no_rota_los_datos():
+    """En grados hay que rotar para que el eje empiece en 0. En radianes el eje
+    ya va en orden de −π a π, así que rotar sería alejarse de MATLAB sin ganar
+    nada."""
+    fases = cp.centros_bins()
+    hist = np.arange(fases.size, dtype=np.float64)
+    eje, valores = plugin_con_casilla(False)._eje_de_fase(fases, hist)
+    assert np.array_equal(valores, hist)
+    assert np.array_equal(eje, fases)
+
+
+def test_la_unidad_del_rotulo_sigue_a_la_casilla():
+    assert plugin_con_casilla(True)._unidad_de_fase() == "°"
+    assert plugin_con_casilla(False)._unidad_de_fase() == "rad"
+
+
+def test_el_vector_medio_se_escribe_en_la_unidad_elegida():
+    v = np.exp(1j * np.deg2rad(280.6))
+    assert "280.6°" in plugin_con_casilla(True)._fase_legible(v)
+    texto = plugin_con_casilla(False)._fase_legible(v)
+    assert "rad" in texto and texto.startswith("4.89")
+
+
+def test_el_vector_medio_nunca_sale_negativo():
+    """Era el problema de partida: la brújula decía 280,6° y el histograma
+    −79,4°. En las dos unidades el ángulo va de 0 a una vuelta entera."""
+    for ang in (-3.0, -0.5, 0.5, 3.0):
+        v = np.exp(1j * ang)
+        assert not plugin_con_casilla(True)._fase_legible(v).startswith("-")
+        assert not plugin_con_casilla(False)._fase_legible(v).startswith("-")
+
+
+def test_los_rotulos_de_la_brujula_cambian_de_unidad():
+    from plugins.analysis.time_frequency.pac.pac_plugin import etiquetas_del_circulo
+
+    grados = etiquetas_del_circulo(True)
+    radianes = etiquetas_del_circulo(False)
+    assert len(grados) == len(radianes) == 12
+    assert grados[:3] == ["0", "30", "60"]
+    assert radianes[:3] == ["0", "π/6", "π/3"]
+    assert radianes[6] == "π", "media vuelta tiene que ser π"
+
+
+def test_el_titulo_de_la_brujula_sigue_a_la_casilla():
+    from plugins.analysis.time_frequency.pac.pac_plugin import titulo_de
+
+    v = np.exp(1j * np.deg2rad(90.0))
+    assert "90.0°" in titulo_de(v, en_grados=True)
+    assert "1.571 rad" in titulo_de(v, en_grados=False)
+
+
+def test_en_grados_la_brujula_y_el_histograma_siguen_coincidiendo():
+    """La comprobación de siempre, pero ahora con la casilla de por medio."""
+    fases = cp.centros_bins()
+    hist = np.zeros(fases.size)
+    hist[72] = 1.0
+    p = plugin_con_casilla(True)
+
+    eje, h = p._eje_de_fase(fases, hist)
+    del_histograma = eje[int(np.argmax(h))]
+    de_la_brujula = float(p._fase_legible(cp.vector_medio(hist)).rstrip("°"))
+    assert del_histograma == pytest.approx(de_la_brujula, abs=0.05)
+
+
+def test_sin_interfaz_se_asume_grados():
+    """`_en_grados` se consulta desde sitios que pueden correr sin interfaz
+    montada —una prueba, un script—, y ahí no puede reventar."""
+    p = object.__new__(Pac_plugin)
+    p.ui = None
+    assert p._en_grados() is True
+    p.ui = object()          # una interfaz sin la casilla
+    assert p._en_grados() is True

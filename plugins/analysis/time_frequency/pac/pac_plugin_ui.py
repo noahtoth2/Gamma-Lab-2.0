@@ -319,6 +319,33 @@ class Ui_Pac(object):
         self.trialLayout.addLayout(self.trialInput)
         self.paramsLayout.addLayout(self.trialLayout)
 
+        # --- Units of the phase axis ---
+        # Marcada: grados de 0 a 360. Sin marcar: radianes de -pi a pi, que es
+        # lo que hace el `bar(index_pi, ...)` del MATLAB. Afecta al histograma,
+        # a los dos mapas, al coseno de referencia, al panel de fase
+        # instantanea, a la brujula y a lo que se exporta: o todo en una unidad
+        # o todo en la otra, nunca mezclado.
+        self.degreesLayout = QtWidgets.QVBoxLayout()
+        self.degreesLayout.setObjectName("degreesLayout")
+
+        self.degreesLabel = QtWidgets.QLabel(self.layoutWidget)
+        self.degreesLabel.setObjectName("degreesLabel")
+        self.degreesLabel.setProperty("variant", "subtitle")
+        self.degreesLayout.addWidget(self.degreesLabel)
+
+        self.degreesLine = QtWidgets.QFrame(self.layoutWidget)
+        self.degreesLine.setFrameShape(QtWidgets.QFrame.HLine)
+        self.degreesLine.setObjectName("degreesLine")
+        self.degreesLine.setProperty("role", "divider")
+        self.degreesLayout.addWidget(self.degreesLine)
+
+        self.degreesCheckBox = QtWidgets.QCheckBox(self.layoutWidget)
+        self.degreesCheckBox.setObjectName("degreesCheckBox")
+        self.degreesCheckBox.setChecked(True)
+        self.degreesLayout.addWidget(self.degreesCheckBox)
+
+        self.paramsLayout.addLayout(self.degreesLayout)
+
         # --- Spacer ---
         self.paramsLayout.addStretch(1)
 
@@ -343,6 +370,10 @@ class Ui_Pac(object):
         self.lowLabel.setText(_translate("PAC", "P1"))
         self.hzLowFreqLabel.setText(_translate("PAC", "Hz"))
         self.pacTypeLabel.setText(_translate("PAC", "PAC Type"))
+        self.degreesLabel.setText(_translate("PAC", "Phase units"))
+        self.degreesCheckBox.setText(_translate("PAC", "Degrees (0-360)"))
+        self.degreesCheckBox.setToolTip(_translate(
+            "PAC", "Sin marcar, la fase va en radianes de -pi a pi, como en MATLAB"))
         self.AmplitudeBandLabel.setText(_translate("PAC", "Amplitude Band"))
         self.ampFrequencyLabel.setText(_translate("PAC", "Frequency (Hz)"))
         self.ampLowLabel.setText(_translate("PAC", "A1"))
