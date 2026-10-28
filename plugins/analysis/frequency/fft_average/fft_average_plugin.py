@@ -30,6 +30,7 @@ def calcular_fft_average(X, fs, target_fs, per_trial=False, ctx=None):
         return freq, mag, fs_eff
     return freq, np.nanmean(mag, axis=1)[:, None], fs_eff              # (Nf, 1): same plotter
 from plugins.analysis.frequency.fft_average.fft_average_plugin_ui import Ui_Fft_Average
+from core.utils.submuestreo import agregar_columna
 
 class Fft_average_plugin(IPlugin):
     def __init__(self, meta: PluginMeta):
@@ -262,8 +263,7 @@ class Fft_average_plugin(IPlugin):
         num_cols = table.GetNumberOfColumns()
         print(f"num_cols={num_cols}")
         for c in range(1, num_cols):
-            plot = self.chart.AddPlot(vtk.vtkChart.LINE)
-            plot.SetInputData(table, 0, c)
+            plot = agregar_columna(self.chart, table, c)
             plot.SetWidth(1.0)
 
            # --- Context menu ---

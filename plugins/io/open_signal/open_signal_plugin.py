@@ -11,6 +11,7 @@ import vtk
 from core.plugins.interfaces import IPlugin
 from core.plugins.meta import PluginMeta
 from core.utils.vtk_context_menu import VTKContextMenu
+from core.utils.vtk_observers import observar
 from core.services.data_store import DataStore
 from core.services.fileio_service import FileIOService
 from core.services.settings_service import SettingsService
@@ -20,6 +21,7 @@ from core.utils.adapters import dataset_to_vtk_table
 from plugins.io.open_signal import compute as co
 from plugins.io.open_signal.open_signal_ui import Ui_OpenSignal
 from core.filters.trials import cut_trials_single_channel
+from core.utils.submuestreo import agregar_columna
 
 _ORIGIN_LABELS = {
     "header": "(from file header)",
@@ -184,12 +186,10 @@ class OpenSignalPlugin(IPlugin):
         self._sync_callback = sync_axes
         
         # Add observers for different interaction events
-        self.vtk_interactor.AddObserver(vtk.vtkCommand.InteractionEvent, self._sync_callback)
-        self.vtk_interactor.AddObserver(vtk.vtkCommand.MouseWheelForwardEvent, self._sync_callback)
-        self.vtk_interactor.AddObserver(vtk.vtkCommand.MouseWheelBackwardEvent, self._sync_callback)
-        self.vtk_interactor.AddObserver(vtk.vtkCommand.LeftButtonPressEvent, self._sync_callback)
-        self.vtk_interactor.AddObserver(vtk.vtkCommand.LeftButtonReleaseEvent, self._sync_callback)
-        self.vtk_interactor.AddObserver(vtk.vtkCommand.MouseMoveEvent, self._sync_callback)
+        for evento in (vtk.vtkCommand.InteractionEvent, vtk.vtkCommand.MouseWheelForwardEvent,
+                       vtk.vtkCommand.MouseWheelBackwardEvent, vtk.vtkCommand.LeftButtonPressEvent,
+                       vtk.vtkCommand.LeftButtonReleaseEvent, vtk.vtkCommand.MouseMoveEvent):
+            observar(self.vtk_interactor, evento, self._sync_callback)
 
     # ---------------- file / data ----------------
     def open_file_dialog(self):
@@ -553,8 +553,7 @@ class OpenSignalPlugin(IPlugin):
             scene.AddItem(chart)
             self._charts.append(chart)
 
-            plot = chart.AddPlot(vtk.vtkChart.LINE)
-            plot.SetInputData(table, 0, ch + 1)
+            plot = agregar_columna(chart, table, ch + 1)
             plot.SetWidth(0.8)
 
             name = ds.channel_names[ch] if ch < len(ds.channel_names) else f"ch{ch}"

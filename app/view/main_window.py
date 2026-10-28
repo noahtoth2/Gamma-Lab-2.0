@@ -39,6 +39,7 @@ from core.utils.plugin_alerts import PluginAlerts
 from core.utils.notifications import NotificationCenter
 from core.utils.task_progress import TaskProgressBar
 from core.utils.trial_labels import describe_trials
+from core.utils.vtk_observers import retirar_de, reponer_en
 from core.services.project_service import ProjectService
 
 class MainWindow(QMainWindow):
@@ -584,6 +585,10 @@ class MainWindow(QMainWindow):
                 self.active_plugin.stop()
             except Exception as e:
                 self.alerts.error(f"An error occurred while stopping the VTK render plugin.\n\nDetails:\n{str(e)}", "Error stopping plugin")
+            try:
+                retirar_de(self.active_plugin_widget)   # R58
+            except Exception as e:
+                print("retirar_observadores error:", e)
             self.active_plugin_widget.setVisible(False)
 
         self.active_plugin_widget = None
@@ -652,6 +657,10 @@ class MainWindow(QMainWindow):
 
         # Hide previous and show the new one
         self.clear_plugin_area()
+        try:
+            reponer_en(widget)   # R58
+        except Exception as e:
+            print("reponer_observadores error:", e)
         widget.setVisible(True)
         self.active_plugin_widget = widget
         self.active_plugin = plugin
@@ -902,23 +911,71 @@ class MainWindow(QMainWindow):
 
     def on_save_project_clicked(self):
         """File > Save: write the .glab to its existing location (or prompt if new)."""
-        try:
-            path = self.project_service.save(self)
-            if path:
-                self.statusBar().showMessage(f"Project saved: {path}", 4000)
-                self.alerts.info(f"Project saved:\n{path}", "Save Project")
-        except Exception as e:
-            self.alerts.error(str(e), "Save Project")
+        self._guardar_proyecto(como=False, titulo="Save Project")
 
     def on_save_project_as_clicked(self):
         """File > Save as: always prompt for a location and (re)create the project there."""
+        self._guardar_proyecto(como=True, titulo="Save Project As")
+
+    def _guardar_proyecto(self, como, titulo):
+        """R04: copying the signal into the project leaves the UI thread (progress bar
+        and Cancel from the TaskService); the manifest is written back here, because
+        it reads the state of the plugins."""
+        if getattr(self, "_guardando", False):
+            self.statusBar().showMessage("Ya se está guardando el proyecto.", 4000)
+            return
+        ps = self.project_service
         try:
-            path = self.project_service.save_as(self)
-            if path:
-                self.statusBar().showMessage(f"Project saved: {path}", 4000)
-                self.alerts.info(f"Project saved:\n{path}", "Save Project As")
+            job = ps.iniciar_guardado(self, como=como)
         except Exception as e:
-            self.alerts.error(str(e), "Save Project As")
+            self.alerts.error(str(e), titulo)
+            return
+        if job is None:
+            return
+        tasks = self.kernel.get_service("TaskService")
+        if job.copia is None or tasks is None:
+            try:
+                if job.copia is not None:
+                    ps._copiar_si_cambio(*job.copia)
+                self._terminar_guardado(job, titulo)
+            except Exception as e:
+                ps.revertir_guardado(job)
+                self.alerts.error(str(e), titulo)
+            return
+
+        self._guardando = True
+        self.statusBar().showMessage(f"Guardando {job.copia[0].name}…")
+        handle = tasks.submit(ps.copiar_senal, owner="project", origen=job.copia[0], destino=job.copia[1])
+        handle.finished.connect(lambda ok: self._copia_terminada(job, titulo, ok))
+        handle.failed.connect(lambda msg: self._guardado_fallido(job, titulo, msg))
+        handle.cancelled.connect(lambda: self._guardado_fallido(job, titulo, None))
+
+    def _copia_terminada(self, job, titulo, ok):
+        if not ok:
+            self._guardado_fallido(job, titulo, None)
+            return
+        try:
+            self._terminar_guardado(job, titulo)
+        except Exception as e:
+            self.project_service.revertir_guardado(job)
+            self.alerts.error(str(e), titulo)
+        finally:
+            self._guardando = False
+
+    def _terminar_guardado(self, job, titulo):
+        path = self.project_service.completar_guardado(job)
+        if path:
+            self.statusBar().showMessage(f"Project saved: {path}", 4000)
+            self.alerts.info(f"Project saved:\n{path}", titulo)
+
+    def _guardado_fallido(self, job, titulo, message):
+        self._guardando = False
+        self.project_service.revertir_guardado(job)
+        if message:
+            self.statusBar().clearMessage()
+            self.alerts.error(message, titulo)
+        else:
+            self.statusBar().showMessage("Guardado cancelado.", 4000)
 
     def on_open_project_clicked(self):
         """File > Open project: pick a .glab and restore its signal + measurements."""
@@ -937,13 +994,37 @@ class MainWindow(QMainWindow):
         settings.set("last_project_dir", str(Path(path_str).parent))
 
         self._project_busy = True
+        tasks = self.kernel.get_service("TaskService")
+        if tasks is None:
+            self._finish_open_project(path_str, None)
+            return
+
+        # R04: reading the project and its signal file leaves the UI thread; progress
+        # bar and Cancel come with the TaskService. Registering the signal and
+        # restoring trials/analyses happen back here, on the UI thread (R54).
+        self.statusBar().showMessage(f"Opening {Path(path_str).name}…")
+        handle = tasks.submit(self.project_service.preparar_apertura, owner="project",
+                              glab_path_str=path_str)
+        handle.finished.connect(lambda prep: self._finish_open_project(path_str, prep))
+        handle.failed.connect(lambda msg: self._fail_open_project(msg))
+        handle.cancelled.connect(lambda: self._fail_open_project(None))
+
+    def _finish_open_project(self, path_str, preparado):
         try:
-            self.project_service.open(path_str, self)
+            self.project_service.open(path_str, self, preparado=preparado)
             self.statusBar().showMessage(f"Project opened: {path_str}", 4000)
         except Exception as e:
             self.alerts.error(str(e), "Open Project")
         finally:
             self._project_busy = False
+
+    def _fail_open_project(self, message):
+        self._project_busy = False
+        if message:
+            self.statusBar().clearMessage()
+            self.alerts.error(message, "Open Project")
+        else:
+            self.statusBar().showMessage("Open project canceled.", 4000)
 
     def on_close_project_clicked(self):
         """File > Close project: forget the project location and free the active signal."""

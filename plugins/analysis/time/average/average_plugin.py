@@ -3,6 +3,7 @@ from core.plugins.interfaces import IPlugin
 from core.plugins.meta import PluginMeta
 from core.utils.vtk_context_menu import VTKContextMenu
 from core.utils.trial_labels import trials_used
+from core.utils.submuestreo import agregar_linea
 from PyQt5 import QtCore
 from functools import partial
 from PyQt5.QtWidgets import QListWidgetItem
@@ -49,6 +50,9 @@ class Average_plugin(IPlugin):
             # Connect "Calculate Average" button
             self.ui.calculateAverageButton.clicked.connect(self._on_calculate_average)
             self.ui.clearButton.clicked.connect(self._on_clear_clicked)
+            self.ui.spnFrom.valueChanged.connect(self._sync_range)
+            self.ui.spnTo.valueChanged.connect(self._sync_range)
+            self.ui.txtFilter.textChanged.connect(self._apply_filter)
 
         else:
             self.widget.setParent(parent)
@@ -93,23 +97,57 @@ class Average_plugin(IPlugin):
         if trials is None:
             return
 
-        # Per-sample average across trials, in the TaskService (R71)
-        self.run_task(ca.promedio_trials, partial(self._on_average_done, trials),
-                      on_failed=lambda m: self.alerts.error(f"No se pudo calcular el promedio: {m}"),
-                      trials=np.array(trials.trials, copy=True))
+        n_trials = trials.trials.shape[1]
+        self._ensure_trials_list(n_trials)
+        idx = self._collect_selected_indices(n_trials)
+        if not idx:
+            self._notify("No trials selected.", "warning")
+            return
 
-    def _on_average_done(self, trials, av_data):
+        # R41: only the selected trials enter the average
+        if len(idx) == n_trials:
+            used = trials_used(idx, n_trials, "average", channel=trials.channel_name)
+        else:
+            used = trials_used(idx, n_trials, channel=trials.channel_name)
+            used["label"] = f"promedio de {used['label']}"
+
+        # Per-sample average across trials, in the TaskService (R71)
+        self.run_task(ca.promedio_trials, partial(self._on_average_done, trials, used),
+                      on_failed=lambda m: self.alerts.error(f"No se pudo calcular el promedio: {m}"),
+                      trials=np.array(trials.trials, copy=True), idx=list(idx))
+
+    # ====== Trial selection (same rules as ERP) ======
+    def _collect_selected_indices(self, n_trials: int) -> list[int]:
+        """Positions (1-based, among valid trials) according to the selection mode."""
+        ui = self.ui
+        if ui.chkSelectAll.isChecked():
+            return list(range(1, n_trials + 1))
+        if ui.chkSingleTrial.isChecked():
+            return [min(max(1, ui.spnSingleTrial.value()), n_trials)]
+        if ui.chkUseRange.isChecked():
+            a = min(max(1, ui.spnFrom.value()), n_trials)
+            b = min(max(1, ui.spnTo.value()), n_trials)
+            if a > b:
+                a, b = b, a
+            return list(range(a, b + 1))
+        return [i + 1 for i in range(ui.lstTrials.count())
+                if ui.lstTrials.item(i).checkState() == QtCore.Qt.Checked]
+
+    def _sync_range(self):
+        if self.ui.spnFrom.value() > self.ui.spnTo.value():
+            self.ui.spnTo.setValue(self.ui.spnFrom.value())
+
+    def _apply_filter(self, text: str):
+        f = (text or "").lower().strip()
+        for i in range(self.ui.lstTrials.count()):
+            match = (f in self.ui.lstTrials.item(i).data(QtCore.Qt.UserRole)) if f else True
+            self.ui.lstTrials.setRowHidden(i, not match)
+
+    def _on_average_done(self, trials, used, av_data):
         t = trials.time_rel
 
-        # Siempre promedia TODOS los trials validos: la seleccion del panel
-        # (single / range / lista) todavia no se aplica al calculo. Se indica
-        # tal cual para que el usuario sepa que entro en el promedio.
-        used = trials_used(None, trials.trials.shape[1], "average", channel=trials.channel_name)
         self._trials_used = used
-        aviso = ""
-        if hasattr(self.ui, "chkSelectAll") and not self.ui.chkSelectAll.isChecked():
-            aviso = " (la selección del panel no se aplica: se promedian todos)"
-        self._notify(f"Average computed with {used['label']}{aviso}")
+        self._notify(f"Average computed with {used['label']}")
 
         
         # Render in VTK
@@ -119,11 +157,43 @@ class Average_plugin(IPlugin):
 
     # ====== Project save/restore ======
     def get_analysis_params(self) -> dict:
-        # No configurable parameters - always averages all active trials. The
-        # entry's mere presence in the manifest means "re-run this on open".
-        return {"used": True, "trials_used": self._trials_used}
+        ui = self.ui
+        if ui.chkSelectAll.isChecked():
+            mode = "all"
+        elif ui.chkSingleTrial.isChecked():
+            mode = "single"
+        elif ui.chkUseRange.isChecked():
+            mode = "range"
+        else:
+            mode = "manual"
+        manual = [i + 1 for i in range(ui.lstTrials.count())
+                  if ui.lstTrials.item(i).checkState() == QtCore.Qt.Checked] if mode == "manual" else []
+        return {
+            "used": True,
+            "mode": mode,
+            "single_trial": ui.spnSingleTrial.value(),
+            "range_from": ui.spnFrom.value(),
+            "range_to": ui.spnTo.value(),
+            "manual_checked_indices": manual,
+            "trials_used": self._trials_used,
+        }
 
     def apply_analysis_params(self, params: dict):
+        ui = self.ui
+        mode = params.get("mode", "all")   # projects saved before R41 have no mode: all trials
+        ui.chkSelectAll.setChecked(mode == "all")
+        ui.chkSingleTrial.setChecked(mode == "single")
+        ui.chkUseRange.setChecked(mode == "range")
+        ui.spnSingleTrial.setValue(params.get("single_trial", ui.spnSingleTrial.value()))
+        ui.spnFrom.setValue(params.get("range_from", ui.spnFrom.value()))
+        ui.spnTo.setValue(params.get("range_to", ui.spnTo.value()))
+        if mode == "manual":
+            trials = self.get_active_trials()
+            if trials is not None:
+                self._ensure_trials_list(trials.trials.shape[1])
+            checked = set(params.get("manual_checked_indices", []))
+            for i in range(ui.lstTrials.count()):
+                ui.lstTrials.item(i).setCheckState(QtCore.Qt.Checked if (i + 1) in checked else QtCore.Qt.Unchecked)
         self._on_calculate_average()
 
     def render_average(self, t, av_data, channel_name=None, unit=None):
@@ -142,41 +212,15 @@ class Average_plugin(IPlugin):
             self.alerts.error( "Time and signal vectors must have the same 1D length.", "Render error")
             return
 
-        # Downsample if there are many points (to keep UI responsive)
-        MAX_SAMPLES = 2000
-        N = t.size
-        if N > MAX_SAMPLES:
-            factor = int(np.ceil(N / MAX_SAMPLES))
-            t_plot = t[::factor]
-            av_plot = av[::factor]
-        else:
-            t_plot = t
-            av_plot = av
-
-        # Clear scene and create VTK table
+        # Clear scene
         scene = self.view.GetScene()
         scene.ClearItems()
 
-        table = vtk.vtkTable()
-        arr_time = vtk.vtkFloatArray(); arr_time.SetName("Time (s)")
-        arr_sig  = vtk.vtkFloatArray();  arr_sig.SetName(f"{channel_name or 'Signal'} [{unit or ''}]")
-
-        for ti, si in zip(t_plot, av_plot):
-            arr_time.InsertNextValue(float(ti))
-            arr_sig.InsertNextValue(float(si))
-
-        table.AddColumn(arr_time)
-        table.AddColumn(arr_sig)
-
-        # Chart + actor 
         chart = vtk.vtkChartXY()
         scene.AddItem(chart)
 
-
-        # Draw line
-        plot = chart.AddPlot(vtk.vtkChart.LINE)
-        plot.SetInputData(table, 0, 1)
-        # Optional: width and color
+        # Draw line (R73: at most 2000 points on screen; the data stays complete)
+        plot = agregar_linea(chart, t, av, "Time (s)", f"{channel_name or 'Signal'} [{unit or ''}]")
         try:
             plot.SetWidth(1.5)
             # SetColor expects RGBA (0..255) in some versions

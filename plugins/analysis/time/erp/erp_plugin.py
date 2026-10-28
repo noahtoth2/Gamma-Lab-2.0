@@ -18,6 +18,7 @@ from plugins.analysis.time.erp.erp_plugin_ui import Ui_ErpPlot
 from core.utils.adapters import trials_matrix_to_vtk_table
 from core.utils.trial_labels import trials_used
 from functools import partial
+from core.utils.submuestreo import agregar_columna
 
 
 def calcular_erp(t, M, idx, ctx=None):
@@ -138,14 +139,14 @@ class Erp_plugin(IPlugin):
 
         #td: TrialDataset = self.active_signal.trials_dataset[-1]  # last TD
         if not hasattr(td, "time_rel") or not hasattr(td, "trials"):
-            self.alerts.warning("The TrialDataset does not contain 'time_rel' or 'trials'.", "Incomplete Trials")
+            self.alerts.error("The TrialDataset does not contain 'time_rel' or 'trials'.", "Incomplete Trials")
             return None, None, None
 
         t = np.asarray(td.time_rel, dtype=float)           # (Ns,)
         M = np.asarray(td.trials, dtype=float)             # (Ns, T)
 
         if M.ndim != 2 or t.ndim != 1:
-            self.alerts.warning("The TrialDataset has invalid dimensions.", "Invalid dimensions")
+            self.alerts.error("The TrialDataset has invalid dimensions.", "Invalid dimensions")
 
             return None, None, None
 
@@ -154,7 +155,7 @@ class Erp_plugin(IPlugin):
         elif M.shape[1] == t.size:
             pass     # already (T, Ns)
         else:
-            self.alerts.warning("time_rel does not match trials.", "Inconsistency")
+            self.alerts.error("time_rel does not match trials.", "Inconsistency")
 
             return None, None, None
 
@@ -343,8 +344,7 @@ class Erp_plugin(IPlugin):
         # One plot per column Yk
         num_cols = table.GetNumberOfColumns()
         for c in range(1, num_cols):
-            plot = chart.AddPlot(vtk.vtkChart.LINE)
-            plot.SetInputData(table, 0, c)
+            plot = agregar_columna(chart, table, c)
             plot.SetWidth(0.5)
         
         ax_bottom = chart.GetAxis(vtk.vtkAxis.BOTTOM)
@@ -435,7 +435,7 @@ class Erp_plugin(IPlugin):
     # Not-implemented functions of context menus
 
     def _on_change_lut(self):
-        self.alerts.info("Change color map (not implemented).", "Change LUT")
+        self.alerts.warning("Change color map (not implemented).", "Change LUT")
 
 
 # Small helper for the LUT (you can keep only one and ignore the rest)

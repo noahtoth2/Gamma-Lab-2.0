@@ -14,6 +14,7 @@ from core.filters.trials import cut_trials_single_channel
 from core.utils.adapters import trials_matrix_to_vtk_table
 from plugins.preprocessing.trials.trial_plugin_ui import Ui_Trials
 from functools import partial
+from core.utils.submuestreo import agregar_columna
 
 
 def cortar_trials(ds, ctx=None, **params):
@@ -540,8 +541,7 @@ class TrialsPlugin(IPlugin):
             sel = [1] if T > 1 else ([0] if T == 1 else [])
 
         for idx in sel:
-            plot = self.chart.AddPlot(vtk.vtkChart.LINE)
-            plot.SetInputData(table, 0, idx + 1)
+            plot = agregar_columna(self.chart, table, idx + 1)
             plot.SetWidth(1.0)
             plot.SetLabel(f"Trial {idx+1}")
 

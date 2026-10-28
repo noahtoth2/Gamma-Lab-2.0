@@ -293,6 +293,15 @@ class AverageDouble(Average_plugin):
 
     # --- UI / VTK handling overrides ---
 
+    def construir_ui(self):
+        """Real panel (no VTK), so the trial selection controls can be driven."""
+        from PyQt5.QtWidgets import QApplication, QWidget
+        from plugins.analysis.time.average.average_plugin_ui import Ui_Average
+        self._qapp = QApplication.instance() or QApplication([])
+        self.widget = QWidget()
+        self.ui = Ui_Average()
+        self.ui.setupUi(self.widget)
+
     def ensure_vtk(self):
         """
         Override the VTK initialization to keep the test completely headless.
@@ -391,6 +400,7 @@ def app_avg(ds, td):
     only stores the data in memory.
     """
     plug = AverageDouble()
+    plug.construir_ui()
     plug.set_active_signal(ds)
     plug.set_active_trials(td)
     plug._on_calculate_average()

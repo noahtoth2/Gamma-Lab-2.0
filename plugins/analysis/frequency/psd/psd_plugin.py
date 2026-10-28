@@ -13,6 +13,7 @@ from plugins.analysis.frequency.psd.psd_plugin_ui import Ui_Psd
 from core.utils.adapters import trials_matrix_to_vtk_table
 from core.utils.trial_labels import trials_used
 from functools import partial
+from core.utils.submuestreo import agregar_columna
 
 
 def calcular_psd(X, fs, target_fs, window, nperseg, noverlap, nfft, detrend, ctx=None, log=None):
@@ -498,8 +499,7 @@ class Psd_plugin(IPlugin):
         line_width = 0.5 if num_curves > 1 else 2.0
         
         for c in range(1, num_cols):
-            plot = self.chart.AddPlot(vtk.vtkChart.LINE)
-            plot.SetInputData(table, 0, c)
+            plot = agregar_columna(self.chart, table, c)
             plot.SetWidth(line_width) 
 
        # --- Context menu ---
