@@ -69,11 +69,12 @@ class BrujulaPolar:
     `SetSize`— pero lo que se añade a la escena es `self.item`.
     """
 
-    def __init__(self, vector, extra=None, titulo=""):
+    def __init__(self, vector, extra=None, titulo="", rotulos=None):
         self.vector = complex(vector)
         self.extra = (np.asarray(extra, dtype=np.complex128).ravel()
                       if extra is not None else np.empty(0, dtype=np.complex128))
         self.titulo = titulo
+        self.rotulos = rotulos
         self._rect = (0.0, 0.0, 1.0, 1.0)
 
         self.item = vtk.vtkPythonItem()
@@ -154,10 +155,11 @@ class BrujulaPolar:
         texto.SetFontSize(12)
         texto.SetJustificationToCentered()
         texto.SetVerticalJustificationToCentered()
-        for grados in range(0, 360, PASO_GRADOS):
+        rotulos = self.rotulos or etiquetas_del_circulo(True)
+        for grados, rotulo in zip(range(0, 360, PASO_GRADOS), rotulos):
             rad = np.deg2rad(grados)
             painter.DrawString(float(cx + borde * 1.12 * np.cos(rad)),
-                               float(cy + borde * 1.12 * np.sin(rad)), str(grados))
+                               float(cy + borde * 1.12 * np.sin(rad)), rotulo)
 
         # Los valores de magnitud, entre el radio de 60 y el de 90 como MATLAB
         texto.SetFontSize(11)
@@ -203,17 +205,33 @@ class BrujulaPolar:
         painter.DrawPoly(puntos.tolist(), len(xs))
 
 
-def titulo_de(vector, n_extra=0):
-    """El rótulo del gráfico, con el ángulo **en grados**.
+def etiquetas_del_circulo(en_grados=True):
+    """Los rótulos de los doce radios de la brújula, en la unidad elegida.
+
+    En grados son los de MATLAB: 0, 30, 60… En radianes se escriben como
+    fracciones de π, que es como se rotula un círculo unidad en cualquier
+    libro; poner 0,52 / 1,05 / 1,57 sería ilegible.
+    """
+    if en_grados:
+        return [str(g) for g in range(0, 360, PASO_GRADOS)]
+    return ["0", "π/6", "π/3", "π/2", "2π/3", "5π/6",
+            "π", "7π/6", "4π/3", "3π/2", "5π/3", "11π/6"]
+
+
+def titulo_de(vector, n_extra=0, en_grados=True):
+    """El rótulo del gráfico, con el ángulo en la unidad que marque la casilla.
 
     MATLAB imprime `radtodeg(angle(v_pha_av_pre1))` por consola, así que grados
-    es lo fiel; y además es lo que dicen las etiquetas del círculo, de modo que
-    el título y la rejilla hablan el mismo idioma.
+    es lo fiel. En radianes se da en 0…2π y no en −π…π, para que el número
+    coincida con el radio del círculo donde cae la flecha: el título y la
+    rejilla tienen que hablar el mismo idioma, que es de lo que se trataba.
     """
     v = complex(vector)
-    grados = np.rad2deg(np.angle(v)) % 360.0
     sufijo = f" + {n_extra} por grupo" if n_extra else ""
-    return f"Vector medio{sufijo} — magnitud {abs(v):.4f}, fase {grados:.1f}°"
+    angulo = np.angle(v) % (2.0 * np.pi)
+    medida = (f"{np.rad2deg(angulo):.1f}°" if en_grados
+              else f"{angulo:.3f} rad")
+    return f"Vector medio{sufijo} — magnitud {abs(v):.4f}, fase {medida}"
 
 
 class Pac_plugin(IPlugin):
@@ -275,6 +293,7 @@ class Pac_plugin(IPlugin):
             self.ui.prevTrialButton.clicked.connect(partial(self._mover_trial, -1))
             self.ui.nextTrialButton.clicked.connect(partial(self._mover_trial, +1))
             self.ui.pacTypeComboBox.currentIndexChanged.connect(self._actualizar_selector_trial)
+            self.ui.degreesCheckBox.toggled.connect(self._on_unidades_cambiadas)
             self.ui.pacTypeComboBox.currentIndexChanged.connect(lambda _: self.publish_current_trial())
             self.ui.trialSpinBox.valueChanged.connect(lambda _: self.publish_current_trial())
         else:
@@ -291,6 +310,31 @@ class Pac_plugin(IPlugin):
             spin.setSingleStep(1.0)
         self._on_clear_clicked()
 
+    def _on_unidades_cambiadas(self):
+        """Cambiar de unidad **no recalcula**: solo se redibuja.
+
+        El cálculo vive en radianes de principio a fin; grados o radianes es una
+        decisión del dibujo. Volver a lanzar PAC Average por cambiar una
+        etiqueta serían 17 segundos de espera para el mismo resultado.
+        """
+        # `vtk_widget` tiene que existir: durante la restauración de un proyecto
+        # la casilla se marca antes de que haya escena donde dibujar, y sin esta
+        # guarda el intento acaba en un diálogo de error.
+        if self._calculando or not self._ultimo or self.vtk_widget is None:
+            return
+        try:
+            resultado = self._ultimo["resultado"]
+            tipo = (self._ultimo.get("parametros") or {}).get("tipo", "")
+            if tipo == "PAC Psel":
+                self.render_psel(resultado)
+            else:
+                self.render_resultado(resultado, tipo)
+            self._notify(
+                f"Fase en {'grados (0-360)' if self._en_grados() else 'radianes (−π a π)'}")
+        except Exception as e:
+            self._log("al cambiar de unidades:", e)
+            self.alerts.error(f"No se pudo redibujar con las nuevas unidades: {e}")
+
     def _on_clear_clicked(self):
         if self._calculando:
             self.alerts.warning("Hay un cálculo de PAC en curso; espera a que termine.")
@@ -302,6 +346,7 @@ class Pac_plugin(IPlugin):
         self.ui.highFrequencySpinBox.setValue(d["p2"])
         self.ui.ampLowFrequencySpinBox.setValue(d["a1"])
         self.ui.ampHighFrequencySpinBox.setValue(d["a2"])
+        self.ui.degreesCheckBox.setChecked(True)
         self._actualizar_selector_trial()
 
     # =====================================================
@@ -504,7 +549,7 @@ class Pac_plugin(IPlugin):
             self._actualizar_menu()
             self._notify(
                 f"{tipo} con {etiqueta_trials}: acoplamiento {abs(resultado.vector):.4f} "
-                f"en la fase {np.rad2deg(np.angle(resultado.vector)) % 360.0:.1f}° "
+                f"en la fase {self._fase_legible(resultado.vector)} "
                 f"({detalle})")
             if not self._corrida_restaura:
                 self.mark_project_dirty()
@@ -625,8 +670,9 @@ class Pac_plugin(IPlugin):
             # ninguna senal**. Antes aqui salian los cuatro paneles del PRIMER
             # trial bajo un titulo que decia "promedio", lo que invita a leer
             # como promediado algo que no lo es.
-            grados_ref = self._fase_en_grados(r.fases)[0]
-            chart = self._grafico_senal(grados_ref, np.cos(np.deg2rad(grados_ref)),
+            eje_ref = self._eje_de_fase(r.fases)[0]
+            coseno = np.cos(np.deg2rad(eje_ref) if self._en_grados() else eje_ref)
+            chart = self._grafico_senal(eje_ref, coseno,
                                         "Referencia: cos(fase)", "cos")
             self._charts.append(chart)
             self._altos.append(self.ALTO_SENAL)
@@ -641,7 +687,8 @@ class Pac_plugin(IPlugin):
             for etiqueta, unidad, serie in (
                     ("Original", "Amplitud", r.senal),
                     ("Filtrada en fase", "Amplitud", r.banda_fase),
-                    ("Fase instantánea", "°", np.rad2deg(r.fase) % 360.0),
+                    ("Fase instantánea", self._unidad_de_fase(),
+                     np.rad2deg(r.fase) % 360.0 if self._en_grados() else r.fase),
                     ("Filtrada en amplitud", "Amplitud", r.banda_amplitud)):
                 chart = self._grafico_senal(r.tiempo, serie, etiqueta, unidad)
                 self._charts_senal.append(chart)
@@ -699,14 +746,15 @@ class Pac_plugin(IPlugin):
 
         # 6-7. El mapa fase/frecuencia en escala logarítmica, y debajo el coseno
         # de referencia que el MATLAB dibuja para situar la fase
-        grados_psel, mapa_psel = self._fase_en_grados(r.fases, r.mapa)
+        eje_psel, mapa_psel = self._eje_de_fase(r.fases, r.mapa)
         self._mapa_chart = agregar(
-            self._grafico_mapa_log(mapa_psel, r.frecuencias, grados_psel,
-                                   "PAC Psel — mapa fase/frecuencia", "Fase (°)"),
+            self._grafico_mapa_log(mapa_psel, r.frecuencias, eje_psel,
+                                   "PAC Psel — mapa fase/frecuencia",
+                                   f"Fase ({self._unidad_de_fase()})"),
             self.ALTO_MAPA)
-        agregar(self._grafico_senal(grados_psel, np.cos(np.deg2rad(grados_psel)),
-                                    "Referencia: cos(fase)", "cos"),
-                self.ALTO_SENAL)
+        agregar(self._grafico_senal(
+            eje_psel, np.cos(np.deg2rad(eje_psel) if self._en_grados() else eje_psel),
+            "Referencia: cos(fase)", "cos"), self.ALTO_SENAL)
 
         # 8-9. El tiempo-frecuencia promedio y el promedio del ritmo lento debajo
         agregar(self._grafico_mapa_log(r.mapa_tf, r.frecuencias, r.tiempo_tf,
@@ -867,7 +915,7 @@ class Pac_plugin(IPlugin):
 
     def _grafico_mapa(self, r, titulo):
         """El mapa fase-frecuencia, con el mismo patrón vectorizado del wavelet."""
-        fases, mapa = self._fase_en_grados(
+        fases, mapa = self._eje_de_fase(
             r.fases, np.nan_to_num(np.asarray(r.mapa, dtype=np.float32),
                                    nan=0.0, posinf=0.0, neginf=0.0))
         n_freq, n_fase = mapa.shape
@@ -909,7 +957,7 @@ class Pac_plugin(IPlugin):
         chart.SetTransferFunction(lut)
         anotar_mapa(chart, img, lut)
         chart.SetTitle(f"{titulo} — mapa fase/frecuencia")
-        chart.GetAxis(vtk.vtkAxis.BOTTOM).SetTitle("Fase (°)")
+        chart.GetAxis(vtk.vtkAxis.BOTTOM).SetTitle(f"Fase ({self._unidad_de_fase()})")
         chart.GetAxis(vtk.vtkAxis.LEFT).SetTitle("Frecuencia (Hz)")
         # FIXED: si no, VTK redondea el rango hacia afuera y deja franjas vacias
         # a los lados —el eje llegaba a 400 grados cuando los datos terminan en
@@ -921,6 +969,32 @@ class Pac_plugin(IPlugin):
         eje_y.SetBehavior(vtk.vtkAxis.FIXED)
         eje_y.SetRange(f_min, f_max)
         return chart
+
+    def _en_grados(self):
+        """Si la casilla de unidades está marcada. Por omisión, sí."""
+        casilla = getattr(self.ui, "degreesCheckBox", None) if self.ui else None
+        return True if casilla is None else bool(casilla.isChecked())
+
+    def _unidad_de_fase(self):
+        return "°" if self._en_grados() else "rad"
+
+    def _fase_legible(self, vector):
+        """La fase de un vector, escrita en la unidad elegida."""
+        angulo = np.angle(complex(vector)) % (2.0 * np.pi)
+        return (f"{np.rad2deg(angulo):.1f}°" if self._en_grados()
+                else f"{angulo:.3f} rad")
+
+    def _eje_de_fase(self, fases_rad, *matrices, eje=-1):
+        """El eje de fase en la unidad que marque la casilla.
+
+        En grados, convierte y rota (ver `_fase_en_grados`). En radianes
+        devuelve lo que llega, que ya viene de −π a π: es lo que dibuja el
+        `bar(index_pi, ...)` de MATLAB, y rotarlo sería alejarse del original
+        sin ganar nada.
+        """
+        if self._en_grados():
+            return self._fase_en_grados(fases_rad, *matrices, eje=eje)
+        return (np.asarray(fases_rad),) + tuple(np.asarray(m) for m in matrices)
 
     @staticmethod
     def _fase_en_grados(fases_rad, *matrices, eje=-1):
@@ -953,7 +1027,7 @@ class Pac_plugin(IPlugin):
         return (np.roll(grados, -corte),) + rotadas
 
     def _grafico_histograma(self, r):
-        grados, valores = self._fase_en_grados(
+        grados, valores = self._eje_de_fase(
             r.fases, np.nan_to_num(np.asarray(r.histograma, dtype=np.float64)))
         tabla = vtk.vtkTable()
         tabla.AddColumn(self._columna(grados, "Fase"))
@@ -966,7 +1040,7 @@ class Pac_plugin(IPlugin):
         barras.LegendVisibilityOff()
         chart.SetTitle("Histograma por fase")
         chart.SetShowLegend(False)
-        chart.GetAxis(vtk.vtkAxis.BOTTOM).SetTitle("Fase (°)")
+        chart.GetAxis(vtk.vtkAxis.BOTTOM).SetTitle(f"Fase ({self._unidad_de_fase()})")
 
         # MATLAB acerca el eje Y al rango de los datos con un 10% de margen, en
         # vez de arrancar en cero:
@@ -997,8 +1071,10 @@ class Pac_plugin(IPlugin):
         por grupo de bins y encima el vector medio.
         """
         n_extra = 0 if extra is None else len(np.asarray(extra).ravel())
+        en_grados = self._en_grados()
         return BrujulaPolar(r.vector, extra=extra,
-                            titulo=titulo_de(r.vector, n_extra))
+                            titulo=titulo_de(r.vector, n_extra, en_grados),
+                            rotulos=etiquetas_del_circulo(en_grados))
 
     def _grafico_senal(self, tiempo, serie, etiqueta, unidad="Amplitud"):
         n = min(len(tiempo), len(serie))
@@ -1104,11 +1180,14 @@ class Pac_plugin(IPlugin):
         # Los ángulos se exportan en grados de 0 a 360, los mismos que se ven en
         # pantalla: si el histograma dibuja una barra en 280° y el CSV la pone en
         # −1,39, parecen dos corridas distintas.
-        grados, histograma = self._fase_en_grados(r.fases, r.histograma)
-        _, mapa = self._fase_en_grados(r.fases, r.mapa)
+        grados, histograma = self._eje_de_fase(r.fases, r.histograma)
+        _, mapa = self._eje_de_fase(r.fases, r.mapa)
+        sufijo = "grados" if self._en_grados() else "rad"
 
         resumen = [["magnitud_vector_medio", n(abs(r.vector))],
-                   ["angulo_vector_medio_grados", n(np.rad2deg(np.angle(r.vector)) % 360.0)],
+                   [f"angulo_vector_medio_{sufijo}",
+                    n(np.rad2deg(np.angle(r.vector)) % 360.0 if self._en_grados()
+                      else np.angle(r.vector))],
                    ["fs_efectiva_hz", n(r.fs_efectiva)]]
         if hasattr(r, "n_ciclos"):
             resumen += [["n_ciclos", int(r.n_ciclos)],
@@ -1117,12 +1196,14 @@ class Pac_plugin(IPlugin):
         else:
             resumen += [["n_trials", int(r.n_trials)]]
 
-        encabezado_mapa = ["frecuencia_hz"] + [f"fase_{g:.1f}deg" for g in grados]
+        encabezado_mapa = ["frecuencia_hz"] + [
+            (f"fase_{g:.1f}deg" if self._en_grados() else f"fase_{g:.4f}")
+            for g in grados]
         filas_mapa = [[n(fr)] + [n(v) for v in fila] for fr, fila in zip(r.frecuencias, mapa)]
         return {
             "Parametros": (["parametro", "valor"], [[k, v] for k, v in p.items()]),
             "Resumen": (["medida", "valor"], resumen),
-            "Histograma": (["fase_grados", "valor"],
+            "Histograma": ([f"fase_{sufijo}", "valor"],
                            [[n(g), n(v)] for g, v in zip(grados, histograma)]),
             "Mapa": (encabezado_mapa, filas_mapa),
         }
@@ -1147,6 +1228,7 @@ class Pac_plugin(IPlugin):
             "a2": self.ui.ampHighFrequencySpinBox.value(),
             "trial": self.ui.trialSpinBox.value(),
             "trials_used": self._trials_used,
+            "en_grados": self.ui.degreesCheckBox.isChecked(),
         }
 
     def apply_analysis_params(self, params: dict):
@@ -1159,6 +1241,7 @@ class Pac_plugin(IPlugin):
         self.ui.highFrequencySpinBox.setValue(params.get("p2", d["p2"]))
         self.ui.ampLowFrequencySpinBox.setValue(params.get("a1", d["a1"]))
         self.ui.ampHighFrequencySpinBox.setValue(params.get("a2", d["a2"]))
+        self.ui.degreesCheckBox.setChecked(bool(params.get("en_grados", True)))
         self._actualizar_selector_trial()
         self.ui.trialSpinBox.setValue(params.get("trial", 1))
         self._restaurando = True
