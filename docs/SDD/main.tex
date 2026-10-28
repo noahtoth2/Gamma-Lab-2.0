@@ -308,6 +308,352 @@ El flujo de la Figura~\ref{fig:sdd_vista_procesos} se organiza en las siguientes
 
 La navegaci\'on entre secciones, la limpieza de formularios y la ayuda contextual mediante \texttt{Tooltip\-Helper} son transversales a toda la sesi\'on: no ocupan un lugar fijo en la secuencia y se documentan como notas adjuntas al diagrama en vez de forzarse dentro del flujo principal.
 
+\subsection{Arquitectura de implementación}
+\label{sec:sdd_arq_impl}
+
+Las tres vistas anteriores describen el sistema a nivel de componentes. Esta sección baja al nivel en que se escribe el código: qué paquete puede importar a cuál, quién gobierna el ciclo de vida de las extensiones, en qué orden arranca y se cierra la aplicación, cómo se reparte el trabajo entre hilos, cómo se tratan los fallos y qué hay que hacer para añadir una extensión nueva.
+
+Cada apartado se cierra con el estado real de implementación. El Software Architecture Document (SAD) prescribe trece decisiones de arquitectura (ADR-01 a ADR-13); varias están implementadas, otras lo están en parte y otras todavía no. Documentar como existente lo que no se ha construido convertiría este documento en una descripción de un sistema imaginario, así que la distinción se mantiene explícita en cada caso.
+
+\subsubsection{Organización del código y reglas de dependencia}
+
+El código se organiza en cuatro paquetes de primer nivel. La Tabla~\ref{tab:sdd_paquetes} indica qué componente de la Vista Lógica (Sección~2.1) vive en cada uno.
+
+\begin{center}
+\small
+\begin{longtable}{|p{0.20\textwidth}|p{0.34\textwidth}|p{0.36\textwidth}|}
+\caption{Paquetes de primer nivel y componentes que alojan} \label{tab:sdd_paquetes} \\
+\hline
+\textbf{Paquete} & \textbf{Contenido} & \textbf{Componentes del SAD} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Paquete} & \textbf{Contenido} & \textbf{Componentes del SAD} \\
+\hline
+\endhead
+\hline
+\endfoot
+
+\texttt{core/} & Núcleo, contrato de extensión, servicios compartidos, modelos de datos y algoritmos que cruzan fronteras de extensión. & Kernel, PluginManager, IPlugin, DataStore, FileIOService, ExportService, MeasurementService, SettingsService, ProjectService, TaskService. \\
+\hline
+
+\texttt{app/} & Capa de presentación: ventana principal, pantalla de bienvenida y widgets propios. & MainWindow. \\
+\hline
+
+\texttt{plugins/} & Las extensiones, agrupadas por categoría (\texttt{io}, \texttt{preprocessing}, \texttt{analysis}, \texttt{measure}, \texttt{faq}). & Plugins. \\
+\hline
+
+\texttt{test/} & Pruebas automatizadas, con la misma división por responsabilidad (\texttt{services\_test}, \texttt{plugins\_test}, \texttt{ui\_test}, \texttt{performance\_test}). & --- \\
+\hline
+
+\end{longtable}
+\end{center}
+
+Dentro de \texttt{core/} la división es por responsabilidad: \texttt{core/kernel.py} (el núcleo), \texttt{core/plugins/} (contrato, descubrimiento y registro), \texttt{core/services/} (los servicios compartidos), \texttt{core/model/} (las estructuras de datos), \texttt{core/filters/} (los algoritmos compartidos) y \texttt{core/utils/} (utilidades transversales).
+
+\paragraph{Reglas de dependencia.} Son tres, y se enuncian en orden de importancia.
+
+\begin{enumerate}
+    \item \textbf{\texttt{core/} no importa de \texttt{app/} ni de \texttt{plugins/}.} Es la regla que sostiene el estilo microkernel: el núcleo tiene que poder existir sin ninguna extensión concreta y sin la ventana principal. Si se invierte, el núcleo deja de ser un núcleo y pasa a ser una capa más del monolito.
+    \item \textbf{Las extensiones no se importan entre sí.} Lo que dos extensiones comparten sube a \texttt{core/}; lo que usa una sola se queda en su carpeta. Es la regla que hizo que \texttt{gabor.py} pasara del plugin de PAC a \texttt{core/filters/} cuando PPC empezó a necesitarlo, y la que mantiene a la wavelet de Morse dentro de PAC, porque solo PAC la usa.
+    \item \textbf{El cómputo no importa de Qt ni de VTK.} El módulo \texttt{compute.py} de cada extensión recibe arreglos de NumPy y devuelve arreglos de NumPy. Es lo que permite ejecutarlo en un hilo trabajador y probarlo sin levantar una interfaz gráfica (ADR-04).
+\end{enumerate}
+
+\paragraph{Cómo se verifica.} La primera regla se comprueba automáticamente: basta recorrer los archivos de \texttt{core/} y buscar importaciones de \texttt{app} o \texttt{plugins}. Al momento de redactar esta sección el resultado es \textbf{cero importaciones}, frente a 3 de \texttt{app/} hacia los otros paquetes y 32 de \texttt{plugins/}, que es la dirección correcta. La tercera regla se comprueba de la misma forma sobre cada \texttt{compute.py}, y está cubierta por pruebas: \texttt{test/services\_test/test\_gabor\_en\_core.py} verifica con el módulo \texttt{ast} que \texttt{core/filters/gabor.py} no importe nada de \texttt{plugins}, mirando las sentencias de importación y no el texto, porque los comentarios sí nombran a \texttt{plugins} y eso es documentación, no acoplamiento.
+
+\paragraph{Correspondencia con las decisiones del SAD.} La Tabla~\ref{tab:sdd_traza_adr} relaciona cada decisión de arquitectura con el apartado de este documento que la desarrolla y con su estado de implementación.
+
+\begin{center}
+\small
+\begin{longtable}{|p{0.09\textwidth}|p{0.07\textwidth}|p{0.40\textwidth}|p{0.14\textwidth}|p{0.18\textwidth}|}
+\caption{Correspondencia ADR / principio $\rightarrow$ sección del SDD} \label{tab:sdd_traza_adr} \\
+\hline
+\textbf{ADR} & \textbf{Princ.} & \textbf{Decisión} & \textbf{Sección} & \textbf{Estado} \\
+\hline
+\endfirsthead
+\hline
+\textbf{ADR} & \textbf{Princ.} & \textbf{Decisión} & \textbf{Sección} & \textbf{Estado} \\
+\hline
+\endhead
+\hline
+\endfoot
+
+ADR-01 & P1 & Estilo microkernel con núcleo propio & 2.4.1, 2.4.2 & Implementada \\
+\hline
+ADR-02 & P1 & Ciclo de vida como máquina de estados gobernada por el Kernel & 2.4.2 & \textbf{No implementada} \\
+\hline
+ADR-03 & P2 & Catálogo de eventos con carga útil tipada & 2.4.2 & \textbf{No implementada} \\
+\hline
+ADR-04 & P3 & Cómputo en un módulo sin dependencias de Qt ni VTK & 2.4.1, 2.4.6 & Parcial (9 de 19 extensiones) \\
+\hline
+ADR-05 & P4 & Descubrimiento declarativo validado & 2.4.2, 2.4.6 & Parcial \\
+\hline
+ADR-06 & P5 & \texttt{DataStore} con escritor único & 2.4.4 & Parcial \\
+\hline
+ADR-07 & P6 & Estrategia de memoria & 2.4.4 & Parcial \\
+\hline
+ADR-08 & P7 & Liberación determinista de recursos & 2.4.3, 2.4.4 & Parcial \\
+\hline
+ADR-09 & P8 & TaskOrchestrator híbrido (hilos y procesos) & 2.4.4 & Parcial (solo hilos, por medición) \\
+\hline
+ADR-10 & P9 & Control de admisión por estimación de costo & 2.4.4 & \textbf{No implementada} \\
+\hline
+ADR-11 & P10 & Manejador global de excepciones & 2.4.5 & \textbf{No implementada} \\
+\hline
+ADR-12 & P11 & Registro estructurado con archivo rotativo & 2.4.5 & \textbf{No implementada} \\
+\hline
+ADR-13 & --- & Python, PyQt5 y VTK como base & 2.2 & Implementada \\
+\hline
+
+\end{longtable}
+\end{center}
+
+\subsubsection{Núcleo y ciclo de vida}
+
+\paragraph{Kernel.} Es un \texttt{QObject} con cuatro responsabilidades y ninguna más: mantener el diccionario de extensiones registradas, mantener el diccionario de servicios, exponer un canal de eventos y recorrer las extensiones para detenerlas. No calcula, no dibuja y no lee archivos. Su interfaz pública es:
+
+\begin{itemize}
+    \item \texttt{register\_plugin(name, plugin)} --- registra la extensión y le llama \texttt{initialize(kernel)};
+    \item \texttt{get\_plugin(name)}, \texttt{get\_plugins()}, \texttt{get\_plugins\_by\_category(cat)} --- consulta;
+    \item \texttt{register\_service(key, service)} / \texttt{get\_service(key)} --- el localizador de servicios;
+    \item \texttt{emit\_event(topic, payload)} --- publicación de eventos;
+    \item \texttt{stop\_plugins()} --- detención ordenada.
+\end{itemize}
+
+\paragraph{PluginManager.} Recorre el árbol de \texttt{plugins/} buscando archivos \texttt{properties.yml}, instancia la clase declarada en cada uno y guarda el par \texttt{(meta, instancia)} en un registro indexado por el identificador de la extensión. El descubrimiento es tolerante a fallos: una carpeta cuyo descriptor esté mal formado, o cuya clase no pueda importarse, se omite con un mensaje en consola y el resto de la aplicación sigue arrancando.
+
+\paragraph{Estados y transiciones.} Hoy el ciclo de vida de una extensión es una secuencia, no una máquina de estados: \textit{descubierta} (el \texttt{PluginManager} la instancia) $\rightarrow$ \textit{inicializada} (el Kernel le llama \texttt{initialize}) $\rightarrow$ \textit{activa} (\texttt{start} desde \texttt{MainWindow} al entrar en su pestaña, que pone el indicador \texttt{started}) $\rightarrow$ \textit{detenida} (\texttt{stop}).
+
+\begin{quote}
+\textbf{Brecha respecto al SAD (ADR-02).} El SAD prescribe seis estados explícitos --- descubierta, inicializada, activa, inactiva, detenida y \textbf{fallida} --- con las transiciones gobernadas únicamente por el núcleo. La implementación actual no mantiene el estado de cada extensión: el único indicador es el booleano \texttt{started} de \texttt{IPlugin}, las transiciones las dispara \texttt{MainWindow} y no \texttt{Kernel}, y no existe el estado \textit{fallida}: una extensión cuya carga falla se omite en silencio y no aparece en la interfaz, en lugar de aparecer marcada como fallida. Cerrar esta brecha es un trabajo acotado --- un campo de estado en el Kernel y una transición por método --- pero no se ha hecho.
+\end{quote}
+
+\paragraph{Registro de servicios.} Los servicios se registran y se consultan por una clave de texto. Las cuatro claves vigentes son \texttt{"DataStore"}, \texttt{"FileIO"}, \texttt{"TaskService"} y \texttt{"MainWindow"}.
+
+\begin{quote}
+\textbf{Brecha: las claves no están centralizadas.} Hoy cada clave se escribe como literal en el punto de uso, tanto al registrar en \texttt{main.py} como al consultar en cada extensión. Un error de escritura no se detecta: \texttt{get\_service()} devuelve \texttt{None} y el fallo aparece más tarde y lejos de su causa. Lo que corresponde es un módulo con las claves como constantes --- por ejemplo \texttt{core/services/claves.py} --- y que tanto el registro como el consumo las importen de ahí. Nótese además que la clave del servicio de entrada/salida es \texttt{"FileIO"} y no \texttt{"FileIOService"}, discrepancia que sobrevive precisamente porque no hay un único sitio donde esté escrita.
+\end{quote}
+
+\paragraph{Catálogo de eventos.} El canal es un único \texttt{pyqtSignal(str, object)}: un tópico de texto y una carga útil sin tipo. Los tópicos realmente en uso son cinco, y se recogen en la Tabla~\ref{tab:sdd_eventos}.
+
+\begin{center}
+\small
+\begin{longtable}{|p{0.26\textwidth}|p{0.30\textwidth}|p{0.34\textwidth}|}
+\caption{Eventos publicados en el canal del Kernel} \label{tab:sdd_eventos} \\
+\hline
+\textbf{Tópico} & \textbf{Carga útil} & \textbf{Significado} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Tópico} & \textbf{Carga útil} & \textbf{Significado} \\
+\hline
+\endhead
+\hline
+\endfoot
+
+\texttt{signal\_added} & \texttt{\{"key": nombre\}} & Se cargó una señal nueva. \\
+\hline
+\texttt{signal\_active\_changed} & nombre de la señal & Cambió la señal activa. \\
+\hline
+\texttt{trials\_generated} & \texttt{\{"signal": ..., "channel": ...\}} & Se recortaron trials de un canal. \\
+\hline
+\texttt{current\_trial\_changed} & estado del selector & El usuario cambió de trial. \\
+\hline
+\texttt{trial\_discard\_updated} & descarte aplicado & Se descartó o recuperó un trial. \\
+\hline
+
+\end{longtable}
+\end{center}
+
+\begin{quote}
+\textbf{Brecha respecto al SAD (ADR-03).} El SAD prescribe un catálogo con carga útil tipada, de modo que un error de tópico se detecte al emitir. Con el canal genérico actual, publicar \texttt{"signal\_add"} en lugar de \texttt{"signal\_added"} no produce ningún error: simplemente no lo escucha nadie. La tabla anterior documenta el catálogo \textit{de facto}; convertirlo en contrato exige constantes para los tópicos y una estructura declarada por carga útil.
+\end{quote}
+
+\paragraph{Validaciones de carga.} El descubridor exige que el \texttt{properties.yml} contenga las ocho claves obligatorias (\texttt{id}, \texttt{name}, \texttt{category}, \texttt{subcategory}, \texttt{version}, \texttt{icon}, \texttt{logic\_class}, \texttt{ui\_class}) y que la clase declarada en \texttt{logic\_class} exista dentro de la carpeta. Lo que \textbf{no} valida, y el SAD prescribe en ADR-05:
+
+\begin{itemize}
+    \item \textbf{Versión del contrato.} El campo \texttt{version} del descriptor es la versión de la extensión, no la del contrato \texttt{IPlugin} contra el que fue escrita. Una extensión compilada contra un \texttt{IPlugin} antiguo se carga igual y falla al usarse.
+    \item \textbf{Dependencias.} No existe un campo para declararlas. Una extensión que necesite un servicio no registrado lo descubre en tiempo de ejecución, con un \texttt{None}.
+    \item \textbf{Unicidad del identificador.} El registro es un diccionario indexado por \texttt{id}: dos extensiones con el mismo identificador se sobrescriben sin aviso. El Kernel sí avisa por consola de un \textit{nombre} repetido, pero igualmente lo sobrescribe.
+\end{itemize}
+
+\subsubsection{Arranque y cierre}
+
+\paragraph{CU-011 --- Iniciar la aplicación.} El orden de instanciación en \texttt{main.py} no es arbitrario; cada paso depende del anterior:
+
+\begin{enumerate}
+    \item \textbf{Guarda del temporizador de VTK.} Antes de crear ningún widget se sustituye el manejador de temporizador de \texttt{QVTKRenderWindowInteractor} por una versión que comprueba que el widget siga visible. Va primero porque la sustitución tiene que estar puesta antes de que exista el primer interactor.
+    \item \textbf{\texttt{QApplication}}, fuentes, icono y hoja de estilos.
+    \item \textbf{Pantalla de bienvenida}, que informa del avance de los pasos siguientes.
+    \item \textbf{Kernel}.
+    \item \textbf{Servicios del núcleo}: \texttt{DataStore}, \texttt{FileIO} y \texttt{TaskService}. \textit{Van antes del descubrimiento de extensiones}: \texttt{register\_plugin()} llama a \texttt{initialize(kernel)}, y desde ahí una extensión ya puede pedir cualquier servicio. Si estas líneas se movieran después, recibiría \texttt{None}.
+    \item \textbf{Descubrimiento e instanciación} de las extensiones con \texttt{PluginManager.load\_all()}.
+    \item \textbf{Registro en el Kernel} de cada extensión, por el nombre declarado en su descriptor.
+    \item \textbf{\texttt{MainWindow}}, que se construye con el Kernel ya poblado --- necesita la lista de extensiones para montar la barra de categorías --- y se registra después como servicio, porque las extensiones lo consultan para la barra de estado y los diálogos.
+    \item \textbf{Mostrar la ventana} en el primer ciclo del bucle de eventos.
+\end{enumerate}
+
+\paragraph{Inyección de servicios.} No hay un contenedor de inyección de dependencias: el patrón es \textit{Service Locator}. Una extensión no recibe sus dependencias en el constructor, sino que las pide al Kernel cuando las necesita, con \texttt{kernel.get\_service(clave)}. El contrato \texttt{IPlugin} ofrece envoltorios para los accesos más frecuentes --- \texttt{get\_datastore()}, \texttt{get\_active\_signal()}, \texttt{get\_active\_trials()}, \texttt{get\_trials\_de\_canal()} --- que resuelven el servicio y además traducen la ausencia en un aviso al usuario en lugar de en una excepción.
+
+\paragraph{CU-022 --- Cerrar la aplicación.} El cierre recorre las extensiones registradas y llama al \texttt{stop()} de cada una. Qué libera ese \texttt{stop()} depende de la extensión; las de análisis que usan el orquestador cancelan además las tareas que tengan en vuelo con \texttt{cancel\_all\_from(id)}, de modo que no quede un hilo trabajador escribiendo sobre una interfaz que ya no existe.
+
+\begin{quote}
+\textbf{Brecha respecto al SAD (ADR-08).} El SAD exige que tras el cierre «no queden hilos, procesos ni contextos gráficos activos». La detención actual no garantiza eso en un caso concreto: una tarea cancelada que no responda en dos segundos se descarta pero no se detiene, porque un hilo de Python no puede terminarse de forma segura desde fuera. El hilo desacoplado sigue vivo hasta que su función termine. Está documentado en el SAD como limitación conocida de ADR-09.
+\end{quote}
+
+\subsubsection{Hilos, tareas y recursos}
+
+\paragraph{Reglas de hilos para el desarrollador.} Son tres y no admiten excepción:
+
+\begin{enumerate}
+    \item \textbf{VTK y Qt solo en el hilo de interfaz.} Ninguna de las dos librerías es segura fuera de él. Un cálculo que toque un \texttt{vtkTable} desde un trabajador produce una violación de acceso, no una excepción.
+    \item \textbf{Ninguna extensión crea sus propios hilos.} El cómputo pesado se encola en el orquestador. Antes había extensiones con su propio \texttt{QThread}, lo que daba tantos patrones de concurrencia como extensiones y ninguna forma común de cancelar.
+    \item \textbf{El resultado se dibuja en el \textit{slot} de \texttt{finished}}, que Qt ejecuta ya en el hilo de interfaz, y siempre tras comprobar que el manejador recibido sea el vigente.
+\end{enumerate}
+
+\paragraph{TaskService.} Es la implementación del TaskOrchestrator del SAD. Mantiene una cola única y ejecuta \textbf{una tarea a la vez} en un hilo trabajador. \texttt{submit(fn, owner=...)} devuelve un \texttt{TaskHandle} con cuatro señales --- \texttt{progress}, \texttt{finished}, \texttt{failed} y \texttt{cancelled} --- y al cómputo se le inyecta un \texttt{TaskContext} con \texttt{ctx.cancelled} y \texttt{ctx.progress(pct, mensaje)}.
+
+Cada señal se conecta con una guarda. Al cambiar un parámetro se encola otra tarea y la anterior puede seguir viva un instante; sin la guarda \texttt{if handle is not self.\_handle}, su resultado sobrescribiría al nuevo:
+
+\begin{verbatim}
+handle = tasks.submit(cp.ppc_mapa, owner=self.meta.id, ...)
+self._handle = handle
+handle.progress.connect(partial(self._on_progress, handle))
+handle.finished.connect(partial(self._on_done, handle))
+handle.failed.connect(partial(self._on_failed, handle))
+handle.cancelled.connect(partial(self._on_cancelled, handle))
+\end{verbatim}
+
+\textbf{Control de admisión.} Existe en una forma mínima: al encolar, el servicio descarta las tareas \textit{pendientes} de la misma extensión (\texttt{\_discard\_queued\_from(owner)}), de modo que pulsar \textit{Generate} cinco veces no deja cinco cálculos en cola. No existe, en cambio, la estimación de costo previa que prescribe ADR-10: el sistema no se niega a lanzar un cálculo que vaya a tardar minutos ni advierte de ello.
+
+\textbf{Cancelación.} Es cooperativa: se activa un \texttt{threading.Event} y el cómputo lo consulta en sus puntos de comprobación. Si no responde en dos segundos, el servicio deja de esperarlo y descarta su resultado, pero el hilo sigue corriendo.
+
+\textbf{Política hilo/proceso.} El SAD prescribe en ADR-09 un orquestador híbrido con un proceso trabajador para los cómputos aislables. \textbf{La implementación usa solo hilos}, y la razón es una medición, no un olvido: el costo de arrancar un proceso y serializar los arreglos hacia él resultó ser de \textbf{1.486\,ms} frente a los \textbf{1.163\,ms} que tarda el cálculo en sí. El proceso costaba más que lo que se quería paralelizar. Como las operaciones pesadas son transformadas de NumPy, que liberan el \textit{GIL} mientras calculan, los hilos sí aprovechan varios núcleos: el reparto de trials entre cuatro hilos en PPC rinde entre \textbf{1,8$\times$} y \textbf{2,7$\times$} con resultado idéntico bit a bit. Lo que los hilos no dan es el aislamiento de fallos ni la cancelación forzada, que siguen siendo el argumento a favor de ADR-09 y quedan pendientes.
+
+\paragraph{Política de memoria.} Cuatro mecanismos, en orden de impacto:
+
+\begin{itemize}
+    \item \textbf{Submuestreo.} Todos los análisis toman una frecuencia de muestreo objetivo y submuestrean antes de calcular. El factor es entero, así que la tasa pedida no siempre se alcanza: \texttt{tasa\_efectiva()} devuelve la tasa \textit{real} resultante, y es esa --- y no la pedida --- la que construye el eje de frecuencias. Tratarlas como iguales corría todo el eje hasta un 11\,\%.
+    \item \textbf{Tipo numérico por etapa.} El cálculo va en \texttt{float64} y lo que se entrega a VTK para dibujar se convierte a \texttt{float32}, que basta para la pantalla y ocupa la mitad.
+    \item \textbf{Cómputo por tandas.} Las transformadas tiempo-frecuencia se calculan en bloques de frecuencias en lugar de reservar la matriz completa: para 500 filas por 60.000 muestras la diferencia es de 480\,MB a 30\,MB.
+    \item \textbf{Memoización de filtros.} El diseño de los filtros IIR está memoizado y devuelve una copia de los coeficientes, para que ningún consumidor pueda alterar la entrada compartida. Al cambiar de trial, el ahorro medido es de \textbf{7,25$\times$}.
+\end{itemize}
+
+\textbf{Liberación determinista.} Al salir de una pestaña, \texttt{stop()} desactiva el interactor de VTK de la extensión. Está documentado como defecto abierto que la memoria no se libera por completo al cerrar un proyecto.
+
+\subsubsection{Fallos, registro y mensajes}
+
+\paragraph{Taxonomía de errores.} El sistema distingue tres severidades, cada una con su canal, a través de \texttt{PluginAlerts}:
+
+\begin{center}
+\small
+\begin{longtable}{|p{0.14\textwidth}|p{0.26\textwidth}|p{0.50\textwidth}|}
+\caption{Severidades y tratamiento} \label{tab:sdd_severidades} \\
+\hline
+\textbf{Severidad} & \textbf{Canal} & \textbf{Cuándo se usa} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Severidad} & \textbf{Canal} & \textbf{Cuándo se usa} \\
+\hline
+\endhead
+\hline
+\endfoot
+
+Error & Diálogo modal (\texttt{alerts.error}) & El usuario pidió algo que no se puede hacer y tiene que enterarse: un archivo ilegible, un parámetro fuera de rango, dos canales no alineados. Interrumpe. \\
+\hline
+Aviso & Diálogo o registro (\texttt{alerts.warning}) & Se puede continuar, pero hay algo que condiciona la lectura del resultado. \\
+\hline
+Informativo & Registro y barra de estado & Avance de una tarea, resultado de una operación, condiciones del cálculo. No interrumpe. \\
+\hline
+
+\end{longtable}
+\end{center}
+
+\textbf{Los avisos sobre el resultado de un cálculo no abren diálogo}, y hay una razón técnica además de la de usabilidad: un modal abre un bucle de eventos anidado, y el temporizador de \texttt{QVTKRenderWindowInteractor} sigue disparando dentro de él sobre widgets que pueden estar ocultos. Tres cierres inesperados de la aplicación se rastrearon hasta ahí. Por eso las extensiones que informan de condiciones del cálculo --- el índice de modulación y PPC --- lo hacen con una función que devuelve una lista de textos, que el plugin registra. Un fallo de verdad sí abre diálogo, pero ese es otro camino: el \textit{slot} de \texttt{failed}.
+
+\paragraph{Captura en los trabajadores.} Una excepción dentro de un cómputo no cruza el límite del hilo: el \texttt{TaskService} la captura y la convierte en la señal \texttt{failed} con su mensaje, que el \textit{slot} correspondiente traduce en un diálogo y en la restauración del botón. El dibujo también va protegido: una excepción al renderizar se registra y se reporta, y el bloque \texttt{finally} restituye el estado de la interfaz pase lo que pase.
+
+\paragraph{Archivos corruptos.} \texttt{FileIOService} valida al leer y lanza una excepción con el motivo; la extensión que la invoca la traduce en un diálogo. Una carpeta de extensión con el descriptor mal formado no impide el arranque: se omite con un mensaje y el resto carga.
+
+\begin{quote}
+\textbf{Brecha respecto al SAD (ADR-11 y ADR-12).} Dos elementos prescritos no existen en el código.
+
+\textbf{No hay manejador global de excepciones.} No se instala ningún \texttt{sys.excepthook}. Una excepción no capturada en el hilo de interfaz --- fuera de los bloques protegidos --- termina el proceso sin que el usuario sepa por qué y sin que quede registro.
+
+\textbf{No hay registro estructurado.} El sistema no usa el módulo \texttt{logging}: los mensajes salen por \texttt{print()}, a través de \texttt{IPlugin.\_log()}, que antepone el nombre de la extensión. No hay niveles, ni marca de tiempo, ni archivo, ni rotación. Diagnosticar un fallo que le ocurrió al usuario exige reproducirlo, que es exactamente lo que ADR-12 pretende evitar. La migración está acotada --- un \texttt{logging.getLogger} por módulo y un \texttt{RotatingFileHandler} en el arranque --- pero toca todas las llamadas existentes a \texttt{print}.
+\end{quote}
+
+\subsubsection{Extensibilidad}
+
+\paragraph{Contrato \texttt{IPlugin}.} Toda extensión hereda de \texttt{IPlugin} y recibe su descriptor en el constructor. Los métodos que debe implementar son tres --- \texttt{stop()}, \texttt{get\_widget(parent)} y \texttt{process(data)} --- y hereda \texttt{initialize(kernel)}, \texttt{start(kernel)}, el acceso a los servicios y el manejo de alertas. La Tabla~\ref{tab:sdd_iplugin} resume el contrato.
+
+\begin{center}
+\small
+\begin{longtable}{|p{0.26\textwidth}|p{0.12\textwidth}|p{0.52\textwidth}|}
+\caption{Contrato \texttt{IPlugin}} \label{tab:sdd_iplugin} \\
+\hline
+\textbf{Método} & \textbf{Origen} & \textbf{Responsabilidad} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Método} & \textbf{Origen} & \textbf{Responsabilidad} \\
+\hline
+\endhead
+\hline
+\endfoot
+
+\texttt{initialize(kernel)} & Heredado & Guardar la referencia al Kernel. Se llama al registrar. \\
+\hline
+\texttt{start(kernel)} & Heredado & Obtener \texttt{MainWindow}, suscribirse al canal de eventos y marcar \texttt{started}. \\
+\hline
+\texttt{stop()} & \textbf{Obligatorio} & Liberar lo propio: tareas en vuelo, interactor de VTK, observadores. \\
+\hline
+\texttt{get\_widget(parent)} & \textbf{Obligatorio} & Construir la vista la primera vez y devolverla siempre. \\
+\hline
+\texttt{process(data)} & \textbf{Obligatorio} & Recibir datos del Kernel o de otra extensión. \\
+\hline
+\texttt{get\_analysis\_params()} / \texttt{apply\_analysis\_params(d)} & Opcional & Guardar y restaurar los parámetros con el proyecto. \\
+\hline
+
+\end{longtable}
+\end{center}
+
+\paragraph{Descriptor \texttt{properties.yml}.} Ocho claves obligatorias: \texttt{id} (identificador único), \texttt{name} (el que se muestra y con el que se registra), \texttt{category} y \texttt{subcategory} (dónde aparece el botón; la interfaz agrupa por subcategoría sin lista fija, de modo que una subcategoría nueva aparece sola), \texttt{version}, \texttt{icon} (archivo dentro de la carpeta), \texttt{logic\_class} (la clase que implementa \texttt{IPlugin}) y \texttt{ui\_class}. Opcional: \texttt{description}, que alimenta la ayuda emergente.
+
+\paragraph{Patrón \texttt{compute} / \texttt{ui}.} Una extensión de análisis se escribe en tres archivos:
+
+\begin{itemize}
+    \item \texttt{compute.py} --- el cálculo. Recibe NumPy, devuelve NumPy. No importa Qt ni VTK. Es lo que corre en el trabajador y lo que se prueba.
+    \item \texttt{<nombre>\_plugin\_ui.py} --- la vista: los controles y el hueco del gráfico.
+    \item \texttt{<nombre>\_plugin.py} --- la lógica de coordinación: lee los parámetros, encola, recibe y dibuja.
+\end{itemize}
+
+La separación no es estética. Permite probar el cálculo sin interfaz --- las 76 pruebas del cómputo de PPC corren en segundos y sin Qt --- y permite ejecutarlo en un hilo trabajador, que es lo que exige la regla de hilos. Nueve de las diecinueve extensiones siguen hoy este patrón; las de frecuencia (\texttt{fft}, \texttt{psd} y sus promedios) todavía tienen el cálculo dentro de la clase del plugin.
+
+\paragraph{Puntos de extensión.} Hay tres, de distinta madurez:
+
+\begin{enumerate}
+    \item \textbf{Extensiones.} Es el punto principal y el único verdaderamente declarativo: basta una carpeta con \texttt{properties.yml} bajo \texttt{plugins/} para que el sistema la descubra al arrancar. No hay que tocar ningún registro central.
+    \item \textbf{Formatos de archivo y de exportación.} No son declarativos. Un formato de lectura nuevo exige un método en \texttt{FileIOService} y una rama en el punto de llamada; uno de exportación, una rama en \texttt{ExportService}. Convertirlos en puntos de extensión con registro --- un diccionario de extensión de archivo a función lectora --- está pendiente.
+    \item \textbf{Eventos.} Cualquier extensión puede publicar un tópico nuevo y cualquiera puede escucharlo, pero sin catálogo ni tipado (véase 2.4.2).
+\end{enumerate}
+
+\paragraph{Guía para crear una extensión nueva.} Los pasos, en orden:
+
+\begin{enumerate}
+    \item Crear la carpeta bajo la categoría que corresponda, por ejemplo \texttt{plugins/analysis/connectivity/<nombre>/}.
+    \item Escribir \texttt{properties.yml} con las ocho claves y colocar el icono.
+    \item Escribir \texttt{compute.py} con el cálculo puro, y sus pruebas en \texttt{test/plugins\_test/}. Conviene hacerlo antes que la interfaz: es donde están los errores que importan.
+    \item Escribir \texttt{<nombre>\_plugin\_ui.py} con los controles y el área del gráfico.
+    \item Escribir \texttt{<nombre>\_plugin.py}: heredar de \texttt{IPlugin}, implementar \texttt{get\_widget}, \texttt{stop} y \texttt{process}, encolar el cálculo con \texttt{submit()} y conectar las cuatro señales con su guarda.
+    \item Si el cálculo es compartido con otra extensión, subirlo a \texttt{core/filters/} en lugar de duplicarlo.
+    \item Verificar que la regla de dependencia se mantiene: que \texttt{compute.py} no importe Qt ni VTK, y que nada de \texttt{core/} importe la extensión nueva.
+\end{enumerate}
+
+No hay que modificar \texttt{main.py}, ni el Kernel, ni \texttt{MainWindow}: el descubrimiento es automático y la agrupación por categoría también.
+
+
 \section{Diseño Detallado}
 
 \subsection{Objetivo de la sección}
@@ -567,7 +913,8 @@ Ninguna clase de este componente existe hoy en el código --- hay cero referenci
     \item \textbf{Relación central:} todos los plugins concretos implementan \texttt{IPlugin} y son descubiertos y gestionados por \texttt{PluginManager}/\allowbreak\texttt{Kernel} a partir de su \texttt{properties.yml}.
     \item \textbf{Servicios resueltos vía Kernel:} \texttt{DataStore} y \texttt{FileIOService} (bajo la clave \texttt{"FileIO"}) sí se consumen mediante \texttt{kernel.get\_\allowbreak service()}.
     \item \textbf{Servicios instanciados directamente:} \texttt{ExportService} y \texttt{MeasurementService} son construidos directamente por \texttt{VTKContextMenu}, y \texttt{SettingsService} no se registra en \texttt{main.py}; los tres aparecen en el SAD como servicios del núcleo, pero ninguno se resuelve hoy mediante \texttt{kernel.get\_\allowbreak service()}.
-    \item \textbf{Piezas prospectivas:} \texttt{TaskOrchestrator}, \texttt{ProjectSession}, \texttt{TooltipHelper} y la familia \texttt{PACAnalysisPlugin} no existen aún en el código; el SAD los presenta como criterios de aceptación directos para la implementación futura, no como documentación de un sistema ya construido.
+    \item \textbf{Piezas construidas desde la redacción inicial de esta sección:} el \texttt{TaskOrchestrator} existe como \texttt{core/services/task\_service.py}, se registra en \texttt{main.py} bajo la clave \texttt{"TaskService"} y lo consumen siete extensiones; la persistencia de proyecto existe como \texttt{core/services/project\_service.py}; y la familia de análisis de PAC existe como \texttt{Pac\_plugin} con sus tres modos, además de \texttt{Mi\_plugin} y \texttt{Ppc\_plugin}. Su funcionamiento se documenta en la Sección~\ref{sec:sdd_arq_impl}.
+    \item \textbf{Piezas todavía prospectivas:} \texttt{TooltipHelper}. Y de las decisiones del SAD siguen sin implementarse la máquina de estados del ciclo de vida (ADR-02), el catálogo tipado de eventos (ADR-03), el control de admisión por costo (ADR-10), el manejador global de excepciones (ADR-11) y el registro con archivo rotativo (ADR-12); la Tabla~\ref{tab:sdd_traza_adr} recoge el estado de las trece.
     \item \textbf{Flujo de control:} \texttt{MainWindow} actúa como contenedor principal que orquesta la interacción entre plugins a través del \texttt{Kernel}.
 \end{itemize}
 
@@ -587,7 +934,7 @@ Los flujos descritos abarcan cuatro funcionalidades: la carga de una señal, la 
 
 \textbf{3. Exportar resultados.} El usuario hace clic derecho sobre un gráfico y selecciona \textit{Export as image} o \textit{Export table} desde el menú de \texttt{VTKContextMenu}. Según la opción, se invoca \texttt{ExportService.export\_\allowbreak image(format)} --- que captura la ventana VTK con \texttt{vtkWindowToImageFilter} y la escribe con el \textit{writer} correspondiente a png/jpg/jpeg/bmp/tiff --- o \texttt{export\_\allowbreak table(fmt)}, que recorre los \textit{plots} del gráfico activo y escribe el resultado en csv, xlsx o json. En ambos casos, \texttt{ExportService} usa \texttt{PluginAlerts} para confirmar el éxito o reportar un error, sin interrumpir el estado del sistema.
 
-\textbf{4. Guardar y reabrir un proyecto (prospectivo).} Al cerrar el proyecto activo, el investigador elige \textit{Guardar}; \texttt{ProjectSession.guardar()} persistiría la señal activa, los trials, los análisis y los parámetros de la sesión en un archivo \texttt{.glab}, liberando a continuación la memoria de la señal activa. Al abrir un \texttt{.glab} existente, \texttt{abrir(ruta)} verificaría con \texttt{validar\_\allowbreak ruta\_\allowbreak señal()} que el archivo de señal referenciado siga disponible, despacharía su recarga al \texttt{TaskOrchestrator} --- que reutilizaría \texttt{FileIOService} fuera del hilo de interfaz --- y restauraría los trials y análisis directamente en \texttt{DataStore} mediante escritura sincronizada. Ninguna clase de este flujo existe hoy en el código: es el criterio de aceptación para la funcionalidad descrita en el SAD (UC-03).
+\textbf{4. Guardar y reabrir un proyecto.} \textit{(Flujo descrito como prospectivo en la redacción inicial. Existe hoy \texttt{core/services/project\_service.py}, y las extensiones de análisis implementan \texttt{get\_analysis\_params()} / \texttt{apply\_analysis\_params()} para guardar y restaurar sus parámetros; el párrafo siguiente describe el diseño previsto en el SAD y debe contrastarse con esa implementación.)} Al cerrar el proyecto activo, el investigador elige \textit{Guardar}; \texttt{ProjectSession.guardar()} persistiría la señal activa, los trials, los análisis y los parámetros de la sesión en un archivo \texttt{.glab}, liberando a continuación la memoria de la señal activa. Al abrir un \texttt{.glab} existente, \texttt{abrir(ruta)} verificaría con \texttt{validar\_\allowbreak ruta\_\allowbreak señal()} que el archivo de señal referenciado siga disponible, despacharía su recarga al \texttt{TaskOrchestrator} --- que reutilizaría \texttt{FileIOService} fuera del hilo de interfaz --- y restauraría los trials y análisis directamente en \texttt{DataStore} mediante escritura sincronizada. Ninguna clase de este flujo existe hoy en el código: es el criterio de aceptación para la funcionalidad descrita en el SAD (UC-03).
 
 \subsection{Persistencia y Modelos de Datos}
 
