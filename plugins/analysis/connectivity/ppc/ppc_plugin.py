@@ -496,7 +496,7 @@ class Ppc_plugin(IPlugin):
     def exportar_resultados(self, fmt: str):
         """Exporta los números de la última ejecución, con los parámetros que la produjeron."""
         if not self._ultimo or self.vtk_menu is None:
-            self.alerts.info("Primero genera un PPC para poder exportar sus resultados.")
+            self.alerts.warning("Primero genera un PPC para poder exportar sus resultados.")
             return
         self.vtk_menu.export_service.export_sections(self._secciones_resultado(), fmt)
 

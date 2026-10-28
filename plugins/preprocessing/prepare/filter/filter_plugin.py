@@ -21,6 +21,7 @@ from core.filters.artifacts import receta_filtro
 from core.filters.bandpass import filtrar_banda, filtrar_columnas
 from plugins.preprocessing.prepare.artifact_remove.artifact_logic import (
     descartar_derivado, escribir_modificacion, preparar_modificacion)
+from core.utils.submuestreo import agregar_columna
 
 
 def filtrar_vista_previa(signal, trial, low, high, order, fs, type="butterworth", ctx=None):
@@ -339,8 +340,7 @@ class Filter_plugin(IPlugin):
 
             # --- Create and configure chart ---
             chart = vtk.vtkChartXY()
-            plot = chart.AddPlot(vtk.vtkChart.LINE)
-            plot.SetInputData(table, 0, 1)
+            plot = agregar_columna(chart, table, 1)
             plot.SetWidth(1.2)
             plot.SetColor(0, 0, 0)
             plot.SetLabel(f"Filtered {type.capitalize()}")

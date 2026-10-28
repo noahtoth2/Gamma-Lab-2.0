@@ -2,12 +2,13 @@ from datetime import datetime
 from PyQt5.QtWidgets import QFileDialog
 import os
 import vtk
-import pandas as pd
 import csv
 import json
 import numpy as np
 
 from core.utils.plugin_alerts import PluginAlerts
+from core.utils.submuestreo import tabla_de
+from core.utils.xlsx_writer import escribir_xlsx
 
 class ExportService:
     """
@@ -91,7 +92,7 @@ class ExportService:
 
             chart = self.get_active_chart()
             if chart is None:
-                self.alerts.error("There is no chart to export.")
+                self.alerts.warning("There is no chart to export.")
                 return
 
             signal_name, channel_name, plugin_name = self.get_names()
@@ -170,10 +171,7 @@ class ExportService:
                         w.writerows(rows)
                         w.writerow([])
             elif fmt == "xlsx":
-                with pd.ExcelWriter(filename) as writer:
-                    for name, (headers, rows) in sections.items():
-                        pd.DataFrame(rows, columns=headers).to_excel(
-                            writer, sheet_name=str(name)[:31], index=False)
+                escribir_xlsx(filename, sections)
             elif fmt == "json":
                 data = {name: [dict(zip(headers, row)) for row in rows]
                         for name, (headers, rows) in sections.items()}
@@ -219,7 +217,7 @@ class ExportService:
     def _export_heatmap_table(self, chart, fmt, filename=None):
         secciones = self._heatmap_sections(chart)
         if secciones is None:
-            self.alerts.error("The chart does not contain data to export.")
+            self.alerts.warning("The chart does not contain data to export.")
             return
         self.export_sections(secciones, fmt, filename)
 
@@ -285,7 +283,7 @@ class ExportService:
             data_rows, headers, series = [], [], []
             for i in range(chart.GetNumberOfPlots()):
                 plot = chart.GetPlot(i)
-                table = plot.GetInput()
+                table = tabla_de(plot)   # full data, not the reduced series that is drawn (R73)
                 if table is None:
                     continue
                 x_col = table.GetColumn(0)
@@ -311,9 +309,7 @@ class ExportService:
                     w.writerow(headers)
                     w.writerows(data_rows)
             elif fmt == "xlsx":
-                import pandas as pd
-                df = pd.DataFrame(data_rows, columns=headers)
-                df.to_excel(filename, index=False)
+                escribir_xlsx(filename, {"Sheet1": (headers, data_rows)})
             elif fmt == "json":
                 data_dict = [dict(zip(headers, row)) for row in data_rows]
                 with open(filename, "w", encoding="utf-8") as f:

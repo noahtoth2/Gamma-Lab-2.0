@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import QFileDialog, QHeaderView
 from core.plugins.interfaces import IPlugin
 from core.plugins.meta import PluginMeta
 from core.services.settings_service import SettingsService
+from core.utils.xlsx_writer import escribir_xlsx
 from plugins.measure.slope.slope_plugin_ui import Ui_Slope
 
 
@@ -335,9 +336,8 @@ class SlopePlugin(IPlugin):
             return
 
         try:
-            import pandas as pd
             headers, filas = self._tabla_exportable()
-            pd.DataFrame(filas, columns=headers).to_excel(path, index=False, sheet_name="Measurements")
+            escribir_xlsx(path, {"Measurements": (headers, filas)})
             self._notify(f"Excel exported successfully: {path}")
         except Exception as e:
             self.alerts.error(f"Failed to export Excel:\n{e}")

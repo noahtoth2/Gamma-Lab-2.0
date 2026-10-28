@@ -15,6 +15,7 @@ from core.utils.adapters import trials_matrix_to_vtk_table
 from core.utils.trial_labels import trials_used
 
 from functools import partial
+from core.utils.submuestreo import agregar_columna
 
 
 def calcular_psd(X, fs, target_fs, window, nperseg, noverlap, nfft, ctx=None, log=None):
@@ -340,8 +341,7 @@ class Psd_average_plugin(IPlugin):
         # Only one column (c=1)
         self._log(f"Plotting {table.GetNumberOfColumns()-1} PSD Average curve.")
         
-        plot = self.chart.AddPlot(vtk.vtkChart.LINE)
-        plot.SetInputData(table, 0, 1) # Plot only the first (and only) column
+        plot = agregar_columna(self.chart, table, 1)  # only the first (and only) column
         plot.SetWidth(2.0) # Thick line for the average
 
        # --- Context menu ---

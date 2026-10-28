@@ -2,6 +2,7 @@ from functools import partial
 
 import numpy as np
 import vtk
+from PyQt5 import QtCore
 from PyQt5.QtWidgets import QScrollArea, QVBoxLayout, QWidget
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from vtkmodules.util import numpy_support
@@ -10,6 +11,8 @@ from core.utils.emf_writer import anotar_mapa
 from core.plugins.interfaces import IPlugin
 from core.utils.vtk_context_menu import VTKContextMenu
 from core.utils.trial_labels import trials_used
+from core.utils.vtk_observers import observar
+from core.utils.submuestreo import agregar_linea
 from plugins.analysis.time_frequency.pac import compute as cp
 from plugins.analysis.time_frequency.pac.pac_plugin_ui import Ui_Pac
 
@@ -455,6 +458,18 @@ class Pac_plugin(IPlugin):
         handle.failed.connect(partial(self._on_pac_failed, handle))
         handle.cancelled.connect(partial(self._on_pac_cancelled, handle))
 
+        # R55: the VTK widget is built while the worker computes, so the first
+        # drawing does not pay for it when the result arrives
+        QtCore.QTimer.singleShot(0, self._preparar_vtk)
+
+    def _preparar_vtk(self):
+        if self.ui is None:
+            return
+        try:
+            self.ensure_vtk()
+        except Exception as e:
+            self._log("ensure_vtk (previo):", e)
+
     def _terminar_calculo(self):
         self._calculando = False
         self._handle = None
@@ -489,15 +504,20 @@ class Pac_plugin(IPlugin):
             self.ensure_vtk()
             usados = getattr(self, "_trials_en_curso", None) or {}
             etiqueta_trials = usados.get("label", "")
+            # R55: `_actualizar_menu` ya vuelve a dibujar al apuntar el menú a los
+            # gráficos nuevos; dibujar antes también es pagar el render dos veces
+            menu_dibuja = (self.vtk_menu is not None
+                           and getattr(self.vtk_menu, "measure_service", None) is not None)
             if tipo == "PAC Psel":
-                self.render_psel(resultado)
+                self.render_psel(resultado, dibujar=not menu_dibuja)
                 detalle = f"{resultado.n_ciclos} ciclo(s)"
                 if resultado.ciclos_descartados:
                     detalle += (f", {resultado.ciclos_descartados} omitido(s) por "
                                 f"quedar pegados al borde de la señal")
             else:
                 self.render_resultado(
-                    resultado, f"{tipo} — {etiqueta_trials}" if etiqueta_trials else tipo)
+                    resultado, f"{tipo} — {etiqueta_trials}" if etiqueta_trials else tipo,
+                    dibujar=not menu_dibuja)
                 detalle = f"{resultado.n_trials} trial(s)"
             self._ultimo = {"parametros": self._params_en_curso, "resultado": resultado}
             self._trials_used = usados or None
@@ -566,8 +586,7 @@ class Pac_plugin(IPlugin):
         self._context_view = vtk.vtkContextView()
         self._context_view.SetRenderWindow(self.vtk_widget.GetRenderWindow())
         self._context_view.GetRenderer().SetBackground(*self.FONDO)
-        self.vtk_widget.AddObserver(vtk.vtkCommand.EndInteractionEvent,
-                                    self._sincronizar_eje_de_tiempo)
+        observar(self.vtk_widget, vtk.vtkCommand.EndInteractionEvent, self._sincronizar_eje_de_tiempo)
         self.vtk_widget.Initialize()
         self.vtk_widget.Start()
 
@@ -605,7 +624,7 @@ class Pac_plugin(IPlugin):
         finally:
             self._sincronizando = False
 
-    def render_resultado(self, r, titulo="PAC"):
+    def render_resultado(self, r, titulo="PAC", dibujar=True):
         """Dibuja las salidas apiladas, como hace open_signal con sus canales."""
         escena = self._context_view.GetScene()
         escena.ClearItems()
@@ -654,9 +673,10 @@ class Pac_plugin(IPlugin):
             escena.AddItem(getattr(chart, "item", chart))
         self._ajustar_alto_del_lienzo()
         self._reacomodar()
-        self._context_view.GetRenderWindow().Render()
+        if dibujar:
+            self._context_view.GetRenderWindow().Render()
 
-    def render_psel(self, r):
+    def render_psel(self, r, dibujar=True):
         """Los 13 paneles de PAC Psel, apilados y deslizables.
 
         MATLAB abre **12 ventanas sueltas**, varias con dos `subplot` dentro —
@@ -736,7 +756,8 @@ class Pac_plugin(IPlugin):
             escena.AddItem(getattr(chart, "item", chart))
         self._ajustar_alto_del_lienzo()
         self._reacomodar()
-        self._context_view.GetRenderWindow().Render()
+        if dibujar:
+            self._context_view.GetRenderWindow().Render()
 
     def _grafico_ciclos(self, pila, promedio, etiqueta, color_promedio):
         """Los ciclos detectados, uno encima de otro, con su promedio marcado.
@@ -765,22 +786,14 @@ class Pac_plugin(IPlugin):
                                              self.MAX_TRAZAS_CICLOS).astype(int))
 
         for c in columnas:
-            tabla = vtk.vtkTable()
-            tabla.AddColumn(self._columna(x, "Muestra"))
-            tabla.AddColumn(self._columna(np.nan_to_num(pila[:, c]), f"c{c}"))
-            linea = chart.AddPlot(vtk.vtkChart.LINE)
-            linea.SetInputData(tabla, 0, 1)
+            linea = agregar_linea(chart, x, np.nan_to_num(pila[:, c]), "Muestra", f"c{c}")
             linea.SetWidth(0.6)
             linea.SetColor(150, 170, 200, 70)      # tenue: son el fondo
             linea.LegendVisibilityOff()
 
         if promedio is not None:
             prom = np.nan_to_num(np.asarray(promedio, dtype=np.float64))
-            tabla = vtk.vtkTable()
-            tabla.AddColumn(self._columna(np.arange(prom.size, dtype=np.float64), "Muestra"))
-            tabla.AddColumn(self._columna(prom, "Promedio"))
-            linea = chart.AddPlot(vtk.vtkChart.LINE)
-            linea.SetInputData(tabla, 0, 1)
+            linea = agregar_linea(chart, np.arange(prom.size, dtype=np.float64), prom, "Muestra", "Promedio")
             linea.SetWidth(2.5)
             linea.SetColor(*color_promedio, 255)
             linea.LegendVisibilityOff()
@@ -1002,13 +1015,9 @@ class Pac_plugin(IPlugin):
 
     def _grafico_senal(self, tiempo, serie, etiqueta, unidad="Amplitud"):
         n = min(len(tiempo), len(serie))
-        tabla = vtk.vtkTable()
-        tabla.AddColumn(self._columna(np.asarray(tiempo[:n]), "Tiempo"))
-        tabla.AddColumn(self._columna(np.nan_to_num(np.asarray(serie[:n])), etiqueta))
-
         chart = vtk.vtkChartXY()
-        linea = chart.AddPlot(vtk.vtkChart.LINE)
-        linea.SetInputData(tabla, 0, 1)
+        linea = agregar_linea(chart, np.asarray(tiempo[:n]), np.nan_to_num(np.asarray(serie[:n])),
+                              "Tiempo", etiqueta)
         linea.SetWidth(1.0)
         linea.SetColor(40, 90, 190, 255)
         linea.LegendVisibilityOff()
