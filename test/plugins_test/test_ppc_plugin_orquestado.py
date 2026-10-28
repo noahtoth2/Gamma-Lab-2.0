@@ -360,7 +360,9 @@ def test_los_avisos_se_registran_sin_abrir_dialogos(listo):
     p.on_create_ppc()
     assert esperar(lambda: p._ultimo is not None)
 
-    assert any("cono de influencia" in r for r in registrado)
+    # Con el modo de bordes por omisión el mapa sale lleno, así que el aviso
+    # que toca es el de que los extremos se calcularon con menos muestras.
+    assert any("n_por_celda" in r for r in registrado)
     assert dialogos == []
 
 

@@ -387,3 +387,19 @@ def test_cut_trials_stim_channel_differs_from_target_channel():
     for k, onset in enumerate(on):
         assert abs(R["trials"][zero_idx, k] - ds.signals[0, onset]) < 1e-6
 
+
+
+# ---------------------------------------------------------------------
+# Threshold shown in mV, applied in the stimulus channel's unit
+# ---------------------------------------------------------------------
+@pytest.mark.parametrize("unit, expected", [
+    ("mV", 0.7), ("V", 0.0007), ("uV", 700.0), ("\u00b5V", 700.0), ("nV", 700000.0),
+    (" mv ", 0.7),
+])
+def test_mv_to_unit_voltage_units(unit, expected):
+    assert tr.mv_to_unit(0.7, unit) == pytest.approx(expected)
+
+
+@pytest.mark.parametrize("unit", ["a.u.", "pA", "", None])
+def test_mv_to_unit_non_voltage_returns_none(unit):
+    assert tr.mv_to_unit(0.7, unit) is None

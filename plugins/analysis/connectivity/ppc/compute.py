@@ -54,6 +54,8 @@ VENTANA_MINIMA_S = 0.05   # el `wd` del panel, ahora como piso
 N_OBJETIVO = 20           # muestras independientes a reunir por celda
 SOLAPE = 0.5              # entre dos columnas consecutivas de la rejilla
 FILAS_POR_TANDA = 32      # cuántas frecuencias se transforman de una vez
+BORDES = "recortar"       # "recortar" llena el mapa hasta los extremos;
+                          # "descartar" deja el cono de influencia en blanco
 HILOS = MAX_HILOS         # hilos para repartir los trials; 1 los deja en serie
 # Medido el 25 de octubre sobre trials de 3 s a 2.000 Hz, el mejor de tres
 # corridas, con los MISMOS datos en las dos columnas:
@@ -133,7 +135,10 @@ class ResultadoPPC:
     frecuencias: np.ndarray     # eje Y en Hz, descendente
     tiempos: np.ndarray         # eje X en s, rejilla común a todas las filas
     ventanas_s: np.ndarray      # la ventana que usó cada fila
-    n_muestras: np.ndarray      # N por fila = independientes × trials
+    n_muestras: np.ndarray      # N nominal por fila = independientes × trials
+    n_por_celda: np.ndarray     # N real de CADA celda; en los extremos baja
+                                # porque la ventana se recortó contra el borde
+    bordes: str                 # "recortar" (mapa lleno) o "descartar" (cono)
     fs_efectiva: float
     fs_pedida: float            # la que se escribió en el panel, que no siempre
                                 # se alcanza: el factor de submuestreo es entero
@@ -229,7 +234,7 @@ def _trials_planos(x, canal):
 
 
 def _geometria(frecuencias, fs, n_muestras_trial, n_trials, wd, ciclos,
-               solape, n_objetivo):
+               solape, n_objetivo, bordes="recortar"):
     """Qué ventana le toca a cada fila, y dónde caen las columnas.
 
     `n_ind` es cuántas muestras independientes hay que pedirle a **cada** trial
@@ -263,27 +268,55 @@ def _geometria(frecuencias, fs, n_muestras_trial, n_trials, wd, ciclos,
     centro = (n_muestras_trial - 1) // 2
     centros = np.arange(centro % paso, n_muestras_trial, paso)
 
-    # Una celda solo vale si su ventana cabe entera: es el cono de influencia
-    # que toda transformada de wavelet dibuja, y por eso las filas de abajo
-    # pierden los extremos.
+    # --- Donde empieza y acaba la ventana de cada celda.
+    # `bordes="descartar"`: solo valen las celdas cuya ventana cabe ENTERA.
+    # Es el cono de influencia clásico y deja los extremos en blanco.
+    # `bordes="recortar"`: la ventana se corta contra el final del trial y la
+    # celda se calcula con las muestras que haya. Da un valor **más ruidoso,
+    # no falso**: el enrollado de la FFT revuelve la fase hasta 60° pegado al
+    # borde, pero revuelve los dos canales por separado, así que su diferencia
+    # sigue siendo aleatoria. Medido con ruido independiente, las celdas del
+    # borde dan entre −0,05 y +0,13, o sea ruido, no acoplamiento inventado.
+    # Lo que sí baja es la N, y por eso se cuenta **por celda**.
     semi = largos // 2
-    cabe = ((centros[None, :] - semi[:, None] >= 0)
-            & (centros[None, :] + semi[:, None] <= n_muestras_trial - 1))
+    if bordes == "descartar":
+        lo = centros[None, :] - semi[:, None]
+        hi = centros[None, :] + semi[:, None]
+        cabe = (lo >= 0) & (hi <= n_muestras_trial - 1)
+        lo = np.clip(lo, 0, n_muestras_trial - 1)
+        hi = np.clip(hi, 0, n_muestras_trial - 1)
+    else:
+        lo = np.clip(centros[None, :] - semi[:, None], 0, n_muestras_trial - 1)
+        hi = np.clip(centros[None, :] + semi[:, None], 0, n_muestras_trial - 1)
+        cabe = hi > lo
 
-    # Las columnas de los extremos no le caben a NADIE, ni siquiera a la fila
-    # más rápida. Se recortan en vez de devolverlas enteras en NaN: una columna
-    # vacía en el borde es exactamente lo que se le critica al MATLAB, y da
-    # igual que aquí sea NaN y allí un cero.
+    # Las columnas que no le sirven a NADIE se recortan en vez de devolverlas
+    # enteras en NaN: una columna vacía en el borde es exactamente lo que se le
+    # critica al MATLAB, y da igual que aquí sea NaN y allí un cero.
     con_dato = cabe.any(axis=0)
     centros, cabe = centros[con_dato], cabe[:, con_dato]
+    lo, hi = lo[:, con_dato], hi[:, con_dato]
 
-    return largos, semi, ventanas_s, n_ind, centros, cabe
+    # Muestras que de verdad se promedian en cada celda, y las independientes
+    # que salen de ellas. Con `descartar` son todas iguales dentro de una fila;
+    # con `recortar`, las de los extremos tienen menos.
+    cuenta = (hi - lo + 1).astype(np.float64)
+    # La N de una celda recortada baja en la misma proporcion que su ventana.
+    # Se deja FRACCIONARIA a proposito: la formula del PPC admite cualquier
+    # N > 1, y redondear hacia arriba —o peor, poner un minimo de 1 como hacia
+    # una version anterior de esto— es exactamente el error que se le critica a
+    # MATLAB: declarar mas muestras independientes de las que hay. Una celda
+    # con media ventana tiene media N, y asi queda escrito.
+    n_ind_celda = n_ind[:, None] * (cuenta / largos[:, None])
+
+    return largos, lo, hi, ventanas_s, n_ind, n_ind_celda, cuenta, centros, cabe
 
 
 def ppc_mapa(ctx, trials_1, trials_2, fs_calculado, fs, fmin, fmax,
              wd=VENTANA_MINIMA_S, ciclos=CICLOS_PPC, n_freq=None,
              solape=SOLAPE, n_objetivo=N_OBJETIVO, eje_log=True, t0=0.0,
-             canal_1="canal 1", canal_2="canal 2", hilos=None):
+             canal_1="canal 1", canal_2="canal 2", hilos=None,
+             bordes=BORDES):
     """El mapa de PPC entre dos canales, frecuencia contra tiempo.
 
     `trials_1` y `trials_2` son matrices `(muestras, trials)` **ya alineadas**
@@ -349,15 +382,21 @@ def ppc_mapa(ctx, trials_1, trials_2, fs_calculado, fs, fmin, fmax,
     _trials_planos(x1, canal_1)
     _trials_planos(x2, canal_2)
 
+    if bordes not in ("recortar", "descartar"):
+        raise ValueError(
+            f"`bordes` solo admite 'recortar' o 'descartar' (se recibió {bordes!r}).")
+
     frecs = eje_frecuencias(fmin, fmax, ciclos, n_freq, log=eje_log)
-    largos, semi, ventanas_s, n_ind, centros, cabe = _geometria(
-        frecs, fs_efectiva, n, n_trials, wd, ciclos, solape, n_objetivo)
+    (largos, lo_v, hi_v, ventanas_s, n_ind, n_ind_celda, cuenta,
+     centros, cabe) = _geometria(frecs, fs_efectiva, n, n_trials, wd, ciclos,
+                                 solape, n_objetivo, bordes)
 
     # Una celda se puede medir si su ventana cabe **y** reúne al menos dos
     # muestras independientes: con una sola no hay ningún par que comparar, y
     # el PPC es precisamente la media sobre los pares.
     N_fila = n_ind * n_trials
-    if not (cabe.any() and np.any(N_fila >= 2)):
+    N_celda = n_ind_celda * n_trials
+    if not (cabe.any() and np.any(N_celda[cabe] >= 2)):
         pedida = 2.0 * ciclos * int(np.ceil(n_objetivo / n_trials)) / frecs.max()
         raise ValueError(
             f"Ninguna frecuencia de la banda se puede medir con estos trials. "
@@ -400,9 +439,8 @@ def ppc_mapa(ctx, trials_1, trials_2, fs_calculado, fs, fmin, fmax,
                 validos = cabe[i]
                 if not validos.any():
                     continue
-                c = centros[validos]
-                propio[i, validos] += (acumulada[j, c + semi[i] + 1]
-                                       - acumulada[j, c - semi[i]])
+                propio[i, validos] += (acumulada[j, hi_v[i, validos] + 1]
+                                       - acumulada[j, lo_v[i, validos]])
         return propio
 
     acum = np.zeros((frecs.size, centros.size), dtype=np.complex128)
@@ -451,15 +489,13 @@ def ppc_mapa(ctx, trials_1, trials_2, fs_calculado, fs, fmin, fmax,
     # 1,74 seria ajustar una constante a una sola medida y heredar su
     # dependencia de `ciclos`. Hay una prueba que fija el signo y el tamano del
     # sesgo, para que un cambio futuro que lo vuelva positivo salte.
-    total = largos[:, None] * n_trials
-    plv = np.abs(acum) / total
-
-    N = N_fila[:, None].astype(np.float64)
     with np.errstate(invalid="ignore", divide="ignore"):
+        plv = np.abs(acum) / (cuenta * n_trials)
+        N = N_celda.astype(np.float64)
         mapa = (N * plv ** 2 - 1.0) / (N - 1.0)
 
     mapa[~cabe] = np.nan
-    mapa[np.broadcast_to(N < 2, mapa.shape)] = np.nan
+    mapa[N < 2] = np.nan
 
     sin_resolver = int(np.sum(np.all(np.isnan(mapa), axis=1)))
 
@@ -469,6 +505,8 @@ def ppc_mapa(ctx, trials_1, trials_2, fs_calculado, fs, fmin, fmax,
     return ResultadoPPC(
         mapa=mapa, frecuencias=frecs, tiempos=t0 + centros / fs_efectiva,
         ventanas_s=ventanas_s, n_muestras=n_ind * n_trials,
+        n_por_celda=(N_celda * np.where(cabe, 1, np.nan)),
+        bordes=str(bordes),
         fs_efectiva=fs_efectiva, fs_pedida=float(fs), n_trials=n_trials,
         ventana_min_s=float(wd), solape=float(solape), ciclos=float(ciclos),
         n_objetivo=int(n_objetivo), filas_sin_resolver=sin_resolver,
@@ -542,9 +580,9 @@ def avisos(r):
                       f"para 5, así que cualquier número es posible.")
         fuera.append(texto)
 
-    # --- El cono de influencia
+    # --- Los extremos: o salen en blanco, o salen con menos respaldo
     medibles = r.mapa[~sin_medir]
-    if medibles.size:
+    if medibles.size and r.bordes == "descartar":
         blanco = float(np.mean(np.isnan(medibles)))
         if blanco > 0.05:
             fuera.append(
@@ -553,5 +591,23 @@ def avisos(r):
                 f"frecuencias bajas —hasta {r.ventanas_s.max():.2f} s— no cabe pegada "
                 f"al borde del trial. No es un dato que falte, es que ahí no se puede "
                 f"calcular.")
+    elif medibles.size and r.bordes == "recortar":
+        # El mapa sale lleno, y por eso hay que decir lo que esconde: en los
+        # extremos la ventana se cortó contra el borde del trial y la celda se
+        # calculó con menos muestras. No decirlo seria enseñar un borde con la
+        # misma pinta de solido que el centro, que es la mentira que este
+        # puerto le corrige a MATLAB.
+        nominal = r.n_muestras[:, None].astype(np.float64)
+        flojo = np.isfinite(r.n_por_celda) & (r.n_por_celda < 0.75 * nominal)
+        if flojo.any():
+            proporcion = float(np.mean(flojo[np.isfinite(r.n_por_celda)]))
+            peor = float(np.nanmin(r.n_por_celda / nominal)) * 100
+            fuera.append(
+                f"El mapa llega hasta los extremos porque la ventana se recorta "
+                f"contra el borde del trial, pero el {proporcion * 100:.0f} % de las "
+                f"celdas se calculó con menos muestras de las previstas —la peor, con "
+                f"el {peor:.0f} %—. Ahí el valor es correcto pero más ruidoso; "
+                f"`n_por_celda` dice cuánto respalda a cada una. Con "
+                f"`bordes='descartar'` esa zona sale en blanco en vez de recortada.")
 
     return fuera

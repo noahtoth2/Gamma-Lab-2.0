@@ -198,9 +198,10 @@ def test_n_muestras_alcanza_el_objetivo_donde_hay_dato(con_ruido):
     assert np.all(r.n_muestras[vivas] >= r.n_objetivo)
 
 
-def test_las_filas_lentas_pierden_los_bordes_y_no_el_centro(con_ruido):
-    """El cono de influencia: una ventana ancha no cabe pegada al borde."""
-    r = con_ruido
+def test_las_filas_lentas_pierden_los_bordes_y_no_el_centro():
+    """El cono de influencia, que es lo que se ve con `bordes='descartar'`:
+    una ventana ancha no cabe pegada al borde."""
+    r = mapa(ruido(1), ruido(2), bordes="descartar")
     lenta = r.mapa[-1]      # la frecuencia más baja, la de ventana más ancha
     rapida = r.mapa[0]
     assert np.sum(np.isnan(lenta)) > np.sum(np.isnan(rapida))
@@ -217,11 +218,17 @@ def test_el_ppc_vive_entre_menos_uno_y_uno(con_ruido):
 
 
 def test_la_cota_inferior_es_la_teorica(con_ruido):
-    """`(N·PLV²−1)/(N−1)` no puede bajar de `−1/(N−1)`."""
+    """`(N·PLV²−1)/(N−1)` no puede bajar de `−1/(N−1)`.
+
+    Con la ventana recortada la N baja en los extremos, así que la cota se
+    calcula **por celda**: una celda con media ventana tiene media N y puede
+    bajar más que las del centro.
+    """
     r = con_ruido
-    cota = -1.0 / (r.n_muestras.min() - 1)
-    v = r.mapa[~np.isnan(r.mapa)]
-    assert v.min() >= cota - 1e-12
+    with np.errstate(divide="ignore", invalid="ignore"):
+        cota = -1.0 / (r.n_por_celda - 1.0)
+    vivas = ~np.isnan(r.mapa)
+    assert np.all(r.mapa[vivas] >= cota[vivas] - 1e-9)
 
 
 # ============================================================
@@ -474,7 +481,7 @@ def test_avisa_del_cono_de_influencia():
     """El blanco de los bordes no es un dato que falte, y quien mire el mapa
     por primera vez lo va a leer como si lo fuera."""
     r = pc.ppc_mapa(None, ruido(42, n_tr=4), ruido(43, n_tr=4),
-                    FS, FS, 3.0, 200.0, n_freq=30)
+                    FS, FS, 3.0, 200.0, n_freq=30, bordes="descartar")
     texto = junto(r)
     assert "cono de influencia" in texto
     assert "no es un dato que falte" in texto.lower()
@@ -771,3 +778,103 @@ def test_dos_senoidales_sin_relacion_se_quedan_en_el_suelo():
     r = pc.ppc_mapa(None, u, v, fs, fs, 0.1, 500.0)
     bajas = r.frecuencias <= 20.0
     assert np.nanmax(np.abs(np.nanmean(r.mapa[bajas], axis=1))) < 0.1
+
+
+# ============================================================
+#   Los dos modos de borde
+# ============================================================
+# `descartar` deja el cono en blanco; `recortar` corta la ventana contra el
+# borde y llena el mapa. Lo segundo es legítimo —el enrollado revuelve la fase
+# de los dos canales por separado, así que su diferencia sigue siendo
+# aleatoria— pero solo si la N de esas celdas se cuenta de verdad.
+
+def test_recortar_llena_el_mapa():
+    a, b = ruido(100), ruido(101)
+    lleno = mapa(a, b, bordes="recortar")
+    cono = mapa(a, b, bordes="descartar")
+    assert np.mean(np.isnan(cono.mapa)) > 0.05
+    assert np.mean(np.isnan(lleno.mapa)) == 0.0
+
+
+def test_recortar_no_inventa_acoplamiento():
+    """Lo que no puede pasar: que al llenar el mapa aparezca sincronía donde
+    solo hay ruido. Es el defecto de MATLAB por otra puerta."""
+    a, b = ruido(102), ruido(103)
+    lleno = mapa(a, b, bordes="recortar")
+    cono = mapa(a, b, bordes="descartar")
+
+    assert abs(np.nanmean(lleno.mapa)) < 0.05
+    # y los extremos no se despegan del centro
+    borde = lleno.mapa[:, :4]
+    centro = lleno.mapa[:, lleno.tiempos.size // 2 - 2:lleno.tiempos.size // 2 + 2]
+    assert abs(np.nanmean(borde) - np.nanmean(centro)) < 0.1
+    assert abs(np.nanmean(lleno.mapa) - np.nanmean(cono.mapa)) < 0.05
+
+
+def test_la_n_por_celda_baja_en_los_extremos():
+    """Es lo que hace honesto al modo lleno. Sin esto, una celda de media
+    ventana se declararía tan respaldada como una entera: exactamente la N
+    inflada que este puerto le corrige a MATLAB."""
+    r = mapa(ruido(104), ruido(105), bordes="recortar")
+    nominal = r.n_muestras[:, None]
+
+    assert np.nanmin(r.n_por_celda) < np.nanmax(r.n_por_celda)
+    # el centro conserva la ventana entera
+    medio = r.tiempos.size // 2
+    assert np.allclose(r.n_por_celda[:, medio], r.n_muestras)
+    # y la primera columna no puede declarar mas de lo que promedio
+    assert np.all(r.n_por_celda[:, 0] <= nominal[:, 0] + 1e-9)
+
+
+def test_con_descartar_la_n_por_celda_es_la_de_la_fila():
+    """Si la ventana cabe entera, todas las celdas de la fila valen lo mismo."""
+    r = mapa(ruido(106), ruido(107), bordes="descartar")
+    for i in range(r.frecuencias.size):
+        vivas = ~np.isnan(r.mapa[i])
+        if vivas.any():
+            assert np.allclose(r.n_por_celda[i, vivas], r.n_muestras[i])
+
+
+def test_recortar_avisa_de_que_los_extremos_van_mas_flojos():
+    r = mapa(ruido(108), ruido(109), bordes="recortar")
+    texto = " || ".join(pc.avisos(r))
+    assert "recorta" in texto
+    assert "n_por_celda" in texto
+    assert "cono de influencia" not in texto, "ese aviso es del otro modo"
+
+
+def test_recortar_recupera_un_acoplamiento_real_del_borde():
+    """Lo que el cono dejaba en blanco y la reflexion borraba."""
+    fase0 = fases_iniciales(110)
+    r = mapa(tono(40.0, fase0, semilla_ruido=111),
+             tono(40.0, fase0, desfase=1.0, semilla_ruido=112),
+             bordes="recortar")
+    i = int(np.argmin(np.abs(r.frecuencias - 40.0)))
+    assert r.mapa[i, 0] > 0.8, "el acoplamiento esta ahi desde el primer instante"
+    assert r.mapa[i, -1] > 0.8
+
+
+def test_el_centro_del_mapa_no_depende_del_modo():
+    """Las celdas cuya ventana cabe entera tienen que dar lo mismo en los dos.
+
+    Los dos modos no comparten el eje de tiempo —`descartar` quita las columnas
+    que no le sirven a ninguna fila— así que se emparejan por instante.
+    """
+    a, b = ruido(113), ruido(114)
+    cono = mapa(a, b, bordes="descartar")
+    lleno = mapa(a, b, bordes="recortar")
+
+    comunes = 0
+    for k, t in enumerate(cono.tiempos):
+        j = int(np.argmin(np.abs(lleno.tiempos - t)))
+        assert abs(lleno.tiempos[j] - t) < 1e-9, "los instantes tienen que coincidir"
+        vivas = ~np.isnan(cono.mapa[:, k])
+        if vivas.any():
+            assert np.allclose(cono.mapa[vivas, k], lleno.mapa[vivas, j])
+            comunes += int(vivas.sum())
+    assert comunes > 100, "se esperaban muchas celdas en común"
+
+
+def test_un_modo_de_bordes_inventado_se_rechaza():
+    with pytest.raises(ValueError, match="recortar"):
+        mapa(ruido(115, n_tr=2), ruido(116, n_tr=2), bordes="rellenar")

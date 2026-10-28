@@ -18,17 +18,17 @@
 \contentsline {table}{\numberline {17}{\ignorespaces Extensiones representadas en la vista lógica.}}{40}{table.caption.23}%
 \contentsline {table}{\numberline {18}{\ignorespaces Relaciones estructurales de la vista lógica.}}{42}{table.caption.27}%
 \contentsline {table}{\numberline {19}{\ignorespaces Trazabilidad entre elementos de la vista lógica y requerimientos.}}{43}{table.caption.28}%
-\contentsline {table}{\numberline {20}{\ignorespaces Escenario de calidad 1 --- Integración de un plugin externo}}{54}{table.caption.32}%
-\contentsline {table}{\numberline {21}{\ignorespaces Escenario de calidad 2 --- Carga de señal de gran tamaño}}{55}{table.caption.33}%
-\contentsline {table}{\numberline {22}{\ignorespaces Escenario de calidad 3 --- Manejo de errores en tiempo de ejecución}}{55}{table.caption.34}%
-\contentsline {table}{\numberline {23}{\ignorespaces Escenario de calidad 4 --- Exportación de datos o gráficas}}{56}{table.caption.35}%
-\contentsline {table}{\numberline {24}{\ignorespaces Escenario de calidad 5 --- Operación por un usuario sin experiencia técnica}}{56}{table.caption.36}%
-\contentsline {table}{\numberline {25}{\ignorespaces Escenario de calidad 6 --- Rendimiento con múltiples señales cargadas}}{57}{table.caption.37}%
-\contentsline {table}{\numberline {26}{\ignorespaces Escenario de calidad 7 --- Resiliencia ante archivos corruptos o incompatibles}}{57}{table.caption.38}%
-\contentsline {table}{\numberline {27}{\ignorespaces Escenario de calidad 8 --- Consistencia entre datos ingresados y gráficas generadas}}{58}{table.caption.39}%
-\contentsline {table}{\numberline {28}{\ignorespaces Versiones de dependencias externas ancladas en \texttt {requirements.txt}}}{59}{table.28}%
-\contentsline {table}{\numberline {29}{\ignorespaces M\'etricas, m\'etodo de verificaci\'on y criterio de aceptaci\'on por atributo de calidad}}{59}{table.29}%
-\contentsline {table}{\numberline {30}{\ignorespaces Requerimientos realizados por cada caso de uso}}{62}{table.30}%
-\contentsline {table}{\numberline {31}{\ignorespaces Casos de uso que realizan cada requerimiento}}{64}{table.31}%
-\contentsline {table}{\numberline {32}{\ignorespaces Decisiones arquitectónicas que sostienen cada caso de uso}}{64}{table.32}%
-\contentsline {table}{\numberline {33}{\ignorespaces Cobertura de la trazabilidad entre requerimientos y casos de uso}}{65}{table.caption.40}%
+\contentsline {table}{\numberline {20}{\ignorespaces Escenario de calidad 1 --- Integración de un plugin externo}}{57}{table.caption.32}%
+\contentsline {table}{\numberline {21}{\ignorespaces Escenario de calidad 2 --- Carga de señal de gran tamaño}}{57}{table.caption.33}%
+\contentsline {table}{\numberline {22}{\ignorespaces Escenario de calidad 3 --- Manejo de errores en tiempo de ejecución}}{58}{table.caption.34}%
+\contentsline {table}{\numberline {23}{\ignorespaces Escenario de calidad 4 --- Exportación de datos o gráficas}}{58}{table.caption.35}%
+\contentsline {table}{\numberline {24}{\ignorespaces Escenario de calidad 5 --- Operación por un usuario sin experiencia técnica}}{59}{table.caption.36}%
+\contentsline {table}{\numberline {25}{\ignorespaces Escenario de calidad 6 --- Rendimiento con múltiples señales cargadas}}{59}{table.caption.37}%
+\contentsline {table}{\numberline {26}{\ignorespaces Escenario de calidad 7 --- Resiliencia ante archivos corruptos o incompatibles}}{60}{table.caption.38}%
+\contentsline {table}{\numberline {27}{\ignorespaces Escenario de calidad 8 --- Consistencia entre datos ingresados y gráficas generadas}}{60}{table.caption.39}%
+\contentsline {table}{\numberline {28}{\ignorespaces Versiones de dependencias externas ancladas en \texttt {requirements.txt}}}{61}{table.28}%
+\contentsline {table}{\numberline {29}{\ignorespaces M\'etricas, m\'etodo de verificaci\'on y criterio de aceptaci\'on por atributo de calidad}}{62}{table.29}%
+\contentsline {table}{\numberline {30}{\ignorespaces Requerimientos realizados por cada caso de uso}}{64}{table.30}%
+\contentsline {table}{\numberline {31}{\ignorespaces Casos de uso que realizan cada requerimiento}}{66}{table.31}%
+\contentsline {table}{\numberline {32}{\ignorespaces Decisiones arquitectónicas que sostienen cada caso de uso}}{67}{table.32}%
+\contentsline {table}{\numberline {33}{\ignorespaces Cobertura de la trazabilidad entre requerimientos y casos de uso}}{67}{table.caption.40}%
