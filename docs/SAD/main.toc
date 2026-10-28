@@ -89,37 +89,43 @@
 \contentsline {subsubsection}{\numberline {5.3.9}Flujo general}{48}{subsubsection.5.3.9}%
 \contentsline {subsection}{\numberline {5.4}Vista de Procesos}{49}{subsection.5.4}%
 \contentsline {subsubsection}{\numberline {5.4.1}Propósito}{49}{subsubsection.5.4.1}%
-\contentsline {subsubsection}{\numberline {5.4.2}Notación}{49}{subsubsection.5.4.2}%
-\contentsline {subsubsection}{\numberline {5.4.3}Visión general del modelo}{49}{subsubsection.5.4.3}%
-\contentsline {subsection}{\numberline {5.5}Vista F\'isica}{51}{subsection.5.5}%
-\contentsline {subsubsection}{\numberline {5.5.1}Propósito}{51}{subsubsection.5.5.1}%
-\contentsline {subsubsection}{\numberline {5.5.2}Notación}{51}{subsubsection.5.5.2}%
-\contentsline {subsubsection}{\numberline {5.5.3}Visi\'on general del modelo}{51}{subsubsection.5.5.3}%
-\contentsline {subsubsection}{\numberline {5.5.4}Componentes internos}{52}{subsubsection.5.5.4}%
-\contentsline {subsubsection}{\numberline {5.5.5}Artefactos externos}{53}{subsubsection.5.5.5}%
-\contentsline {section}{\numberline {6}Atributos de calidad}{54}{section.6}%
-\contentsline {subsection}{\numberline {6.1}Escenarios de calidad}{54}{subsection.6.1}%
-\contentsline {subsubsection}{\numberline {6.1.1}Escenario de Calidad 1: Integración de un Plugin Externo}{54}{subsubsection.6.1.1}%
-\contentsline {subsubsection}{\numberline {6.1.2}Escenario de Calidad 2: Carga de Señal de Gran Tamaño}{55}{subsubsection.6.1.2}%
-\contentsline {subsubsection}{\numberline {6.1.3}Escenario de Calidad 3: Manejo de Errores en Tiempo de Ejecución}{55}{subsubsection.6.1.3}%
-\contentsline {subsubsection}{\numberline {6.1.4}Escenario de Calidad 4: Exportación de Datos o Gráficas}{56}{subsubsection.6.1.4}%
-\contentsline {subsubsection}{\numberline {6.1.5}Escenario de Calidad 5: Uso del Sistema sin Experiencia Técnica}{56}{subsubsection.6.1.5}%
-\contentsline {subsubsection}{\numberline {6.1.6}Escenario de Calidad 6: Rendimiento con Múltiples Señales Cargadas}{57}{subsubsection.6.1.6}%
-\contentsline {subsubsection}{\numberline {6.1.7}Escenario de Calidad 7: Resiliencia ante Archivos Corruptos o Incompatibles}{57}{subsubsection.6.1.7}%
-\contentsline {subsubsection}{\numberline {6.1.8}Escenario de Calidad 8: Consistencia entre Datos Ingresados y Gráficas Generadas}{58}{subsubsection.6.1.8}%
-\contentsline {subsection}{\numberline {6.2}Reglas de compatibilidad y versionado}{58}{subsection.6.2}%
-\contentsline {subsection}{\numberline {6.3}M\'etricas y plan de verificaci\'on}{59}{subsection.6.3}%
-\contentsline {subsection}{\numberline {6.4}Plan de evidencia}{60}{subsection.6.4}%
-\contentsline {subsection}{\numberline {6.5}Conclusi\'on}{60}{subsection.6.5}%
-\contentsline {section}{\numberline {7}Trazabilidad de requerimientos y casos de uso}{61}{section.7}%
-\contentsline {subsection}{\numberline {7.1}Fuentes y criterio de construcción}{61}{subsection.7.1}%
-\contentsline {subsection}{\numberline {7.2}De los casos de uso a los requerimientos}{61}{subsection.7.2}%
-\contentsline {subsection}{\numberline {7.3}De los requerimientos a los casos de uso}{62}{subsection.7.3}%
-\contentsline {subsection}{\numberline {7.4}De los casos de uso a las decisiones arquitectónicas}{64}{subsection.7.4}%
-\contentsline {subsection}{\numberline {7.5}Análisis de cobertura}{65}{subsection.7.5}%
-\contentsline {section}{\numberline {8}Anexos}{65}{section.8}%
-\contentsline {subsection}{\numberline {8.1}Anexo A --- Relaci\'on con el SRS}{65}{subsection.8.1}%
-\contentsline {subsection}{\numberline {8.2}Anexo B --- Relaci\'on con el SDD}{65}{subsection.8.2}%
-\contentsline {subsection}{\numberline {8.3}Anexo C --- Trazabilidad global de artefactos}{66}{subsection.8.3}%
-\contentsline {subsection}{\numberline {8.4}Anexo D --- Diagramas y tablas de referencia}{66}{subsection.8.4}%
-\contentsline {section}{\numberline {9}Referencias}{66}{section.9}%
+\contentsline {subsubsection}{\numberline {5.4.2}Notación}{50}{subsubsection.5.4.2}%
+\contentsline {subsubsection}{\numberline {5.4.3}Visión general del modelo}{50}{subsubsection.5.4.3}%
+\contentsline {subsubsection}{\numberline {5.4.4}Inicio de la aplicación}{51}{subsubsection.5.4.4}%
+\contentsline {subsubsection}{\numberline {5.4.5}Apertura de proyecto o carga de una señal}{52}{subsubsection.5.4.5}%
+\contentsline {subsubsection}{\numberline {5.4.6}Procesamiento de señales}{52}{subsubsection.5.4.6}%
+\contentsline {subsubsection}{\numberline {5.4.7}Ejecución de análisis y coordinación de tareas}{52}{subsubsection.5.4.7}%
+\contentsline {subsubsection}{\numberline {5.4.8}Visualización e interacción con los resultados}{53}{subsubsection.5.4.8}%
+\contentsline {subsubsection}{\numberline {5.4.9}Continuación del trabajo, guardado y cierre}{53}{subsubsection.5.4.9}%
+\contentsline {subsection}{\numberline {5.5}Vista f\'isica}{53}{subsection.5.5}%
+\contentsline {subsubsection}{\numberline {5.5.1}Propósito}{53}{subsubsection.5.5.1}%
+\contentsline {subsubsection}{\numberline {5.5.2}Notación}{53}{subsubsection.5.5.2}%
+\contentsline {subsubsection}{\numberline {5.5.3}Visi\'on general del modelo}{54}{subsubsection.5.5.3}%
+\contentsline {subsubsection}{\numberline {5.5.4}Componentes internos}{55}{subsubsection.5.5.4}%
+\contentsline {subsubsection}{\numberline {5.5.5}Artefactos externos}{56}{subsubsection.5.5.5}%
+\contentsline {section}{\numberline {6}Atributos de calidad}{57}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Escenarios de calidad}{57}{subsection.6.1}%
+\contentsline {subsubsection}{\numberline {6.1.1}Escenario de Calidad 1: Integración de un Plugin Externo}{57}{subsubsection.6.1.1}%
+\contentsline {subsubsection}{\numberline {6.1.2}Escenario de Calidad 2: Carga de Señal de Gran Tamaño}{57}{subsubsection.6.1.2}%
+\contentsline {subsubsection}{\numberline {6.1.3}Escenario de Calidad 3: Manejo de Errores en Tiempo de Ejecución}{58}{subsubsection.6.1.3}%
+\contentsline {subsubsection}{\numberline {6.1.4}Escenario de Calidad 4: Exportación de Datos o Gráficas}{58}{subsubsection.6.1.4}%
+\contentsline {subsubsection}{\numberline {6.1.5}Escenario de Calidad 5: Uso del Sistema sin Experiencia Técnica}{59}{subsubsection.6.1.5}%
+\contentsline {subsubsection}{\numberline {6.1.6}Escenario de Calidad 6: Rendimiento con Múltiples Señales Cargadas}{59}{subsubsection.6.1.6}%
+\contentsline {subsubsection}{\numberline {6.1.7}Escenario de Calidad 7: Resiliencia ante Archivos Corruptos o Incompatibles}{60}{subsubsection.6.1.7}%
+\contentsline {subsubsection}{\numberline {6.1.8}Escenario de Calidad 8: Consistencia entre Datos Ingresados y Gráficas Generadas}{60}{subsubsection.6.1.8}%
+\contentsline {subsection}{\numberline {6.2}Reglas de compatibilidad y versionado}{60}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}M\'etricas y plan de verificaci\'on}{61}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.4}Plan de evidencia}{62}{subsection.6.4}%
+\contentsline {subsection}{\numberline {6.5}Conclusi\'on}{63}{subsection.6.5}%
+\contentsline {section}{\numberline {7}Trazabilidad de requerimientos y casos de uso}{63}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Fuentes y criterio de construcción}{63}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}De los casos de uso a los requerimientos}{63}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}De los requerimientos a los casos de uso}{64}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.4}De los casos de uso a las decisiones arquitectónicas}{66}{subsection.7.4}%
+\contentsline {subsection}{\numberline {7.5}Análisis de cobertura}{67}{subsection.7.5}%
+\contentsline {section}{\numberline {8}Anexos}{68}{section.8}%
+\contentsline {subsection}{\numberline {8.1}Anexo A --- Relaci\'on con el SRS}{68}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}Anexo B --- Relaci\'on con el SDD}{68}{subsection.8.2}%
+\contentsline {subsection}{\numberline {8.3}Anexo C --- Trazabilidad global de artefactos}{68}{subsection.8.3}%
+\contentsline {subsection}{\numberline {8.4}Anexo D --- Diagramas y tablas de referencia}{68}{subsection.8.4}%
+\contentsline {section}{\numberline {9}Referencias}{68}{section.9}%

@@ -169,7 +169,7 @@ class Ui_Trials(QtWidgets.QWidget):
         self.thresholdHeaderRow = QtWidgets.QHBoxLayout()
 
         self.lblThTitle = QtWidgets.QLabel(self.panel)
-        self.lblThTitle.setText("Treshold")
+        self.lblThTitle.setText("Threshold")
         self.lblThTitle.setProperty("variant", "subtitle")        
         self.thresholdHeaderRow.addWidget(self.lblThTitle, 1)
 
@@ -193,7 +193,7 @@ class Ui_Trials(QtWidgets.QWidget):
         self.thresholdDoubleSpinBox.setRange(-1e9, 1e9)
         self.thresholdDoubleSpinBox.setSingleStep(0.01)
         self.thresholdDoubleSpinBox.setValue(0.05)
-        self.thresholdDoubleSpinBox.setSuffix(" Hz")
+        self.thresholdDoubleSpinBox.setSuffix(" mV")
         self.thresholdBodyRow.addWidget(self.thresholdDoubleSpinBox, 1)
 
         self.stimNumberSpinBox = QtWidgets.QSpinBox(self.panel)

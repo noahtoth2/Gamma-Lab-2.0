@@ -6,6 +6,18 @@ from core.model.trial_dataset import TrialDataset
 
 EndMode = Literal["fixed", "until_next_onset"]
 
+# ============ Threshold units ============
+# The threshold is compared against the raw stimulus channel, in that channel's
+# own unit. The UI shows it in mV, so it is converted here before detecting.
+_MV_TO_UNIT = {"v": 1e-3, "mv": 1.0, "uv": 1e3, "µv": 1e3, "μv": 1e3, "nv": 1e6}
+
+
+def mv_to_unit(value_mv: float, unit: str) -> Optional[float]:
+    """Convert a value in mV to `unit` (V, mV, uV/µV, nV).
+    Returns None if `unit` is not a voltage (e.g. "a.u.", "pA")."""
+    factor = _MV_TO_UNIT.get((unit or "").strip().lower())
+    return None if factor is None else float(value_mv) * factor
+
 # ============ Onsets ============
 def _detect_onsets_abs(
     signal: np.ndarray,

@@ -22,8 +22,12 @@ from vtkmodules.util import numpy_support
 
 from core.filters.trials import cut_trials_single_channel
 from core.plugins.interfaces import IPlugin
+<<<<<<< HEAD
+=======
 from core.utils.trial_labels import trials_used
+>>>>>>> 999eeb239d85a9390180f810f24343c2c1c29382
 from core.utils.emf_writer import anotar_mapa
+from core.utils.trial_labels import trials_used
 from core.utils.vtk_context_menu import VTKContextMenu
 from plugins.analysis.connectivity.ppc import compute as cp
 from plugins.analysis.connectivity.ppc.ppc_plugin_ui import Ui_Ppc
@@ -328,6 +332,15 @@ class Ppc_plugin(IPlugin):
     # =====================================================
     # === VTK
     # =====================================================
+<<<<<<< HEAD
+    def current_trial_state(self):
+        """PPC trabaja con dos canales a la vez: se muestran los dos."""
+        if self._trials_used:
+            return self.trial_state_from_used(self._trials_used)
+        return super().current_trial_state()
+
+=======
+>>>>>>> 999eeb239d85a9390180f810f24343c2c1c29382
     FONDO = (0.98, 0.98, 0.98)
     # Como el MATLAB: `clim [0 0.5]`, una marca cada 0,5 en log10 etiquetada con
     # `round(10.^v)` (0, 0, 1, 3, 10, 32, 100, 316 Hz) y los mismos títulos.
