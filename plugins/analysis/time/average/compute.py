@@ -1,15 +1,6 @@
 import numpy as np
 
 
-<<<<<<< HEAD
-def promedio_trials(trials, ctx=None):
-    """Promedio muestra a muestra entre los trials.
-
-    Recibe la matriz (muestras, trials) y devuelve un vector de una muestra por
-    fila. El plugin la despacha por el orquestador (R71) aunque con el archivo
-    de prueba tarde menos de un milisegundo, para que todas las operaciones
-    tengan el mismo progreso y cancelación.
-=======
 def promedio_trials(trials, idx=None, ctx=None):
     """Promedio muestra a muestra entre los trials.
 
@@ -18,7 +9,6 @@ def promedio_trials(trials, idx=None, ctx=None):
     en el promedio; `None` promedia todos (R41). El plugin la despacha por el
     orquestador (R71) para que todas las operaciones tengan el mismo progreso y
     cancelación.
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
     """
     datos = np.asarray(trials)
     if datos.size == 0:

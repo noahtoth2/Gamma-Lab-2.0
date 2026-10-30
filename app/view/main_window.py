@@ -41,11 +41,8 @@ from core.utils.plugin_alerts import PluginAlerts
 from core.utils.notifications import NotificationCenter
 from core.utils.task_progress import TaskProgressBar
 from core.utils.trial_labels import describe_trials
-<<<<<<< HEAD
-=======
 from core.utils.vtk_observers import retirar_de, reponer_en
 from core.utils.vtk_ventanas import liberar_ventanas
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
 from core.services.project_service import ProjectService
 
 class MainWindow(QMainWindow):
@@ -229,15 +226,10 @@ class MainWindow(QMainWindow):
         # Build each subcategory and put a divider between them
         subcats = list(subcategories.items())
         if section == "Analysis":
-<<<<<<< HEAD
-            # Connectivity (PPC) goes last; the rest keep their order
-            subcats.sort(key=lambda kv: kv[0] == "Connectivity")
-=======
             def _orden_grupo(kv):
                 valores = [getattr(self.kernel.get_plugin(n).meta, "subcategory_order", None) for n in kv[1]]
                 return max((v for v in valores if v is not None), default=0)
             subcats.sort(key=_orden_grupo)
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
         measurements_row = None
         for idx, (subcat, plugins) in enumerate(subcats):
             group_box = QGroupBox(subcat, self.ui.buttonContainer)
@@ -594,13 +586,10 @@ class MainWindow(QMainWindow):
                 self.active_plugin.stop()
             except Exception as e:
                 self.alerts.error(f"An error occurred while stopping the VTK render plugin.\n\nDetails:\n{str(e)}", "Error stopping plugin")
-<<<<<<< HEAD
-=======
             try:
                 retirar_de(self.active_plugin_widget)   # R58
             except Exception as e:
                 print("retirar_observadores error:", e)
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
             self.active_plugin_widget.setVisible(False)
             if getattr(self.active_plugin.meta, "free_graphics", True):
                 # R45: la ventana OpenGL se libera cuando ya se mostro el modulo siguiente

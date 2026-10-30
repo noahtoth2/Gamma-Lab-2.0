@@ -360,11 +360,7 @@ class AmplitudePlugin(IPlugin):
         if not self.model:
             return
         if not self.model.get_all_rows():
-<<<<<<< HEAD
-            self.alerts.error("No measurements to export.")
-=======
             self.alerts.warning("No measurements to export.")
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
             return
 
         default_path = os.path.join(self._export_dir(), "amplitude_measurements.xlsx")
@@ -378,14 +374,8 @@ class AmplitudePlugin(IPlugin):
             return
 
         try:
-<<<<<<< HEAD
-            import pandas as pd
-            headers, filas = self._tabla_exportable()
-            pd.DataFrame(filas, columns=headers).to_excel(path, index=False, sheet_name="Measurements")
-=======
             headers, filas = self._tabla_exportable()
             escribir_xlsx(path, {"Measurements": (headers, filas)})
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
             self._notify(f"Excel exported successfully: {path}")
         except Exception as e:
             self.alerts.error(f"Failed to export Excel:\n{e}")

@@ -17,10 +17,7 @@ cada llamada solo actualiza de donde salen los graficos.
 from PyQt5.QtCore import Qt, QObject, QEvent
 from PyQt5.QtWidgets import QLabel
 
-<<<<<<< HEAD
-=======
 from core.utils.vtk_observers import observar
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
 from core.utils.chart_coords import screen_to_plot, chart_at_pixel, axis_titles, plot_rect_pixels
 
 
@@ -70,16 +67,9 @@ class CursorReadout(QObject):
         self._overlay = None
         self._last_text = None
 
-<<<<<<< HEAD
-        iren = vtk_widget.GetRenderWindow().GetInteractor()
-        # Prioridad baja: corre despues de los observadores de la medicion y
-        # no devuelve nada, asi que no interfiere con ellos.
-        self._observer = iren.AddObserver("MouseMoveEvent", self._on_mouse_move, -1.0)
-=======
         # Prioridad baja: corre despues de los observadores de la medicion y
         # no devuelve nada, asi que no interfiere con ellos.
         self._observer = observar(vtk_widget, "MouseMoveEvent", self._on_mouse_move, -1.0)
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
         vtk_widget.installEventFilter(self)
 
     # ---------- eventos ----------

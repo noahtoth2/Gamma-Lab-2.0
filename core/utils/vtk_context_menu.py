@@ -8,10 +8,7 @@ from core.services.export_service import ExportService
 from core.services.measurement_service import MeasurementService
 from core.services.settings_service import SettingsService
 from core.utils.cursor_readout import CursorReadout
-<<<<<<< HEAD
-=======
 from core.utils.vtk_observers import observar
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
 
 
 class VTKContextMenu:

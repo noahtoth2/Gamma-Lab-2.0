@@ -336,14 +336,8 @@ class SlopePlugin(IPlugin):
             return
 
         try:
-<<<<<<< HEAD
-            import pandas as pd
-            headers, filas = self._tabla_exportable()
-            pd.DataFrame(filas, columns=headers).to_excel(path, index=False, sheet_name="Measurements")
-=======
             headers, filas = self._tabla_exportable()
             escribir_xlsx(path, {"Measurements": (headers, filas)})
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
             self._notify(f"Excel exported successfully: {path}")
         except Exception as e:
             self.alerts.error(f"Failed to export Excel:\n{e}")

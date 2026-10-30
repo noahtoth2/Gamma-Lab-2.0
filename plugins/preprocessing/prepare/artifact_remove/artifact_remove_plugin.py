@@ -19,10 +19,7 @@ from plugins.preprocessing.prepare.artifact_remove.artifact_remove_ui import Ui_
 from plugins.preprocessing.prepare.artifact_remove.artifact_logic import preparar_modificacion, escribir_modificacion
 from plugins.preprocessing.prepare.artifact_remove.compute import calcular_modificacion
 from core.filters.artifacts import medidas_del_segmento
-<<<<<<< HEAD
-=======
 from core.utils.submuestreo import agregar_linea
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
 
 # Optional import for custom context menu
 try:

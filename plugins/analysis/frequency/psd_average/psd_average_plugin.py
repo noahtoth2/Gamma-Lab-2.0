@@ -15,10 +15,7 @@ from core.utils.adapters import trials_matrix_to_vtk_table
 from core.utils.trial_labels import trials_used
 
 from functools import partial
-<<<<<<< HEAD
-=======
 from core.utils.submuestreo import agregar_columna
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
 
 
 def calcular_psd(X, fs, target_fs, window, nperseg, noverlap, nfft, ctx=None, log=None):

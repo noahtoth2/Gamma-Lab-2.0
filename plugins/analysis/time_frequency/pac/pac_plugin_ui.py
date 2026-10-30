@@ -394,13 +394,10 @@ class Ui_Pac(object):
         self.lowLabel.setText(_translate("PAC", "P1"))
         self.hzLowFreqLabel.setText(_translate("PAC", "Hz"))
         self.pacTypeLabel.setText(_translate("PAC", "PAC Type"))
-<<<<<<< HEAD
         self.ampChannelLabel.setText(_translate("PAC", "Amplitude channel"))
         self.ampChannelComboBox.setToolTip(_translate(
             "PAC", "El canal del que sale la amplitud. Los ciclos y la fase salen "
                    "del canal activo. Los dos tienen que estar cortados igual."))
-=======
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
         self.degreesLabel.setText(_translate("PAC", "Phase units"))
         self.degreesCheckBox.setText(_translate("PAC", "Degrees (0-360)"))
         self.degreesCheckBox.setToolTip(_translate(

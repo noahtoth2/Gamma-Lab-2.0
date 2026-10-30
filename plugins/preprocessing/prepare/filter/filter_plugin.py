@@ -21,10 +21,7 @@ from core.filters.artifacts import receta_filtro
 from core.filters.bandpass import filtrar_banda, filtrar_columnas
 from plugins.preprocessing.prepare.artifact_remove.artifact_logic import (
     descartar_derivado, escribir_modificacion, preparar_modificacion)
-<<<<<<< HEAD
-=======
 from core.utils.submuestreo import agregar_columna
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
 
 
 def filtrar_vista_previa(signal, trial, low, high, order, fs, type="butterworth", ctx=None):

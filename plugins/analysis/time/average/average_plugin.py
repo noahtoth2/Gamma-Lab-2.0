@@ -3,10 +3,7 @@ from core.plugins.interfaces import IPlugin
 from core.plugins.meta import PluginMeta
 from core.utils.vtk_context_menu import VTKContextMenu
 from core.utils.trial_labels import trials_used
-<<<<<<< HEAD
-=======
 from core.utils.submuestreo import agregar_linea
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
 from PyQt5 import QtCore
 from functools import partial
 from PyQt5.QtWidgets import QListWidgetItem
@@ -100,25 +97,6 @@ class Average_plugin(IPlugin):
         if trials is None:
             return
 
-<<<<<<< HEAD
-        # Per-sample average across trials, in the TaskService (R71)
-        self.run_task(ca.promedio_trials, partial(self._on_average_done, trials),
-                      on_failed=lambda m: self.alerts.error(f"No se pudo calcular el promedio: {m}"),
-                      trials=np.array(trials.trials, copy=True))
-
-    def _on_average_done(self, trials, av_data):
-        t = trials.time_rel
-
-        # Siempre promedia TODOS los trials validos: la seleccion del panel
-        # (single / range / lista) todavia no se aplica al calculo. Se indica
-        # tal cual para que el usuario sepa que entro en el promedio.
-        used = trials_used(None, trials.trials.shape[1], "average", channel=trials.channel_name)
-        self._trials_used = used
-        aviso = ""
-        if hasattr(self.ui, "chkSelectAll") and not self.ui.chkSelectAll.isChecked():
-            aviso = " (la selección del panel no se aplica: se promedian todos)"
-        self._notify(f"Average computed with {used['label']}{aviso}")
-=======
         n_trials = trials.trials.shape[1]
         self._ensure_trials_list(n_trials)
         idx = self._collect_selected_indices(n_trials)
@@ -170,7 +148,6 @@ class Average_plugin(IPlugin):
 
         self._trials_used = used
         self._notify(f"Average computed with {used['label']}")
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
 
         
         # Render in VTK
@@ -180,11 +157,6 @@ class Average_plugin(IPlugin):
 
     # ====== Project save/restore ======
     def get_analysis_params(self) -> dict:
-<<<<<<< HEAD
-        # No configurable parameters - always averages all active trials. The
-        # entry's mere presence in the manifest means "re-run this on open".
-        return {"used": True, "trials_used": self._trials_used}
-=======
         ui = self.ui
         if ui.chkSelectAll.isChecked():
             mode = "all"
@@ -205,7 +177,6 @@ class Average_plugin(IPlugin):
             "manual_checked_indices": manual,
             "trials_used": self._trials_used,
         }
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
 
     def apply_analysis_params(self, params: dict):
         ui = self.ui

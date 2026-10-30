@@ -14,12 +14,6 @@ from core.filters.trials import cut_trials_single_channel
 
 SCHEMA_VERSION = "1.0"
 
-<<<<<<< HEAD
-ANALYSIS_PLUGIN_NAMES = [
-    "FFT", "FFT Average", "PSD", "PSD Average", "Relative PSD",
-    "Average", "Event Related Potential", "Wavelet", "Wavelet Average", "PAC", "PPC",
-]
-=======
 BLOQUE_COPIA = 8 * 1024 * 1024
 
 
@@ -33,7 +27,6 @@ class TrabajoGuardado:
     ds: object
     copia: tuple | None
     previo: tuple
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
 
 
 _BLOCKED_STANDARD_LOCATIONS = [

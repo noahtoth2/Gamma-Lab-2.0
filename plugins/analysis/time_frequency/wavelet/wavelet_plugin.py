@@ -8,10 +8,7 @@ import vtk
 import numpy as np
 
 from core.utils.emf_writer import anotar_mapa
-<<<<<<< HEAD
-=======
 from core.utils.rango_color import limites_color, leer_rango, mostrar_rango_automatico, guardar_rango, restaurar_rango
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
 from core.utils.heatmap_export import secciones_de_mapa
 from core.plugins.interfaces import IPlugin
 from core.plugins.meta import PluginMeta
@@ -303,12 +300,8 @@ class Wavelet_plugin(IPlugin):
             self._ultimo = {"parametros": {"señal": self._contexto.get("señal"), "canal": self._contexto.get("canal"),
                                           **self.get_analysis_params()},
                             "frecuencias": np.asarray(freqs), "tiempos": np.asarray(times),
-<<<<<<< HEAD
-                            "matriz": np.asarray(scalogram), "logaritmica": scaled}
-=======
                             "matriz": np.asarray(scalogram), "logaritmica": scaled,
                             "titulo": "Scalogram Wavelet (Morlet)"}
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
 
             self.ensure_vtk()
 
@@ -316,10 +309,7 @@ class Wavelet_plugin(IPlugin):
             titulo = "Scalogram Wavelet (Morlet)"
             if usados:
                 titulo += f" — {usados['label']}"
-<<<<<<< HEAD
-=======
             self._ultimo["titulo"] = titulo
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
             self.render_scalogram(times, freqs, scalogram, titulo, scaled)
             self._trials_used = usados
             if usados:
@@ -355,10 +345,7 @@ class Wavelet_plugin(IPlugin):
             "normalize_mode": self.ui.normalizeComboBox.currentText(),
             "scale_enabled": self.ui.scaleCheckBox.isChecked(),
             "scale_mode": self.ui.scaleComboBox.currentText(),
-<<<<<<< HEAD
-=======
             **guardar_rango(self.ui),
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
             "trials_used": self._trials_used,
         }
 
@@ -390,11 +377,7 @@ class Wavelet_plugin(IPlugin):
     def exportar_resultados(self, fmt: str):
         """Exporta la matriz de la última ejecución, con los parámetros que la produjeron."""
         if not self._ultimo or self.vtk_menu is None:
-<<<<<<< HEAD
-            self.alerts.info("Primero genera el análisis para poder exportar sus resultados.")
-=======
             self.alerts.warning("Primero genera el análisis para poder exportar sus resultados.")
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
             return
         u = self._ultimo
         params = dict(u["parametros"])

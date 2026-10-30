@@ -92,11 +92,7 @@ class ExportService:
 
             chart = self.get_active_chart()
             if chart is None:
-<<<<<<< HEAD
-                self.alerts.error("There is no chart to export.")
-=======
                 self.alerts.warning("There is no chart to export.")
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
                 return
 
             signal_name, channel_name, plugin_name = self.get_names()
@@ -221,11 +217,7 @@ class ExportService:
     def _export_heatmap_table(self, chart, fmt, filename=None):
         secciones = self._heatmap_sections(chart)
         if secciones is None:
-<<<<<<< HEAD
-            self.alerts.error("The chart does not contain data to export.")
-=======
             self.alerts.warning("The chart does not contain data to export.")
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
             return
         self.export_sections(secciones, fmt, filename)
 

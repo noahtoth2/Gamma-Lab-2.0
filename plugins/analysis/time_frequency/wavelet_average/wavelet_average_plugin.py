@@ -8,10 +8,7 @@ import vtk
 import numpy as np
 
 from core.utils.emf_writer import anotar_mapa
-<<<<<<< HEAD
-=======
 from core.utils.rango_color import limites_color, leer_rango, mostrar_rango_automatico, guardar_rango, restaurar_rango
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
 from core.utils.heatmap_export import secciones_de_mapa
 from core.plugins.interfaces import IPlugin
 from core.plugins.meta import PluginMeta
@@ -306,12 +303,8 @@ class Wavelet_average_plugin(IPlugin):
             self._ultimo = {"parametros": {"señal": self._contexto.get("señal"), "canal": self._contexto.get("canal"),
                                           **self.get_analysis_params()},
                             "frecuencias": np.asarray(freqs), "tiempos": np.asarray(times),
-<<<<<<< HEAD
-                            "matriz": np.asarray(avg_scalogram), "logaritmica": scaled}
-=======
                             "matriz": np.asarray(avg_scalogram), "logaritmica": scaled,
                             "titulo": "Wavelet Average (Morlet)"}
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
 
             self.ensure_vtk()
 
@@ -319,10 +312,7 @@ class Wavelet_average_plugin(IPlugin):
             titulo = "Wavelet Average (Morlet)"
             if usados:
                 titulo += f" — {usados['label']}"
-<<<<<<< HEAD
-=======
             self._ultimo["titulo"] = titulo
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
             self.render_scalogram(times, freqs, avg_scalogram, titulo, scaled)
             self._log("Rendering complete.")
             self._trials_used = usados
@@ -350,10 +340,7 @@ class Wavelet_average_plugin(IPlugin):
             "normalize_mode": self.ui.normalizeComboBox.currentText(),
             "scale_enabled": self.ui.scaleCheckBox.isChecked(),
             "scale_mode": self.ui.scaleComboBox.currentText(),
-<<<<<<< HEAD
-=======
             **guardar_rango(self.ui),
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
             "trials_used": self._trials_used,
         }
 
@@ -381,21 +368,12 @@ class Wavelet_average_plugin(IPlugin):
     # === Wavelet computation (single trial)
     # =====================================================
     # =====================================================
-<<<<<<< HEAD
-    # === ExportaciÃ³n
-    # =====================================================
-    def exportar_resultados(self, fmt: str):
-        """Exporta la matriz de la Ãºltima ejecuciÃ³n, con los parÃ¡metros que la produjeron."""
-        if not self._ultimo or self.vtk_menu is None:
-            self.alerts.info("Primero genera el anÃ¡lisis para poder exportar sus resultados.")
-=======
     # === Exportación
     # =====================================================
     def exportar_resultados(self, fmt: str):
         """Exporta la matriz de la última ejecución, con los parámetros que la produjeron."""
         if not self._ultimo or self.vtk_menu is None:
             self.alerts.warning("Primero genera el análisis para poder exportar sus resultados.")
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
             return
         u = self._ultimo
         params = dict(u["parametros"])

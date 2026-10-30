@@ -11,11 +11,8 @@ from core.utils.emf_writer import anotar_mapa
 from core.plugins.interfaces import IPlugin
 from core.utils.vtk_context_menu import VTKContextMenu
 from core.utils.trial_labels import trials_used
-<<<<<<< HEAD
-=======
 from core.utils.vtk_observers import observar
 from core.utils.submuestreo import agregar_linea
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
 from plugins.analysis.time_frequency.pac import compute as cp
 from plugins.analysis.time_frequency.pac.pac_plugin_ui import Ui_Pac
 
@@ -333,11 +330,7 @@ class Pac_plugin(IPlugin):
         try:
             resultado = self._ultimo["resultado"]
             tipo = (self._ultimo.get("parametros") or {}).get("tipo", "")
-<<<<<<< HEAD
             if self._es_psel(tipo):
-=======
-            if tipo == "PAC Psel":
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
                 self.render_psel(resultado)
             else:
                 self.render_resultado(resultado, tipo)
@@ -427,14 +420,11 @@ class Pac_plugin(IPlugin):
         else:
             self.ui.trialTotalLabel.setText(f"de {n}" if n else "sin trials")
 
-<<<<<<< HEAD
         # El selector de canal cuelga de aquí: esto ya se dispara al cambiar de
         # tipo y al cambiar los datos, que son los dos momentos en que la lista
         # de canales puede quedar desfasada.
         self._actualizar_selector_canal()
 
-=======
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
     def _trials_de_la_corrida(self, n: int) -> dict:
         """Que trials entran en el calculo con el tipo elegido."""
         tipo = self.ui.pacTypeComboBox.currentText()
@@ -561,13 +551,10 @@ class Pac_plugin(IPlugin):
             "a1_hz": a1, "a2_hz": a2,
             "trial": (indice + 1) if self._usa_un_solo_trial() else "todos",
         }
-<<<<<<< HEAD
         if tipo == self.PSEL_INTER:
             # Que quede en la exportacion: sin esto, dos corridas del mismo
             # canal de fase contra canales de amplitud distintos son iguales.
             self._params_en_curso["canal_amplitud"] = canal_amp
-=======
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
         self._trials_en_curso = self._trials_de_la_corrida(datos.shape[1])
         # Texto legible en la exportacion (una fila por parametro)
         self._params_en_curso["trials_usados"] = self._trials_en_curso["label"]
@@ -648,29 +635,20 @@ class Pac_plugin(IPlugin):
             self.ensure_vtk()
             usados = getattr(self, "_trials_en_curso", None) or {}
             etiqueta_trials = usados.get("label", "")
-<<<<<<< HEAD
-            if self._es_psel(tipo):
-                self.render_psel(resultado)
-=======
             # R55: `_actualizar_menu` ya vuelve a dibujar al apuntar el menú a los
             # gráficos nuevos; dibujar antes también es pagar el render dos veces
             menu_dibuja = (self.vtk_menu is not None
                            and getattr(self.vtk_menu, "measure_service", None) is not None)
-            if tipo == "PAC Psel":
+            if self._es_psel(tipo):
                 self.render_psel(resultado, dibujar=not menu_dibuja)
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
                 detalle = f"{resultado.n_ciclos} ciclo(s)"
                 if resultado.ciclos_descartados:
                     detalle += (f", {resultado.ciclos_descartados} omitido(s) por "
                                 f"quedar pegados al borde de la señal")
             else:
                 self.render_resultado(
-<<<<<<< HEAD
-                    resultado, f"{tipo} — {etiqueta_trials}" if etiqueta_trials else tipo)
-=======
                     resultado, f"{tipo} — {etiqueta_trials}" if etiqueta_trials else tipo,
                     dibujar=not menu_dibuja)
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
                 detalle = f"{resultado.n_trials} trial(s)"
             self._ultimo = {"parametros": self._params_en_curso, "resultado": resultado}
             self._trials_used = usados or None
@@ -886,13 +864,9 @@ class Pac_plugin(IPlugin):
         eje_psel, mapa_psel = self._eje_de_fase(r.fases, r.mapa)
         self._mapa_chart = agregar(
             self._grafico_mapa_log(mapa_psel, r.frecuencias, eje_psel,
-<<<<<<< HEAD
                                    (f"PAC Psel inter-canal — fase {r.canal_fase} → "
                                     f"amplitud {r.canal_amplitud}" if r.inter_canal
                                     else "PAC Psel — mapa fase/frecuencia"),
-=======
-                                   "PAC Psel — mapa fase/frecuencia",
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
                                    f"Fase ({self._unidad_de_fase()})"),
             self.ALTO_MAPA)
         agregar(self._grafico_senal(
@@ -1361,10 +1335,7 @@ class Pac_plugin(IPlugin):
             "trial": self.ui.trialSpinBox.value(),
             "trials_used": self._trials_used,
             "en_grados": self.ui.degreesCheckBox.isChecked(),
-<<<<<<< HEAD
             "canal_amplitud": self.ui.ampChannelComboBox.currentText(),
-=======
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
         }
 
     def apply_analysis_params(self, params: dict):
@@ -1378,14 +1349,10 @@ class Pac_plugin(IPlugin):
         self.ui.ampLowFrequencySpinBox.setValue(params.get("a1", d["a1"]))
         self.ui.ampHighFrequencySpinBox.setValue(params.get("a2", d["a2"]))
         self.ui.degreesCheckBox.setChecked(bool(params.get("en_grados", True)))
-<<<<<<< HEAD
         self._actualizar_selector_trial()   # esto repuebla el selector de canal
         idx_canal = self.ui.ampChannelComboBox.findText(params.get("canal_amplitud", ""))
         if idx_canal >= 0:
             self.ui.ampChannelComboBox.setCurrentIndex(idx_canal)
-=======
-        self._actualizar_selector_trial()
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
         self.ui.trialSpinBox.setValue(params.get("trial", 1))
         self._restaurando = True
         self.on_create_pac()

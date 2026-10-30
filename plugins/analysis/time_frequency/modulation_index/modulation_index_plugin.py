@@ -457,11 +457,7 @@ class Modulation_index_plugin(IPlugin):
     def exportar_resultados(self, fmt: str):
         """Exporta los números de la última ejecución, con los parámetros que la produjeron."""
         if not self._ultimo or self.vtk_menu is None:
-<<<<<<< HEAD
-            self.alerts.info("Primero genera el comodulograma para poder exportar sus resultados.")
-=======
             self.alerts.warning("Primero genera el comodulograma para poder exportar sus resultados.")
->>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
             return
         self.vtk_menu.export_service.export_sections(self._secciones_resultado(), fmt)
 
