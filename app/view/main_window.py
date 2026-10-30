@@ -1,7 +1,9 @@
 from collections import defaultdict
 import html
+import gc
 import os
 import shutil
+from functools import partial
 from pathlib import Path
 from PyQt5.QtWidgets import (
     QMainWindow,
@@ -31,7 +33,7 @@ from PyQt5.QtCore import QSize, Qt, QEvent
 from PyQt5.QtWidgets import QFrame, QCompleter
 from app.view.main_window_ui import Ui_MainWindow
 from PyQt5.QtGui import QIcon, QFontMetrics, QFont, QPixmap, QPainter, QDesktopServices
-from PyQt5.QtCore import QSize, Qt, QEvent, QUrl, QMimeData
+from PyQt5.QtCore import QSize, Qt, QEvent, QUrl, QMimeData, QTimer
 from PyQt5.QtWidgets import QFrame
 
 from core.plugins.interfaces import IPlugin
@@ -39,6 +41,11 @@ from core.utils.plugin_alerts import PluginAlerts
 from core.utils.notifications import NotificationCenter
 from core.utils.task_progress import TaskProgressBar
 from core.utils.trial_labels import describe_trials
+<<<<<<< HEAD
+=======
+from core.utils.vtk_observers import retirar_de, reponer_en
+from core.utils.vtk_ventanas import liberar_ventanas
+>>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
 from core.services.project_service import ProjectService
 
 class MainWindow(QMainWindow):
@@ -212,22 +219,25 @@ class MainWindow(QMainWindow):
             plugin = self.kernel.get_plugin(name)
             subcategories[plugin.subcategory()].append(name)
 
-        # Fixed display order for specific subcategories (registration order isn't reliable)
-        explicit_order = {
-            "Measurements": ["Slope Results", "Amplitude Results"],
-            "Time-Frequency": ["PAC", "Modulation Index", "Wavelet", "Wavelet Average"],
-        }
-        for subcat, order in explicit_order.items():
-            if subcat in subcategories:
-                subcategories[subcat].sort(
-                    key=lambda n: order.index(n) if n in order else len(order)
-                )
+        # Order comes from each plugin's properties.yml (`order`, `subcategory_order`)
+        def _orden(n):
+            o = getattr(self.kernel.get_plugin(n).meta, "order", None)
+            return o if o is not None else float("inf")
+        for plugins in subcategories.values():
+            plugins.sort(key=_orden)
 
         # Build each subcategory and put a divider between them
         subcats = list(subcategories.items())
         if section == "Analysis":
+<<<<<<< HEAD
             # Connectivity (PPC) goes last; the rest keep their order
             subcats.sort(key=lambda kv: kv[0] == "Connectivity")
+=======
+            def _orden_grupo(kv):
+                valores = [getattr(self.kernel.get_plugin(n).meta, "subcategory_order", None) for n in kv[1]]
+                return max((v for v in valores if v is not None), default=0)
+            subcats.sort(key=_orden_grupo)
+>>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
         measurements_row = None
         for idx, (subcat, plugins) in enumerate(subcats):
             group_box = QGroupBox(subcat, self.ui.buttonContainer)
@@ -584,12 +594,30 @@ class MainWindow(QMainWindow):
                 self.active_plugin.stop()
             except Exception as e:
                 self.alerts.error(f"An error occurred while stopping the VTK render plugin.\n\nDetails:\n{str(e)}", "Error stopping plugin")
+<<<<<<< HEAD
+=======
+            try:
+                retirar_de(self.active_plugin_widget)   # R58
+            except Exception as e:
+                print("retirar_observadores error:", e)
+>>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
             self.active_plugin_widget.setVisible(False)
+            if getattr(self.active_plugin.meta, "free_graphics", True):
+                # R45: la ventana OpenGL se libera cuando ya se mostro el modulo siguiente
+                QTimer.singleShot(0, partial(self._liberar_graficos, self.active_plugin_widget))
 
         self.active_plugin_widget = None
         self.active_plugin = None
         # Update background/placeholder visibility
         self._update_background_logo_visibility()
+
+    def _liberar_graficos(self, widget):
+        if widget is self.active_plugin_widget:   # el usuario volvio antes de que corriera
+            return
+        try:
+            liberar_ventanas(widget)
+        except Exception as e:
+            print("liberar_ventanas error:", e)
 
     def _cancel_tasks_of(self, plugin):
         # Un plugin no gestiona sus propios hilos: solo pone su meta.id como
@@ -652,6 +680,10 @@ class MainWindow(QMainWindow):
 
         # Hide previous and show the new one
         self.clear_plugin_area()
+        try:
+            reponer_en(widget)   # R58
+        except Exception as e:
+            print("reponer_observadores error:", e)
         widget.setVisible(True)
         self.active_plugin_widget = widget
         self.active_plugin = plugin
@@ -902,23 +934,71 @@ class MainWindow(QMainWindow):
 
     def on_save_project_clicked(self):
         """File > Save: write the .glab to its existing location (or prompt if new)."""
-        try:
-            path = self.project_service.save(self)
-            if path:
-                self.statusBar().showMessage(f"Project saved: {path}", 4000)
-                self.alerts.info(f"Project saved:\n{path}", "Save Project")
-        except Exception as e:
-            self.alerts.error(str(e), "Save Project")
+        self._guardar_proyecto(como=False, titulo="Save Project")
 
     def on_save_project_as_clicked(self):
         """File > Save as: always prompt for a location and (re)create the project there."""
+        self._guardar_proyecto(como=True, titulo="Save Project As")
+
+    def _guardar_proyecto(self, como, titulo):
+        """R04: copying the signal into the project leaves the UI thread (progress bar
+        and Cancel from the TaskService); the manifest is written back here, because
+        it reads the state of the plugins."""
+        if getattr(self, "_guardando", False):
+            self.statusBar().showMessage("Ya se está guardando el proyecto.", 4000)
+            return
+        ps = self.project_service
         try:
-            path = self.project_service.save_as(self)
-            if path:
-                self.statusBar().showMessage(f"Project saved: {path}", 4000)
-                self.alerts.info(f"Project saved:\n{path}", "Save Project As")
+            job = ps.iniciar_guardado(self, como=como)
         except Exception as e:
-            self.alerts.error(str(e), "Save Project As")
+            self.alerts.error(str(e), titulo)
+            return
+        if job is None:
+            return
+        tasks = self.kernel.get_service("TaskService")
+        if job.copia is None or tasks is None:
+            try:
+                if job.copia is not None:
+                    ps._copiar_si_cambio(*job.copia)
+                self._terminar_guardado(job, titulo)
+            except Exception as e:
+                ps.revertir_guardado(job)
+                self.alerts.error(str(e), titulo)
+            return
+
+        self._guardando = True
+        self.statusBar().showMessage(f"Guardando {job.copia[0].name}…")
+        handle = tasks.submit(ps.copiar_senal, owner="project", origen=job.copia[0], destino=job.copia[1])
+        handle.finished.connect(lambda ok: self._copia_terminada(job, titulo, ok))
+        handle.failed.connect(lambda msg: self._guardado_fallido(job, titulo, msg))
+        handle.cancelled.connect(lambda: self._guardado_fallido(job, titulo, None))
+
+    def _copia_terminada(self, job, titulo, ok):
+        if not ok:
+            self._guardado_fallido(job, titulo, None)
+            return
+        try:
+            self._terminar_guardado(job, titulo)
+        except Exception as e:
+            self.project_service.revertir_guardado(job)
+            self.alerts.error(str(e), titulo)
+        finally:
+            self._guardando = False
+
+    def _terminar_guardado(self, job, titulo):
+        path = self.project_service.completar_guardado(job)
+        if path:
+            self.statusBar().showMessage(f"Project saved: {path}", 4000)
+            self.alerts.info(f"Project saved:\n{path}", titulo)
+
+    def _guardado_fallido(self, job, titulo, message):
+        self._guardando = False
+        self.project_service.revertir_guardado(job)
+        if message:
+            self.statusBar().clearMessage()
+            self.alerts.error(message, titulo)
+        else:
+            self.statusBar().showMessage("Guardado cancelado.", 4000)
 
     def on_open_project_clicked(self):
         """File > Open project: pick a .glab and restore its signal + measurements."""
@@ -937,24 +1017,66 @@ class MainWindow(QMainWindow):
         settings.set("last_project_dir", str(Path(path_str).parent))
 
         self._project_busy = True
+        tasks = self.kernel.get_service("TaskService")
+        if tasks is None:
+            self._finish_open_project(path_str, None)
+            return
+
+        # R04: reading the project and its signal file leaves the UI thread; progress
+        # bar and Cancel come with the TaskService. Registering the signal and
+        # restoring trials/analyses happen back here, on the UI thread (R54).
+        self.statusBar().showMessage(f"Opening {Path(path_str).name}…")
+        handle = tasks.submit(self.project_service.preparar_apertura, owner="project",
+                              glab_path_str=path_str)
+        handle.finished.connect(lambda prep: self._finish_open_project(path_str, prep))
+        handle.failed.connect(lambda msg: self._fail_open_project(msg))
+        handle.cancelled.connect(lambda: self._fail_open_project(None))
+
+    def _finish_open_project(self, path_str, preparado):
         try:
-            self.project_service.open(path_str, self)
+            self.liberar_senal_anterior()
+            self.project_service.open(path_str, self, preparado=preparado)
             self.statusBar().showMessage(f"Project opened: {path_str}", 4000)
         except Exception as e:
             self.alerts.error(str(e), "Open Project")
         finally:
             self._project_busy = False
 
+    def _fail_open_project(self, message):
+        self._project_busy = False
+        if message:
+            self.statusBar().clearMessage()
+            self.alerts.error(message, "Open Project")
+        else:
+            self.statusBar().showMessage("Open project canceled.", 4000)
+
+    def liberar_senal_anterior(self, conservar_plugin=None):
+        """Suelta la señal que hay cargada y todo lo que depende de ella (R11, R52).
+
+        Cancela los cálculos, destruye los widgets de los módulos (menos `conservar_plugin`, que
+        está en medio de una carga), borra de los plugins sus datasets y resultados y quita las
+        señales del DataStore.
+        """
+        self._stop_all_background_workers()
+        self._reset_all_plugin_widgets(conservar=conservar_plugin)
+        for name in self.kernel.get_plugins():
+            plugin = self.kernel.get_plugin(name)
+            if plugin is not None and hasattr(plugin, "olvidar_senal"):
+                try:
+                    plugin.olvidar_senal()
+                except Exception as e:
+                    print(f"olvidar_senal ({name}) error:", e)
+        store = self.kernel.get_service("DataStore")
+        if store is not None:
+            store.release_signals()
+        gc.collect()
+
     def on_close_project_clicked(self):
         """File > Close project: forget the project location and free the active signal."""
         if not self._confirm_discard_unsaved_changes():
             return
         self.project_service.close()
-        store = self.kernel.get_service("DataStore")
-        if store is not None:
-            store.clear_active_signal()
-            store.set("measurements", [])
-        self._reset_all_plugin_widgets()
+        self.liberar_senal_anterior()
         self.ui.resultsPanel.setVisible(False)
         self._update_title_bar_signal_name()
         self._update_background_logo_visibility()
@@ -962,8 +1084,8 @@ class MainWindow(QMainWindow):
         self._refresh_trial_indicator()
         self.notifications.clear()
 
-    def _reset_all_plugin_widgets(self):
-        names = list(self.plugin_widgets.keys())
+    def _reset_all_plugin_widgets(self, conservar=None):
+        names = [n for n in self.plugin_widgets.keys() if n != conservar]
         if not names:
             return
         try:
@@ -985,9 +1107,10 @@ class MainWindow(QMainWindow):
             if widget is not None:
                 widget.setParent(None)
                 widget.deleteLater()
-        self._active_vtk_menu = None
-        self.active_plugin_widget = None
-        self.active_plugin = None
+        if conservar is None:
+            self._active_vtk_menu = None
+            self.active_plugin_widget = None
+            self.active_plugin = None
         self._update_plugin_button_selection()
 
     def _reset_plugin_qt_vtk_state(self, plugin):

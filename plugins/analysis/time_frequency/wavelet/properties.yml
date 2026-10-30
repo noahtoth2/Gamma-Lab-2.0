@@ -7,3 +7,6 @@ icon: "icn_wavelet.png"
 logic_class: "Wavelet_plugin"
 ui_class: ""
 description: "Calculates the Wavelet Transform, with options to configure the sampling frequency, frequency range, number of cycles, normalization, and visualization scale."
+saves_analysis: true
+order: 3
+free_graphics: false

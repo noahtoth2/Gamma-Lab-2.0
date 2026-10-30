@@ -6,3 +6,4 @@ version: "1.0"
 icon: "icn_slope.png"
 logic_class: "SlopePlugin"
 ui_class: ""
+order: 1

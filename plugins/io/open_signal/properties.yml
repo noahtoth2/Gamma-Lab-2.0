@@ -6,3 +6,4 @@ version: "1.0"
 icon: "icn_load_signal.png"            
 logic_class: "OpenSignalPlugin"
 ui_class: ""   
+free_graphics: false

@@ -7,3 +7,8 @@ icon: "icn_ppc.png"
 logic_class: "Ppc_plugin"
 ui_class: ""
 description: "Measures how consistently the phase difference between two channels stays the same, as a map of frequency against time. Ported from the Inter Channel panel of BOARD_FTD_PACC, but corrected: the original computes a phase-locking value whose bias makes every frequency below 50 Hz read as perfect coupling regardless of the data, so this version computes the pairwise phase consistency of Vinck et al. (2010) over the samples that are actually independent, gives each frequency its own analysis window, and leaves blank the cells it cannot measure instead of returning one."
+<<<<<<< HEAD
+=======
+saves_analysis: true
+subcategory_order: 100
+>>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238

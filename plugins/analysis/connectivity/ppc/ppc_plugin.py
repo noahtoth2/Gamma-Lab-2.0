@@ -23,9 +23,12 @@ from vtkmodules.util import numpy_support
 from core.filters.trials import cut_trials_single_channel
 from core.plugins.interfaces import IPlugin
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 from core.utils.trial_labels import trials_used
 >>>>>>> 999eeb239d85a9390180f810f24343c2c1c29382
+=======
+>>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
 from core.utils.emf_writer import anotar_mapa
 from core.utils.trial_labels import trials_used
 from core.utils.vtk_context_menu import VTKContextMenu
@@ -333,14 +336,20 @@ class Ppc_plugin(IPlugin):
     # === VTK
     # =====================================================
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
     def current_trial_state(self):
         """PPC trabaja con dos canales a la vez: se muestran los dos."""
         if self._trials_used:
             return self.trial_state_from_used(self._trials_used)
         return super().current_trial_state()
 
+<<<<<<< HEAD
 =======
 >>>>>>> 999eeb239d85a9390180f810f24343c2c1c29382
+=======
+>>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
     FONDO = (0.98, 0.98, 0.98)
     # Como el MATLAB: `clim [0 0.5]`, una marca cada 0,5 en log10 etiquetada con
     # `round(10.^v)` (0, 0, 1, 3, 10, 32, 100, 316 Hz) y los mismos títulos.
@@ -509,7 +518,11 @@ class Ppc_plugin(IPlugin):
     def exportar_resultados(self, fmt: str):
         """Exporta los números de la última ejecución, con los parámetros que la produjeron."""
         if not self._ultimo or self.vtk_menu is None:
+<<<<<<< HEAD
             self.alerts.info("Primero genera un PPC para poder exportar sus resultados.")
+=======
+            self.alerts.warning("Primero genera un PPC para poder exportar sus resultados.")
+>>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
             return
         self.vtk_menu.export_service.export_sections(self._secciones_resultado(), fmt)
 

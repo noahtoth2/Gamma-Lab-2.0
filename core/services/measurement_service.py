@@ -4,6 +4,7 @@ import bisect
 
 from core.filters.measurements import amplitude_in_window, two_point_metrics
 from core.utils.plugin_alerts import PluginAlerts
+from core.utils.submuestreo import tabla_de
 
 
 class MeasurementService:
@@ -371,7 +372,7 @@ class MeasurementService:
 
         # 2) Table
         try:
-            table = ref_plot.GetInput()
+            table = tabla_de(ref_plot)
         except Exception:
             table = None
         if table is None:
@@ -996,7 +997,7 @@ class MeasurementService:
             return []
 
         ref_plot = ch.GetPlot(0)
-        table = ref_plot.GetInput()
+        table = tabla_de(ref_plot)
         if table is None:
             return []
 

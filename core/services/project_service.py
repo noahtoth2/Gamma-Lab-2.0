@@ -1,6 +1,8 @@
 
 import json
+import os
 import shutil
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
@@ -12,10 +14,26 @@ from core.filters.trials import cut_trials_single_channel
 
 SCHEMA_VERSION = "1.0"
 
+<<<<<<< HEAD
 ANALYSIS_PLUGIN_NAMES = [
     "FFT", "FFT Average", "PSD", "PSD Average", "Relative PSD",
     "Average", "Event Related Potential", "Wavelet", "Wavelet Average", "PAC", "PPC",
 ]
+=======
+BLOQUE_COPIA = 8 * 1024 * 1024
+
+
+class _CopiaCancelada(Exception):
+    pass
+
+
+@dataclass
+class TrabajoGuardado:
+    """Lo que `iniciar_guardado` decidió: la señal, la copia pendiente y dónde estaba el proyecto."""
+    ds: object
+    copia: tuple | None
+    previo: tuple
+>>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
 
 
 _BLOCKED_STANDARD_LOCATIONS = [
@@ -103,72 +121,129 @@ class ProjectService:
     # ---------------- save ----------------
     def save(self, parent_widget=None):
         """Save to the already-known project location, or fall back to Save As."""
-        if not self.is_open:
-            return self.save_as(parent_widget)
-
-        store = self._datastore()
-        ds = store.get_active_signal() if store else None
-        if ds is None:
-            raise RuntimeError("There is no active signal to save.")
-
-        # rename target if the project was renamed since the last save
-        expected_path = self.project_dir / f"{self.project_name}.glab"
-        if expected_path != self.glab_path:
-            if self.glab_path and self.glab_path.exists():
-                try:
-                    self.glab_path.rename(expected_path)
-                except Exception:
-                    pass
-            self.glab_path = expected_path
-
-        self._write_manifest(ds)
-        self.dirty = False
-        self._notify()
-        return self.glab_path
+        job = self.iniciar_guardado(parent_widget, como=False)
+        return None if job is None else self._guardar_sincrono(job)
 
     def save_as(self, parent_widget=None):
-        
+        job = self.iniciar_guardado(parent_widget, como=True)
+        return None if job is None else self._guardar_sincrono(job)
+
+    def _guardar_sincrono(self, job):
+        if job.copia is not None:
+            self._copiar_si_cambio(*job.copia)
+        return self.completar_guardado(job)
+
+    # ---- guardar en pasos (R04): decidir -> copiar la señal -> escribir el manifiesto ----
+    def iniciar_guardado(self, parent_widget=None, como=False):
+        """Decide dónde se guarda. Devuelve un `TrabajoGuardado`, o None si el usuario canceló.
+
+        Corre en el hilo de la interfaz (puede abrir el selector de carpeta). Si la
+        señal hay que copiarla al proyecto, `job.copia` trae `(origen, destino)` para
+        hacerlo en el TaskService con `copiar_senal`; si no, es None.
+        """
         store = self._datastore()
         ds = store.get_active_signal() if store else None
         if ds is None:
             raise RuntimeError("There is no active signal to save.")
+        previo = (self.project_dir, self.glab_path, self.project_name)
 
-        default_name = self.project_name or self.default_project_name(ds.name)
-        src = Path(getattr(ds, "source_path", "") or "")
-        start_dir = str(self.project_dir or (src.parent if src.exists() else Path.cwd()))
+        if not como and self.is_open:
+            # rename target if the project was renamed since the last save
+            expected_path = self.project_dir / f"{self.project_name}.glab"
+            if expected_path != self.glab_path:
+                if self.glab_path and self.glab_path.exists():
+                    try:
+                        self.glab_path.rename(expected_path)
+                    except Exception:
+                        pass
+                self.glab_path = expected_path
+        else:
+            default_name = self.project_name or self.default_project_name(ds.name)
+            src = Path(getattr(ds, "source_path", "") or "")
+            start_dir = str(self.project_dir or (src.parent if src.exists() else Path.cwd()))
 
-        while True:
-            folder_str = QFileDialog.getExistingDirectory(
-                parent_widget, "Select Project Folder", start_dir, QFileDialog.ShowDirsOnly
-            )
-            if not folder_str:
-                return None
-            if _is_system_folder(folder_str):
-                QMessageBox.warning(
-                    parent_widget,
-                    "Invalid Project Folder",
-                    "You can't save a project directly inside a system folder "
-                    "(Desktop, Documents, Downloads, Pictures, Music, Videos, or "
-                    "your user folder). Please create or choose a folder of your own.",
+            while True:
+                folder_str = QFileDialog.getExistingDirectory(
+                    parent_widget, "Select Project Folder", start_dir, QFileDialog.ShowDirsOnly
                 )
-                start_dir = folder_str
-                continue
-            break
+                if not folder_str:
+                    return None
+                if _is_system_folder(folder_str):
+                    QMessageBox.warning(
+                        parent_widget,
+                        "Invalid Project Folder",
+                        "You can't save a project directly inside a system folder "
+                        "(Desktop, Documents, Downloads, Pictures, Music, Videos, or "
+                        "your user folder). Please create or choose a folder of your own.",
+                    )
+                    start_dir = folder_str
+                    continue
+                break
 
-        self.project_dir = Path(folder_str)
-        self.glab_path = self.project_dir / f"{default_name}.glab"
-        self.project_name = default_name
+            self.project_dir = Path(folder_str)
+            self.glab_path = self.project_dir / f"{default_name}.glab"
+            self.project_name = default_name
 
-        self._write_manifest(ds)
+        copia = None
+        origen = Path(getattr(ds, "source_path", "") or "")
+        if origen.exists():
+            destino = self.project_dir / origen.name
+            if destino.resolve() != origen.resolve() and not self._misma_copia(origen, destino):
+                copia = (origen, destino)
+        return TrabajoGuardado(ds=ds, copia=copia, previo=previo)
+
+    def completar_guardado(self, job):
+        """Escribe el manifiesto (rápido, lee el estado de los plugins). Hilo de la interfaz."""
+        self._write_manifest(job.ds, copiar=False)
         self.dirty = False
         self._notify()
         return self.glab_path
 
-    def _write_manifest(self, ds):
+    def revertir_guardado(self, job):
+        """El guardado se canceló o falló: el proyecto sigue donde estaba."""
+        self.project_dir, self.glab_path, self.project_name = job.previo
+
+    def copiar_senal(self, origen, destino, ctx=None):
+        """Copia por bloques, con progreso y cancelación. Devuelve False si se canceló.
+
+        Escribe en un archivo temporal y lo renombra al terminar, así una copia
+        cortada nunca deja un archivo de señal a medias en el proyecto.
+        """
+        origen, destino = Path(origen), Path(destino)
+        total = origen.stat().st_size
+        temporal = destino.with_name(destino.name + ".part")
+        hecho = 0
+        try:
+            with open(origen, "rb") as a, open(temporal, "wb") as b:
+                while True:
+                    if ctx is not None and ctx.cancelled:
+                        raise _CopiaCancelada()
+                    bloque = a.read(BLOQUE_COPIA)
+                    if not bloque:
+                        break
+                    b.write(bloque)
+                    hecho += len(bloque)
+                    if ctx is not None:
+                        ctx.progress(int(100 * hecho / total) if total else 100, f"Copiando {origen.name}")
+            shutil.copystat(origen, temporal)
+            os.replace(temporal, destino)
+            return True
+        except _CopiaCancelada:
+            temporal.unlink(missing_ok=True)
+            return False
+        except Exception:
+            temporal.unlink(missing_ok=True)
+            raise
+
+    def _write_manifest(self, ds, copiar=True):
         self.project_dir.mkdir(parents=True, exist_ok=True)
         self.archivos_dir()
 
-        signal_filename = self._copy_signal_into_project(ds)
+        if copiar:
+            signal_filename = self._copy_signal_into_project(ds)
+        else:
+            origen = Path(getattr(ds, "source_path", "") or "")
+            signal_filename = origen.name if origen.exists() else None
 
         store = self._datastore()
         measurements = (store.get("measurements", []) if store else []) or []
@@ -196,9 +271,11 @@ class ProjectService:
         result = {}
         if not self.kernel:
             return result
-        for name in ANALYSIS_PLUGIN_NAMES:
+        for name in self.kernel.get_plugins():
             plugin = self.kernel.get_plugin(name)
-            if plugin is None or getattr(plugin, "widget", None) is None:
+            if plugin is None or not getattr(getattr(plugin, "meta", None), "saves_analysis", False):
+                continue
+            if getattr(plugin, "widget", None) is None:
                 continue
             getter = getattr(plugin, "get_analysis_params", None)
             if not callable(getter):
@@ -240,11 +317,22 @@ class ProjectService:
             return None
         dest = self.project_dir / src.name
         try:
-            if dest.resolve() != src.resolve():
-                shutil.copy2(src, dest)
+            self._copiar_si_cambio(src, dest)
         except Exception:
             pass
         return dest.name
+
+    def _copiar_si_cambio(self, src, dest):
+        if dest.resolve() != src.resolve() and not self._misma_copia(src, dest):
+            shutil.copy2(src, dest)
+
+    @staticmethod
+    def _misma_copia(src: Path, dest: Path) -> bool:
+        """El archivo ya está en el proyecto tal cual (copy2 conserva tamaño y fecha): no se vuelve a copiar en cada guardado."""
+        if not dest.exists():
+            return False
+        a, b = src.stat(), dest.stat()
+        return a.st_size == b.st_size and int(a.st_mtime) == int(b.st_mtime)
 
     @staticmethod
     def _measurement_to_json(m: dict) -> dict:
@@ -263,21 +351,39 @@ class ProjectService:
         return m2
 
     # ---------------- open ----------------
-    def open(self, glab_path_str, parent_widget=None):
+    def preparar_apertura(self, glab_path_str, ctx=None):
+        """Lee el manifiesto y el archivo de la señal sin tocar el DataStore ni la interfaz.
+
+        Es la parte lenta de abrir un proyecto; corre en el TaskService y devuelve
+        `(manifiesto, señal o None)` para `open(..., preparado=...)`.
+        """
         glab_path = Path(glab_path_str)
+        if ctx is not None:
+            ctx.progress(5, "Leyendo el proyecto")
         manifest = json.loads(glab_path.read_text(encoding="utf-8"))
+        ds = None
+        filename = (manifest.get("signal") or {}).get("filename")
+        if filename:
+            signal_path = glab_path.parent / filename
+            if signal_path.exists():
+                if ctx is not None:
+                    ctx.progress(20, f"Leyendo {filename}")
+                ds = self._leer_senal(signal_path)
+        return manifest, ds
+
+    def open(self, glab_path_str, parent_widget=None, preparado=None):
+        glab_path = Path(glab_path_str)
+        manifest, ds = preparado if preparado is not None else self.preparar_apertura(glab_path_str)
 
         self.project_dir = glab_path.parent
         self.glab_path = glab_path
         self.project_name = manifest.get("project_name") or glab_path.stem
 
         sig_info = manifest.get("signal") or {}
-        signal_filename = sig_info.get("filename")
-        ds = None
-        if signal_filename:
-            signal_path = self.project_dir / signal_filename
-            if signal_path.exists():
-                ds = self._load_signal_file(signal_path)
+        if ds is not None and self._datastore() is None:
+            ds = None
+        if ds is not None:
+            self._registrar_senal(ds)
 
         if ds is not None and sig_info.get("sampling_rate_source") == "manual":
             saved_fs = sig_info.get("sampling_rate")
@@ -302,31 +408,32 @@ class ProjectService:
         self._notify()
         return manifest
 
-    def _load_signal_file(self, path: Path):
-        """Load the signal file and make it active. Returns the SignalDataset, or None."""
+    def _leer_senal(self, path: Path):
+        """Lee el archivo de la señal. No toca el DataStore, así que puede correr en un hilo."""
         fileio = self.kernel.get_service("FileIO") if self.kernel else None
-        store = self._datastore()
-        if not fileio or not store:
+        if not fileio:
             return None
-
         ext = path.suffix.lower()
-        ds = None
         if ext == ".abf" and hasattr(fileio, "load_abf"):
-            ds = fileio.load_abf(str(path))
-        elif ext == ".edf" and hasattr(fileio, "load_edf"):
-            ds = fileio.load_edf(str(path))
-        elif ext == ".mat" and hasattr(fileio, "load_mat"):
-            ds = fileio.load_mat(str(path))
+            return fileio.load_abf(str(path))
+        if ext == ".edf" and hasattr(fileio, "load_edf"):
+            return fileio.load_edf(str(path))
+        if ext == ".mat" and hasattr(fileio, "load_mat"):
+            return fileio.load_mat(str(path))
+        return None
 
-        if ds is not None:
-            key = store.add_signal(ds, ds.name)
-            store.set_active_signal(key)
-            if self.kernel:
-                try:
-                    self.kernel.emit_event("signal_added", {"key": key})
-                except Exception:
-                    pass
-        return ds
+    def _registrar_senal(self, ds):
+        """Registra la señal leída en el DataStore y la deja activa (hilo de la interfaz)."""
+        store = self._datastore()
+        if store is None:
+            return
+        key = store.add_signal(ds, ds.name)
+        store.set_active_signal(key)
+        if self.kernel:
+            try:
+                self.kernel.emit_event("signal_added", {"key": key})
+            except Exception:
+                pass
 
     @staticmethod
     def _restore_trials(ds, trials_info: list):

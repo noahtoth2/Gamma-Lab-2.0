@@ -1,4 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
+
+from core.utils.rango_color import agregar_rango_color
 import os
 
 
@@ -293,6 +295,8 @@ class Ui_Wavelet(object):
         self.scaleComboBox.setObjectName("scaleComboBox")
         self.scaleTypeLayout.addWidget(self.scaleComboBox)
         self.normScaleLayout.addLayout(self.scaleTypeLayout)
+
+        agregar_rango_color(self, self.layoutWidget, self.normScaleLayout)
 
         self.scalogramLayout.addLayout(self.normScaleLayout)
         self.paramsLayout.addLayout(self.scalogramLayout)

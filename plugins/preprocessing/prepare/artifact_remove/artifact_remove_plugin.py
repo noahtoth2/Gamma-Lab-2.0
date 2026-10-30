@@ -19,6 +19,10 @@ from plugins.preprocessing.prepare.artifact_remove.artifact_remove_ui import Ui_
 from plugins.preprocessing.prepare.artifact_remove.artifact_logic import preparar_modificacion, escribir_modificacion
 from plugins.preprocessing.prepare.artifact_remove.compute import calcular_modificacion
 from core.filters.artifacts import medidas_del_segmento
+<<<<<<< HEAD
+=======
+from core.utils.submuestreo import agregar_linea
+>>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
 
 # Optional import for custom context menu
 try:
@@ -696,19 +700,9 @@ class ArtifactRemovePlugin(IPlugin):
             if n_points == 0:
                 raise RuntimeError("No valid points to plot (NaN/Inf).")
             
-            vtk_t = nps.numpy_to_vtk(t_valid.astype(np.float64), deep=True)
-            vtk_t.SetName("Time (s)")
-            vtk_y = nps.numpy_to_vtk(y_valid.astype(np.float64), deep=True)
-            vtk_y.SetName("Amplitude")
-
-            table = vtk.vtkTable()
-            table.AddColumn(vtk_t)
-            table.AddColumn(vtk_y)
-
             self.chart = vtk.vtkChartXY()
             scene.AddItem(self.chart)
-            plot = self.chart.AddPlot(vtk.vtkChart.LINE)
-            plot.SetInputData(table, "Time (s)", "Amplitude")
+            plot = agregar_linea(self.chart, t_valid, y_valid, "Time (s)", "Amplitude")
             plot.SetWidth(1.5)
 
             color = "Crimson" if self.current_display_index == -1 else "SteelBlue"

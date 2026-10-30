@@ -12,6 +12,10 @@ from plugins.analysis.frequency.fft.fft_plugin_ui import Ui_Fft
 from core.utils.adapters import trials_matrix_to_vtk_table
 from core.utils.trial_labels import trials_used
 from functools import partial
+<<<<<<< HEAD
+=======
+from core.utils.submuestreo import agregar_columna
+>>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
 
 
 def calcular_fft(X, fs, target_fs, ctx=None):
@@ -267,8 +271,7 @@ class Fft_plugin(IPlugin):
         num_cols = table.GetNumberOfColumns()
         print(f"num_cols={num_cols}")
         for c in range(1, num_cols):
-            plot = self.chart.AddPlot(vtk.vtkChart.LINE)
-            plot.SetInputData(table, 0, c)
+            plot = agregar_columna(self.chart, table, c)
             plot.SetWidth(0.5)
 
          # --- Context menu ---

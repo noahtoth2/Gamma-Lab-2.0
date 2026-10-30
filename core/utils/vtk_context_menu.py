@@ -8,6 +8,10 @@ from core.services.export_service import ExportService
 from core.services.measurement_service import MeasurementService
 from core.services.settings_service import SettingsService
 from core.utils.cursor_readout import CursorReadout
+<<<<<<< HEAD
+=======
+from core.utils.vtk_observers import observar
+>>>>>>> f19cc48027c8d0790d3a1557c7f2977055e15238
 
 
 class VTKContextMenu:
@@ -370,10 +374,9 @@ class VTKContextMenu:
 
     # ---------- eventos mouse ----------
     def _install_mouse_observers(self):
-        iren = self.vtk_widget.GetRenderWindow().GetInteractor()
-        iren.AddObserver("LeftButtonPressEvent", self._on_left_press, 1.0)
-        iren.AddObserver("LeftButtonReleaseEvent", self._on_left_release, 1.0)
-        iren.AddObserver("MouseMoveEvent", self._on_mouse_move_block_hover, 1.0)
+        observar(self.vtk_widget, "LeftButtonPressEvent", self._on_left_press, 1.0)
+        observar(self.vtk_widget, "LeftButtonReleaseEvent", self._on_left_release, 1.0)
+        observar(self.vtk_widget, "MouseMoveEvent", self._on_mouse_move_block_hover, 1.0)
 
     def _on_left_press(self, obj, evt):
         iren = self.vtk_widget.GetRenderWindow().GetInteractor()

@@ -7,3 +7,6 @@ icon: "icn_pac.png"
 logic_class: "Pac_plugin"
 ui_class: ""
 description: "Calculates the relationship between the phase of a low-frequency band and the amplitude of a frequency range in an EEG signal using the Wavelet Transform. Allows users to select the phase band, amplitude frequency range, and analysis mode (PAC on a single trial, PAC Average across all trials, or PAC Psel, which concatenates every trial, detects complete cycles of the slow rhythm with a Gabor transform and averages windows centred on their troughs). The output includes a phase-frequency coupling map, a histogram of amplitude distribution as a function of phase, and a mean coupling vector with its magnitude and angle."
+saves_analysis: true
+order: 1
+free_graphics: false
