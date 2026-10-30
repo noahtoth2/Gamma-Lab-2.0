@@ -153,7 +153,8 @@ def cruces_por_cero(y):
     return np.flatnonzero(y * np.roll(y, -1) <= 0)
 
 
-def seleccionar_valles(y_filt, tiempo, picos, valles, ceros, min_t, max_t):
+def seleccionar_valles(y_filt, tiempo, picos, valles, ceros, min_t, max_t,
+                       permisivo=False):
     """Qué valles del ritmo lento abren un ciclo utilizable.
 
     Réplica de la cascada de descartes de `f_Phase_PAC_Pdetect` (líneas
@@ -161,6 +162,14 @@ def seleccionar_valles(y_filt, tiempo, picos, valles, ceros, min_t, max_t):
     pico → cruce → valle → cruce → pico en el orden correcto, con los dos picos
     por encima de la media de los picos, el valle por debajo de la media de los
     valles, y los dos semiperiodos dentro de `[min_t, max_t]`.
+
+    Con `permisivo` los dos umbrales de amplitud se relajan en una desviación
+    típica: el pico solo tiene que superar `media − σ` y el valle solo tiene que
+    bajar de `media + σ`. Entran más ciclos. Es lo que hacen las **dos**
+    versiones entre canales del original —`f_Phase_PAC_Pdetect_inter` líneas
+    69 y 86, `..._window` líneas 68 y 84— mientras que la de un canal usa las
+    medias a secas. En los tres archivos la otra opción está escrita al lado,
+    comentada, así que es un criterio que alguien eligió, no un descuido.
 
     Devuelve los índices (sobre la señal) de los valles elegidos.
     """
@@ -177,6 +186,12 @@ def seleccionar_valles(y_filt, tiempo, picos, valles, ceros, min_t, max_t):
     # aqui no se calcula.
     alto_pico = float(y_filt[picos].mean())
     alto_valle = float(y_filt[valles].mean())
+    if permisivo:
+        # `std` de MATLAB divide entre N-1 y el de numpy entre N, de ahi `ddof=1`.
+        # Con un solo elemento MATLAB devuelve 0 y numpy avisaria de un nan.
+        altos, bajos = y_filt[picos], y_filt[valles]
+        alto_pico -= float(altos.std(ddof=1)) if altos.size > 1 else 0.0
+        alto_valle += float(bajos.std(ddof=1)) if bajos.size > 1 else 0.0
 
     valido = np.ones(valles.size, dtype=bool)
     valido[0] = False
@@ -313,9 +328,19 @@ class ResultadoPsel:
     senal: np.ndarray           # v_Data: los trials concatenados
     senal_filtrada: np.ndarray  # v_Data_Filt: la misma en la banda de fase
     tiempo: np.ndarray          # v_Time
+    # Lo que sigue solo se llena en el modo entre canales. En el de un canal
+    # `inter_canal` es False y los demas quedan en None, asi que el codigo que
+    # ya existia no nota la diferencia.
+    inter_canal: bool = False
+    senal_amplitud: np.ndarray | None = None   # v_Data2 concatenado
+    canal_fase: str | None = None
+    canal_amplitud: str | None = None
+    permisivo: bool = False
 
 
-def pac_psel(ctx, data, fs_calculado, fs, p1, p2, a1, a2):
+def pac_psel(ctx, data, fs_calculado, fs, p1, p2, a1, a2,
+             data_amplitud=None, permisivo=None,
+             canal_fase=None, canal_amplitud=None):
     """PAC Psel: acoplamiento promediado sobre los ciclos detectados.
 
     Réplica de `f_Phase_PAC_Pdetect`. A diferencia de `pac_un_trial` y de
@@ -334,6 +359,40 @@ def pac_psel(ctx, data, fs_calculado, fs, p1, p2, a1, a2):
     > (línea 10): deja una muestra espuria en cero al principio de la señal
     > concatenada. Tampoco la llamada a `fvtool` de la línea 41, que abre la
     > ventana de análisis de filtros y es depuración que quedó en el código.
+
+    ## El modo entre canales
+
+    Con `data_amplitud` la operación pasa a ser la de `f_Phase_PAC_Pdetect_inter`:
+    **los ciclos y la fase salen de `data`, la amplitud de `data_amplitud`**. Es
+    decir, se buscan los ciclos del ritmo lento en el canal de fase y se mira qué
+    hace la actividad rápida del *otro* canal en cada uno.
+
+    El reparto, panel por panel:
+
+    | Qué | De dónde | Línea del original |
+    |---|---|---|
+    | ciclos, fase y `ciclos_theta` | `data` | 61, 215, 228 |
+    | `ciclos_full` y el mapa | `data_amplitud` | 227, 303 |
+    | `ciclos_gamma` | `data_amplitud` | — |
+
+    > **La fila de `ciclos_gamma` es una decisión nuestra, no una réplica.** La
+    > `_inter` no dibuja ese panel y la `_window` lo saca del canal de *fase*
+    > (línea 41, `v_Data_Filt2 = f_IIRBiFilter(v_Data1, ...)`), con ventanas
+    > centradas en los valles de ese mismo canal. Eso es, exactamente, lo que ya
+    > produce este `pac_psel` de un canal corrido sobre el canal de fase: el
+    > panel no aportaría nada que la aplicación no dé por otro camino, y a cambio
+    > dejaría fuera lo único que el modo entre canales no puede conseguir de otra
+    > forma. Aquí sale del canal de amplitud, de modo que los tres paneles se
+    > leen juntos: el canal de amplitud crudo, su parte rápida, y encima en negro
+    > el ritmo lento del otro canal que los organiza.
+
+    Los dos canales tienen que venir del **mismo corte**: mismo umbral, mismos
+    tiempos y mismos trials, cambiando solo el canal. Si las dos matrices no
+    tienen la misma forma no están alineadas muestra a muestra y se rechaza.
+
+    `permisivo` controla los umbrales de selección de ciclos; con `None` —lo
+    normal— se activa justo cuando el análisis es entre canales, que es lo que
+    hace el original.
     """
     if ctx is not None and ctx.cancelled:
         return None
@@ -351,14 +410,37 @@ def pac_psel(ctx, data, fs_calculado, fs, p1, p2, a1, a2):
         raise ValueError(
             f"La señal concatenada tiene {senal.size} muestras; se necesitan al menos 16.")
 
+    # El segundo canal, el de amplitud. Sin el, el analisis es el de siempre y
+    # `amplitud` apunta a la misma senal, asi que no hay ninguna rama distinta.
+    senal_amplitud = None
+    if data_amplitud is not None:
+        ma = np.asarray(data_amplitud, dtype=np.float64)
+        if ma.ndim == 1:
+            ma = ma[:, None]
+        if ma.shape != m.shape:
+            raise ValueError(
+                f"Los trials de los dos canales no están alineados: el de fase tiene "
+                f"{m.shape[0]} muestras × {m.shape[1]} trials y el de amplitud "
+                f"{ma.shape[0]} × {ma.shape[1]}. Vuelve a cortarlos con el mismo "
+                f"umbral, los mismos tiempos y los mismos trials, cambiando solo "
+                f"el canal.")
+        senal_amplitud = np.nan_to_num(ma[::factor].T.ravel(),
+                                       nan=0.0, posinf=0.0, neginf=0.0)
+
+    inter_canal = senal_amplitud is not None
+    amplitud = senal_amplitud if inter_canal else senal
+    if permisivo is None:
+        permisivo = inter_canal
+
     if ctx is not None:
         ctx.progress(5, "Filtrando")
 
-    # Dos filtros: el del ritmo lento y el de gamma, este ultimo con la banda fija
+    # Dos filtros: el del ritmo lento y el de gamma, este ultimo con la banda
+    # fija. El lento sale siempre del canal de fase; gamma, del de amplitud.
     sos_fase, _ = filtro_iir(fs_efectiva, p1, p2)
     lento = bifiltro(sos_fase, senal)
     sos_gamma, _ = filtro_iir(fs_efectiva, *BANDA_GAMMA_PSEL)
-    gamma = bifiltro(sos_gamma, senal)
+    gamma = bifiltro(sos_gamma, amplitud)
 
     if ctx is not None and ctx.cancelled:
         return None
@@ -369,7 +451,8 @@ def pac_psel(ctx, data, fs_calculado, fs, p1, p2, a1, a2):
     picos, valles = detectar_extremos(lento)
     ceros = cruces_por_cero(lento)
     min_t, max_t = 0.5 / p2, 0.5 / p1
-    elegidos = seleccionar_valles(lento, tiempo, picos, valles, ceros, min_t, max_t)
+    elegidos = seleccionar_valles(lento, tiempo, picos, valles, ceros, min_t, max_t,
+                                  permisivo)
     if elegidos.size < 3:
         raise ValueError(
             f"Solo se encontraron {elegidos.size} ciclos utilizables en la banda "
@@ -378,7 +461,7 @@ def pac_psel(ctx, data, fs_calculado, fs, p1, p2, a1, a2):
 
     semiancho = int(np.floor(2 * max_t * fs_efectiva))
     ventanas, descartados = ventanas_por_valle(
-        {"full": senal, "theta": lento, "gamma": gamma}, elegidos, semiancho)
+        {"full": amplitud, "theta": lento, "gamma": gamma}, elegidos, semiancho)
     ciclos_full = ventanas["full"]
     ciclos_theta = ventanas["theta"]
     ciclos_gamma = ventanas["gamma"]
@@ -494,7 +577,10 @@ def pac_psel(ctx, data, fs_calculado, fs, p1, p2, a1, a2):
         vpp=float(av.max() - av.min()), vpp_full=float(av_full.max() - av_full.min()),
         vrms=float(np.sqrt(np.mean(av_full ** 2))),
         ciclos_descartados=descartados, fs_efectiva=fs_efectiva,
-        senal=senal, senal_filtrada=lento, tiempo=tiempo)
+        senal=senal, senal_filtrada=lento, tiempo=tiempo,
+        inter_canal=inter_canal, senal_amplitud=senal_amplitud,
+        canal_fase=canal_fase, canal_amplitud=canal_amplitud,
+        permisivo=bool(permisivo))
 
 
 def remuestrear_en_log(mapa, frecuencias, n_filas=None):
