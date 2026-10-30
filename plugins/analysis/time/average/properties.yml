@@ -7,3 +7,5 @@ icon: "icn_average.png"
 logic_class: "Average_plugin"
 ui_class: ""
 description: "Calculates and visualizes the temporal average of the generated trials."
+saves_analysis: true
+free_graphics: false

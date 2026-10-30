@@ -28,11 +28,6 @@ class TrabajoGuardado:
     copia: tuple | None
     previo: tuple
 
-ANALYSIS_PLUGIN_NAMES = [
-    "FFT", "FFT Average", "PSD", "PSD Average", "Relative PSD",
-    "Average", "Event Related Potential", "Wavelet", "Wavelet Average", "PAC", "PPC",
-]
-
 
 _BLOCKED_STANDARD_LOCATIONS = [
     QStandardPaths.DesktopLocation,
@@ -269,9 +264,11 @@ class ProjectService:
         result = {}
         if not self.kernel:
             return result
-        for name in ANALYSIS_PLUGIN_NAMES:
+        for name in self.kernel.get_plugins():
             plugin = self.kernel.get_plugin(name)
-            if plugin is None or getattr(plugin, "widget", None) is None:
+            if plugin is None or not getattr(getattr(plugin, "meta", None), "saves_analysis", False):
+                continue
+            if getattr(plugin, "widget", None) is None:
                 continue
             getter = getattr(plugin, "get_analysis_params", None)
             if not callable(getter):

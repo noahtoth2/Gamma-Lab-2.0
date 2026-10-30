@@ -30,6 +30,20 @@ class IPlugin(ABC):
 
         
         
+    def olvidar_senal(self):
+        """Suelta lo que el plugin guardó de la señal que se va (R11, R52): los datasets y el último resultado.
+
+        Los widgets y las escenas se destruyen aparte, en la ventana principal.
+        """
+        self.active_signal = None
+        self.active_chanel = None
+        self._trials_used = None
+        for nombre, valor in list(vars(self).items()):
+            if isinstance(valor, (SignalDataset, TrialDataset)) or nombre in ("_ultimo", "_trials_en_curso"):
+                setattr(self, nombre, None)
+            elif nombre in ("_contexto", "_params_en_curso") and isinstance(valor, dict):
+                valor.clear()
+
     # ===== Getters read from YAML =====
     def name(self) -> str:
         """Display name for UI (from properties.yml)."""

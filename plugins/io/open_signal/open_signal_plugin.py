@@ -308,6 +308,8 @@ class OpenSignalPlugin(IPlugin):
             self.kernel.register_service("DataStore", store)
 
         try:
+            if self.mainwin:
+                self.mainwin.liberar_senal_anterior(conservar_plugin=self.name())   # R11, R52
             key = store.add_signal(ds, ds.name)
             self._log("Saved in DataStore:", key)
             store.set_active_signal(key)

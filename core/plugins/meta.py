@@ -14,6 +14,10 @@ class PluginMeta:
     ui_class: Optional[str] = None
     description: str = ""
     root: Optional[Path] = None
+    saves_analysis: bool = False
+    order: Optional[int] = None
+    subcategory_order: Optional[int] = None
+    free_graphics: bool = True
 
     def icon_path(self) -> Path:
         assert self.root is not None, "PluginMeta.root not set"

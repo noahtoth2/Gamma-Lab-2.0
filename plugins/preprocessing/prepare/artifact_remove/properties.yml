@@ -7,3 +7,4 @@ icon: "icn_artifact_remove.png"
 logic_class: "ArtifactRemovePlugin"
 ui_class: ""
 description: "Removes artifacts from the trials, allowing users to select the time range to be removed and choose between two correction modes: interpolating the segment or removing the signal from the beginning up to the selected point."
+free_graphics: false

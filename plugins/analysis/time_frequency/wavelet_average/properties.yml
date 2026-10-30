@@ -7,3 +7,6 @@ icon: "icn_wavelet_average.png"
 logic_class: "Wavelet_average_plugin"
 ui_class: ""
 description: "Calculates the average Wavelet Transform across multiple trials and generates an aggregated time-frequency map."
+saves_analysis: true
+order: 4
+free_graphics: false
