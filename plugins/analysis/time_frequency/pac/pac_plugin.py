@@ -235,7 +235,9 @@ def titulo_de(vector, n_extra=0, en_grados=True):
 
 
 class Pac_plugin(IPlugin):
-    PAC_TYPES = ["PAC", "PAC Average", "PAC Psel"]
+    PSEL = "PAC Psel"
+    PSEL_INTER = "PAC Psel inter-canal"
+    PAC_TYPES = ["PAC", "PAC Average", PSEL, PSEL_INTER]
     DEFAULTS = {
         "sample_fq": 2000,
         "p1": 3.0,
@@ -325,7 +327,7 @@ class Pac_plugin(IPlugin):
         try:
             resultado = self._ultimo["resultado"]
             tipo = (self._ultimo.get("parametros") or {}).get("tipo", "")
-            if tipo == "PAC Psel":
+            if self._es_psel(tipo):
                 self.render_psel(resultado)
             else:
                 self.render_resultado(resultado, tipo)
@@ -364,6 +366,38 @@ class Pac_plugin(IPlugin):
         los concatena, así que para esos dos el selector no aplica."""
         return self.ui.pacTypeComboBox.currentText() == "PAC"
 
+    def _es_psel(self, tipo: str) -> bool:
+        """Los dos modos Psel dibujan los mismos 13 paneles y van por el mismo
+        cálculo; el de entre canales solo le pasa una señal más."""
+        return tipo in (self.PSEL, self.PSEL_INTER)
+
+    def _actualizar_selector_canal(self):
+        """Llena y muestra el selector de canal de amplitud, solo entre canales.
+
+        Se excluye el canal activo de la lista: ese es el de fase, y pedir el
+        acoplamiento de un canal consigo mismo es el modo «PAC Psel» de siempre.
+        """
+        if self.ui is None:
+            return
+        inter = self.ui.pacTypeComboBox.currentText() == self.PSEL_INTER
+        for w in (self.ui.ampChannelLabel, self.ui.ampChannelLine,
+                  self.ui.ampChannelComboBox):
+            w.setVisible(inter)
+        if not inter:
+            return
+
+        sig, td = self._active_trials_quiet()
+        activo = getattr(td, "channel_name", "") if td is not None else ""
+        canales = [c for c in (getattr(sig, "channel_names", None) or []) if c != activo]
+
+        anterior = self.ui.ampChannelComboBox.currentText()
+        self.ui.ampChannelComboBox.blockSignals(True)
+        self.ui.ampChannelComboBox.clear()
+        self.ui.ampChannelComboBox.addItems(canales)
+        if anterior in canales:
+            self.ui.ampChannelComboBox.setCurrentText(anterior)
+        self.ui.ampChannelComboBox.blockSignals(False)
+
     def _actualizar_selector_trial(self):
         """Ajusta el rango y el texto «de N» a los trials que haya cargados."""
         if self.ui is None:
@@ -382,6 +416,11 @@ class Pac_plugin(IPlugin):
             self.ui.trialTotalLabel.setText(f"todos ({n})" if n else "todos")
         else:
             self.ui.trialTotalLabel.setText(f"de {n}" if n else "sin trials")
+
+        # El selector de canal cuelga de aquí: esto ya se dispara al cambiar de
+        # tipo y al cambiar los datos, que son los dos momentos en que la lista
+        # de canales puede quedar desfasada.
+        self._actualizar_selector_canal()
 
     def _trials_de_la_corrida(self, n: int) -> dict:
         """Que trials entran en el calculo con el tipo elegido."""
@@ -461,16 +500,58 @@ class Pac_plugin(IPlugin):
             self.alerts.warning(f"El trial {indice + 1} no existe; hay {datos.shape[1]}.")
             return
 
+        # El segundo canal, solo en el modo entre canales. Los ciclos y la fase
+        # siguen saliendo del canal activo; de este sale la amplitud.
+        canal_fase = getattr(trials, "channel_name", "")
+        canal_amp = ""
+        datos_amplitud = None
+        if tipo == self.PSEL_INTER:
+            canal_amp = self.ui.ampChannelComboBox.currentText()
+            if not canal_amp:
+                self.alerts.warning(
+                    "Elige el canal de amplitud. El PAC entre canales necesita dos: "
+                    "el canal activo aporta los ciclos y la fase, y el otro la amplitud.")
+                return
+            if canal_amp == canal_fase:
+                self.alerts.warning(
+                    f"El canal de amplitud y el de fase son el mismo ('{canal_amp}'). "
+                    f"Para un solo canal usa «{self.PSEL}».")
+                return
+
+            td_amp = self.get_trials_de_canal(canal_amp)
+            if td_amp is None:
+                return
+            try:
+                datos_amplitud = np.asarray(td_amp.trials, dtype=np.float64)
+                if datos_amplitud.ndim == 1:
+                    datos_amplitud = datos_amplitud[:, None]
+            except Exception as e:
+                self.alerts.error(
+                    f"No se pudo obtener la matriz de trials de '{canal_amp}': {e}")
+                return
+            if datos_amplitud.shape != datos.shape:
+                self.alerts.error(
+                    f"Los trials de '{canal_fase}' y '{canal_amp}' no están alineados: "
+                    f"{datos.shape[0]}×{datos.shape[1]} frente a "
+                    f"{datos_amplitud.shape[0]}×{datos_amplitud.shape[1]}. Vuelve a "
+                    f"cortarlos en Trials con el mismo umbral, los mismos tiempos y "
+                    f"los mismos trials, cambiando solo el canal.")
+                return
+
         senal = self.get_active_signal()
         self._params_en_curso = {
             "señal": getattr(senal, "name", ""),
-            "canal": getattr(trials, "channel_name", ""),
+            "canal": canal_fase,
             "tipo": tipo,
             "sample_fq_hz": fs,
             "p1_hz": p1, "p2_hz": p2,
             "a1_hz": a1, "a2_hz": a2,
             "trial": (indice + 1) if self._usa_un_solo_trial() else "todos",
         }
+        if tipo == self.PSEL_INTER:
+            # Que quede en la exportacion: sin esto, dos corridas del mismo
+            # canal de fase contra canales de amplitud distintos son iguales.
+            self._params_en_curso["canal_amplitud"] = canal_amp
         self._trials_en_curso = self._trials_de_la_corrida(datos.shape[1])
         # Texto legible en la exportacion (una fila por parametro)
         self._params_en_curso["trials_usados"] = self._trials_en_curso["label"]
@@ -484,9 +565,14 @@ class Pac_plugin(IPlugin):
         self.ui.createPacButton.setText("Computing...")
 
         comun = dict(fs_calculado=fs_calculado, fs=fs, p1=p1, p2=p2, a1=a1, a2=a2)
-        if tipo == "PAC Psel":
-            # Psel concatena todos los trials, asi que recibe la matriz entera
-            handle = tasks.submit(cp.pac_psel, owner=self.meta.id, data=datos, **comun)
+        if self._es_psel(tipo):
+            # Psel concatena todos los trials, asi que recibe la matriz entera.
+            # `data_amplitud` es None salvo entre canales, y con None el calculo
+            # es identico bit a bit al de siempre.
+            handle = tasks.submit(cp.pac_psel, owner=self.meta.id, data=datos,
+                                  data_amplitud=datos_amplitud,
+                                  canal_fase=canal_fase or None,
+                                  canal_amplitud=canal_amp or None, **comun)
         elif self._usa_un_solo_trial():
             handle = tasks.submit(cp.pac_un_trial, owner=self.meta.id,
                                   sig=datos[:, indice], **comun)
@@ -534,7 +620,7 @@ class Pac_plugin(IPlugin):
             self.ensure_vtk()
             usados = getattr(self, "_trials_en_curso", None) or {}
             etiqueta_trials = usados.get("label", "")
-            if tipo == "PAC Psel":
+            if self._es_psel(tipo):
                 self.render_psel(resultado)
                 detalle = f"{resultado.n_ciclos} ciclo(s)"
                 if resultado.ciclos_descartados:
@@ -731,17 +817,26 @@ class Pac_plugin(IPlugin):
                 self._charts_senal.append(chart)
             return chart
 
+        # Entre canales cada panel lleva el nombre del canal del que sale. El
+        # MATLAB dibuja la pila de gamma sin un solo rótulo, y es precisamente
+        # eso lo que impide saber qué señal se está mirando.
+        de_fase = f" · {r.canal_fase}" if r.inter_canal and r.canal_fase else ""
+        de_amp = f" · {r.canal_amplitud}" if r.inter_canal and r.canal_amplitud else ""
+
         # 1-2. La señal concatenada y su banda de fase, con el eje compartido
-        for etiqueta, serie in (("Original", r.senal),
-                                ("Filtrada en fase", r.senal_filtrada)):
+        for etiqueta, serie in ((f"Original{de_fase}", r.senal),
+                                (f"Filtrada en fase{de_fase}", r.senal_filtrada)):
             agregar(self._grafico_senal(r.tiempo, serie, etiqueta),
                     self.ALTO_SENAL, es_senal=True)
 
         # 3-5. Las tres pilas de ciclos con su promedio encima
         for etiqueta, pila, promedio, color in (
-                ("Ciclos en la banda de fase", r.ciclos_theta, r.promedio_theta, (200, 30, 30)),
-                ("Ciclos sin filtrar", r.ciclos_full, r.promedio_full, (200, 30, 30)),
-                ("Ciclos en gamma (25-129 Hz)", r.ciclos_gamma, None, (20, 20, 20))):
+                (f"Ciclos en la banda de fase{de_fase}",
+                 r.ciclos_theta, r.promedio_theta, (200, 30, 30)),
+                (f"Ciclos sin filtrar{de_amp}",
+                 r.ciclos_full, r.promedio_full, (200, 30, 30)),
+                (f"Ciclos en gamma (25-129 Hz){de_amp}",
+                 r.ciclos_gamma, None, (20, 20, 20))):
             agregar(self._grafico_ciclos(pila, promedio, etiqueta, color), self.ALTO_CICLOS)
 
         # 6-7. El mapa fase/frecuencia en escala logarítmica, y debajo el coseno
@@ -749,7 +844,9 @@ class Pac_plugin(IPlugin):
         eje_psel, mapa_psel = self._eje_de_fase(r.fases, r.mapa)
         self._mapa_chart = agregar(
             self._grafico_mapa_log(mapa_psel, r.frecuencias, eje_psel,
-                                   "PAC Psel — mapa fase/frecuencia",
+                                   (f"PAC Psel inter-canal — fase {r.canal_fase} → "
+                                    f"amplitud {r.canal_amplitud}" if r.inter_canal
+                                    else "PAC Psel — mapa fase/frecuencia"),
                                    f"Fase ({self._unidad_de_fase()})"),
             self.ALTO_MAPA)
         agregar(self._grafico_senal(
@@ -1229,6 +1326,7 @@ class Pac_plugin(IPlugin):
             "trial": self.ui.trialSpinBox.value(),
             "trials_used": self._trials_used,
             "en_grados": self.ui.degreesCheckBox.isChecked(),
+            "canal_amplitud": self.ui.ampChannelComboBox.currentText(),
         }
 
     def apply_analysis_params(self, params: dict):
@@ -1242,7 +1340,10 @@ class Pac_plugin(IPlugin):
         self.ui.ampLowFrequencySpinBox.setValue(params.get("a1", d["a1"]))
         self.ui.ampHighFrequencySpinBox.setValue(params.get("a2", d["a2"]))
         self.ui.degreesCheckBox.setChecked(bool(params.get("en_grados", True)))
-        self._actualizar_selector_trial()
+        self._actualizar_selector_trial()   # esto repuebla el selector de canal
+        idx_canal = self.ui.ampChannelComboBox.findText(params.get("canal_amplitud", ""))
+        if idx_canal >= 0:
+            self.ui.ampChannelComboBox.setCurrentIndex(idx_canal)
         self.ui.trialSpinBox.setValue(params.get("trial", 1))
         self._restaurando = True
         self.on_create_pac()

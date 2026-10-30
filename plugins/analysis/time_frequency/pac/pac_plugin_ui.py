@@ -105,6 +105,30 @@ class Ui_Pac(object):
         self.pacTypeLayout.addWidget(self.pacTypeComboBox)
         self.paramsLayout.addLayout(self.pacTypeLayout)
 
+        # --- Amplitude channel (solo en PAC Psel inter-canal) ---
+        # El analisis entre canales toma los ciclos y la fase del canal activo y
+        # la amplitud de este otro. En los demas modos el selector se oculta: un
+        # ajuste visible que no hace nada es peor que no tenerlo.
+        self.ampChannelLayout = QtWidgets.QVBoxLayout()
+        self.ampChannelLayout.setObjectName("ampChannelLayout")
+
+        self.ampChannelLabel = QtWidgets.QLabel(self.layoutWidget)
+        self.ampChannelLabel.setObjectName("ampChannelLabel")
+        self.ampChannelLabel.setProperty("variant", "subtitle")
+        self.ampChannelLayout.addWidget(self.ampChannelLabel)
+
+        self.ampChannelLine = QtWidgets.QFrame(self.layoutWidget)
+        self.ampChannelLine.setFrameShape(QtWidgets.QFrame.HLine)
+        self.ampChannelLine.setObjectName("ampChannelLine")
+        self.ampChannelLine.setProperty("role", "divider")
+        self.ampChannelLayout.addWidget(self.ampChannelLine)
+
+        self.ampChannelComboBox = QtWidgets.QComboBox(self.layoutWidget)
+        self.ampChannelComboBox.setObjectName("ampChannelComboBox")
+        self.ampChannelComboBox.setProperty("variant", "input")
+        self.ampChannelLayout.addWidget(self.ampChannelComboBox)
+        self.paramsLayout.addLayout(self.ampChannelLayout)
+
         # --- Sample frequency ---
         self.sampleDensity = QtWidgets.QVBoxLayout()
         self.sampleDensity.setObjectName("sampleDensity")
@@ -370,6 +394,10 @@ class Ui_Pac(object):
         self.lowLabel.setText(_translate("PAC", "P1"))
         self.hzLowFreqLabel.setText(_translate("PAC", "Hz"))
         self.pacTypeLabel.setText(_translate("PAC", "PAC Type"))
+        self.ampChannelLabel.setText(_translate("PAC", "Amplitude channel"))
+        self.ampChannelComboBox.setToolTip(_translate(
+            "PAC", "El canal del que sale la amplitud. Los ciclos y la fase salen "
+                   "del canal activo. Los dos tienen que estar cortados igual."))
         self.degreesLabel.setText(_translate("PAC", "Phase units"))
         self.degreesCheckBox.setText(_translate("PAC", "Degrees (0-360)"))
         self.degreesCheckBox.setToolTip(_translate(
