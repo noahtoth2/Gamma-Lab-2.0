@@ -1,7 +1,9 @@
 from collections import defaultdict
 import html
+import gc
 import os
 import shutil
+from functools import partial
 from pathlib import Path
 from PyQt5.QtWidgets import (
     QMainWindow,
@@ -31,7 +33,7 @@ from PyQt5.QtCore import QSize, Qt, QEvent
 from PyQt5.QtWidgets import QFrame, QCompleter
 from app.view.main_window_ui import Ui_MainWindow
 from PyQt5.QtGui import QIcon, QFontMetrics, QFont, QPixmap, QPainter, QDesktopServices
-from PyQt5.QtCore import QSize, Qt, QEvent, QUrl, QMimeData
+from PyQt5.QtCore import QSize, Qt, QEvent, QUrl, QMimeData, QTimer
 from PyQt5.QtWidgets import QFrame
 
 from core.plugins.interfaces import IPlugin
@@ -40,6 +42,7 @@ from core.utils.notifications import NotificationCenter
 from core.utils.task_progress import TaskProgressBar
 from core.utils.trial_labels import describe_trials
 from core.utils.vtk_observers import retirar_de, reponer_en
+from core.utils.vtk_ventanas import liberar_ventanas
 from core.services.project_service import ProjectService
 
 class MainWindow(QMainWindow):
@@ -213,22 +216,20 @@ class MainWindow(QMainWindow):
             plugin = self.kernel.get_plugin(name)
             subcategories[plugin.subcategory()].append(name)
 
-        # Fixed display order for specific subcategories (registration order isn't reliable)
-        explicit_order = {
-            "Measurements": ["Slope Results", "Amplitude Results"],
-            "Time-Frequency": ["PAC", "Modulation Index", "Wavelet", "Wavelet Average"],
-        }
-        for subcat, order in explicit_order.items():
-            if subcat in subcategories:
-                subcategories[subcat].sort(
-                    key=lambda n: order.index(n) if n in order else len(order)
-                )
+        # Order comes from each plugin's properties.yml (`order`, `subcategory_order`)
+        def _orden(n):
+            o = getattr(self.kernel.get_plugin(n).meta, "order", None)
+            return o if o is not None else float("inf")
+        for plugins in subcategories.values():
+            plugins.sort(key=_orden)
 
         # Build each subcategory and put a divider between them
         subcats = list(subcategories.items())
         if section == "Analysis":
-            # Connectivity (PPC) goes last; the rest keep their order
-            subcats.sort(key=lambda kv: kv[0] == "Connectivity")
+            def _orden_grupo(kv):
+                valores = [getattr(self.kernel.get_plugin(n).meta, "subcategory_order", None) for n in kv[1]]
+                return max((v for v in valores if v is not None), default=0)
+            subcats.sort(key=_orden_grupo)
         measurements_row = None
         for idx, (subcat, plugins) in enumerate(subcats):
             group_box = QGroupBox(subcat, self.ui.buttonContainer)
@@ -590,11 +591,22 @@ class MainWindow(QMainWindow):
             except Exception as e:
                 print("retirar_observadores error:", e)
             self.active_plugin_widget.setVisible(False)
+            if getattr(self.active_plugin.meta, "free_graphics", True):
+                # R45: la ventana OpenGL se libera cuando ya se mostro el modulo siguiente
+                QTimer.singleShot(0, partial(self._liberar_graficos, self.active_plugin_widget))
 
         self.active_plugin_widget = None
         self.active_plugin = None
         # Update background/placeholder visibility
         self._update_background_logo_visibility()
+
+    def _liberar_graficos(self, widget):
+        if widget is self.active_plugin_widget:   # el usuario volvio antes de que corriera
+            return
+        try:
+            liberar_ventanas(widget)
+        except Exception as e:
+            print("liberar_ventanas error:", e)
 
     def _cancel_tasks_of(self, plugin):
         # Un plugin no gestiona sus propios hilos: solo pone su meta.id como
@@ -1011,6 +1023,7 @@ class MainWindow(QMainWindow):
 
     def _finish_open_project(self, path_str, preparado):
         try:
+            self.liberar_senal_anterior()
             self.project_service.open(path_str, self, preparado=preparado)
             self.statusBar().showMessage(f"Project opened: {path_str}", 4000)
         except Exception as e:
@@ -1026,16 +1039,33 @@ class MainWindow(QMainWindow):
         else:
             self.statusBar().showMessage("Open project canceled.", 4000)
 
+    def liberar_senal_anterior(self, conservar_plugin=None):
+        """Suelta la señal que hay cargada y todo lo que depende de ella (R11, R52).
+
+        Cancela los cálculos, destruye los widgets de los módulos (menos `conservar_plugin`, que
+        está en medio de una carga), borra de los plugins sus datasets y resultados y quita las
+        señales del DataStore.
+        """
+        self._stop_all_background_workers()
+        self._reset_all_plugin_widgets(conservar=conservar_plugin)
+        for name in self.kernel.get_plugins():
+            plugin = self.kernel.get_plugin(name)
+            if plugin is not None and hasattr(plugin, "olvidar_senal"):
+                try:
+                    plugin.olvidar_senal()
+                except Exception as e:
+                    print(f"olvidar_senal ({name}) error:", e)
+        store = self.kernel.get_service("DataStore")
+        if store is not None:
+            store.release_signals()
+        gc.collect()
+
     def on_close_project_clicked(self):
         """File > Close project: forget the project location and free the active signal."""
         if not self._confirm_discard_unsaved_changes():
             return
         self.project_service.close()
-        store = self.kernel.get_service("DataStore")
-        if store is not None:
-            store.clear_active_signal()
-            store.set("measurements", [])
-        self._reset_all_plugin_widgets()
+        self.liberar_senal_anterior()
         self.ui.resultsPanel.setVisible(False)
         self._update_title_bar_signal_name()
         self._update_background_logo_visibility()
@@ -1043,8 +1073,8 @@ class MainWindow(QMainWindow):
         self._refresh_trial_indicator()
         self.notifications.clear()
 
-    def _reset_all_plugin_widgets(self):
-        names = list(self.plugin_widgets.keys())
+    def _reset_all_plugin_widgets(self, conservar=None):
+        names = [n for n in self.plugin_widgets.keys() if n != conservar]
         if not names:
             return
         try:
@@ -1066,9 +1096,10 @@ class MainWindow(QMainWindow):
             if widget is not None:
                 widget.setParent(None)
                 widget.deleteLater()
-        self._active_vtk_menu = None
-        self.active_plugin_widget = None
-        self.active_plugin = None
+        if conservar is None:
+            self._active_vtk_menu = None
+            self.active_plugin_widget = None
+            self.active_plugin = None
         self._update_plugin_button_selection()
 
     def _reset_plugin_qt_vtk_state(self, plugin):

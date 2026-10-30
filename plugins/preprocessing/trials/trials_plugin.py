@@ -399,36 +399,9 @@ class TrialsPlugin(IPlugin):
         self._log("params →", dict(channel=int(ch), threshold=th, t0=t0, t1=t1,
                                 end_mode=mode, stim_expected=stim, inter_stim_time=inter_stim_time))
 
-<<<<<<< HEAD
-        try:
-            td = cut_trials_single_channel(
-            ds=ds,
-            channel=int(ch),                  # target channel to cut
-            stim_channel=None if stim_ch is None else int(stim_ch),  # stimulus channel to detect onsets
-            threshold=th,
-            t0=t0, t1=t1,
-            end_mode=mode,
-            stim_expected=stim,
-            inter_stim_time=inter_stim_time
-        )
-        except Exception as e:
-            self._log("cut_trials_single_channel error:", e)
-            self.alerts.error(f"Error generating trials: {e}")
-            return
-
-        #self._log("TD listo:", td.trials.shape, td.time_rel.shape, "onsets:", len(td.onsets_s))
-
-        # The recipe keeps the threshold in the stimulus channel's unit: it is
-        # passed straight back to cut_trials_single_channel on project open.
-        td.metadata["threshold_display"] = th_text
-        td.metadata["generation_params"] = {
-            "channel": int(ch),
-            "stim_channel": None if stim_ch is None else int(stim_ch),
-=======
         params = {
             "channel": int(ch),                  # target channel to cut
             "stim_channel": None if stim_ch is None else int(stim_ch),   # stimulus channel to detect onsets
->>>>>>> 999eeb239d85a9390180f810f24343c2c1c29382
             "threshold": th,
             "t0": t0, "t1": t1,
             "end_mode": mode,
@@ -441,10 +414,13 @@ class TrialsPlugin(IPlugin):
             self._log("cut_trials_single_channel error:", m)
             self.alerts.error(f"Error generating trials: {m}")
 
-        self.run_task(cortar_trials, partial(self._on_trials_cut, ds, params), on_failed=al_fallar,
+        self.run_task(cortar_trials, partial(self._on_trials_cut, ds, params, th_text), on_failed=al_fallar,
                       ds=ds, **params)
 
-    def _on_trials_cut(self, ds, params, td):
+    def _on_trials_cut(self, ds, params, th_text, td):
+        # The recipe keeps the threshold in the stimulus channel's unit: it is
+        # passed straight back to cut_trials_single_channel on project open.
+        td.metadata["threshold_display"] = th_text
         td.metadata["generation_params"] = dict(params)
 
         try:

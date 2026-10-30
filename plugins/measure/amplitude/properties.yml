@@ -6,3 +6,4 @@ version: "1.0"
 icon: "icn_amplitude.png"
 logic_class: "AmplitudePlugin"
 ui_class: ""
+order: 2

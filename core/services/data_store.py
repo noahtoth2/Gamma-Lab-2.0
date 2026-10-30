@@ -129,6 +129,24 @@ class DataStore:
         self._data["active_signal"] = key
 
     @_escribe
+    def release_signals(self, conservar=None):
+        """Quita del DataStore las señales (con sus trials y derivados) salvo la de la clave `conservar`.
+
+        También borra las mediciones y el trial actual, que pertenecen a la señal que se va (R11, R52).
+        Devuelve las claves quitadas.
+        """
+        quitadas = [k for k, v in self._data.items() if isinstance(v, SignalDataset) and k != conservar]
+        for k in quitadas:
+            del self._data[k]
+            self._duenos.pop(k, None)
+        if self._data.get("active_signal") in quitadas:
+            del self._data["active_signal"]
+        self._data.pop("current_trial", None)
+        if "measurements" in self._data:
+            self._data["measurements"] = []
+        return quitadas
+
+    @_escribe
     def clear_active_signal(self):
         """Quita la referencia a la señal activa (no la borra del DataStore)."""
         self._data.pop("active_signal", None)

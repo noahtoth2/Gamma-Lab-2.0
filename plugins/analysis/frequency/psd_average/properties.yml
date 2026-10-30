@@ -7,3 +7,5 @@ icon: "icn_psd_average.png"
 logic_class: "Psd_average_plugin"
 ui_class: ""
 description: "Calculates the average of multiple PSDs, with options to configure the sampling frequency, window type, and frequency range."
+saves_analysis: true
+free_graphics: false

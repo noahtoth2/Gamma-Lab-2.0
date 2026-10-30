@@ -67,16 +67,16 @@ def contar_observadores(vtk_widget):
     return sum(1 for i in estado["items"] if i["id"] is not None)
 
 
-def _widgets_vtk(contenedor):
+def widgets_vtk(contenedor):
     from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
     return contenedor.findChildren(QVTKRenderWindowInteractor)
 
 
 def retirar_de(contenedor):
     """Retira los observadores de todos los widgets VTK dentro de `contenedor`."""
-    return sum(retirar_observadores(w) for w in _widgets_vtk(contenedor) if hasattr(w, _ATTR))
+    return sum(retirar_observadores(w) for w in widgets_vtk(contenedor) if hasattr(w, _ATTR))
 
 
 def reponer_en(contenedor):
     """Repone los observadores de todos los widgets VTK dentro de `contenedor`."""
-    return sum(reponer_observadores(w) for w in _widgets_vtk(contenedor) if hasattr(w, _ATTR))
+    return sum(reponer_observadores(w) for w in widgets_vtk(contenedor) if hasattr(w, _ATTR))
