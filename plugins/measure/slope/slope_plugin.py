@@ -1,5 +1,6 @@
 # plugins/measure/slope/slope_plugin.py
 import os
+from core.utils.rutas import carpeta_inicial
 import csv
 from datetime import datetime
 from typing import Any, Dict, List
@@ -266,7 +267,7 @@ class SlopePlugin(IPlugin):
                 return project.archivos_dir()
         except Exception:
             pass
-        return self.settings.get("last_export_dir", os.getcwd())
+        return self.settings.get("last_export_dir", carpeta_inicial())
 
     def _tabla_exportable(self):
         """(headers, rows) of the measurements, as CSV and Excel write them."""

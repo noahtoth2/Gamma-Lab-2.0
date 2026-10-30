@@ -1,6 +1,7 @@
 
 import json
 import os
+from core.utils.rutas import carpeta_inicial
 import shutil
 from dataclasses import dataclass
 from datetime import datetime
@@ -153,7 +154,7 @@ class ProjectService:
         else:
             default_name = self.project_name or self.default_project_name(ds.name)
             src = Path(getattr(ds, "source_path", "") or "")
-            start_dir = str(self.project_dir or (src.parent if src.exists() else Path.cwd()))
+            start_dir = str(self.project_dir or (src.parent if src.exists() else carpeta_inicial()))
 
             while True:
                 folder_str = QFileDialog.getExistingDirectory(

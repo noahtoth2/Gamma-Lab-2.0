@@ -12,6 +12,7 @@ from core.plugins.interfaces import IPlugin
 from core.plugins.meta import PluginMeta
 from core.utils.vtk_context_menu import VTKContextMenu
 from core.utils.vtk_observers import observar
+from core.utils.rutas import carpeta_inicial
 from core.services.data_store import DataStore
 from core.services.fileio_service import FileIOService
 from core.services.settings_service import SettingsService
@@ -199,7 +200,7 @@ class OpenSignalPlugin(IPlugin):
         menu action in the main window.
         """
         # Get last opened folder from settings
-        last_dir = self.settings.get("last_open_dir", str(Path.cwd()))
+        last_dir = self.settings.get("last_open_dir", carpeta_inicial())
 
         fname, _ = QtWidgets.QFileDialog.getOpenFileName(
             self.ui,

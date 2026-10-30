@@ -38,6 +38,7 @@ from PyQt5.QtWidgets import QFrame
 
 from core.plugins.interfaces import IPlugin
 from core.utils.plugin_alerts import PluginAlerts
+from core.utils.rutas import carpeta_inicial
 from core.utils.notifications import NotificationCenter
 from core.utils.task_progress import TaskProgressBar
 from core.utils.trial_labels import describe_trials
@@ -996,7 +997,7 @@ class MainWindow(QMainWindow):
 
         from core.services.settings_service import SettingsService
         settings = SettingsService()
-        last_dir = settings.get("last_project_dir", str(Path.cwd()))
+        last_dir = settings.get("last_project_dir", carpeta_inicial())
 
         path_str, _ = QFileDialog.getOpenFileName(
             self, "Open Project", last_dir, "Gamma Lab Project (*.glab)"
@@ -1004,7 +1005,15 @@ class MainWindow(QMainWindow):
         if not path_str:
             return
         settings.set("last_project_dir", str(Path(path_str).parent))
+        self._abrir_proyecto(path_str)
 
+    def abrir_proyecto_desde_ruta(self, path_str):
+        
+        from core.services.settings_service import SettingsService
+        SettingsService().set("last_project_dir", str(Path(path_str).parent))
+        self._abrir_proyecto(path_str)
+
+    def _abrir_proyecto(self, path_str):
         self._project_busy = True
         tasks = self.kernel.get_service("TaskService")
         if tasks is None:

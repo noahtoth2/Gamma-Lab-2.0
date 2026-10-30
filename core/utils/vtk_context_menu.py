@@ -9,6 +9,7 @@ from core.services.measurement_service import MeasurementService
 from core.services.settings_service import SettingsService
 from core.utils.cursor_readout import CursorReadout
 from core.utils.vtk_observers import observar
+from core.utils.rutas import carpeta_inicial
 
 
 class VTKContextMenu:
@@ -19,7 +20,7 @@ class VTKContextMenu:
     - Delegation to services: ExportService and MeasurementService
     - Extended context for measurements (view_id, trial_id, channel_name, plugin, domain, graph_id)
     """
-    last_export_dir = os.getcwd()
+    last_export_dir = carpeta_inicial()
 
     _CLICK_EPS = 8
     _PICK_RADIUS_PX = 20
@@ -95,7 +96,7 @@ class VTKContextMenu:
                 archivos = project.archivos_dir()
                 if archivos:
                     return archivos
-            return self.settings.get("last_export_dir", os.getcwd())
+            return self.settings.get("last_export_dir", carpeta_inicial())
 
         def _set_last_dir(path):
             # Don't let a one-off export inside the project folder overwrite the

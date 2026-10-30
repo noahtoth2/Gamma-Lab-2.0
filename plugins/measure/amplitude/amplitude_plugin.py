@@ -1,6 +1,7 @@
 # plugins/measure/amplitude/amplitude_plugin.py
 import sys
 import os
+from core.utils.rutas import carpeta_inicial
 import csv
 from datetime import datetime
 from typing import Any, Dict, List
@@ -300,7 +301,7 @@ class AmplitudePlugin(IPlugin):
                 return project.archivos_dir()
         except Exception:
             pass
-        return self.settings.get("last_export_dir", os.getcwd())
+        return self.settings.get("last_export_dir", carpeta_inicial())
 
     def _tabla_exportable(self):
         """(headers, rows) of the measurements, as CSV and Excel write them."""

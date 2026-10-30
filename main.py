@@ -1,6 +1,11 @@
 # main.py
+import os
 from pathlib import Path
 import sys
+
+from core.utils.rutas import asegurar_salida_estandar
+asegurar_salida_estandar()   # antes que nada: sin consola, print() y flush() se caen
+
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QFontDatabase, QFont, QIcon
 from PyQt5.QtCore import Qt, QTimer, QCoreApplication
@@ -15,11 +20,16 @@ from core.services.data_store import DataStore
 from core.services.fileio_service import FileIOService
 from core.services.task_service import TaskService
 from core.utils import vtk_temporizador
+from core.utils.rutas import carpeta_del_programa, ruta_de_proyecto
 
 
 
 
 def main():
+    # Windows lanza el programa desde la carpeta del archivo que se abrió con doble clic, y la
+    # interfaz carga sus imágenes con rutas relativas ("assets/..."): se resuelven desde aquí.
+    proyecto = ruta_de_proyecto(sys.argv[1:])   # (absoluta, antes de cambiar de carpeta)
+    os.chdir(carpeta_del_programa())
     # Antes de crear ningun widget de VTK: le pone al temporizador de
     # QVTKRenderWindowInteractor la guarda que le falta, que es lo que
     # cerraba la aplicacion al cambiar de pestana (nº 24).
@@ -32,7 +42,7 @@ def main():
         except Exception:
             pass
 
-        # ⚡ Esto debe ir antes de crear QApplication
+       
     QCoreApplication.setAttribute(Qt.AA_ShareOpenGLContexts)
     app = QApplication(sys.argv)
     # Set application icon (taskbar, Alt-Tab). Prefer embedded resource, fallback to file path.
@@ -64,7 +74,7 @@ def main():
     kernel.register_service("TaskService", TaskService())
 
     # 2) Discover and instantiate plugins
-    plugins_dir = Path(__file__).resolve().parent / "plugins"
+    plugins_dir = carpeta_del_programa() / "plugins"
     splash.set_progress(20, "Discovering plugins...")
     pm = PluginManager(plugins_dir)
     pm.load_all(on_progress=lambda i, n, name: splash.set_progress(
@@ -94,6 +104,13 @@ def main():
 
     # Run once the event loop starts so Windows does not re-minimize the window
     QTimer.singleShot(0, show_startup_window)
+    
+    if proyecto:
+        QTimer.singleShot(0, lambda: main_win.abrir_proyecto_desde_ruta(proyecto))
+    salida_autoprueba = os.environ.get("GAMMALAB_AUTOPRUEBA")
+    if salida_autoprueba:
+        from core.utils import autoprueba
+        autoprueba.programar(main_win, kernel, salida_autoprueba, espera_proyecto=bool(proyecto))
     sys.exit(app.exec_())
 
 

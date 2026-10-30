@@ -50,3 +50,9 @@ gamma_lab_settings.json
 
 # PDF generado (opcional)
 # *.pdf
+
+# Instalador (R39)
+installer/build/
+installer/dist/
+installer/salida/
+installer/*.log
