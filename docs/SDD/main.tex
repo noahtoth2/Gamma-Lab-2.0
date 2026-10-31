@@ -21,6 +21,7 @@
 \usepackage{float}
 \usepackage{ragged2e}
 \usepackage{tikz}
+\usepackage{float}
 \usetikzlibrary{shapes.geometric, arrows.meta, positioning}
 \definecolor{titleblue}{RGB}{31,73,125}
 
@@ -1173,5 +1174,83 @@ Un segundo patrón de relación distingue a los componentes según cómo se resu
                 \label{fig:pac}
             \end{figure}
     \end{itemize}
+
+\newpage
+
+\section{Comportamiento del sistema}
+
+
+\subsection{Diagrama guardar proyecto}
+\begin{figure}[H]
+    \centering
+    \includegraphics[
+        width=0.7\linewidth,
+        height=0.65\textheight,
+        keepaspectratio
+    ]{Guardar_proyecto.png}
+    \caption{Diagrama de secuencia para guardar proyecto}
+    \label{fig:sdd_diagrama_guardar_proyecto}
+\end{figure}
+
+Este diagrama representa el flujo que sigue Gamma Lab v.20 al momento de usar \texttt{save} y \texttt{save as} en un proyecto. El proceso comienza cuando el usuario solicita guardar el poryecto desde la interfaz pirncipal \texttt{MainWindow}, que llama al método \texttt{inicar\_guardado} de \texttt{ProjectService}.Este servicio verifica que exista una señal activa mediante \texttt{DataStore}. Si no hay una señal disponible, se genera un \texttt{RuntimeError}, que es capturado por \texttt{MainWindow} para informar al usuario y detener el proceso.
+
+Cuando existe una señal cargada, \texttt{ProjectService} determina la ruta en la cual se guardará el proyecto. Si la ruta es válida, se utiliza directamente; de lo contrario, se abre el selector de carpetas para que el usuario elija una ubicación. El sistema valida la carpeta seleccionada y, si no está permitida, informa al usuario y permite realizar una nueva selección. Este ciclo se mantiene hasta que la carpeta seleccionada sea válida o el usuario cancele la selección. En este último caso, \texttt{iniciar\_guardado} devuelve \texttt{None} y \texttt{MainWindow} cancela la acción.
+
+Una vez definida la ruta, \texttt{ProjectService} devuelve la información necesaria para realizar el guardado. Si la señal requiere ser copiada a la carpeta del proyecto, \texttt{MainWindow} envía la tarea a \texttt{TaskService}, que ejecuta el trabajo de forma asíncrona mediante \texttt{\_Worker}. La copia se realiza por bloques y se informa el progreso al usuario. Durante esta etapa, el usuario puede cancelar le proceso desde la barra de progreso global; la solicitud se transmite a \texttt{TaskService} y al trabajador encargado de la operación. En caso que la señal ya se encuentra en la carpeta del proyecto, se omite esta tarea de copia.
+
+Cuando la copia finaliza correctamente, o cuando no era necesaria, \texttt{MainWindow} llama al método \texttt{completar\_guardado()} dentro de \texttt{ProjectService}. Allí se genera el manifiesto del proyecto, se consultan las medidas y los trials directamente desde \texttt{SignalDataset}, y se recorren los plugins para obtener sus parámetros de análisis mediante \texttt{get\_analysis\_params()}. Finalmente, se escribe el archivo \texttt{.glab}, se establece \texttt{dirty = False} y se notifica a \texttt{MainWindow} que el guardado se completó. La interfaz actualiza el título de la ventana y muestra el mensaje de confirmación \textbf{``Project saved''}.
+
+En caso contrario, si la copia es cancelada o falla, se ejecuta \texttt{guardado\_fallido()}, que revierte el estado temporal del guardado y comunica el resultado correspondiente al usuario. En estos casos no se ejecuta \texttt{completar\_guardado()} ni se escribe el archivo \texttt{.glab}. De esta manera, el diagrama muestra que la generación del archivo del proyecto depende de que todas las operaciones previas finalizen correctamente.
+
+\subsection{Diagrama cerrar proyecto}
+\begin{figure}[H]
+    \centering
+    \includegraphics[
+        width=0.7\linewidth,
+        height=0.65\textheight,
+        keepaspectratio
+    ]{Cerrar_proyecto.png}
+    \caption{Diagrama de secuencia para cerrar proyecto}
+    \label{fig:sdd_diagrama_cerrar_proyecto}
+\end{figure}
+
+Este diagrama representa el flujo que sigue Gamma Lab v.20 al momento que un usuario solicita cerrar un proyecto desde la opción \textbf{File > Close}. El proceso comienza en \texttt{MainWindow}, que invoca \texttt{\_confirm\_discard\_unsaved\_changes()} para determinar si el cierre puede realizarse de forma segura y si es necesario solicitar una confirmación al usuario.
+
+En primer lugar, se verifica si hay un cálculo en ejecución o si el proyecto se encuentra en proceso de apertura. Cuando se presenta alguna de estas condiciones, la interfaz muestra un aviso que permite al usuario decidir entre cerrar de todos modos o permanecer en el proyecto. Si el usuario confirma el cierre, \texttt{MainWindow} solicita a \texttt{TaskService} la cancelación de las tareas y autoriza inmediatamente el cierre. En esta situación no se realiza una consulta adicional sobre los cambios sin guardar. Si el usuario decide quedarse, el método devuelve \texttt{False} y el cierre se interrumpe.
+
+Cuando no hay cálculos en ejecución ni procesos de apertura, el sistema verifica si existen cambios sin guardar. Si los hay, presenta las opciones \textbf{Save}, \textbf{Don't Save} y \textbf{Cancel}. Al seleccionar \textbf{Save}, \texttt{MainWindow} solicita a \texttt{ProjectService} ejecutar \texttt{save()}. Este guardado se realiza de manera síncrona y no utiliza \texttt{TaskService}. Si el guardado termina correctamente, el flujo puede continuar; si el usuario cancela el selector de guardado o se produce un error, el cierre se aborta. Al seleccionar \textbf{Don't Save}, se omite el guardado y se permite continuar. En cambio, \textbf{Cancel} interrumpe el procedimiento y mantiene el proyecto abierto. Si no existen cambios pendientes, el sistema también puede continuar sin guardar.
+
+Una vez autorizada la operación, \texttt{MainWindow} llama a \texttt{close()} en \texttt{ProjectService}, que limpia el estado del proyecto y notifica el cierre a la interfaz. Posteriormente, se actualizan el título de la ventana y el Explorer. A continuación, \texttt{MainWindow} ejecuta \texttt{liberar\_senal\_anterior()} para liberar los recursos asociados a la señal y al proyecto. Este procedimiento comienza solicitando la cancelación de las tareas pendientes mediante \texttt{TaskService}. Después, se recorren las ventanas de \texttt{VTK} para finalizarlas, se destruyen los widgets de los plugins y se llama a \texttt{olvidar\_senal()} en cada plugin para desvincularlo de la señal anterior. Finalmente, \texttt{DataStore} ejecuta \texttt{release\_signals()} para liberar las señales almacenadas.
+
+Como última etapa, \texttt{MainWindow} actualiza la interfaz: oculta el panel de resultados, muestra el logo y la pantalla de bienvenida, reinicia el indicador de trials y limpia las notificaciones. Una vez terminadas estas operaciones, informa al usuario que el proyecto se ha cerrado.
+
+Si en cualquiera de las validaciones iniciales el cierre es cancelado o no puede completarse, no se ejecuta \texttt{ProjectService.close()} y el proyecto permanece abierto. El diagrama también muestra que el evento \texttt{closeEvent} reutiliza \texttt{\_confirm\_discard\_unsaved\_changes()}, manteniendo el mismo mecanismo de confirmación cuando el usuario intenta cerrar la ventana principal.
+
+
+\subsection{Diagrama wavelet}
+\begin{figure}[H]
+    \centering
+    \includegraphics[
+        width=0.7\linewidth,
+        height=0.65\textheight,
+        keepaspectratio
+    ]{Wavelet_Generate.png}
+    \caption{Diagrama de secuencia para wavelet}
+    \label{fig:sdd_diagrama_wavelet}
+\end{figure}
+
+Este diagrama representa el flujo que sigue Gamma Lab v.20 al momentode generar un análisis con Wavelet a partir de los trial de una señal activa. Este flujo comienza con la apertura del widget de wavelet desde \texttt{MainWindow}. Para ello, se solicita al \texttt{WaveletPlugin} que inicialice el plugin y proporcione su interfaz mediante \texttt{get\_widget()}. Una vez disponible el widget, el usuario puede seleccionar los parámetros del análisis y ejecutar la opción \textbf{Generate}.
+
+Al iniciar la generación, el widget invoca \texttt{on\_create\_wavelet()} en \texttt{WaveletPlugin}. El plugin consulta la señal activa y verifica que exista un objeto \texttt{SignalDataset}. Si no hay una señal activa, se muestra una advertencia y el proceso se detiene. Si existe, se obtienen sus trials directamente desde \texttt{SignalDataset}, ya que estos pertenecen a la señal activa. Cuando no hay trials disponibles, también se informa al usuario y no se continúa con el cálculo.
+
+Si existen trials, el plugin valida los parámetros de entrada, incluyendo los límites de frecuencia (\texttt{fmin} y \texttt{fmax}) y la frecuencia de Nyquist. Para esta validación se utiliza la densidad de muestreo efectiva (\texttt{tasa\_efectiva}). Si los parámetros no son válidos, se muestra el aviso correspondiente. En caso contrario, el plugin solicita la cancelación de cálculos anteriores relacionados con Wavelet mediante \texttt{TaskService}, cambia el estado del widget a \textbf{``Computing...''} y deshabilita el botón \textbf{Generate} para evitar que se inicie otra ejecución mientras el cálculo está en curso.
+
+A continuación, \texttt{WaveletPlugin} envía el cálculo a \texttt{TaskService} mediante \texttt{submit (wavelet\_\allowbreak individual (ctx))}. Este servicio devuelve inmediatamente un \texttt{TaskHandle} y ejecuta el trabajo de forma asíncrona a través de \texttt{\_Worker}, permitiendo que el hilo de la interfaz permanezca libre. El trabajador realiza el cálculo Wavelet mediante \texttt{compute\_\allowbreak wavelet ()}, que utiliza PyWavelets (\texttt{pywt.cwt}) para obtener los coeficientes y las frecuencias correspondientes. De acuerdo con la configuración del análisis, también puede aplicarse una normalización en el dominio tiempo-frecuencia mediante \texttt{normalize\_\allowbreak tf ()}.
+
+Durante la ejecución se actualiza el progreso global: se informa un avance inicial antes de ejecutar la transformada, un avance aproximado del 90\,\% antes de la normalización y el 100\,\% cuando el cálculo termina. Al finalizar, \texttt{TaskService} comunica el resultado al plugin mediante una de las señales disponibles: \texttt{finished}, \texttt{failed} o \texttt{cancelled}.
+
+Cuando el cálculo finaliza correctamente, se ejecuta \texttt{on\_wavelet\_done()}. El plugin solicita a \texttt{VTK} la representación del escalograma mediante \texttt{render\_scalogram()}, publica el trial generado a trav\'es de \texttt{publish\_current\_trial()} y notifica a \texttt{ProjectService} que el proyecto ha sido modificado mediante \texttt{mark\_project\_dirty()}. Si ocurre un error, \texttt{on\_wavelet\_failed()} se encarga de mostrar el mensaje correspondiente; si el usuario cancela la operación, \texttt{on\_wavelet\_cancelled()} gestiona ese resultado.
+
+Finalmente, los tres callbacks ejecutan \texttt{\_terminar\_calculo()} para restaurar el estado del widget, recuperar el texto original del botón y habilitar nuevamente la opción \textbf{Generate}. Así, el diagrama representa tanto el procesamiento exitoso como las rutas de validación, error y cancelación, mostrando la interacción entre la interfaz, el plugin, el sistema de tareas, las herramientas de procesamiento y la visualización.
 
 \end{document}
