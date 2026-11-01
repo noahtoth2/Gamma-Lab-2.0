@@ -1,0 +1,96 @@
+title GammaLab — Abrir proyecto
+
+actor Usuario
+participant MainWindow
+participant ProjectService
+participant TaskService
+participant FileIOService
+participant DataStore
+participant SignalDataset
+participant Plugin
+
+Usuario -> MainWindow: File > Open Project
+
+MainWindow -> MainWindow: _confirm_discard_unsaved_changes()
+
+alt No autorizada
+MainWindow -> MainWindow: Mantener proyecto actual
+else Autorizada
+MainWindow -> MainWindow: Abrir selector (*.glab)
+
+alt Selector cancelado
+MainWindow -> MainWindow: No abrir nada
+else Archivo elegido
+MainWindow -> MainWindow: Marcar proyecto ocupado
+MainWindow -> TaskService: submit(preparar_apertura)
+TaskService --> MainWindow: TaskHandle
+
+TaskService -> ProjectService: preparar_apertura(ruta, ctx)
+activate ProjectService
+ProjectService -> ProjectService: Leer manifiesto
+alt Señal en la carpeta
+ProjectService -> FileIOService: load_abf / load_edf / load_mat
+FileIOService --> ProjectService: SignalDataset
+else Señal ausente
+ProjectService -> ProjectService: Señal = None
+end
+ProjectService --> TaskService: (manifiesto, señal)
+deactivate ProjectService
+
+alt finished
+TaskService --> MainWindow: finished(preparado)
+
+MainWindow -> MainWindow: liberar_senal_anterior()
+
+MainWindow -> ProjectService: open(ruta, preparado)
+activate ProjectService
+ProjectService -> ProjectService: Fijar carpeta y nombre
+
+opt Hay señal
+ProjectService -> DataStore: add_signal() y set_active_signal()
+DataStore --> ProjectService: Señal activa
+
+opt Frecuencia manual
+ProjectService -> SignalDataset: set_sampling_rate(fs)
+end
+
+loop Por cada conjunto de trials
+ProjectService -> ProjectService: Recortar trials
+ProjectService -> SignalDataset: add_trial_dataset()
+ProjectService -> SignalDataset: discard_trial()
+opt Hay recetas
+ProjectService -> SignalDataset: register_derived_trials()
+end
+end
+end
+
+ProjectService -> DataStore: set("measurements")
+
+opt Hay señal
+loop Por cada extensión guardada
+ProjectService -> Plugin: start() y get_widget()
+ProjectService -> Plugin: apply_analysis_params()
+end
+end
+
+ProjectService -> ProjectService: dirty = False
+ProjectService --> MainWindow: Notificar cambio
+deactivate ProjectService
+MainWindow -> MainWindow: Refrescar título y Explorer
+MainWindow --> Usuario: Project opened
+
+else failed
+TaskService --> MainWindow: failed(mensaje)
+MainWindow --> Usuario: Diálogo de error
+note over MainWindow: La señal anterior no se libera
+
+else cancelled
+MainWindow -> TaskService: Cancelar tarea
+TaskService --> MainWindow: cancelled
+MainWindow --> Usuario: Open project canceled
+note over MainWindow: La señal anterior no se libera
+end
+
+MainWindow -> MainWindow: Desmarcar ocupado
+end
+end
