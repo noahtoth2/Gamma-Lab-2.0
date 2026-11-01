@@ -639,7 +639,11 @@ class Pac_plugin(IPlugin):
             # gráficos nuevos; dibujar antes también es pagar el render dos veces
             menu_dibuja = (self.vtk_menu is not None
                            and getattr(self.vtk_menu, "measure_service", None) is not None)
+<<<<<<< HEAD
+            if tipo == "PAC Psel":
+=======
             if self._es_psel(tipo):
+>>>>>>> 477cc30854ec8a0a8c9b48453ab636c5f1e73bd1
                 self.render_psel(resultado, dibujar=not menu_dibuja)
                 detalle = f"{resultado.n_ciclos} ciclo(s)"
                 if resultado.ciclos_descartados:
