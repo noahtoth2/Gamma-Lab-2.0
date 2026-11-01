@@ -58,8 +58,9 @@ class Relative_psd_plugin(IPlugin):
     def __init__(self, meta: PluginMeta):
         super().__init__(meta)
         self.ui: Ui_Relative_psd | None = None
-        # Plot toggle (disable chart rendering as requested)
-        self._plot_enabled: bool = False
+        self._plot_enabled: bool = True
+        self._ultimo: dict | None = None
+        self.vtk_menu: VTKContextMenu | None = None
         # VTK
         self.vtk_interactor: QVTKRenderWindowInteractor | None = None
         self.vtk_view: vtk.vtkContextView | None = None
@@ -84,17 +85,7 @@ class Relative_psd_plugin(IPlugin):
             self.widget = QtWidgets.QWidget(parent)
             self.ui.setupUi(self.widget)
             self.alerts.parent = self.widget
-            # Chart disabled: do not create a plot area unless enabled
-            if self._plot_enabled:
-                try:
-                    if not hasattr(self.ui, "plotArea"):
-                        self.ui.plotArea = QtWidgets.QWidget(self.widget)
-                        self.ui.plotArea.setObjectName("plotArea")
-                        if self.widget.layout() is None:
-                            self.widget.setLayout(QtWidgets.QVBoxLayout())
-                        self.widget.layout().insertWidget(0, self.ui.plotArea, stretch=1)
-                except Exception:
-                    pass
+            self._crear_area_de_grafica()
             self._inject_optional_controls()
             self._wire_ui()
             self._init_defaults()
@@ -105,6 +96,19 @@ class Relative_psd_plugin(IPlugin):
         else:
             self.widget.setParent(parent)
         return self.widget
+
+    def _crear_area_de_grafica(self):
+        """La gráfica a la izquierda y los parámetros a la derecha, como en la FFT."""
+        self.ui.plotArea = QtWidgets.QFrame()
+        self.ui.plotArea.setObjectName("plotArea")
+        self.ui.plotArea.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        divisor = QtWidgets.QSplitter(QtCore.Qt.Horizontal, self.widget)
+        self.ui.vbox.removeWidget(self.ui.rightContainer)
+        divisor.addWidget(self.ui.plotArea)
+        divisor.addWidget(self.ui.rightContainer)
+        divisor.setStretchFactor(0, 3)
+        divisor.setStretchFactor(1, 1)
+        self.ui.vbox.insertWidget(0, divisor, 1)
 
     def _inject_optional_controls(self):
         """Inject optional controls without assuming a specific UI layout."""
@@ -282,10 +286,10 @@ class Relative_psd_plugin(IPlugin):
                      f"fs_eff={fs_eff:.1f} Hz, df≈{freq[1]-freq[0]:.2f} Hz")
         self.publish_current_trial()
 
-        # Log standard bands (like MATLAB)
         self._log_bands(freq, pxx_all, GF)
 
-        # Plot disabled
+        self._ultimo = dict(freq=freq, pxx=pxx_all, fs_eff=fs_eff, f1=f1, f2=f2, GF=GF, ch_name=ch_name,
+                            abs_power=abs_power, rel_power=rel_power, p=p)
         if self._plot_enabled:
             try:
                 self._plot_psd(freq, pxx_all, ch_name, f1, f2)
@@ -508,11 +512,55 @@ class Relative_psd_plugin(IPlugin):
             plot.SetWidth(0.5)
 
         try:
-            self.vtk_menu = VTKContextMenu(self.chart, self.vtk_interactor, self.active_signal.name, ch_name, self.meta.id, parent=self.widget)
+            if self.vtk_menu is None:
+                self.vtk_menu = VTKContextMenu(self.chart, self.vtk_interactor, self.active_signal.name, ch_name,
+                                               self.meta.id, parent=self.widget)
+                for fmt in ("csv", "xlsx", "json"):
+                    self.vtk_menu.add_action(f"Export Relative PSD results ({fmt})", partial(self.exportar_resultados, fmt))
+            else:
+                self.vtk_menu.set_chart(self.chart)
+                self.vtk_menu.set_signal_name(self.active_signal.name)
+                self.vtk_menu.set_channel_name(ch_name)
         except Exception as e:
             self.alerts.error(f"Error creating the context menu.\n {str(e)}")
 
         self.vtk_view.GetRenderWindow().Render()
+
+    # ---------- Exportación ----------
+    BANDAS = [
+        ("delta", 0.5, 3.9), ("theta", 4.0, 7.9), ("alpha", 8.0, 11.9), ("beta", 12.0, 24.9),
+        ("gamma1", 25.0, 59.0), ("gamma2", 61.0, 120.0), ("HFO1", 121.0, 250.0), ("HFO2", 251.0, 490.0),
+    ]
+
+    def _fracciones_por_banda(self, freq, pxx_all, GF):
+        pxx = np.nansum(pxx_all, axis=1) if GF == 1 else np.nanmean(pxx_all, axis=1)
+        total = self._band_sum(freq, pxx, 0.5, 490.0)
+        return [(n, lo, hi, (self._band_sum(freq, pxx, lo, hi) / total) if total > 0 else 0.0)
+                for n, lo, hi in self.BANDAS]
+
+    def _secciones_resultado(self) -> dict:
+        u = self._ultimo
+        usados = (self._trials_used or {}).get("label")
+        parametros = [["canal", u["ch_name"]], ["trials_usados", usados],
+                      ["modo", "todos los trials" if u["GF"] == 1 else "promedio"],
+                      ["banda_baja_hz", u["f1"]], ["banda_alta_hz", u["f2"]], ["fs_efectiva_hz", float(u["fs_eff"])]]
+        if self.ui is not None:
+            parametros += [["ventana", self.ui.windowComboBox.currentText()], ["nperseg", self.ui.npersegSpinBox.value()],
+                           ["noverlap", self.ui.noverlapSpinBox.value()], ["nfft", self.ui.nfftSpinBox.value()],
+                           ["densidad_de_muestra_hz", self.ui.sampleDensitySpinBox.value()]]
+        potencia = [["potencia_absoluta", float(u["abs_power"])], ["potencia_relativa", float(u["rel_power"])]]
+        bandas = [[n, lo, hi, float(v)] for n, lo, hi, v in self._fracciones_por_banda(u["freq"], u["pxx"], u["GF"])]
+        return {
+            "Parametros": (["parametro", "valor"], parametros),
+            "Potencia": (["medida", "valor"], potencia),
+            "Bandas": (["banda", "desde_hz", "hasta_hz", "fraccion_de_la_potencia_total"], bandas),
+        }
+
+    def exportar_resultados(self, fmt: str):
+        if not self._ultimo or self.vtk_menu is None:
+            self.alerts.warning("Primero calcula la PSD relativa para poder exportar sus resultados.")
+            return
+        self.vtk_menu.export_service.export_sections(self._secciones_resultado(), fmt)
 
     # ---------- Welch ----------
     def _compute_psd(self, X: np.ndarray, fs: float, target_fs: float,

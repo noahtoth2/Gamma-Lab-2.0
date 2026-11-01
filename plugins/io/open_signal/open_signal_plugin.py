@@ -15,7 +15,6 @@ from core.utils.vtk_observers import observar
 from core.utils.rutas import carpeta_inicial
 from core.services.data_store import DataStore
 from core.services.fileio_service import FileIOService
-from core.services.settings_service import SettingsService
 from core.model.signal_dataset import SignalDataset
 from core.utils.adapters import dataset_to_vtk_table
 
@@ -37,7 +36,6 @@ class OpenSignalPlugin(IPlugin):
     def __init__(self, meta: PluginMeta):
         super().__init__(meta)
 
-        self.settings = SettingsService()
 
         
 

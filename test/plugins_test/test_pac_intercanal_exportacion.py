@@ -10,7 +10,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from core.services.export_service import ExportService
+from core.services.export_service import Exportador
 from plugins.analysis.time_frequency.pac.pac_plugin import Pac_plugin
 from test_pac_intercanal import canal, correr
 
@@ -31,7 +31,7 @@ def secciones():
 
 
 def _exportador(tmp_path):
-    svc = ExportService(parent=Mock(), vtk_widget=Mock(), get_active_chart=lambda: None,
+    svc = Exportador(parent=Mock(), vtk_widget=Mock(), get_active_chart=lambda: None,
                         get_names=lambda: ("senal", "CA1", "PAC"),
                         last_dir_getter=lambda: str(tmp_path), last_dir_setter=lambda d: None)
     svc.alerts = Mock()

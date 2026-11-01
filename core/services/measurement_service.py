@@ -1,6 +1,7 @@
 from datetime import datetime
 import vtk
 import bisect
+import weakref
 
 from core.filters.measurements import amplitude_in_window, two_point_metrics
 from core.utils.plugin_alerts import PluginAlerts
@@ -8,8 +9,44 @@ from core.utils.submuestreo import tabla_de
 
 
 class MeasurementService:
+    """Servicio de medición del núcleo (R69): una sola instancia, registrada en el Kernel.
+
+    Cada gráfico mide por su cuenta, con su medición en curso y sus líneas dibujadas, así que el servicio
+    le entrega una `SesionDeMedicion`. Lo que comparten, el almacén donde se guardan las mediciones,
+    lo guarda el servicio.
     """
-    2-point measurements with per-trial persistence and rebuildable overlays.
+
+    def __init__(self, datastore):
+        self.datastore = datastore
+        self._sesiones = weakref.WeakValueDictionary()
+
+    def _leer(self, clave, defecto=None):
+        try:
+            return self.datastore.get(clave, defecto) if self.datastore else defecto
+        except Exception:
+            return defecto
+
+    def _escribir(self, clave, valor):
+        try:
+            if self.datastore:
+                self.datastore.set(clave, valor)
+        except Exception:
+            pass
+
+    def sesion_para(self, parent, vtk_widget, get_active_chart, pick_radius_px=10, debug=False):
+        """La sesión de medición de una ventana gráfica; reemplaza a la anterior de esa ventana."""
+        sesion = SesionDeMedicion(parent, vtk_widget, get_active_chart, self._leer, self._escribir,
+                                  pick_radius_px, debug)
+        self._sesiones[id(vtk_widget)] = sesion
+        return sesion
+
+    def sesion_de(self, vtk_widget):
+        return self._sesiones.get(id(vtk_widget))
+
+
+class SesionDeMedicion:
+    """
+    2-point measurements for one view, with per-trial persistence and rebuildable overlays.
     - Persist p1/p2 in data coordinates + context (view_id, trial_id, channel_name).
     - When navigating: set_context(...) + rebuild_overlays_for_current_context().
     - Overlays: dashed line + points; show/hide without recreating when possible.

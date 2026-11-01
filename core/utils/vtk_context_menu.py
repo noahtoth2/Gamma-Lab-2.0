@@ -4,12 +4,8 @@ from PyQt5.QtCore import Qt
 from vtk import vtkChartXY, vtkChart, vtkAxis
 import os
 
-from core.services.export_service import ExportService
-from core.services.measurement_service import MeasurementService
-from core.services.settings_service import SettingsService
 from core.utils.cursor_readout import CursorReadout
 from core.utils.vtk_observers import observar
-from core.utils.rutas import carpeta_inicial
 
 
 class VTKContextMenu:
@@ -20,7 +16,7 @@ class VTKContextMenu:
     - Delegation to services: ExportService and MeasurementService
     - Extended context for measurements (view_id, trial_id, channel_name, plugin, domain, graph_id)
     """
-    last_export_dir = carpeta_inicial()
+    kernel = None   # se asigna al arrancar (main.py): de él salen los servicios compartidos (R69)
 
     _CLICK_EPS = 8
     _PICK_RADIUS_PX = 20
@@ -52,9 +48,6 @@ class VTKContextMenu:
         self._datastore = None
         self._debug = True
 
-        # Persistent settings service
-        self.settings = SettingsService()
-
         # Wire zoom/mouse
         self._install_wheel_shortcuts()
         self._install_mouse_observers()
@@ -77,66 +70,19 @@ class VTKContextMenu:
         self.vtk_widget.setContextMenuPolicy(Qt.CustomContextMenu)
         self.vtk_widget.customContextMenuRequested.connect(self.show_menu)
 
-        # Services
+        # Servicios compartidos del núcleo (R69): una sola instancia de cada uno
         def _get_names():
             return (self.signal_name or "signal",
                     self.channel_name or None,
                     self.plugin_name or "plugin")
 
-
-        def _active_project_service():
-            try:
-                return self._datastore.get("_project_service") if self._datastore else None
-            except Exception:
-                return None
-
-        def _get_last_dir():
-            project = _active_project_service()
-            if project is not None and project.is_open:
-                archivos = project.archivos_dir()
-                if archivos:
-                    return archivos
-            return self.settings.get("last_export_dir", carpeta_inicial())
-
-        def _set_last_dir(path):
-            # Don't let a one-off export inside the project folder overwrite the
-            # general "last export dir" the user picked outside any project.
-            project = _active_project_service()
-            if not (project is not None and project.is_open):
-                self.settings.set("last_export_dir", path)
-            VTKContextMenu.last_export_dir = path
-
-        self.export_service = ExportService(
-            parent=self.parent,
-            vtk_widget=self.vtk_widget,
-            get_active_chart=self._active_chart,
-            get_names=_get_names,
-            last_dir_getter=_get_last_dir,
-            last_dir_setter=_set_last_dir
-        )
-
-        def _ds_get(k, default=None):
-            try:
-                return self._datastore.get(k, default) if self._datastore else default
-            except Exception:
-                return default
-
-        def _ds_set(k, v):
-            try:
-                if self._datastore:
-                    self._datastore.set(k, v)
-            except Exception:
-                pass
-
-        self.measure_service = MeasurementService(
-            parent=self.parent,
-            vtk_widget=self.vtk_widget,
-            get_active_chart=self._active_chart,
-            datastore_get=_ds_get,
-            datastore_set=_ds_set,
-            pick_radius_px=self._PICK_RADIUS_PX,
-            debug=False 
-        )
+        kernel = VTKContextMenu.kernel
+        if kernel is None or kernel.get_service("Export") is None or kernel.get_service("Measurement") is None:
+            raise RuntimeError("VTKContextMenu.kernel no está asignado o no tiene los servicios de exportación y de medición.")
+        self.export_service = kernel.get_service("Export").para(
+            self.parent, self.vtk_widget, self._active_chart, _get_names)
+        self.measure_service = kernel.get_service("Measurement").sesion_para(
+            self.parent, self.vtk_widget, self._active_chart, self._PICK_RADIUS_PX)
 
         if self._measure_scope:
             self._apply_measure_scope_to_service()

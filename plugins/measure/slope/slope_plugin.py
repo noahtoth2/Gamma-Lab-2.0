@@ -10,7 +10,6 @@ from PyQt5.QtWidgets import QFileDialog, QHeaderView
 
 from core.plugins.interfaces import IPlugin
 from core.plugins.meta import PluginMeta
-from core.services.settings_service import SettingsService
 from core.utils.xlsx_writer import escribir_xlsx
 from plugins.measure.slope.slope_plugin_ui import Ui_Slope
 
@@ -115,7 +114,6 @@ class SlopePlugin(IPlugin):
 
     def __init__(self, meta: PluginMeta):
         super().__init__(meta)
-        self.settings = SettingsService()
 
 
         # UI

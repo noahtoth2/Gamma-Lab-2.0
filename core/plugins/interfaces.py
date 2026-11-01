@@ -92,6 +92,11 @@ class IPlugin(ABC):
         self._log(msg)
 
 
+    @property
+    def settings(self):
+        """Servicio de ajustes del núcleo (R69): los módulos lo piden al Kernel, no crean el suyo."""
+        return self.kernel.get_service("Settings") if self.kernel else None
+
     def get_datastore(self) -> DataStore | None:
         """Obtain the DataStore service from the kernel."""
         try:

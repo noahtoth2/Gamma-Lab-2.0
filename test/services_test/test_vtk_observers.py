@@ -63,9 +63,16 @@ def test_retirar_de_y_reponer_en_recorren_el_contenedor(entorno):
     assert reponer_en(cont) == 2 and contar_observadores(w) == 2
 
 
-def test_el_menu_contextual_y_la_lectura_del_cursor_usan_el_registro(entorno):
+def test_el_menu_contextual_y_la_lectura_del_cursor_usan_el_registro(entorno, monkeypatch):
     from core.utils.vtk_context_menu import VTKContextMenu
     cont, w = entorno
+    from core.kernel import Kernel
+    from core.services.compartidos import registrar_servicios_compartidos
+    from core.services.data_store import DataStore
+    kernel = Kernel()
+    kernel.register_service("DataStore", DataStore())
+    registrar_servicios_compartidos(kernel)
+    monkeypatch.setattr(VTKContextMenu, "kernel", kernel)
     menu = VTKContextMenu(chart=None, vtk_widget=w, plugin_name="t", measurements_enabled=True,
                           measure_scope={"view_id": "t", "graph_id": "t", "trial_id": None,
                                          "channel_name": None, "plugin": "t", "domain": "time"},

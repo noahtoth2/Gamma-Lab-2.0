@@ -7,12 +7,50 @@ import json
 import numpy as np
 
 from core.utils.plugin_alerts import PluginAlerts
+from core.utils.rutas import carpeta_inicial
 from core.utils.submuestreo import tabla_de
 from core.utils.xlsx_writer import escribir_xlsx
 
 class ExportService:
+    """Servicio de exportación del núcleo (R69): una sola instancia, registrada en el Kernel.
+
+    Guarda lo que comparten todos los gráficos, los ajustes y el proyecto activo, de los que sale la
+    carpeta de exportación, y entrega a cada gráfico un `Exportador` atado a su ventana.
     """
-    Image and table export service for VTK.
+
+    def __init__(self, settings, datastore=None):
+        self.settings = settings
+        self.datastore = datastore
+
+    def _proyecto_abierto(self):
+        try:
+            proyecto = self.datastore.get("_project_service") if self.datastore else None
+        except Exception:
+            return None
+        return proyecto if proyecto is not None and proyecto.is_open else None
+
+    def carpeta_de_exportacion(self):
+        proyecto = self._proyecto_abierto()
+        if proyecto is not None:
+            archivos = proyecto.archivos_dir()
+            if archivos:
+                return archivos
+        return self.settings.get("last_export_dir", carpeta_inicial())
+
+    def recordar_carpeta(self, ruta):
+        # Una exportación suelta dentro del proyecto no debe pisar la carpeta que el usuario eligió fuera de él.
+        if self._proyecto_abierto() is None:
+            self.settings.set("last_export_dir", ruta)
+
+    def para(self, parent, vtk_widget, get_active_chart, get_names):
+        """El exportador de una ventana gráfica."""
+        return Exportador(parent, vtk_widget, get_active_chart, get_names,
+                          self.carpeta_de_exportacion, self.recordar_carpeta)
+
+
+class Exportador:
+    """
+    Image and table export for one VTK view.
     - Does not depend on VTKContextMenu class.
     - Receives callbacks to get the active chart and names (signal/channel/plugin).
     """

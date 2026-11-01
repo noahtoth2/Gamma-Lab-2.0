@@ -9,7 +9,7 @@ import numpy as np
 import pytest
 
 # SUT
-from core.services.export_service import ExportService
+from core.services.export_service import Exportador
 
 
 # -----------------------------
@@ -67,7 +67,7 @@ class DummyTIFFWriter(_WriterBase):
 
 
 def make_service(tmp_path, chart_cb=None, names=("sig", "ch", "plugin")):
-    """Build an ExportService fully isolated with fakes/mocks."""
+    """Build an Exportador fully isolated with fakes/mocks."""
     parent = Mock()
     vtk_widget = Mock()
     vtk_widget.GetRenderWindow.return_value = DummyWindow()
@@ -83,7 +83,7 @@ def make_service(tmp_path, chart_cb=None, names=("sig", "ch", "plugin")):
     def _set_last(d):
         last_dir_cell["v"] = d
 
-    svc = ExportService(
+    svc = Exportador(
         parent=parent,
         vtk_widget=vtk_widget,
         get_active_chart=get_active_chart,

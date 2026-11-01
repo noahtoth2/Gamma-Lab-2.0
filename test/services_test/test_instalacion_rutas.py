@@ -63,10 +63,12 @@ def test_abrir_desde_ruta_recuerda_la_carpeta_y_abre_el_proyecto(tmp_path, monke
     monkeypatch.setenv("APPDATA", str(tmp_path))
     _sin_archivo_anterior(monkeypatch, tmp_path)
     abiertos = []
-    stub = SimpleNamespace(_abrir_proyecto=abiertos.append)
+    ajustes = SettingsService()
+    stub = SimpleNamespace(_abrir_proyecto=abiertos.append,
+                           kernel=SimpleNamespace(get_service=lambda clave: ajustes if clave == "Settings" else None))
     MainWindow.abrir_proyecto_desde_ruta(stub, str(tmp_path / "datos" / "p.glab"))
     assert abiertos == [str(tmp_path / "datos" / "p.glab")]
-    assert SettingsService().get("last_project_dir") == str(tmp_path / "datos")
+    assert ajustes.get("last_project_dir") == str(tmp_path / "datos")
 
 
 def test_sin_consola_la_salida_va_a_un_registro_y_flush_no_falla(tmp_path, monkeypatch):

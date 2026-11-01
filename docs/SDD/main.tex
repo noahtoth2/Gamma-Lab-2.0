@@ -867,7 +867,7 @@ Los servicios de soporte son los objetos que operan sobre el modelo de datos: le
 
 \texttt{SettingsService}, definido en \texttt{core/services/settings\_service.py}, guarda las preferencias de la aplicación que deben conservarse entre sesiones. Las mantiene en un diccionario en memoria y las escribe en el archivo \texttt{gamma\_lab\_settings.json}, en la carpeta de la aplicación. Al crearse lee el archivo; si no existe o no se puede interpretar, empieza con un diccionario vacío. Cada vez que se modifica un valor, el archivo se escribe de inmediato.
 
-El servicio no se registra en el Kernel. Cada componente que lo necesita crea su propia instancia (\texttt{MainWindow}, el menú contextual de las gráficas y los plugins de carga de señales y de mediciones), y todas leen y escriben el mismo archivo. Las preferencias que se guardan hoy son las carpetas usadas por última vez, que el sistema propone como punto de partida en los diálogos de archivo (Tabla~\ref{tab:sdd_settings}).
+El servicio se crea una sola vez, en el registro de servicios compartidos del núcleo, y se registra en el Kernel con la clave \texttt{"Settings"}. \texttt{MainWindow}, el menú contextual de las gráficas y los plugins lo piden al Kernel; ninguno crea el suyo. Las preferencias que se guardan hoy son las carpetas usadas por última vez, que el sistema propone como punto de partida en los diálogos de archivo (Tabla~\ref{tab:sdd_settings}).
 
 \begin{center}
 \small
@@ -929,7 +929,7 @@ MAT (v7.3) & h5py & Cada variable numérica se interpreta como un canal; los de 
 \subsubsection{MeasurementService}
 \label{sec:sdd_measurement}
 
-\texttt{MeasurementService}, definido en \texttt{core/services/measurement\_service.py}, permite al usuario medir sobre una gráfica marcando dos puntos con el ratón. Cada gráfica tiene su propia instancia, creada por su menú contextual. Al construirse, el servicio recibe la forma de obtener la gráfica activa y de leer y escribir la lista de mediciones del \texttt{DataStore} (Sección~\ref{sec:sdd_datastore}). Trabaja en el hilo de interfaz, porque opera directamente sobre los objetos de VTK.
+\texttt{MeasurementService}, definido en \texttt{core/services/measurement\_service.py}, permite al usuario medir sobre una gráfica marcando dos puntos con el ratón. Hay una sola instancia del servicio, registrada en el Kernel con la clave \texttt{"Measurement"}, que guarda las mediciones en el \texttt{DataStore} (Sección~\ref{sec:sdd_datastore}). Como cada gráfica tiene su medición en curso y sus líneas dibujadas, el servicio entrega a cada menú contextual una sesión de medición propia, atada a la ventana de esa gráfica; la sesión recibe la forma de obtener la gráfica activa. Trabaja en el hilo de interfaz, porque opera directamente sobre los objetos de VTK.
 
 Una medición avanza por tres estados: en reposo, esperando el primer punto y esperando el segundo. El usuario elige el tipo de medición, marca los dos puntos y el servicio vuelve al reposo; la tecla Esc cancela en cualquier momento. Cada clic se ajusta al punto de datos más cercano dentro de un radio de 10 píxeles, de modo que la medición usa valores reales de la serie y no la posición exacta del cursor. Un clic que se desplaza más de unos pocos píxeles se interpreta como arrastre y se ignora. Mientras se espera el segundo punto, el zoom y el desplazamiento quedan suspendidos para que los ejes no cambien entre un punto y otro. Los cálculos numéricos se realizan con las funciones de \texttt{core/filters/measurements.py}. La Tabla~\ref{tab:sdd_mediciones} resume los tipos de medición.
 
@@ -962,7 +962,7 @@ Cada medición se guarda en el \texttt{DataStore} con un identificador correlati
 \subsubsection{ExportService}
 \label{sec:sdd_export}
 
-\texttt{ExportService}, definido en \texttt{core/services/export\_service.py}, escribe en archivos externos el contenido de una gráfica o los resultados de un análisis. Al igual que \texttt{MeasurementService}, cada gráfica tiene su propia instancia, creada por su menú contextual. El servicio no depende de la clase del menú: recibe al construirse la forma de obtener la gráfica activa, los nombres de la señal, el canal y el plugin, y la carpeta de exportación. Con esos nombres arma el nombre propuesto para el archivo, en la forma \texttt{señal\_canal\_plugin\_fecha.ext}.
+\texttt{ExportService}, definido en \texttt{core/services/export\_service.py}, escribe en archivos externos el contenido de una gráfica o los resultados de un análisis. Al igual que \texttt{MeasurementService}, hay una sola instancia, registrada en el Kernel con la clave \texttt{"Export"}, que entrega a cada menú contextual un exportador atado a la ventana de su gráfica. El servicio guarda lo que comparten todas, la carpeta de exportación, que sale de los ajustes y del proyecto abierto; cada exportador recibe la forma de obtener la gráfica activa y los nombres de la señal, el canal y el plugin. Con esos nombres arma el nombre propuesto para el archivo, en la forma \texttt{señal\_canal\_plugin\_fecha.ext}.
 
 La exportación de imágenes captura la ventana de la gráfica y la escribe como PNG, JPG, BMP o TIFF. La exportación vectorial genera un archivo EMF en el que ejes, marcas, etiquetas y barra de color son elementos vectoriales, y los mapas de calor se incrustan como imagen. Para las tablas, el sistema tiene tres caminos, que resume la Tabla~\ref{tab:sdd_export_tablas}.
 
@@ -1538,12 +1538,12 @@ Esta sección presenta la interfaz de GammaLab 2.0 tal como la ve el usuario. Pr
 
 Este capítulo relaciona los requisitos y los casos de uso que el sistema cubre con la manera en que se cubrieron y con las pruebas que lo verifican. Las fuentes son el SRS para los requisitos, el SAD para los casos de uso, el código fuente y la hoja de seguimiento del proyecto. El estado corresponde al 1 de noviembre de 2026.
 
-De los 81 requisitos del SRS, 79 están cubiertos (4 de ellos con excepciones) y 2 no lo están del todo (R46 y R69). De los 23 casos de uso del SAD, 17 están cubiertos; un caso se considera cubierto cuando lo están todos los requisitos que lo componen. La verificación se apoya en 695 pruebas automáticas, de las cuales se ejecutan 692 en la suite completa: 689 pasan y 3 fallan. Donde un límite de tiempo o de memoria no se presta a una prueba automática, la verificación es una medición, con su cifra. Los nombres de componentes, extensiones y pruebas aparecen entre comillas y en cursiva.
+De los 81 requisitos del SRS, 80 están cubiertos (3 de ellos con excepciones) y 1 no lo está del todo (R46). De los 23 casos de uso del SAD, 19 están cubiertos; un caso se considera cubierto cuando lo están todos los requisitos que lo componen. La verificación se apoya en 706 pruebas automáticas, de las cuales se ejecutan 703 en la suite completa: 700 pasan y 3 fallan. Donde un límite de tiempo o de memoria no se presta a una prueba automática, la verificación es una medición, con su cifra. Los nombres de componentes, extensiones y pruebas aparecen entre comillas y en cursiva.
 
 \subsection{Requisitos cubiertos}
 \label{sec:sdd_req_cubiertos}
 
-La Tabla~\ref{tab:sdd_req_fr} recoge los 45 requisitos funcionales cubiertos y la Tabla~\ref{tab:sdd_req_nfr} los 34 no funcionales. Cada fila indica cómo se cubrió el requisito y cómo se verificó.
+La Tabla~\ref{tab:sdd_req_fr} recoge los 45 requisitos funcionales cubiertos y la Tabla~\ref{tab:sdd_req_nfr} los 35 no funcionales. Cada fila indica cómo se cubrió el requisito y cómo se verificó.
 
 \begin{center}
 \footnotesize
@@ -1570,7 +1570,7 @@ La Tabla~\ref{tab:sdd_req_fr} recoge los 45 requisitos funcionales cubiertos y l
 \hline
 \textbf{FR-IO-04}\newline R78 & \textbf{Abrir un proyecto guardado.} “\textit{ProjectService}” lee el proyecto fuera del hilo de la interfaz; después, en el hilo de la interfaz, registra la señal y restaura los trials, las mediciones y los análisis guardados. & Pruebas automáticas de la apertura, incluida la ausencia del archivo de la señal, y de la persistencia de las modificaciones de artefactos (“\textit{test\_apertura\_proyecto}”, “\textit{test\_persistencia\_artifact\_remove}”). \\
 \hline
-\textbf{FR-IO-05}\newline R05 & \textbf{Exportar los resultados de los análisis.} “\textit{ExportService}” escribe los resultados en CSV, Excel y JSON y las gráficas como imagen; el escritor de Excel es propio y no depende de bibliotecas externas. & Pruebas automáticas de la exportación y del escritor de Excel. Excepción: “\textit{Relative PSD}” no dibuja gráfica ni exporta (“\textit{test\_export}”, “\textit{test\_xlsx\_writer}”, “\textit{test\_resultados\_xlsx}”). \\
+\textbf{FR-IO-05}\newline R05 & \textbf{Exportar los resultados de los análisis.} “\textit{ExportService}” escribe los resultados en CSV, Excel y JSON y las gráficas como imagen; el escritor de Excel es propio y no depende de bibliotecas externas. & Pruebas automáticas de la exportación y del escritor de Excel. “\textit{Relative PSD}” dibuja su gráfica con el menú contextual y exporta parámetros, potencias y fracción por banda (“\textit{test\_export}”, “\textit{test\_xlsx\_writer}”, “\textit{test\_resultados\_xlsx}”, “\textit{test\_relative\_psd\_exportacion}”). \\
 \hline
 \textbf{FR-IO-06}\newline R09 & \textbf{Una sola columna X en el CSV.} “\textit{ExportService}” escribe una sola columna del eje X cuando todas las series lo comparten y una por serie cuando difieren. & Pruebas automáticas de la exportación con ejes iguales y distintos (“\textit{test\_export}”). \\
 \hline
@@ -1736,6 +1736,8 @@ La Tabla~\ref{tab:sdd_req_fr} recoge los 45 requisitos funcionales cubiertos y l
 \hline
 \textbf{NFR-S-02}\newline R67 & \textbf{Vía pública única sobre los trials.} “\textit{SignalDataset}” ofrece la única vía para leer, modificar e invalidar los trials y sus descartes; ninguna extensión alcanza su estructura interna. & Pruebas automáticas de los trials originales, derivados y por canal (“\textit{test\_trials\_derivados}”, “\textit{test\_trials\_por\_canal}”). \\
 \hline
+\textbf{NFR-S-03}\newline R69 & \textbf{Servicios compartidos registrados en el núcleo.} Los servicios de ajustes, exportación y medición se crean una sola vez en el registro del núcleo y los gráficos y las extensiones los piden al “\textit{Kernel}”. “\textit{ExportService}” entrega a cada ventana un exportador y “\textit{MeasurementService}” una sesión de medición por gráfico, y ambos guardan en un único lugar lo que comparten. & Prueba automática que recorre el código y falla si otro módulo crea uno de los servicios, y pruebas de cada servicio. Verificado en la aplicación con una exportación y una medición reales (“\textit{test\_servicios\_compartidos}”). \\
+\hline
 \textbf{NFR-S-04}\newline R70 & \textbf{Cómputo pesado por un servicio del núcleo.} “\textit{TaskService}” está registrado en el núcleo y gestiona la cola, la cancelación y el progreso; las extensiones lo usan a través de “\textit{IPlugin}”. & Pruebas automáticas del servicio de tareas y del patrón de uso (“\textit{test\_task\_service}”, “\textit{test\_run\_task}”). \\
 \hline
 \textbf{NFR-S-05}\newline R77 & \textbf{Nuevo plugin sin modificar el núcleo.} El descriptor de cada extensión declara si guarda su análisis con el proyecto y el orden de sus botones; el núcleo lee esos datos en lugar de listas escritas a mano. & Pruebas automáticas con una extensión de prueba que se guarda, se restaura y se ordena sin tocar el núcleo (“\textit{test\_plugin\_sin\_tocar\_nucleo}”). \\
@@ -1746,7 +1748,7 @@ La Tabla~\ref{tab:sdd_req_fr} recoge los 45 requisitos funcionales cubiertos y l
 \subsection{Casos de uso cubiertos}
 \label{sec:sdd_cu_cubiertos}
 
-La Tabla~\ref{tab:sdd_cu} recoge los 17 casos de uso cubiertos, con los componentes que participan y la secuencia principal. Se verifican con las pruebas de los requisitos que los componen (Tablas~\ref{tab:sdd_req_fr} y~\ref{tab:sdd_req_nfr}); la última columna indica los requisitos y las pruebas principales. La apertura, el guardado y el cierre de un proyecto y la transformada wavelet tienen su diagrama de secuencia en el capítulo 4.
+La Tabla~\ref{tab:sdd_cu} recoge los 19 casos de uso cubiertos, con los componentes que participan y la secuencia principal. Se verifican con las pruebas de los requisitos que los componen (Tablas~\ref{tab:sdd_req_fr} y~\ref{tab:sdd_req_nfr}); la última columna indica los requisitos y las pruebas principales. La apertura, el guardado y el cierre de un proyecto y la transformada wavelet tienen su diagrama de secuencia en el capítulo 4.
 
 \begin{center}
 \footnotesize
@@ -1777,11 +1779,15 @@ La Tabla~\ref{tab:sdd_cu} recoge los 17 casos de uso cubiertos, con los componen
 \hline
 \textbf{CU-006}\newline Seleccionar trials para el análisis & “\textit{SignalDataset}”, “\textit{Average}”, “\textit{MainWindow}” & 1) El usuario descarta o elige trials. 2) La extensión obtiene los índices válidos y arma la etiqueta de los trials usados. 3) El análisis usa solo esa selección. 4) La extensión publica el trial actual y la ventana actualiza el indicador. & Requisitos R27, R37, R38, R68. Pruebas principales: “\textit{test\_indicadores\_ui}”, “\textit{test\_average\_seleccion}”, “\textit{test\_trials\_por\_canal}”. \\
 \hline
+\textbf{CU-007}\newline Remover un artefacto con medidas & “\textit{Remove Artifact}”, “\textit{SignalDataset}”, “\textit{TaskService}” & 1) El usuario marca el segmento. 2) Se calculan y se muestran las medidas. 3) Tras confirmar, el cálculo corre en el servicio de tareas. 4) El resultado se registra como conjunto derivado y se avisa a los demás módulos. & Requisitos R02, R40, R67, R69, R71, R79. Pruebas principales: “\textit{test\_artifact\_remove\_orquestador}”, “\textit{test\_trials\_derivados}”, “\textit{test\_niveles\_de\_mensaje}”. \\
+\hline
 \textbf{CU-008}\newline Navegar y cambiar de módulo & “\textit{MainWindow}”, “\textit{TaskService}” & 1) El botón de la cinta pide mostrar la extensión. 2) La ventana principal cancela las tareas de la extensión anterior, la detiene, retira sus detectores de eventos y la oculta. 3) Si la extensión lo permite, cierra su ventana gráfica después de mostrar la nueva. 4) Repone los detectores de la nueva y la muestra. & Requisitos R06, R43, R45, R50, R55, R58. Pruebas principales: “\textit{test\_liberar\_ventanas}”, “\textit{test\_vtk\_observers}”. \\
 \hline
 \textbf{CU-009}\newline Limpiar un formulario & “\textit{IPlugin}” y cada extensión & 1) El usuario pulsa “\textit{Clear}”. 2) La extensión restablece sus controles a los valores por defecto, sin tocar los datos ni los resultados. & Requisitos R25. Verificación manual. \\
 \hline
 \textbf{CU-010}\newline Consultar la ayuda contextual & “\textit{PluginMeta}”, “\textit{MainWindow}”, “\textit{Help}” & 1) El texto emergente sale de la descripción que cada extensión declara en su descriptor. 2) Qt lo muestra al detener el puntero. 3) El manual completo se abre en la extensión de ayuda con el visor de PDF. & Requisitos R42. Verificación manual. \\
+\hline
+\textbf{CU-011}\newline Iniciar la aplicación & “\textit{Kernel}”, “\textit{PluginManager}”, “\textit{SplashScreen}”, “\textit{MainWindow}” & Sección~2.4.3. 1) Guarda del temporizador de VTK. 2) Aplicación gráfica y pantalla de inicio. 3) Servicios de datos, lectura y tareas. 4) Descubrimiento y registro de las extensiones. 5) Ventana principal. 6) Si se recibió un proyecto como argumento, se abre. & Requisitos R10, R39, R44, R69, R70, R77, R81. Pruebas principales: “\textit{test\_instalacion\_rutas}”, “\textit{test\_servicios\_compartidos}”, “\textit{test\_task\_service}”. \\
 \hline
 \textbf{CU-012}\newline Interactuar visualmente con la señal & “\textit{VTKContextMenu}”, “\textit{CursorReadout}”, “\textit{MeasurementService}” & 1) Los eventos del ratón llegan por detectores que se pueden retirar. 2) La lectura bajo el cursor convierte píxeles en datos y muestra X e Y. 3) La rueda ajusta los ejes. 4) Al cambiar el eje inferior se vuelven a reducir los puntos visibles. & Requisitos R26, R30, R32, R49, R59. Pruebas principales: “\textit{test\_indicadores\_ui}”, “\textit{test\_submuestreo}”, “\textit{test\_render\_bench}”. \\
 \hline

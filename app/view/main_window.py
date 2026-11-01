@@ -995,8 +995,7 @@ class MainWindow(QMainWindow):
         if not self._confirm_discard_unsaved_changes():
             return
 
-        from core.services.settings_service import SettingsService
-        settings = SettingsService()
+        settings = self.kernel.get_service("Settings")
         last_dir = settings.get("last_project_dir", carpeta_inicial())
 
         path_str, _ = QFileDialog.getOpenFileName(
@@ -1009,8 +1008,7 @@ class MainWindow(QMainWindow):
 
     def abrir_proyecto_desde_ruta(self, path_str):
         
-        from core.services.settings_service import SettingsService
-        SettingsService().set("last_project_dir", str(Path(path_str).parent))
+        self.kernel.get_service("Settings").set("last_project_dir", str(Path(path_str).parent))
         self._abrir_proyecto(path_str)
 
     def _abrir_proyecto(self, path_str):

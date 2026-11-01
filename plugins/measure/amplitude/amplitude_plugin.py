@@ -11,7 +11,6 @@ from PyQt5.QtWidgets import QFileDialog, QHeaderView
 
 from core.plugins.interfaces import IPlugin
 from core.plugins.meta import PluginMeta
-from core.services.settings_service import SettingsService
 from core.utils.xlsx_writer import escribir_xlsx
 from plugins.measure.amplitude.amplitude_plugin_ui import Ui_Amplitude
 
@@ -135,7 +134,6 @@ class AmplitudePlugin(IPlugin):
         # Model
         self.model: AmplitudeTableModel | None = None
 
-        self.settings = SettingsService()
 
 
     # ---------- Lifecycle ----------

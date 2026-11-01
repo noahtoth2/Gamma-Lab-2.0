@@ -19,6 +19,8 @@ from core.plugins.manager import PluginManager
 from core.services.data_store import DataStore
 from core.services.fileio_service import FileIOService
 from core.services.task_service import TaskService
+from core.services.compartidos import registrar_servicios_compartidos
+from core.utils.vtk_context_menu import VTKContextMenu
 from core.utils import vtk_temporizador
 from core.utils.rutas import carpeta_del_programa, ruta_de_proyecto
 
@@ -72,6 +74,8 @@ def main():
     kernel.register_service("DataStore", DataStore())
     kernel.register_service("FileIO", FileIOService())
     kernel.register_service("TaskService", TaskService())
+    registrar_servicios_compartidos(kernel)   # R69: una sola instancia de ajustes, exportación y medición
+    VTKContextMenu.kernel = kernel
 
     # 2) Discover and instantiate plugins
     plugins_dir = carpeta_del_programa() / "plugins"

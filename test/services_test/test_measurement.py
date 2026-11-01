@@ -1,13 +1,13 @@
 import pytest
 from unittest.mock import Mock, patch
-from core.services.measurement_service import MeasurementService
+from core.services.measurement_service import SesionDeMedicion
 
 # ---------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------
 
 def create_basic_service():
-    """Minimal MeasurementService with stubbed datastore and chart access."""
+    """Minimal SesionDeMedicion with stubbed datastore and chart access."""
     parent = Mock()
     vtk_widget = Mock()
     vtk_widget.GetRenderWindow().Render = Mock()
@@ -15,7 +15,7 @@ def create_basic_service():
     ds_get = Mock(return_value=[])
     ds_set = Mock()
 
-    svc = MeasurementService(parent, vtk_widget, get_active_chart, ds_get, ds_set)
+    svc = SesionDeMedicion(parent, vtk_widget, get_active_chart, ds_get, ds_set)
     svc.alerts = Mock()
     return svc
 
