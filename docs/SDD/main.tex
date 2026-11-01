@@ -1538,12 +1538,12 @@ Esta sección presenta la interfaz de GammaLab 2.0 tal como la ve el usuario. Pr
 
 Este capítulo relaciona los requisitos y los casos de uso que el sistema cubre con la manera en que se cubrieron y con las pruebas que lo verifican. Las fuentes son el SRS para los requisitos, el SAD para los casos de uso, el código fuente y la hoja de seguimiento del proyecto. El estado corresponde al 1 de noviembre de 2026.
 
-De los 81 requisitos del SRS, 80 están cubiertos (2 de ellos con excepciones) y 1 no lo está del todo (R46). De los 23 casos de uso del SAD, 19 están cubiertos; un caso se considera cubierto cuando lo están todos los requisitos que lo componen. La verificación se apoya en 709 pruebas automáticas, de las cuales se ejecutan 706 en la suite completa: 703 pasan y 3 fallan. Donde un límite de tiempo o de memoria no se presta a una prueba automática, la verificación es una medición, con su cifra. Los nombres de componentes, extensiones y pruebas aparecen entre comillas y en cursiva.
+De los 81 requisitos del SRS, 81 están cubiertos (2 de ellos con excepciones). De los 23 casos de uso del SAD, 23 están cubiertos; un caso se considera cubierto cuando lo están todos los requisitos que lo componen. La verificación se apoya en 709 pruebas automáticas, de las cuales se ejecutan 706 en la suite completa: 703 pasan y 3 fallan. Donde un límite de tiempo o de memoria no se presta a una prueba automática, la verificación es una medición, con su cifra. Los nombres de componentes, extensiones y pruebas aparecen entre comillas y en cursiva.
 
 \subsection{Requisitos cubiertos}
 \label{sec:sdd_req_cubiertos}
 
-La Tabla~\ref{tab:sdd_req_fr} recoge los 45 requisitos funcionales cubiertos y la Tabla~\ref{tab:sdd_req_nfr} los 35 no funcionales. Cada fila indica cómo se cubrió el requisito y cómo se verificó.
+La Tabla~\ref{tab:sdd_req_fr} recoge los 45 requisitos funcionales cubiertos y la Tabla~\ref{tab:sdd_req_nfr} los 36 no funcionales. Cada fila indica cómo se cubrió el requisito y cómo se verificó.
 
 \begin{center}
 \footnotesize
@@ -1708,7 +1708,7 @@ La Tabla~\ref{tab:sdd_req_fr} recoge los 45 requisitos funcionales cubiertos y l
 \hline
 \textbf{NFR-P-09}\newline R53 & \textbf{Cierre en menos de 3 s con recursos liberados.} Al cerrar, “\textit{MainWindow}” cancela las tareas, finaliza las ventanas gráficas y suelta los widgets. & Medición: la ventana se cierra en 172 ms y el proceso termina en 0,63 s (límite: 3 s). \\
 \hline
-\textbf{NFR-P-10}\newline R55 & \textbf{Interfaz responsiva (0,3 s o menos).} El cómputo corre fuera del hilo de la interfaz y “\textit{PAC}” difiere la creación de su ventana gráfica para no congelar la interfaz. & Medición: la interfaz se congela como máximo 281 ms la primera vez que se abre PAC y 202 ms en adelante (límite: 300 ms). \\
+\textbf{NFR-P-10}\newline R55 & \textbf{Interfaz responsiva (0,3 s o menos).} El cómputo corre fuera del hilo de la interfaz y “\textit{PAC}” difiere la creación de su ventana gráfica para no congelar la interfaz. & Medición: la interfaz se congela entre 281 y 340 ms la primera vez que se abre PAC, según la corrida, y entre 110 y 200 ms en adelante (límite: 300 ms). \\
 \hline
 \textbf{NFR-P-11}\newline R56 & \textbf{Promedio de todos los trials en 1 s o menos.} El promedio se calcula en una sola operación vectorizada sobre la matriz de trials. & Medición: 0,41 s para 50 trials de 30.500 muestras (límite: 1 s) (“\textit{test\_compute\_bench}”). \\
 \hline
@@ -1723,6 +1723,8 @@ La Tabla~\ref{tab:sdd_req_fr} recoge los 45 requisitos funcionales cubiertos y l
 \textbf{NFR-P-16}\newline R74 & \textbf{PAC por el servicio de tareas.} “\textit{PAC}” envía el comodulograma al servicio de tareas, que informa el progreso y permite cancelarlo. & Medición: un comodulograma de 20×20 pares tarda entre 0,2 y 0,5 s (límite: 30 s); la cancelación se comprueba en la aplicación. \\
 \hline
 \textbf{NFR-P-17}\newline R81 & \textbf{Listo en 8 s o menos.} El arranque instancia los servicios y descubre las extensiones mientras muestra la pantalla de inicio. & Medición: 3,1 s hasta la ventana lista (límite: 8 s) y prueba del programa instalado (“\textit{test\_kernel\_bench}”, “\textit{prueba\_congelado}”). \\
+\hline
+\textbf{NFR-R-01}\newline R46 & \textbf{Terminar los hilos al cancelar o cerrar.} “\textit{TaskService}” cancela de forma cooperativa y, si la tarea no responde en dos segundos, la desliga, descarta su resultado y libera la interfaz y la cola; “\textit{MainWindow}” cancela las tareas de una extensión al salir de ella. La redacción del requisito se ajustó a este comportamiento: la terminación forzada del hilo queda fuera de su alcance. & Pruebas automáticas de la cancelación cooperativa, del desligado a los dos segundos y del cambio de sección (“\textit{test\_task\_service}”, “\textit{test\_cancelacion\_al\_cambiar\_seccion}”). \\
 \hline
 \textbf{NFR-R-02}\newline R54 & \textbf{Sincronizar el estado compartido.} “\textit{DataStore}” admite un solo escritor, el hilo de la interfaz, rechaza las escrituras de otro hilo y protege las lecturas con un candado. & Pruebas automáticas de la concurrencia sobre el almacén (“\textit{test\_data\_store\_concurrencia}”). \\
 \hline
@@ -1748,7 +1750,7 @@ La Tabla~\ref{tab:sdd_req_fr} recoge los 45 requisitos funcionales cubiertos y l
 \subsection{Casos de uso cubiertos}
 \label{sec:sdd_cu_cubiertos}
 
-La Tabla~\ref{tab:sdd_cu} recoge los 19 casos de uso cubiertos, con los componentes que participan y la secuencia principal. Se verifican con las pruebas de los requisitos que los componen (Tablas~\ref{tab:sdd_req_fr} y~\ref{tab:sdd_req_nfr}); la última columna indica los requisitos y las pruebas principales. La apertura, el guardado y el cierre de un proyecto y la transformada wavelet tienen su diagrama de secuencia en el capítulo 4.
+La Tabla~\ref{tab:sdd_cu} recoge los 23 casos de uso cubiertos, con los componentes que participan y la secuencia principal. Se verifican con las pruebas de los requisitos que los componen (Tablas~\ref{tab:sdd_req_fr} y~\ref{tab:sdd_req_nfr}); la última columna indica los requisitos y las pruebas principales. La apertura, el guardado y el cierre de un proyecto y la transformada wavelet tienen su diagrama de secuencia en el capítulo 4.
 
 \begin{center}
 \footnotesize
@@ -1791,6 +1793,10 @@ La Tabla~\ref{tab:sdd_cu} recoge los 19 casos de uso cubiertos, con los componen
 \hline
 \textbf{CU-012}\newline Interactuar visualmente con la señal & “\textit{VTKContextMenu}”, “\textit{CursorReadout}”, “\textit{MeasurementService}” & 1) Los eventos del ratón llegan por detectores que se pueden retirar. 2) La lectura bajo el cursor convierte píxeles en datos y muestra X e Y. 3) La rueda ajusta los ejes. 4) Al cambiar el eje inferior se vuelven a reducir los puntos visibles. & Requisitos R26, R30, R32, R49, R59. Pruebas principales: “\textit{test\_indicadores\_ui}”, “\textit{test\_submuestreo}”, “\textit{test\_render\_bench}”. \\
 \hline
+\textbf{CU-013}\newline Calcular la transformada wavelet & “\textit{Wavelet}”, “\textit{TaskService}” & Sección~4.4. 1) La extensión toma el trial activo. 2) Encola el cálculo por tandas de frecuencias. 3) Dibuja el escalograma. 4) El rango de color puede fijarse a mano. & Requisitos R02, R33, R34, R46, R48, R70. Pruebas principales: “\textit{test\_task\_service}”, “\textit{test\_niveles\_de\_mensaje}”, “\textit{test\_indicadores\_ui}”. \\
+\hline
+\textbf{CU-014}\newline Cancelar un procesamiento pesado & “\textit{TaskProgressBar}”, “\textit{TaskService}”, “\textit{TaskHandle}”, “\textit{TaskContext}” & 1) El usuario pulsa Cancelar en la barra de progreso. 2) El servicio de tareas activa el evento de cancelación. 3) El cálculo lo consulta y termina. 4) Si no responde en dos segundos, se desliga y se descarta su resultado. & Requisitos R46, R55, R70, R74. Pruebas principales: “\textit{test\_task\_service}”, “\textit{test\_cancelacion\_al\_cambiar\_seccion}”, “\textit{test\_run\_task}”. \\
+\hline
 \textbf{CU-015}\newline Promedio de trials & “\textit{Average}”, “\textit{TaskService}” & 1) La extensión resuelve los trials según el modo (todos, uno, rango o manual). 2) El promedio corre en el servicio de tareas. 3) Se dibuja con submuestreo. & Requisitos R03, R36, R41, R56, R71. Pruebas principales: “\textit{test\_average\_plugin}”, “\textit{test\_average\_seleccion}”, “\textit{test\_compute\_bench}”. \\
 \hline
 \textbf{CU-016}\newline Aplicar filtros digitales & “\textit{Filter}”, “\textit{SignalDataset}”, “\textit{TaskService}” & 1) El usuario elige la banda. 2) La vista previa filtra un trial. 3) Al aplicar, el filtrado de todos los trials corre en el servicio de tareas. 4) El resultado se registra como conjunto derivado; el original queda intacto. & Requisitos R58, R59, R71, R76, R79. Pruebas principales: “\textit{test\_vtk\_observers}”, “\textit{test\_vtk\_adapters\_bench}”, “\textit{test\_erp\_vtk\_llenado}”. \\
@@ -1801,7 +1807,11 @@ La Tabla~\ref{tab:sdd_cu} recoge los 19 casos de uso cubiertos, con los componen
 \hline
 \textbf{CU-019}\newline Optimizar el renderizado (submuestreo) & Módulo de submuestreo y adaptadores a VTK & 1) La extensión entrega la serie completa. 2) El submuestreo conserva el mínimo y el máximo de cada tramo (2000 puntos). 3) Con el zoom se recalcula. 4) La exportación y las mediciones leen la serie completa. & Requisitos R30, R49, R59, R73. Pruebas principales: “\textit{test\_submuestreo}”, “\textit{test\_render\_bench}”, “\textit{test\_vtk\_adapters\_bench}”. \\
 \hline
+\textbf{CU-020}\newline Orquestador del núcleo & “\textit{IPlugin}”, “\textit{TaskService}”, “\textit{TaskHandle}”, “\textit{TaskContext}”, “\textit{TaskProgressBar}” & 1) La extensión envía el cálculo; el servicio descarta las pendientes del mismo dueño y encola. 2) Un hilo ejecuta una tarea a la vez. 3) El avance, el resultado, el error y la cancelación llegan al hilo de la interfaz. 4) La extensión comprueba que sea la tarea vigente antes de dibujar. & Requisitos R04, R46, R54, R55, R69 a R71, R77. Pruebas principales: “\textit{test\_task\_service}”, “\textit{test\_run\_task}”, “\textit{test\_guardado\_proyecto}”. \\
+\hline
 \textbf{CU-021}\newline Cerrar un proyecto & “\textit{MainWindow}”, “\textit{ProjectService}”, “\textit{DataStore}” & Sección~4.3. 1) Se pregunta si se descartan los cambios. 2) El servicio de proyectos olvida la ruta. 3) La ventana principal cancela las tareas, destruye los widgets, pide a cada extensión soltar sus datos y vacía el almacén de datos. & Requisitos R02, R07, R11, R12, R52. Pruebas principales: “\textit{test\_liberar\_senal}”, “\textit{test\_niveles\_de\_mensaje}”, “\textit{test\_indicadores\_ui}”. \\
+\hline
+\textbf{CU-022}\newline Cerrar la aplicación & “\textit{MainWindow}”, “\textit{TaskService}” & 1) Se pregunta si se descartan los cambios. 2) Se cancelan las tareas de todas las extensiones. 3) Se finalizan las ventanas gráficas. 4) Se ocultan y se sueltan los widgets. & Requisitos R45, R46, R53, R58. Pruebas principales: “\textit{test\_liberar\_ventanas}”, “\textit{test\_task\_service}”, “\textit{test\_cancelacion\_al\_cambiar\_seccion}”. \\
 \hline
 \textbf{CU-023}\newline Abrir un proyecto & “\textit{ProjectService}”, “\textit{TaskService}”, “\textit{MainWindow}”, “\textit{DataStore}” & Sección~4.1. 1) El servicio de proyectos lee el proyecto y la señal fuera del hilo de la interfaz. 2) Se libera la señal anterior. 3) Se registra la señal y se restauran los trials, las mediciones y los análisis guardados. & Requisitos R02, R07, R08, R39, R47, R54, R71, R78. Pruebas principales: “\textit{test\_fileio\_sin\_duplicar}”, “\textit{test\_niveles\_de\_mensaje}”, “\textit{test\_indicadores\_ui}”. \\
 \hline

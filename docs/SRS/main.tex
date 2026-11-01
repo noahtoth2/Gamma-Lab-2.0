@@ -1628,7 +1628,7 @@ NFR-P-17 & R81 & El sistema debe quedar listo para usarse en un tiempo máximo d
 \hline
 \endlastfoot
 
-NFR-R-01 & R46 & El sistema debe garantizar la terminación y liberación de todo hilo trabajador del servicio de tareas cuando se detiene el plugin que originó la tarea o cuando esta se cancela, incluso si el cómputo sigue en curso. \\
+NFR-R-01 & R46 & El sistema debe cancelar de forma cooperativa toda tarea del servicio de tareas cuando se detiene el plugin que la originó o cuando el usuario la cancela y, si la tarea no responde en un máximo de 2 segundos, debe desligarla, descartar su resultado y liberar la interfaz y la cola, de modo que la aplicación no se bloquee ni aplique un resultado obsoleto. \\
 \hline
 NFR-R-02 & R54 & El sistema debe sincronizar el acceso al estado compartido de la sesión cuando varias operaciones se ejecuten a la vez, de modo que un solo propietario escriba cada dato. \\
 \hline
