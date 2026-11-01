@@ -24,6 +24,7 @@
 \usepackage{float}
 \usetikzlibrary{shapes.geometric, arrows.meta, positioning}
 \definecolor{titleblue}{RGB}{31,73,125}
+\addto\captionsspanish{\renewcommand{\tablename}{Tabla}\renewcommand{\listtablename}{Índice de tablas}}
 
 \hypersetup{
     colorlinks=true,
@@ -1529,5 +1530,278 @@ Esta sección presenta la interfaz de GammaLab 2.0 tal como la ve el usuario. Pr
                 \label{fig:pac}
             \end{figure}
     \end{itemize}
+
+% >>>>> CAPITULO 6: TRAZABILIDAD Y GESTION DEL DISENO (inicio) >>>>>
+\clearpage
+\section{Trazabilidad y gestión del diseño}
+\label{sec:sdd_trazabilidad}
+
+Este capítulo relaciona los requisitos y los casos de uso que el sistema cubre con la manera en que se cubrieron y con las pruebas que lo verifican. Las fuentes son el SRS para los requisitos, el SAD para los casos de uso, el código fuente y la hoja de seguimiento del proyecto. El estado corresponde al 1 de noviembre de 2026.
+
+De los 81 requisitos del SRS, 79 están cubiertos (4 de ellos con excepciones) y 2 no lo están del todo (R46 y R69). De los 23 casos de uso del SAD, 17 están cubiertos; un caso se considera cubierto cuando lo están todos los requisitos que lo componen. La verificación se apoya en 695 pruebas automáticas, de las cuales se ejecutan 692 en la suite completa: 689 pasan y 3 fallan. Donde un límite de tiempo o de memoria no se presta a una prueba automática, la verificación es una medición, con su cifra. Los nombres de componentes, extensiones y pruebas aparecen entre comillas y en cursiva.
+
+\subsection{Requisitos cubiertos}
+\label{sec:sdd_req_cubiertos}
+
+La Tabla~\ref{tab:sdd_req_fr} recoge los 45 requisitos funcionales cubiertos y la Tabla~\ref{tab:sdd_req_nfr} los 34 no funcionales. Cada fila indica cómo se cubrió el requisito y cómo se verificó.
+
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{longtable}{|>{\raggedright\arraybackslash}p{2.0cm}|>{\raggedright\arraybackslash}p{6.6cm}|>{\raggedright\arraybackslash}p{6.4cm}|}
+\caption{Requisitos funcionales cubiertos} \label{tab:sdd_req_fr} \\
+\hline
+\textbf{Requisito} & \textbf{Cómo se cubrió} & \textbf{Verificación} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Requisito} & \textbf{Cómo se cubrió} & \textbf{Verificación} \\
+\hline
+\endhead
+\hline
+\endfoot
+\endlastfoot
+
+\textbf{FR-IO-01}\newline R08 & \textbf{Persistir la señal cargada.} “\textit{DataStore}” conserva la señal como señal activa de la sesión y “\textit{FileIOService}” la lee sin duplicarla en memoria. & Pruebas automáticas del almacén de datos y de la lectura sin duplicación (“\textit{test\_dataset}”, “\textit{test\_fileio\_sin\_duplicar}”). \\
+\hline
+\textbf{FR-IO-02}\newline R80 & \textbf{Cargar señales ABF, EDF y MAT.} “\textit{FileIOService}” tiene un lector para cada formato y la extensión “\textit{Open Signal}” elige el lector según el archivo. & Pruebas automáticas de la lectura de ABF y EDF; la de MAT se comprueba en la prueba del programa instalado (“\textit{test\_fileio\_abf}”, “\textit{test\_fileio\_edf}”, “\textit{prueba\_congelado}”). \\
+\hline
+\textbf{FR-IO-03}\newline R07 & \textbf{Guardar un proyecto.} “\textit{ProjectService}” copia la señal por bloques en un hilo de trabajo y escribe el archivo del proyecto con la ruta de la señal y el trabajo realizado; “\textit{MainWindow}” coordina el guardado. & Pruebas automáticas del guardado en pasos y de su cancelación (“\textit{test\_guardado\_proyecto}”). \\
+\hline
+\textbf{FR-IO-04}\newline R78 & \textbf{Abrir un proyecto guardado.} “\textit{ProjectService}” lee el proyecto fuera del hilo de la interfaz; después, en el hilo de la interfaz, registra la señal y restaura los trials, las mediciones y los análisis guardados. & Pruebas automáticas de la apertura, incluida la ausencia del archivo de la señal, y de la persistencia de las modificaciones de artefactos (“\textit{test\_apertura\_proyecto}”, “\textit{test\_persistencia\_artifact\_remove}”). \\
+\hline
+\textbf{FR-IO-05}\newline R05 & \textbf{Exportar los resultados de los análisis.} “\textit{ExportService}” escribe los resultados en CSV, Excel y JSON y las gráficas como imagen; el escritor de Excel es propio y no depende de bibliotecas externas. & Pruebas automáticas de la exportación y del escritor de Excel. Excepción: “\textit{Relative PSD}” no dibuja gráfica ni exporta (“\textit{test\_export}”, “\textit{test\_xlsx\_writer}”, “\textit{test\_resultados\_xlsx}”). \\
+\hline
+\textbf{FR-IO-06}\newline R09 & \textbf{Una sola columna X en el CSV.} “\textit{ExportService}” escribe una sola columna del eje X cuando todas las series lo comparten y una por serie cuando difieren. & Pruebas automáticas de la exportación con ejes iguales y distintos (“\textit{test\_export}”). \\
+\hline
+\textbf{FR-IO-07}\newline R28 & \textbf{Nombre de exportación descriptivo.} “\textit{ExportService}” compone el nombre propuesto con el de la señal, el del canal y el de la extensión que genera la gráfica. & Verificación manual del nombre propuesto al exportar. \\
+\hline
+\textbf{FR-UI-01}\newline R01 & \textbf{Cortar la señal en trials.} La extensión “\textit{Trials}” detecta los estímulos en el canal elegido y corta la señal con la ventana indicada. & Pruebas automáticas de la detección de estímulos y del corte (“\textit{test\_trials}”). \\
+\hline
+\textbf{FR-UI-02}\newline R24 & \textbf{Modificar un trial ya creado.} “\textit{Trials}” permite regenerar el conjunto con otros parámetros, y “\textit{Remove Artifact}” y “\textit{Filter}” modifican los trials como conjuntos derivados. & Pruebas automáticas de los conjuntos derivados (“\textit{test\_trials\_derivados}”). \\
+\hline
+\textbf{FR-UI-03}\newline R25 & \textbf{Restablecer parámetros por defecto.} Cada extensión con botón de ejecución tiene un botón “\textit{Clear}” que devuelve sus controles a los valores por defecto sin tocar los datos. & Verificación manual en cada extensión. \\
+\hline
+\textbf{FR-UI-04}\newline R26 & \textbf{Valores X/Y bajo el cursor.} “\textit{CursorReadout}” convierte la posición del puntero en valores de los ejes X e Y y los muestra junto al cursor. & Pruebas automáticas de la conversión de píxeles a datos y del formato de la lectura (“\textit{test\_indicadores\_ui}”). \\
+\hline
+\textbf{FR-UI-05}\newline R27 & \textbf{Elegir los trials de cada análisis.} Las extensiones de análisis permiten elegir los trials (todos, uno, un rango o una selección manual) y “\textit{SignalDataset}” conserva dentro del conjunto los trials descartados. & Pruebas automáticas de la selección y de los descartes (“\textit{test\_average\_seleccion}”, “\textit{test\_indicadores\_ui}”). \\
+\hline
+\textbf{FR-UI-06}\newline R29 & \textbf{Ajustar la frecuencia de muestreo.} “\textit{SignalDataset}” recalcula el eje de tiempo al cambiar la frecuencia, invalida sus cachés y puede restaurar el valor del archivo; “\textit{Open Signal}” ofrece el control. & Pruebas automáticas del cambio y de la restauración de la frecuencia (“\textit{test\_cu018\_sampling\_rate}”). \\
+\hline
+\textbf{FR-UI-07}\newline R30 & \textbf{Zoom en todas las direcciones.} “\textit{VTKContextMenu}” y la cinta “\textit{Home}” ofrecen zoom con la rueda del ratón y con botones para acercar, alejar y restablecer. & Verificación manual del zoom en cada gráfica. \\
+\hline
+\textbf{FR-UI-08}\newline R31 & \textbf{Mostrar el umbral en mV.} “\textit{Trials}” muestra el umbral con la unidad mV y lo convierte a la unidad del canal de estímulo antes de detectar; si ese canal no es de voltaje, muestra su propia unidad. & Pruebas automáticas de la conversión de unidades y verificación manual del campo (“\textit{test\_trials}”). \\
+\hline
+\textbf{FR-UI-09}\newline R32 & \textbf{Mostrar “Butterfly” explícitamente.} La extensión “\textit{Event Related Potential}” titula la gráfica como “\textit{Butterfly Plot}”. & Verificación manual del título. \\
+\hline
+\textbf{FR-UI-10}\newline R36 & \textbf{Promediar todos los trials.} “\textit{Average}” promedia muestra a muestra todos los trials del canal activo. & Pruebas automáticas del promedio (“\textit{test\_average\_plugin}”). \\
+\hline
+\textbf{FR-UI-11}\newline R37 & \textbf{Indicar el trial actual.} Cada extensión publica el trial en que trabaja y “\textit{MainWindow}” lo muestra en un indicador permanente. & Pruebas automáticas del estado y del texto del indicador (“\textit{test\_indicadores\_ui}”). \\
+\hline
+\textbf{FR-UI-12}\newline R38 & \textbf{Indicar qué trials participan.} Cada operación deja constancia de los trials usados (por ejemplo, “trials 2 a 4 de 6”) en el título del resultado y en el proyecto. & Pruebas automáticas de la descripción de los trials y de la selección de “\textit{Average}” (“\textit{test\_indicadores\_ui}”, “\textit{test\_average\_seleccion}”). \\
+\hline
+\textbf{FR-UI-13}\newline R40 & \textbf{Remover un artefacto con medidas.} “\textit{Remove Artifact}” calcula y muestra las medidas del segmento y pide confirmación antes de aplicar la modificación. & Pruebas automáticas del cálculo de las medidas y del uso del servicio de tareas (“\textit{test\_medidas\_artefacto}”, “\textit{test\_artifact\_remove\_orquestador}”). \\
+\hline
+\textbf{FR-UI-14}\newline R41 & \textbf{Promediar los trials seleccionados.} “\textit{Average}” promedia solo los trials elegidos (uno, un rango o una selección manual) y rotula el resultado con ellos. & Pruebas automáticas de la selección y del promedio (“\textit{test\_average\_seleccion}”). \\
+\hline
+\textbf{FR-UI-15}\newline R68 & \textbf{Trials identificados por archivo y canal.} “\textit{SignalDataset}” identifica cada conjunto de trials por archivo y canal y devuelve el del canal pedido, sin sustituirlo por el último generado. & Pruebas automáticas de la consulta de trials por canal (“\textit{test\_trials\_por\_canal}”). \\
+\hline
+\textbf{FR-WV-01}\newline R33 & \textbf{Escala y rango de color del escalograma.} “\textit{Wavelet}” y “\textit{Wavelet Average}” ofrecen escala lineal o logarítmica y un rango de color automático o fijado a mano. & Pruebas automáticas del rango de color (“\textit{test\_escalograma\_rango\_color}”). \\
+\hline
+\textbf{FR-WV-02}\newline R34 & \textbf{Normalizar el escalograma.} “\textit{Wavelet}” y “\textit{Wavelet Average}” normalizan el escalograma con el método que elige el usuario. & Pruebas automáticas de las dos extensiones, con las fallas de comparación numérica descritas en DT-03 (“\textit{test\_wavelet\_plugin}”, “\textit{test\_wavelet\_average\_plugin}”, “\textit{test\_submuestreo\_wavelet}”). \\
+\hline
+\textbf{FR-WV-03}\newline R35 & \textbf{Exportar el escalograma en EMF.} “\textit{ExportService}” escribe el gráfico en formato vectorial EMF desde el menú contextual. & Pruebas automáticas del archivo EMF (“\textit{test\_emf\_export}”). \\
+\hline
+\textbf{FR-PAC-01}\newline R13 & \textbf{Ejecutar el análisis PAC.} “\textit{PAC}” ejecuta el cálculo en el servicio de tareas y dibuja el resultado en la misma pantalla. & Pruebas automáticas del cálculo de PAC (“\textit{test\_pac\_core}”). \\
+\hline
+\textbf{FR-PAC-02}\newline R14 & \textbf{Banda de la fase.} “\textit{PAC}” pide la banda de la fase y filtra la señal en ella antes de calcular. & Pruebas automáticas del cálculo de PAC (“\textit{test\_pac\_core}”). \\
+\hline
+\textbf{FR-PAC-03}\newline R15 & \textbf{Banda de la amplitud.} “\textit{PAC}” pide el rango de frecuencias de la amplitud y calcula la transformada en ese rango. & Pruebas automáticas del cálculo de PAC (“\textit{test\_pac\_core}”). \\
+\hline
+\textbf{FR-PAC-04}\newline R16 & \textbf{Intervalo temporal o trials del análisis.} “\textit{PAC}” calcula sobre un trial, sobre el promedio de los trials o sobre todos concatenados, según el modo elegido. & Pruebas automáticas del selector de trial y verificación manual de los modos (“\textit{test\_pac\_intercanal\_plugin}”). \\
+\hline
+\textbf{FR-PAC-05}\newline R17 & \textbf{Calcular el acoplamiento por fase y frecuencia.} El cálculo obtiene el mapa con la transformada wavelet de Morse y agrupa la amplitud por intervalos de fase, como la referencia de MATLAB. & Pruebas automáticas contra la referencia de MATLAB (“\textit{test\_pac\_core}”). \\
+\hline
+\textbf{FR-PAC-06}\newline R18 & \textbf{Mapa de acoplamiento fase-frecuencia.} “\textit{PAC}” dibuja el mapa con la fase en el eje X, en grados de 0 a 360, y la frecuencia de la amplitud en el eje Y. & Pruebas automáticas del eje de fase y verificación manual del mapa (“\textit{test\_pac\_grados}”). \\
+\hline
+\textbf{FR-PAC-07}\newline R19 & \textbf{Distribución de amplitud según la fase.} “\textit{PAC}” dibuja el histograma de la amplitud media por intervalo de fase. & Pruebas automáticas del cálculo del histograma y del eje de fase (“\textit{test\_pac\_core}”, “\textit{test\_pac\_grados}”). \\
+\hline
+\textbf{FR-PAC-08}\newline R20 & \textbf{Vector de acoplamiento medio.} El cálculo obtiene el vector medio a partir del histograma y “\textit{PAC}” muestra su magnitud y su ángulo. & Pruebas automáticas del cálculo del vector (“\textit{test\_pac\_core}”). \\
+\hline
+\textbf{FR-PAC-09}\newline R21 & \textbf{Exportar los números de PAC.} “\textit{PAC}” entrega a “\textit{ExportService}” los parámetros, el resumen, el histograma y el mapa de la última ejecución, para CSV, Excel y JSON. & Pruebas automáticas de la exportación y de los ángulos en grados (“\textit{test\_export}”, “\textit{test\_pac\_grados}”). \\
+\hline
+\textbf{FR-PAC-10}\newline R22 & \textbf{Exportar las gráficas de PAC.} El menú contextual de “\textit{PAC}” exporta las gráficas como imagen o en formato vectorial. & Pruebas automáticas de la exportación de imágenes y de EMF (“\textit{test\_export}”, “\textit{test\_emf\_export}”). \\
+\hline
+\textbf{FR-PAC-11}\newline R23 & \textbf{Guardar los parámetros de cada ejecución.} “\textit{PAC}” conserva los parámetros y el resultado de la última ejecución y los entrega a “\textit{ProjectService}” para guardarlos en el proyecto. & Prueba automática de la restauración de análisis al abrir un proyecto (“\textit{test\_apertura\_proyecto}”). \\
+\hline
+\textbf{FR-PAC-12}\newline R60 & \textbf{Elegir el canal de fase y el de amplitud.} “\textit{PAC}” ofrece el modo entre canales con un selector del canal de amplitud; el canal de fase es el activo. & Pruebas automáticas del selector y de su comportamiento (“\textit{test\_pac\_intercanal\_plugin}”). \\
+\hline
+\textbf{FR-PAC-13}\newline R61 & \textbf{Mapa de acoplamiento entre canales.} El cálculo recibe los dos canales y toma los ciclos y la fase del de fase y la amplitud del otro; con el mismo canal en los dos da el resultado de un canal. & Pruebas automáticas del cálculo entre canales (“\textit{test\_pac\_intercanal}”). \\
+\hline
+\textbf{FR-PAC-14}\newline R62 & \textbf{Mismas visualizaciones que PAC de un canal.} El modo entre canales usa la misma representación que el PAC de un solo canal. & Pruebas automáticas de que ambos modos dibujan los mismos paneles (“\textit{test\_pac\_intercanal\_plugin}”). \\
+\hline
+\textbf{FR-PAC-15}\newline R63 & \textbf{PPC: dos canales y rango de frecuencias.} “\textit{PPC}” permite elegir dos canales y el rango de frecuencias y calcula la coherencia de fase con un estimador corregido. & Pruebas automáticas del cálculo de “\textit{PPC}” y de su ejecución en el servicio de tareas (“\textit{test\_ppc\_core}”, “\textit{test\_ppc\_plugin\_orquestado}”). \\
+\hline
+\textbf{FR-PAC-16}\newline R64 & \textbf{PPC: mapa de frecuencia y tiempo.} “\textit{PPC}” dibuja la coherencia como un mapa de frecuencia contra tiempo, con el eje de frecuencia logarítmico. & Pruebas automáticas del cálculo y de la transformada de Gabor compartida (“\textit{test\_ppc\_core}”, “\textit{test\_gabor\_en\_core}”). \\
+\hline
+\textbf{FR-PAC-17}\newline R65 & \textbf{Exportar los números de PPC y del PAC entre canales.} “\textit{PPC}” y el PAC entre canales exportan sus resultados en CSV, Excel y JSON; en el segundo, los parámetros incluyen el canal de amplitud. & Pruebas automáticas que exportan archivos reales de PAC entre canales (“\textit{test\_pac\_intercanal\_exportacion}”). \\
+\hline
+\textbf{FR-PAC-18}\newline R66 & \textbf{Exportar las gráficas de PPC y del PAC entre canales.} “\textit{PPC}” y el PAC entre canales usan el mismo menú contextual y el mismo “\textit{ExportService}” que el PAC de un canal, para imagen y formato vectorial. & Pruebas automáticas de la exportación de imágenes y de EMF; no hay prueba específica del modo entre canales (“\textit{test\_emf\_export}”). \\
+\hline
+\textbf{FR-PAC-19}\newline R75 & \textbf{PAC Psel segmenta por ciclo de la onda lenta.} “\textit{PAC}” en modo Psel detecta los ciclos de la onda lenta con la transformada de Gabor, toma cada ciclo como época y las superpone en una gráfica de tipo butterfly. & Pruebas automáticas de la selección de ciclos y de la transformada de Gabor (“\textit{test\_pac\_core}”, “\textit{test\_gabor\_en\_core}”). \\
+\hline
+\textbf{FR-PAC-20}\newline R76 & \textbf{Filtro Butterworth pasa-banda de fase cero.} “\textit{Filter}” aplica un filtro Butterworth pasa-banda de fase cero con las frecuencias de corte y el orden que elige el usuario. & Pruebas automáticas de los filtros y medición de su tiempo (“\textit{test\_pac\_core}”, “\textit{test\_preprocessing\_bench}”). \\
+\hline
+\end{longtable}
+\end{center}
+
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{longtable}{|>{\raggedright\arraybackslash}p{2.0cm}|>{\raggedright\arraybackslash}p{6.6cm}|>{\raggedright\arraybackslash}p{6.4cm}|}
+\caption{Requisitos no funcionales cubiertos} \label{tab:sdd_req_nfr} \\
+\hline
+\textbf{Requisito} & \textbf{Cómo se cubrió} & \textbf{Verificación} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Requisito} & \textbf{Cómo se cubrió} & \textbf{Verificación} \\
+\hline
+\endhead
+\hline
+\endfoot
+\endlastfoot
+
+\textbf{NFR-U-01}\newline R02 & \textbf{Diferenciar información, aviso y error.} “\textit{PluginAlerts}” ofrece tres niveles de severidad y cada situación usa el que le corresponde; la información y los avisos no interrumpen al usuario. & Pruebas automáticas de los niveles de mensaje (“\textit{test\_niveles\_de\_mensaje}”, “\textit{test\_indicadores\_ui}”). \\
+\hline
+\textbf{NFR-U-02}\newline R03 & \textbf{Resultado en la misma pantalla.} Cada extensión dibuja su resultado en el área de gráficos de la pantalla en que se pidió. & Verificación manual en cada extensión. \\
+\hline
+\textbf{NFR-U-03}\newline R04 & \textbf{Retroalimentación en operaciones de más de 1 s.} “\textit{TaskProgressBar}” muestra el avance y el botón de cancelar de toda tarea del servicio de tareas; el guardado y la apertura de proyectos también informan su progreso. & Pruebas automáticas del guardado y de la apertura. Medición: abrir un proyecto bloquea la interfaz unos 80 ms y guardar un archivo de 314 MB, 18 ms (“\textit{test\_task\_service}”, “\textit{test\_guardado\_proyecto}”, “\textit{test\_apertura\_proyecto}”). \\
+\hline
+\textbf{NFR-U-04}\newline R06 & \textbf{Iconos en las funcionalidades.} Cada extensión declara su icono y “\textit{MainWindow}” lo muestra en el botón de la cinta. & Verificación manual de la cinta. \\
+\hline
+\textbf{NFR-U-05}\newline R10 & \textbf{Bienvenida a usuarios nuevos.} “\textit{MainWindow}” muestra en “\textit{Home}” una pantalla de bienvenida mientras no hay un módulo abierto. & Verificación manual de la pantalla. \\
+\hline
+\textbf{NFR-U-06}\newline R12 & \textbf{Comunicar el cierre del proyecto.} Al cerrar un proyecto, “\textit{MainWindow}” pregunta si se descartan los cambios, limpia la interfaz y restablece el título y la pantalla de bienvenida. & Verificación manual del cierre. \\
+\hline
+\textbf{NFR-U-07}\newline R42 & \textbf{Descripción emergente de cada control.} Cada extensión declara su descripción y la interfaz la muestra como texto emergente. & Verificación manual de la cinta. \\
+\hline
+\textbf{NFR-U-08}\newline R43 & \textbf{Funciones de edición en Home.} La cinta “\textit{Home}” reúne las mediciones, el borrado y la visibilidad de las mediciones y el zoom. & Verificación manual de la pantalla. \\
+\hline
+\textbf{NFR-U-09}\newline R44 & \textbf{Pantalla de inicio durante la carga.} “\textit{SplashScreen}” muestra el avance de la carga de los servicios y de las extensiones durante el arranque. & Verificación manual del arranque. \\
+\hline
+\textbf{NFR-P-01}\newline R11 & \textbf{Liberar la señal al cerrar el proyecto.} “\textit{MainWindow}” cancela las tareas, destruye los widgets de las extensiones y pide a cada una soltar sus datos; “\textit{DataStore}” quita las señales, los trials, las mediciones y el trial actual. & Pruebas automáticas y medición: tras cerrar el proyecto no queda ninguna copia viva de la señal (“\textit{test\_liberar\_senal}”). \\
+\hline
+\textbf{NFR-P-02}\newline R45 & \textbf{Liberar recursos gráficos al salir del módulo.} Al salir de una extensión, “\textit{MainWindow}” cierra su ventana gráfica después de mostrar la siguiente; seis extensiones de análisis lo hacen y diez conservan su ventana para no superar el tiempo de regreso permitido. & Pruebas automáticas de la liberación. Medición: al recorrer los módulos de análisis, el proceso pasa de 3.118 MB sin liberar a 2.585 MB con la configuración actual (“\textit{test\_liberar\_ventanas}”). \\
+\hline
+\textbf{NFR-P-03}\newline R47 & \textbf{Cargar el archivo en 2 s o menos.} “\textit{Open Signal}” lee el archivo en el servicio de tareas con “\textit{FileIOService}” y dibuja la señal al terminar. & Pruebas automáticas de la lectura sin duplicación y medición del tiempo de carga (“\textit{test\_io\_bench}”, “\textit{test\_fileio\_sin\_duplicar}”). \\
+\hline
+\textbf{NFR-P-04}\newline R48 & \textbf{Wavelet en 10 s o menos.} El cálculo de “\textit{Wavelet}” se hace por tandas de frecuencias, lo que acota el tiempo y la memoria. & Medición: 1,2 s para un trial de 30.500 muestras con los parámetros por defecto (límite: 10 s) (“\textit{test\_compute\_bench}”). \\
+\hline
+\textbf{NFR-P-05}\newline R49 & \textbf{Graficar 3 canales sin degradar la interacción.} Las gráficas muestran como máximo 2000 puntos por serie, que se recalculan al hacer zoom, de modo que la interacción se mantiene fluida con varios canales. & Pruebas automáticas del submuestreo. Medición con tres canales de 1,8 millones de muestras: mediana de 39 FPS al hacer zoom y de 32 FPS al desplazar (límite: 24 FPS); los mínimos fueron 26 y 22 FPS (“\textit{test\_submuestreo}”, “\textit{test\_render\_bench}”). \\
+\hline
+\textbf{NFR-P-06}\newline R50 & \textbf{Cambiar de módulo en 500 ms o menos.} “\textit{MainWindow}” cambia de extensión conservando la señal activa en memoria, sin volver a leerla del disco. & Medición: el cambio de módulo tarda entre 10 y 165 ms con una señal de 1,7 millones de muestras (límite: 500 ms). \\
+\hline
+\textbf{NFR-P-07}\newline R51 & \textbf{Exportar 100\,000 filas en 2 s o menos.} El escritor de Excel propio genera directamente el contenido de cada hoja, sin pasar por una biblioteca externa. & Pruebas automáticas del escritor. Medición con 100.000 filas: 0,39 s en Excel y 0,11 s en CSV (límite: 2 s) (“\textit{test\_xlsx\_writer}”). \\
+\hline
+\textbf{NFR-P-08}\newline R52 & \textbf{Liberar la señal anterior en menos de 1 s.} Al confirmarse la carga, “\textit{Open Signal}” pide a “\textit{MainWindow}” liberar la señal anterior y a “\textit{DataStore}” quitarla. & Pruebas automáticas y medición: la señal anterior se libera en 243 a 353 ms; tras cuatro cargas seguidas queda una sola señal viva y la memoria sube 178 MB en vez de 631 MB (“\textit{test\_liberar\_senal}”). \\
+\hline
+\textbf{NFR-P-09}\newline R53 & \textbf{Cierre en menos de 3 s con recursos liberados.} Al cerrar, “\textit{MainWindow}” cancela las tareas, finaliza las ventanas gráficas y suelta los widgets. & Medición: la ventana se cierra en 172 ms y el proceso termina en 0,63 s (límite: 3 s). \\
+\hline
+\textbf{NFR-P-10}\newline R55 & \textbf{Interfaz responsiva (0,3 s o menos).} El cómputo corre fuera del hilo de la interfaz y “\textit{PAC}” difiere la creación de su ventana gráfica para no congelar la interfaz. & Medición: la interfaz se congela como máximo 281 ms la primera vez que se abre PAC y 202 ms en adelante (límite: 300 ms). \\
+\hline
+\textbf{NFR-P-11}\newline R56 & \textbf{Promedio de todos los trials en 1 s o menos.} El promedio se calcula en una sola operación vectorizada sobre la matriz de trials. & Medición: 0,41 s para 50 trials de 30.500 muestras (límite: 1 s) (“\textit{test\_compute\_bench}”). \\
+\hline
+\textbf{NFR-P-12}\newline R57 & \textbf{Exportar una gráfica en 1 s (3 s si es vectorial).} “\textit{ExportService}” captura la ventana gráfica para las imágenes y escribe el EMF directamente. & Pruebas automáticas de la exportación. Medición: PNG en 0,26 s, TIFF en 0,06 s y EMF en 0,12 s (límites: 1 s y 3 s) (“\textit{test\_export}”, “\textit{test\_emf\_export}”). \\
+\hline
+\textbf{NFR-P-13}\newline R59 & \textbf{Conversión en bloque a las estructuras de VTK.} Los adaptadores convierten matrices completas en tablas de VTK de una sola vez, sin recorrerlas elemento por elemento. & Medición: 1,8 millones de filas convertidas en 0,03 s. Prueba automática del llenado vectorizado del mapa de calor (“\textit{test\_vtk\_adapters\_bench}”, “\textit{test\_erp\_vtk\_llenado}”). \\
+\hline
+\textbf{NFR-P-14}\newline R71 & \textbf{Cómputo pesado por el servicio de tareas.} “\textit{IPlugin}” ofrece un único patrón para enviar un cómputo al servicio de tareas, y las extensiones lo usan para la carga, el corte, el filtrado, los artefactos, los análisis y los promedios. & Pruebas automáticas del patrón y de las extensiones que lo usan (“\textit{test\_run\_task}”, “\textit{test\_task\_service}”, “\textit{test\_artifact\_remove\_orquestador}”, “\textit{test\_ppc\_plugin\_orquestado}”). \\
+\hline
+\textbf{NFR-P-15}\newline R73 & \textbf{Hasta 2000 puntos por serie y 200 curvas.} El submuestreo conserva el mínimo y el máximo de cada tramo y limita las curvas dibujadas a 200; los datos siguen completos para exportar y medir. & Pruebas automáticas del submuestreo: como máximo 2000 puntos por serie, sin alterar los datos (“\textit{test\_submuestreo}”). \\
+\hline
+\textbf{NFR-P-16}\newline R74 & \textbf{PAC por el servicio de tareas.} “\textit{PAC}” envía el comodulograma al servicio de tareas, que informa el progreso y permite cancelarlo. & Medición: un comodulograma de 20×20 pares tarda entre 0,2 y 0,5 s (límite: 30 s); la cancelación se comprueba en la aplicación. \\
+\hline
+\textbf{NFR-P-17}\newline R81 & \textbf{Listo en 8 s o menos.} El arranque instancia los servicios y descubre las extensiones mientras muestra la pantalla de inicio. & Medición: 3,1 s hasta la ventana lista (límite: 8 s) y prueba del programa instalado (“\textit{test\_kernel\_bench}”, “\textit{prueba\_congelado}”). \\
+\hline
+\textbf{NFR-R-02}\newline R54 & \textbf{Sincronizar el estado compartido.} “\textit{DataStore}” admite un solo escritor, el hilo de la interfaz, rechaza las escrituras de otro hilo y protege las lecturas con un candado. & Pruebas automáticas de la concurrencia sobre el almacén (“\textit{test\_data\_store\_concurrencia}”). \\
+\hline
+\textbf{NFR-R-03}\newline R58 & \textbf{Retirar los detectores de eventos de VTK.} Al salir de una extensión, “\textit{MainWindow}” retira los detectores de eventos de sus gráficas y los repone al volver. & Pruebas automáticas del retiro y la reposición (“\textit{test\_vtk\_observers}”). \\
+\hline
+\textbf{NFR-R-04}\newline R72 & \textbf{Reutilizar la representación gráfica.} “\textit{SignalDataset}” reutiliza la tabla de VTK de la señal mientras sus datos no cambian y la descarta al cambiar la frecuencia de muestreo; los trials y los resultados se vuelven a dibujar cada vez. & Prueba automática de la invalidación de la caché. Excepción: solo cubre la señal (“\textit{test\_cu018\_sampling\_rate}”). \\
+\hline
+\textbf{NFR-R-05}\newline R79 & \textbf{No modificar la señal ni los trials originales.} El preprocesamiento registra su resultado en “\textit{SignalDataset}” como un conjunto derivado y conserva el original, que puede restaurarse. & Pruebas automáticas de los conjuntos derivados (“\textit{test\_trials\_derivados}”). \\
+\hline
+\textbf{NFR-S-01}\newline R39 & \textbf{Ejecutable instalable que registra la extensión del proyecto.} Se congela la aplicación, se prueba y se empaqueta un instalador para todo el equipo que registra la extensión “\textit{.glab}”; al abrir un proyecto con doble clic, el programa recibe la ruta y lo abre. & Pruebas automáticas de las rutas del programa instalado y prueba del ejecutable, además de la instalación real verificada en un equipo (“\textit{test\_instalacion\_rutas}”, “\textit{prueba\_congelado}”). \\
+\hline
+\textbf{NFR-S-02}\newline R67 & \textbf{Vía pública única sobre los trials.} “\textit{SignalDataset}” ofrece la única vía para leer, modificar e invalidar los trials y sus descartes; ninguna extensión alcanza su estructura interna. & Pruebas automáticas de los trials originales, derivados y por canal (“\textit{test\_trials\_derivados}”, “\textit{test\_trials\_por\_canal}”). \\
+\hline
+\textbf{NFR-S-04}\newline R70 & \textbf{Cómputo pesado por un servicio del núcleo.} “\textit{TaskService}” está registrado en el núcleo y gestiona la cola, la cancelación y el progreso; las extensiones lo usan a través de “\textit{IPlugin}”. & Pruebas automáticas del servicio de tareas y del patrón de uso (“\textit{test\_task\_service}”, “\textit{test\_run\_task}”). \\
+\hline
+\textbf{NFR-S-05}\newline R77 & \textbf{Nuevo plugin sin modificar el núcleo.} El descriptor de cada extensión declara si guarda su análisis con el proyecto y el orden de sus botones; el núcleo lee esos datos en lugar de listas escritas a mano. & Pruebas automáticas con una extensión de prueba que se guarda, se restaura y se ordena sin tocar el núcleo (“\textit{test\_plugin\_sin\_tocar\_nucleo}”). \\
+\hline
+\end{longtable}
+\end{center}
+
+\subsection{Casos de uso cubiertos}
+\label{sec:sdd_cu_cubiertos}
+
+La Tabla~\ref{tab:sdd_cu} recoge los 17 casos de uso cubiertos, con los componentes que participan y la secuencia principal. Se verifican con las pruebas de los requisitos que los componen (Tablas~\ref{tab:sdd_req_fr} y~\ref{tab:sdd_req_nfr}); la última columna indica los requisitos y las pruebas principales. La apertura, el guardado y el cierre de un proyecto y la transformada wavelet tienen su diagrama de secuencia en el capítulo 4.
+
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{longtable}{|>{\raggedright\arraybackslash}p{2.7cm}|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}p{6.0cm}|>{\raggedright\arraybackslash}p{3.1cm}|}
+\caption{Casos de uso cubiertos} \label{tab:sdd_cu} \\
+\hline
+\textbf{Caso de uso} & \textbf{Componentes} & \textbf{Cómo se cubre} & \textbf{Verificación} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Caso de uso} & \textbf{Componentes} & \textbf{Cómo se cubre} & \textbf{Verificación} \\
+\hline
+\endhead
+\hline
+\endfoot
+\endlastfoot
+
+\textbf{CU-001}\newline PAC de un canal & “\textit{PAC}”, “\textit{TaskService}”, “\textit{VTKContextMenu}”, “\textit{ExportService}” & 1) El botón de la cinta muestra la extensión. 2) Al crear, la extensión lee los parámetros y los trials activos. 3) El servicio de tareas ejecuta el cálculo en un hilo de trabajo. 4) El resultado llega al hilo de la interfaz, que dibuja los gráficos y actualiza el menú contextual. & Requisitos R02, R13 a R23, R75. Pruebas principales: “\textit{test\_pac\_core}”, “\textit{test\_pac\_grados}”, “\textit{test\_export}”. \\
+\hline
+\textbf{CU-002}\newline PAC de dos canales y PPC & “\textit{PAC}”, “\textit{PPC}”, “\textit{TaskService}” & 1) La extensión pide los trials de cada canal y comprueba que estén alineados. 2) Encola el cálculo entre canales (PAC) o el de coherencia (PPC). 3) PPC reparte los trials entre cuatro hilos. 4) Se dibuja el mapa y se habilita la exportación. & Requisitos R60 a R66. Pruebas principales: “\textit{test\_pac\_intercanal\_plugin}”, “\textit{test\_ppc\_core}”, “\textit{test\_pac\_intercanal}”. \\
+\hline
+\textbf{CU-003}\newline Cargar una señal con gestión de memoria & “\textit{Open Signal}”, “\textit{TaskService}”, “\textit{FileIOService}”, “\textit{MainWindow}”, “\textit{DataStore}” & 1) La lectura corre en el servicio de tareas. 2) Al terminar, la extensión pide a la ventana principal liberar la señal anterior. 3) Se registra la señal nueva y se deja activa. 4) Un evento avisa a la interfaz. & Requisitos R02, R07, R08, R11, R12, R47, R52, R54, R71, R80. Pruebas principales: “\textit{test\_fileio\_sin\_duplicar}”, “\textit{test\_liberar\_senal}”, “\textit{test\_niveles\_de\_mensaje}”. \\
+\hline
+\textbf{CU-004}\newline Generar y modificar trials & “\textit{Trials}”, “\textit{SignalDataset}”, “\textit{TaskService}” & 1) La extensión valida el umbral y el canal de estímulo. 2) El corte corre en el servicio de tareas. 3) Al terminar guarda la receta con la que se generaron los trials y los registra en la señal. 4) Emite el evento de trials generados y muestra el primero. & Requisitos R01, R02, R24, R27, R31, R67, R71, R79. Pruebas principales: “\textit{test\_trials\_derivados}”, “\textit{test\_trials}”, “\textit{test\_indicadores\_ui}”. \\
+\hline
+\textbf{CU-005}\newline Guardado y exportación de datos & “\textit{ProjectService}”, “\textit{MainWindow}”, “\textit{ExportService}” & El guardado se describe en la Sección~4.2. Exportación: 1) El menú contextual pide a la exportación escribir las tablas o la gráfica en el formato elegido. 2) Se confirma al usuario. & Requisitos R02, R04, R05, R07, R09, R28, R51, R57. Pruebas principales: “\textit{test\_export}”, “\textit{test\_guardado\_proyecto}”, “\textit{test\_xlsx\_writer}”. \\
+\hline
+\textbf{CU-006}\newline Seleccionar trials para el análisis & “\textit{SignalDataset}”, “\textit{Average}”, “\textit{MainWindow}” & 1) El usuario descarta o elige trials. 2) La extensión obtiene los índices válidos y arma la etiqueta de los trials usados. 3) El análisis usa solo esa selección. 4) La extensión publica el trial actual y la ventana actualiza el indicador. & Requisitos R27, R37, R38, R68. Pruebas principales: “\textit{test\_indicadores\_ui}”, “\textit{test\_average\_seleccion}”, “\textit{test\_trials\_por\_canal}”. \\
+\hline
+\textbf{CU-008}\newline Navegar y cambiar de módulo & “\textit{MainWindow}”, “\textit{TaskService}” & 1) El botón de la cinta pide mostrar la extensión. 2) La ventana principal cancela las tareas de la extensión anterior, la detiene, retira sus detectores de eventos y la oculta. 3) Si la extensión lo permite, cierra su ventana gráfica después de mostrar la nueva. 4) Repone los detectores de la nueva y la muestra. & Requisitos R06, R43, R45, R50, R55, R58. Pruebas principales: “\textit{test\_liberar\_ventanas}”, “\textit{test\_vtk\_observers}”. \\
+\hline
+\textbf{CU-009}\newline Limpiar un formulario & “\textit{IPlugin}” y cada extensión & 1) El usuario pulsa “\textit{Clear}”. 2) La extensión restablece sus controles a los valores por defecto, sin tocar los datos ni los resultados. & Requisitos R25. Verificación manual. \\
+\hline
+\textbf{CU-010}\newline Consultar la ayuda contextual & “\textit{PluginMeta}”, “\textit{MainWindow}”, “\textit{Help}” & 1) El texto emergente sale de la descripción que cada extensión declara en su descriptor. 2) Qt lo muestra al detener el puntero. 3) El manual completo se abre en la extensión de ayuda con el visor de PDF. & Requisitos R42. Verificación manual. \\
+\hline
+\textbf{CU-012}\newline Interactuar visualmente con la señal & “\textit{VTKContextMenu}”, “\textit{CursorReadout}”, “\textit{MeasurementService}” & 1) Los eventos del ratón llegan por detectores que se pueden retirar. 2) La lectura bajo el cursor convierte píxeles en datos y muestra X e Y. 3) La rueda ajusta los ejes. 4) Al cambiar el eje inferior se vuelven a reducir los puntos visibles. & Requisitos R26, R30, R32, R49, R59. Pruebas principales: “\textit{test\_indicadores\_ui}”, “\textit{test\_submuestreo}”, “\textit{test\_render\_bench}”. \\
+\hline
+\textbf{CU-015}\newline Promedio de trials & “\textit{Average}”, “\textit{TaskService}” & 1) La extensión resuelve los trials según el modo (todos, uno, rango o manual). 2) El promedio corre en el servicio de tareas. 3) Se dibuja con submuestreo. & Requisitos R03, R36, R41, R56, R71. Pruebas principales: “\textit{test\_average\_plugin}”, “\textit{test\_average\_seleccion}”, “\textit{test\_compute\_bench}”. \\
+\hline
+\textbf{CU-016}\newline Aplicar filtros digitales & “\textit{Filter}”, “\textit{SignalDataset}”, “\textit{TaskService}” & 1) El usuario elige la banda. 2) La vista previa filtra un trial. 3) Al aplicar, el filtrado de todos los trials corre en el servicio de tareas. 4) El resultado se registra como conjunto derivado; el original queda intacto. & Requisitos R58, R59, R71, R76, R79. Pruebas principales: “\textit{test\_vtk\_observers}”, “\textit{test\_vtk\_adapters\_bench}”, “\textit{test\_erp\_vtk\_llenado}”. \\
+\hline
+\textbf{CU-017}\newline Exportación gráfica vectorial (EMF) & “\textit{VTKContextMenu}”, “\textit{ExportService}” & 1) El menú contextual ofrece exportar como imagen vectorial. 2) La exportación recorre las series del gráfico activo. 3) Un escritor propio genera los registros EMF. 4) Se confirma al usuario. & Requisitos R28, R35, R57. Pruebas principales: “\textit{test\_emf\_export}”, “\textit{test\_export}”. \\
+\hline
+\textbf{CU-018}\newline Ajustar la frecuencia de muestreo & “\textit{Open Signal}”, “\textit{SignalDataset}” & 1) El usuario indica la frecuencia. 2) La señal recalcula su eje de tiempo e invalida sus cachés. 3) Puede restaurarse el valor del archivo. & Requisitos R29, R67, R72. Pruebas principales: “\textit{test\_cu018\_sampling\_rate}”, “\textit{test\_trials\_derivados}”, “\textit{test\_trials\_por\_canal}”. \\
+\hline
+\textbf{CU-019}\newline Optimizar el renderizado (submuestreo) & Módulo de submuestreo y adaptadores a VTK & 1) La extensión entrega la serie completa. 2) El submuestreo conserva el mínimo y el máximo de cada tramo (2000 puntos). 3) Con el zoom se recalcula. 4) La exportación y las mediciones leen la serie completa. & Requisitos R30, R49, R59, R73. Pruebas principales: “\textit{test\_submuestreo}”, “\textit{test\_render\_bench}”, “\textit{test\_vtk\_adapters\_bench}”. \\
+\hline
+\textbf{CU-021}\newline Cerrar un proyecto & “\textit{MainWindow}”, “\textit{ProjectService}”, “\textit{DataStore}” & Sección~4.3. 1) Se pregunta si se descartan los cambios. 2) El servicio de proyectos olvida la ruta. 3) La ventana principal cancela las tareas, destruye los widgets, pide a cada extensión soltar sus datos y vacía el almacén de datos. & Requisitos R02, R07, R11, R12, R52. Pruebas principales: “\textit{test\_liberar\_senal}”, “\textit{test\_niveles\_de\_mensaje}”, “\textit{test\_indicadores\_ui}”. \\
+\hline
+\textbf{CU-023}\newline Abrir un proyecto & “\textit{ProjectService}”, “\textit{TaskService}”, “\textit{MainWindow}”, “\textit{DataStore}” & Sección~4.1. 1) El servicio de proyectos lee el proyecto y la señal fuera del hilo de la interfaz. 2) Se libera la señal anterior. 3) Se registra la señal y se restauran los trials, las mediciones y los análisis guardados. & Requisitos R02, R07, R08, R39, R47, R54, R71, R78. Pruebas principales: “\textit{test\_fileio\_sin\_duplicar}”, “\textit{test\_niveles\_de\_mensaje}”, “\textit{test\_indicadores\_ui}”. \\
+\hline
+\end{longtable}
+\end{center}
+
+% <<<<< CAPITULO 6: TRAZABILIDAD Y GESTION DEL DISENO (fin) <<<<<
 
 \end{document}
