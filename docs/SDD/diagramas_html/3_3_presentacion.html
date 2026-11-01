@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Presentación — GammaLab 2.0</title>
+<link rel="stylesheet" href="diagram.css">
+</head>
+<body>
+
+<h1>3.3 Presentación</h1>
+<p class="subtitle">MainWindow, VTKContextMenu y elementos de retroalimentación — GammaLab 2.0</p>
+
+<div class="toolbar">
+    <button class="export-btn" id="export-btn">Exportar como imagen (PNG)</button>
+    <button class="connect-btn" id="connect-btn">🔗 Conectar cajas</button>
+    <button class="save-btn" id="save-btn">💾 Guardar estado</button>
+    <button class="load-btn" id="load-btn">📂 Cargar estado</button>
+    <input type="file" id="load-input" accept="application/json" style="display:none;">
+    <span class="hint">Arrastra desde la barra gris. Clic en texto para editarlo. Clic en una línea o su etiqueta para renombrarla o borrarla.</span>
+</div>
+
+<div class="legend">
+    <div class="legend-item"><span class="swatch existente"></span> Ya existe en el código</div>
+    <div class="legend-item"><span class="swatch nuevo"></span> Nuevo — por implementar</div>
+</div>
+
+<div class="board" id="board" style="min-height:1100px; width:1840px;">
+<svg id="connector-svg"></svg>
+
+    <div class="uml-class" id="splash" style="left:20px; top:20px; width:300px;">
+        <div class="drag-handle"></div>
+        <div class="class-name" contenteditable="true">SplashScreen</div>
+        <div class="section empty" contenteditable="true">hereda de QSplashScreen</div>
+        <div class="section" contenteditable="true">+ set_progress(value, message="")</div>
+    </div>
+
+    <div class="uml-class" id="uimain" style="left:420px; top:20px; width:300px;">
+        <div class="drag-handle"></div>
+        <div class="stereotype" contenteditable="true">«generada»</div>
+        <div class="class-name" contenteditable="true">Ui_MainWindow</div>
+        <div class="section" contenteditable="true">+ setupUi(MainWindow)</div>
+    </div>
+
+    <div class="uml-class" id="editable" style="left:860px; top:20px; width:300px;">
+        <div class="drag-handle"></div>
+        <div class="class-name" contenteditable="true">EditableLabel</div>
+        <div class="section" contenteditable="true">renamed: pyqtSignal(str)
+cancelled: pyqtSignal()</div>
+        <div class="section" contenteditable="true">+ text(): str
++ setText(text)
++ setEditableValue(value)</div>
+    </div>
+
+    <div class="uml-class" id="alerts" style="left:1300px; top:20px; width:300px;">
+        <div class="drag-handle"></div>
+        <div class="stereotype" contenteditable="true">(ver Arquitectura de implementación)</div>
+        <div class="class-name" contenteditable="true">PluginAlerts</div>
+        <div class="section" contenteditable="true">+ info(message, title)
++ warning(message, title)
++ error(message, title)
++ set_center(center)  {class}</div>
+    </div>
+
+    <div class="uml-class" id="project" style="left:20px; top:380px; width:280px;">
+        <div class="drag-handle"></div>
+        <div class="stereotype" contenteditable="true">(ver Servicios de soporte)</div>
+        <div class="class-name" contenteditable="true">ProjectService</div>
+    </div>
+
+    <div class="uml-class" id="mainwindow" style="left:420px; top:300px; width:460px;">
+        <div class="drag-handle"></div>
+        <div class="class-name" contenteditable="true">MainWindow</div>
+        <div class="section" contenteditable="true">kernel: Kernel
+ui: Ui_MainWindow
+alerts: PluginAlerts
+project_service: ProjectService
+notifications: NotificationCenter
+task_progress: TaskProgressBar
+current_section: str = "Home"
+section_buttons: dict
+active_plugin: IPlugin
+active_plugin_widget: QWidget
+plugin_widgets: dict
+- _active_vtk_menu: VTKContextMenu</div>
+        <div class="section" contenteditable="true">+ switch_section(section)
++ show_plugin_widget(plugin)
++ clear_plugin_area()
++ on_open_signal_clicked()
++ on_save_project_clicked()
++ on_save_project_as_clicked()
++ on_open_project_clicked()
++ on_close_project_clicked()
++ liberar_senal_anterior(conservar_plugin=None)
++ show_status(msg, level="info", timeout=3000)
++ on_kernel_event(topic, payload)
++ refresh_results_panel()
++ set_explorer_root(folder_path)
++ closeEvent(event)</div>
+    </div>
+
+    <div class="uml-class" id="notifications" style="left:1300px; top:300px; width:320px;">
+        <div class="drag-handle"></div>
+        <div class="class-name" contenteditable="true">NotificationCenter</div>
+        <div class="section" contenteditable="true">INFO_TIMEOUT_MS = 4500
+MAX_CARDS = 4</div>
+        <div class="section" contenteditable="true">+ show_message(level, title, message)
++ clear()</div>
+    </div>
+
+    <div class="uml-class" id="taskprogress" style="left:1300px; top:530px; width:320px;">
+        <div class="drag-handle"></div>
+        <div class="class-name" contenteditable="true">TaskProgressBar</div>
+        <div class="section" contenteditable="true">+ seguir(handle, titulo="")
++ ocultar()</div>
+    </div>
+
+    <div class="uml-class" id="taskservice" style="left:1300px; top:720px; width:320px;">
+        <div class="drag-handle"></div>
+        <div class="stereotype" contenteditable="true">(ver Arquitectura de implementación)</div>
+        <div class="class-name" contenteditable="true">TaskService</div>
+        <div class="section" contenteditable="true">task_started: pyqtSignal(object)</div>
+    </div>
+
+    <div class="uml-class" id="vtkmenu" style="left:420px; top:960px; width:460px;">
+        <div class="drag-handle"></div>
+        <div class="class-name" contenteditable="true">VTKContextMenu</div>
+        <div class="section" contenteditable="true">chart: vtkChartXY
+vtk_widget
+signal_name / channel_name / plugin_name: str
+settings: SettingsService
+export_service: ExportService
+measure_service: MeasurementService
+custom_actions: list</div>
+        <div class="section" contenteditable="true">+ show_menu(pos)
++ add_action(text, callback)
++ set_zoom_mode(mode)
++ reset_zoom()
++ set_datastore(store)
++ set_measurement_context(...)
++ export_image(fmt, filename=None)
++ export_table(fmt, filename=None)
++ on_view_rebuilt(chart, *, view_id, trial_id, channel_name, ...)</div>
+    </div>
+
+    <div class="uml-class" id="exportsvc" style="left:1040px; top:960px; width:260px;">
+        <div class="drag-handle"></div>
+        <div class="stereotype" contenteditable="true">(ver Servicios de soporte)</div>
+        <div class="class-name" contenteditable="true">ExportService</div>
+    </div>
+
+    <div class="uml-class" id="measuresvc" style="left:1040px; top:1100px; width:260px;">
+        <div class="drag-handle"></div>
+        <div class="stereotype" contenteditable="true">(ver Servicios de soporte)</div>
+        <div class="class-name" contenteditable="true">MeasurementService</div>
+    </div>
+
+    <div class="uml-class" id="settingssvc" style="left:1040px; top:1240px; width:260px;">
+        <div class="drag-handle"></div>
+        <div class="stereotype" contenteditable="true">(ver Servicios de soporte)</div>
+        <div class="class-name" contenteditable="true">SettingsService</div>
+    </div>
+
+</div>
+
+<script src="diagram.js"></script>
+<script>
+    const diagram = initDiagram('board', 'connector-svg', [
+        { from: 'mainwindow', to: 'uimain', type: 'assoc', label: 'ui' },
+        { from: 'uimain', to: 'editable', type: 'assoc', label: 'nombre del proyecto' },
+        { from: 'mainwindow', to: 'project', type: 'assoc', label: 'crea' },
+        { from: 'mainwindow', to: 'notifications', type: 'assoc', label: 'crea' },
+        { from: 'mainwindow', to: 'taskprogress', type: 'assoc', label: 'crea' },
+        { from: 'alerts', to: 'notifications', type: 'assoc', label: 'avisos no modales' },
+        { from: 'taskprogress', to: 'taskservice', type: 'assoc', label: 'sigue las tareas' },
+        { from: 'mainwindow', to: 'vtkmenu', type: 'assoc', label: 'menú activo' },
+        { from: 'vtkmenu', to: 'exportsvc', type: 'assoc', label: 'crea' },
+        { from: 'vtkmenu', to: 'measuresvc', type: 'assoc', label: 'crea' },
+        { from: 'vtkmenu', to: 'settingssvc', type: 'assoc', label: 'crea' },
+    ]);
+    document.getElementById('export-btn').addEventListener('click', function () {
+        exportBoardAsPNG('board', 'connector-svg', 'presentacion.png', 3);
+    });
+    const connectBtn = document.getElementById('connect-btn');
+    let connecting = false;
+    connectBtn.addEventListener('click', function () {
+        connecting = !connecting;
+        diagram.setConnectMode(connecting);
+        connectBtn.textContent = connecting ? 'Clic en 2 cajas... (cancelar)' : '🔗 Conectar cajas';
+        connectBtn.classList.toggle('active', connecting);
+    });
+    wireSaveLoadButtons(diagram, 'save-btn', 'load-btn', 'load-input', 'presentacion_estado.json');
+</script>
+
+</body>
+</html>
