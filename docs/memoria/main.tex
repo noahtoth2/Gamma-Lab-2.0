@@ -11,7 +11,7 @@
 %      gris de reserva para que el documento compile igual)
 %  2) Edite unicamente el bloque "DATOS DEL DOCUMENTO" de abajo.
 %  3) Cada capitulo se crea con  \capitulo{TITULO}  (inicia pagina nueva).
-%     Subcapitulos con \subsection{} y \subsubsection{} (numeracion 1.1.1).
+%     Subcapítulos con \subsection{} y \subsubsection{} (numeracion 1.1.1).
 %=====================================================================
 \documentclass[12pt,letterpaper,oneside]{article}
 
@@ -19,6 +19,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[spanish,es-noquoting,es-nodecimaldot]{babel}
+\addto\captionsspanish{\renewcommand{\tablename}{Tabla}}
 
 %------------------------- Tipografia --------------------------------
 % Fuente serif tipo Times (la del documento original).
@@ -44,7 +45,6 @@
 \usepackage{ragged2e}
 \usepackage[hidelinks]{hyperref}
 \usepackage[normalem]{ulem}
-\usepackage{soul}
 \usepackage{float}
 
 \onehalfspacing                        % interlineado 1.5
@@ -296,7 +296,7 @@ Las señales electroencefalográficas (EEG) son el registro de la actividad elé
 
 Una de las ventajas de estas señales es su alta resolución temporal, la cual permite observar cambios en la actividad neuronal en cuestión de milisegundos \cite{walla2025}. Esta característica convierte al EEG en una fuente de información valiosa para el estudio del sistema sensorial y motor, ya que permite seguir de cerca cómo el cerebro percibe su entorno y coordina el movimiento, procesos que ocurren y se transforman en fracciones de segundo \cite{srinivasan2025}. Sin embargo, esta misma riqueza de información hace que las señales sean complejas: contienen una gran cantidad de datos que no son fáciles de interpretar a simple vista, por lo que se requieren herramientas capaces de organizarlas, limpiarlas y resaltar los patrones relevantes para su análisis.
 
-En este escenario, un sistema computacional especializado en el tratamiento de estas señales permite potenciar dicho aprovechamiento, mejorando procesos de visualización, filtrado y extracción de características \cite{chaddad2023}. No obstante, alcanzar este nivel de procesamiento exige conocimientos avanzados de programación o el manejo de plataformas especializadas, una barrera técnica ampliamente documentada incluso en herramientas de código abierto orientadas a facilitar el trabajo del investigador \cite{vanes2025}. Es en este contexto donde se enmarca Gamma Lab, una solución existente que, por tratarse de una primera iteración, presenta oportunidades de mejora en cuanto a funcionalidad y usabilidad. Sobre esta base, el presente trabajo desarrolla \textbf{la segunda versión} de dicha herramienta, ampliando sus funciones y corrigiendo las limitaciones identificadas en la primera.
+En este escenario, un sistema computacional especializado en el tratamiento de estas señales permite potenciar dicho aprovechamiento, mejorando procesos de visualización, filtrado y extracción de características \cite{chaddad2023}. No obstante, alcanzar este nivel de procesamiento exige conocimientos avanzados de programación o el manejo de plataformas especializadas, una barrera técnica ampliamente documentada incluso en herramientas de código abierto orientadas a facilitar el trabajo del investigador \cite{vanes2025}. Es en este contexto donde se enmarca Gamma Lab, una solución existente que, por tratarse de una primera iteración, presenta oportunidades de mejora en cuanto a funcionalidad y usabilidad. Sobre esta base, el presente trabajo desarrolla \textbf{la segunda versión} de dicha herramienta, ampliando sus funciones y corrigiendo las limitaciones identificadas en la primera iteración.
 
 \subsubsection{Contexto del Problema}
 GammaLab es una plataforma de software de código abierto creada en 2025. Su desarrollo respondió a una necesidad del Laboratorio de Electrofisiología de la Universidad Nacional de Colombia, cuyo flujo de trabajo dependía de herramientas fragmentadas y de licenciamiento comercial, lo que limitaba la reproducibilidad y el acceso de investigadores sin formación en programación. Frente a esto, se desarrolló un software libre, con arquitectura microkernel y ecosistema de plugins en Python, que permitiera el análisis de señales EEG en los dominios de tiempo, frecuencia y tiempo-frecuencia mediante una interfaz gráfica única \cite{asencio2025}.
@@ -365,35 +365,83 @@ dominios de tiempo, frecuencia y tiempo-frecuencia.
 \capitulo{CONTEXTO DEL PROYECTO}
 
 \subsection{Trasfondo}
-\pendiente
+
+Gamma Lab 2.0 busca ampliar y estabilizar una herramienta que ya opera sobre un área concreta: la actividad eléctrica del cerebro registrada mediante \textit{EEG}. Para comprender el alcance de esta ampliación, es necesario partir de la naturaleza de la señal que se analiza. Esta actividad es la manifestación macroscópica de la comunicación entre neuronas, que se transmiten información mediante impulsos eléctricos \cite{morris2025}. Cuando estos impulsos se sincronizan a gran escala, se organizan en oscilaciones que un EEG registra y que la comunidad científica clasifica en bandas de frecuencia estandarizadas \cite{nunez2017}: Delta (0,5-4\,Hz) y Theta (4-8\,Hz), predominantes en estados de sueño profundo o de conciencia reducida \cite{kropotov2009}; Alpha (8-13\,Hz), asociada a la relajación en vigilia \cite{nunez2017}; Beta (13-30\,Hz), vinculada a la atención activa \cite{nunez2017}; y Gamma (mayor a 30\,Hz), asociada a procesos de integración neuronal y cómputo cognitivo complejo \cite{normaleeg2019}. Estas oscilaciones constituyen, por tanto, uno de los principales elementos sobre los que se estructura el análisis de señales EEG y, en particular, el procesamiento realizado por la herramienta.
+
+Sin embargo, para estudiar estas oscilaciones no basta con analizar la señal desde una única perspectiva. Una misma señal EEG puede estudiarse desde diferentes dominios de análisis, en donde cada uno permite caracterizar un aspecto particular de su comportamiento:
+
+\begin{itemize}
+    \item \textbf{Dominio del tiempo}: caracteriza la representación de la señal respecto al tiempo. Examina parámetros como su amplitud, duración y morfología, e incluye los Potenciales Relacionados con Eventos (ERP), respuestas cerebrales promediadas y sincronizadas con la ocurrencia de un estímulo \cite{walla2025}.
+    \item \textbf{Dominio de la frecuencia}: caracteriza la composición espectral de la señal. Mediante la Transformada de Fourier (\textit{FFT}) descompone la señal en sus componentes de frecuencia, y mediante la Densidad Espectral de Potencia (\textit{PSD}) cuantifica la contribución de cada banda de frecuencia \cite{singh2023, chaddad2023}.
+    \item \textbf{Dominio de tiempo-frecuencia}: caracteriza cómo evoluciona la composición espectral de la señal a lo largo del tiempo. Combina ambas perspectivas mediante la Transformada de Fourier de Tiempo Corto (\textit{STFT}), que segmenta la señal en ventanas temporales sucesivas, o la Transformada de \textit{Wavelet} (\textit{WT}), que examina la señal en múltiples escalas simultáneamente, proporcionando mayor resolución temporal en las frecuencias altas y mayor resolución espectral en las bajas \cite{chaddad2023}.
+\end{itemize}
+
+Estos tres dominios son, en conjunto, el lenguaje técnico sobre el que ya opera Gamma Lab y sobre el que se apoyan sus módulos de preprocesamiento, \textit{wavelet} y promediado de ensayos.
+
+Ahora bien, estos tres dominios comparten una limitación de fondo: analizan las bandas de oscilación de manera individual. Por ello, no permiten caracterizar directamente qué ocurre cuando dos bandas distintas se activan de forma simultánea sobre una misma señal y existe una relación entre ellas. Este tipo de interacción se conoce como acoplamiento cruzado de frecuencias (\textit{Cross-Frequency Coupling}, CFC). Dentro de sus distintas formas, el acoplamiento fase-amplitud (\textit{Phase-Amplitude Coupling}, PAC) describe una relación en la que la fase de una oscilación lenta modula la amplitud de una oscilación rápida; este fenómeno se ha asociado con procesos de comunicación, coordinación y cómputo neuronal a través de distintas escalas espaciales y temporales \cite{combrisson2020}. Su análisis requiere, por tanto, medidas específicas de acoplamiento, como el índice de modulación para relaciones dentro de un mismo canal \cite{combrisson2020} y la Consistencia de Fase por Pares (\textit{Pairwise Phase Consistency}, PPC) para relaciones entre canales \cite{vinck2010}. Estas medidas constituyen la base del nuevo módulo PAC que Gamma Lab 2.0 incorpora, tanto para el análisis de un solo canal como para el análisis inter-canal.
+
+La incorporación de esta nueva capacidad analítica, sin reescribir lo que ya existe, se apoya en una decisión arquitectónica adoptada desde la primera versión de Gamma Lab. La herramienta se construyó sobre una arquitectura de \textit{microkernel}, un patrón de diseño en el que un núcleo central concentra los servicios esenciales del sistema, mientras que cada dominio o técnica de análisis se implementa como un \textit{plugin} independiente que puede incorporarse sin modificar el núcleo ni los demás módulos \cite{richards2022}. Esta estructura favorece la extensibilidad del sistema y permite incorporar nuevas técnicas de análisis, como PAC. Sin embargo, el crecimiento de los módulos también incrementa las exigencias sobre el núcleo, especialmente en la coordinación y gestión de los procesos de cómputo \cite{richards2022}. En su estado actual, la arquitectura se encuentra próxima a su límite de capacidad para sostener de manera estable las funcionalidades que ya integra, por lo que la incorporación de nuevas capacidades hace necesario fortalecer los mecanismos de coordinación y evolucionar el núcleo hacia un mecanismo de orquestación que permita gestionar de forma centralizada y eficiente el procesamiento de los distintos módulos de análisis.
+
+En conjunto, estos elementos delimitan el trasfondo técnico y analítico de Gamma Lab 2.0. La ampliación hacia PAC y la estabilización del núcleo son los frentes que exigen esta fundamentación conceptual previa; la corrección de errores funcionales y el fortalecimiento de la experiencia de interacción completan el alcance de esta segunda iteración. A partir de esta base, es posible situar la propuesta frente a las soluciones existentes y reconocer las aproximaciones que actualmente se emplean para el análisis de señales EEG.
+
 
 \subsection{Alternativas de solución}
-\pendiente
+
+A continuación, se presentan cuatro herramientas ya existentes para el análisis y procesamiento de señales EEG, seleccionadas por abordar problemáticas similares a las que enfrenta Gamma Lab 2.0. El objetivo es identificar sus capacidades y limitaciones frente al alcance definido para esta segunda iteración, retomando el ejercicio comparativo realizado durante el desarrollo de Gamma Lab 1.0 \cite{asencio2025}.
+
 
 \subsubsection{Alternativa 1}
-\pendiente
+\textbf{EEGLAB} es una caja de herramientas interactiva de MATLAB para el procesamiento de datos electrofisiológicos continuos y relacionados con eventos (EEG, MEG y otras modalidades), que incorpora análisis de componentes independientes (ICA), análisis en los dominios de tiempo y frecuencia, rechazo de artefactos, estadísticas relacionadas con eventos y distintos modos de visualización de datos promediados y de ensayos individuales \cite{eeglab}. Al operar sobre MATLAB, su uso requiere la licencia de este software, lo que limita su adopción en laboratorios con presupuesto restringido, además de exigir conocimientos avanzados de programación.
+
 
 \subsubsection{Alternativa 2}
-\pendiente
+\textbf{FieldTrip} es una caja de herramientas desarrollada en MATLAB que ofrece un conjunto de funciones de alto nivel para el análisis de datos neurofisiológicos. A diferencia de otros entornos, no dispone de interfaz gráfica de usuario: las funciones se combinan dentro de un flujo de trabajo programado mediante un \textit{script} en MATLAB que integra todas las etapas del análisis \cite{fieldtrip}. Esta característica hace que la herramienta resulte poco intuitiva para quienes se inician en la programación en MATLAB o en el análisis de señales EEG, MEG, iEEG o NIRS, a lo que se suma la misma barrera de licenciamiento que presenta EEGLAB.
+
 
 \subsubsection{Alternativa 3}
-\pendiente
+\textbf{Brainstorm} es una aplicación colaborativa y de código abierto dedicada al análisis de grabaciones cerebrales (MEG, EEG, fNIRS, ECoG, electrodos de profundidad y electrofisiología multiunidad). Su uso es gratuito y no requiere licencia de MATLAB \cite{brainstorm}. A través de su interfaz gráfica permite cubrir las necesidades de análisis sin necesidad de programar; sin embargo, dicha interfaz resulta poco intuitiva y su baja personalización introduce cierta rigidez en el flujo de trabajo.
+
 
 \subsubsection{Alternativa 4}
-\pendiente
+\textbf{BOARD-FTD-PACC} es una interfaz gráfica de usuario desarrollada en MATLAB, diseñada para la visualización, cuantificación y análisis de registros neurofisiológicos. Proporciona herramientas personalizables orientadas al análisis de la actividad postsináptica y de datos oscilatorios neuronales complejos, principalmente mediante análisis cruzado de frecuencias \cite{gauthier2023}. Al ser el antecedente directo sobre el que se validó Gamma Lab 1.0, constituyó la base conceptual del proyecto; no obstante, su dependencia de una licencia de MATLAB y su interfaz poco intuitiva restringen su adopción en entornos con recursos limitados.
+
 
 \subsection{Comparación de alternativas}
-\pendiente
+
+A continuación, se presenta una tabla comparativa que resume las características clave de las alternativas. Evaluando licenciamiento, costo, interfaz gráfica, independencia de MATLAB y conocimientos de programación requeridos; factores que determinan la accesibilidad y la viabilidad de adopción  en un entorno de investigación con recursos limitados como el del Laboratorio de Electrofisiología. 
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+\textbf{Criterio} & \textbf{EEGLAB} & \textbf{FieldTrip} & \textbf{Brainstorm} & \textbf{BOARD-FTD-PACC} & \textbf{GAMMA LAB 2.0} \\
+\hline
+Licencia gratuita & Parcial & Parcial & Parcial & Parcial & Sí \\
+\hline
+Costo anual (COP) & \$3.948.000 & \$3.948.000 & \$0 & \$3.948.000 & \$0 \\
+\hline
+GUI integrada & Parcial & No & Sí & Parcial & Sí \\
+\hline
+Independencia MATLAB & Si & Si & No & Si & No \\
+\hline
+Conocimientos en programación & Alto & Bajo & Alto & Bajo & Bajo \\
+\hline
+\end{tabular}%
+}
+\caption{Comparación de alternativas para análisis de señales neurofisiológicas}
+\label{tab:comparacion_alternativas}
+\end{table}
+
+Como se evidencia en la tabla \ref{tab:comparacion_alternativas}, Gamma Lab 2.0 consolida las ventajas de su versión anterior e incorpora mejoras clave frente a las alternativas existentes. Es la única alternativa completamente gratuita que además no requiere conocimientos avanzados de programación, eliminando así las dos barreras de acceso más comunes en laboratorios con recursos limitados. Gamma Lab 2.0 combina accesibilidad económica con una interfaz gráfica intuitiva, reduciendo significativamente la curva de aprendizaje para nuevos investigadores. BOARD-FTD-PACC, al ser el predecesor directo de Gamma Lab, sirvió como base conceptual del proyecto, pero requiere licencia de MATLAB, lo que limita su adopción en entornos con presupuestos restringidos, además de contar con una interfaz poco intuitiva que dificulta su uso para personas sin conocimientos en programación. Gamma Lab 2.0 aporta así al ecosistema de ciencia abierta una alternativa libre, accesible y personalizable para el análisis de señales neurofisiológicas, eliminando la barrera de los conocimientos en programación sin comprometer la profundidad analítica del software.
 
 %=====================================================================
 \capitulo{ANÁLISIS DEL PROBLEMA}
 
-Este capítulo presenta el análisis del problema abordado en Gamma Lab 2.0, partiendo de las necesidades identificadas y de las condiciones que orientan la evolución de la herramienta. De este análisis se desprenden los requerimientos del sistema, organizados después mediante casos de uso que representan su comportamiento funcional. El capítulo cierra con las restricciones técnicas, operativas y de desarrollo de la solución, que en conjunto sientan la base para las decisiones de diseño e implementación sobre la segunda iteración de la herramienta.
-
 \subsection{Requerimientos}
 
-En este apartado se describen los  requerimientos del sistema Gamma Lab 2.0, los cuales están estructurados con base en la evaluación de la problemática y la identificación de las necesidades del cliente. Estos se documentaron bajo el estándar IEEE 29148 \colorbox{yellow}{(FALTA CITAR AQUÍ)} y se clasificaron en funcionales y no funcionales. En total, se identificaron \textbf{81 requerimientos}, de los cuales \textbf{45 son funcionales y 36 no funcionales}. A continuación,  se presenta una explicación general de ambos grupos y los criterios bajo los cuales se organizaron; esta información se alinea con el documento de Especificación de Requisitos de Software (SRS) \colorbox{yellow}{(FALTA CITAR ANEXO AQUÍ)}, en donde se especifican más a fondo y se presentan el detalle de uno a uno.
-
+El levantamiento de requerimientos para Gamma Lab 2.0 partió de las brechas identificadas en la versión antecesora y de las necesidades expresadas por el Laboratorio de Electrofisiología. El conjunto resultante de este proceso se documentó bajo el estándar ISO/IEC/IEEE 29148 \cite{iso29148} y se clasificó en funcionales y no funcionales. En total se identificaron  \textbf{81 requerimientos}, de los cuales \textbf{45 son funcionales y 36 no funcionales}. Las siguientes subsecciones presentan una explicación general de ambos grupos y los criterios bajo los cuales se organizaron; el detalle uno a uno se documenta en el anexo de Especificación de Requisitos de Software (SRS)  \colorbox{yellow}{(FALTA CITAR ANEXO AQUÍ)}, y la información presentada a continuación se alinea con dicho documento.
 \subsubsection{Requerimientos Funcionales}
 
 Los requisitos funcionales especifican las acciones y comportamientos observables que Gamma Lab 2.0 debe ejecutar ante una entrada, evento o solicitud del usuario. Para facilitar su organización y trazabilidad, estos se agruparon en módulos de acuerdo con la capacidad que habilitan, considerando aspectos como el tipo de dato que manejan, la operación que realizan sobre la señal y el propósito que cumplen dentro del flujo de trabajo. De este proceso surgieron cuatro módulos: IO y UI, de carácter transversal y presentes a lo largo de los flujos de análisis, y WV y PAC, de carácter específico y vinculados a técnicas de análisis particulares. Esta organización refleja, a su vez, los frentes de trabajo definidos para la solución: bajo esta lógica, IO y UI buscan fortalecer la funcionalidad base y mejorar la experiencia de usuario; WV se enfoca en corregir y fortalecer el funcionamiento de una técnica ya incorporada en Gamma Lab; mientras que PAC amplía el alcance analítico de la herramienta mediante la incorporación de una nueva técnica de análisis.
@@ -410,7 +458,7 @@ Los requisitos funcionales especifican las acciones y comportamientos observable
 
 \subsubsection{Requerimientos No Funcionales}
 
-Los requisitos no funcionales definen las condiciones de calidad que debe cumplir Gamma Lab 2.0 durante su operación. Para su clasificación se utiliza el modelo FURPS+, que contempla las categorías de usabilidad (U), rendimiento (P), confiabilidad (R) y soporte (S). En esta iteración, estos requisitos se enfocan principalmente en estabilizar la arquitectura y mejorar el rendimiento del sistema, mediante la consolidación del núcleo y el orquestador de tareas. Además, complementan los objetivos orientados a la corrección de errores y al mejoramiento de la experiencia de usuario.
+Los requisitos no funcionales definen las condiciones de calidad que debe cumplir Gamma Lab 2.0 durante su operación. Para su clasificación se utiliza el modelo FURPS+ \cite{eeles2001}, que contempla las categorías de usabilidad (U), rendimiento (P), confiabilidad (R) y soporte (S). En esta iteración, estos requisitos se enfocan principalmente en estabilizar la arquitectura y mejorar el rendimiento del sistema, mediante la consolidación del núcleo y el orquestador de tareas. Además, complementan los objetivos orientados a la corrección de errores y al mejoramiento de la experiencia de usuario.
 
 \begin{itemize}
     \item \textbf{U -- Usabilidad.} Agrupa los requisitos orientados a mejorar la experiencia de interacción del usuario con la herramienta: retroalimentación visual durante operaciones prolongadas, diferenciación de mensajes según su severidad, y accesibilidad de las funcionalidades desde la interfaz principal.
@@ -438,7 +486,7 @@ A partir de los casos de uso definidos se configura una visión integral del sis
 Esta correspondencia entre subsistemas y componentes se detalla a continuación:
 
 \begin{itemize}
-    \item \textbf{Subsistema de Núcleo y Ciclo de Vida.} Agrupa los casos de uso que gestionan el estado global de la aplicación; inicio, apertura y cierre de proyectos, carga de señal con gestión de memoria y cierre de la aplicación— junto con el orquestador del núcleo, encargado de despachar todo cómputo pesado y de habilitar su cancelación. Los casos de uso de Preprocesamiento y Análisis que implican cómputo intensivo se apoyan en este subsistema mediante relaciones de inclusión.
+    \item \textbf{Subsistema de Núcleo y Ciclo de Vida.} Agrupa los casos de uso que gestionan el estado global de la aplicación: inicio, apertura y cierre de proyectos, carga de señal con gestión de memoria y cierre de la aplicación; junto con el orquestador del núcleo, encargado de despachar todo cómputo pesado y de habilitar su cancelación. Los casos de uso de Preprocesamiento y Análisis que implican cómputo intensivo se apoyan en este subsistema mediante relaciones de inclusión.
 
     \item \textbf{Subsistema de Interfaz y Usabilidad.} Agrupa los casos de uso que gobiernan la navegación entre módulos, la interacción visual con la señal (zoom, lectura de coordenadas, butterfly), el renderizado fluido de señales pesadas mediante submuestreo, la limpieza de formularios y la ayuda contextual.
 
@@ -606,6 +654,31 @@ S. Asencio Rodríguez, M. F. González Valencia, J. E. Martínez Clavijo, y G. V
 
 \bibitem{gauthier2023}
 C. Gauthier-Umaña, M. Valderrama, A. Múnera, y M. O. Nava-Mesa, ``BOARD-FTD-PACC: a graphical user interface for the synaptic and cross-frequency analysis derived from neural signals,'' \textit{Brain Informatics}, vol. 10, art. 12, may. 2023, issn: 2198-4026, doi: 10.1186/s40708-023-00191-x. [En línea]. Disponible: \url{https://link.springer.com/article/10.1186/s40708-023-00191-x}.
+
+
+\bibitem{morris2025} P. Morris y O. Calaway, "3.1 Foundations of Neural Communication," en \textit{General Psychology}, ago. 2025. [En línea]. Disponible: \url{https://acd.pressbooks.pub/generalpsychology/chapter/2192/}.
+
+\bibitem{nunez2017} P. L. Nunez, "Electroencephalography (EEG)," \textit{Reference Module in Neuroscience and Biobehavioral Psychology}, Elsevier, 2017, isbn: 9780128093245, doi: 10.1016/B978-0-12-809324-5.03049-2. [En línea]. Disponible: \url{https://linkinghub.elsevier.com/retrieve/pii/B9780128093245030492}.
+
+\bibitem{kropotov2009} J. D. Kropotov, "Slow, Infra-Slow Potentials, and Delta Rhythms," en \textit{Quantitative EEG, Event-Related Potentials and Neurotherapy}, Elsevier, 2009, pp. 11-28, isbn: 9780123745125, doi: 10.1016/B978-0-12-374512-5.00001-3. [En línea]. Disponible: \url{https://linkinghub.elsevier.com/retrieve/pii/B9780123745125000013}.
+
+\bibitem{normaleeg2019} "Normal EEG variants," en \textit{Handbook of Clinical Neurology}, vol. 160, Elsevier, 2019, pp. 143-160, isbn: 9780444640321, doi: 10.1016/B978-0-444-64032-1.00009-6. [En línea]. Disponible: \url{https://linkinghub.elsevier.com/retrieve/pii/B9780444640321000096}.
+
+\bibitem{combrisson2020} E. Combrisson, T. Nest, A. Brovelli, R. A. A. Ince, J. L. P. Soto, A. Guillot, y K. Jerbi, "Tensorpac: An open-source Python toolbox for tensor-based phase-amplitude coupling measurement in electrophysiological brain signals," \textit{PLOS Computational Biology}, vol. 16, n.\textsuperscript{o} 10, art. e1008302, oct. 2020, issn: 1553-7358, doi: 10.1371/journal.pcbi.1008302. [En línea]. Disponible: \url{https://doi.org/10.1371/journal.pcbi.1008302}.
+
+\bibitem{vinck2010} M. Vinck, M. van Wingerden, T. Womelsdorf, P. Fries, y C. M. A. Pennartz, "The pairwise phase consistency: a bias-free measure of rhythmic neuronal synchronization," \textit{NeuroImage}, vol. 51, n.\textsuperscript{o} 1, pp. 112-122, may. 2010, issn: 1053-8119, doi: 10.1016/j.neuroimage.2010.01.073. [En línea]. Disponible: \url{https://doi.org/10.1016/j.neuroimage.2010.01.073}.
+
+\bibitem{richards2022} M. Richards, \textit{Software Architecture Patterns}, 2.\textsuperscript{a} ed. Sebastopol, CA, EE. UU.: O'Reilly Media, 2022. [En línea]. Disponible: \url{https://www.oreilly.com/library/view/software-architecture-patterns/9781098134280/}.
+
+\bibitem{eeglab} EEGLAB. [En línea]. Disponible: \url{https://sccn.ucsd.edu/eeglab/index.php}.
+
+\bibitem{fieldtrip} Getting started, FieldTrip. [En línea]. Disponible: \url{https://www.fieldtriptoolbox.org/getting_started/}.
+
+\bibitem{brainstorm} Introducción, Brainstorm. [En línea]. Disponible: \url{https://neuroimage.usc.edu/brainstorm/Introduction}.
+
+\bibitem{iso29148} ISO/IEC/IEEE 29148:2018, "Systems and software engineering --- Life cycle processes --- Requirements engineering," 2.\textsuperscript{a} ed., International Organization for Standardization / International Electrotechnical Commission / Institute of Electrical and Electronics Engineers, nov. 2018. [En línea]. Disponible: \url{https://www.iso.org/standard/72089.html}.
+
+\bibitem{eeles2001} P. Eeles, "Capturing Architectural Requirements," Rational Software Corporation, nov. 2001. [En línea]. Disponible: \url{https://www.ibm.com/developerworks/rational/library/4706.html}.
 
 \end{thebibliography}
 
