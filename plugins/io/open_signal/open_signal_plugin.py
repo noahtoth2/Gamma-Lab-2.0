@@ -30,6 +30,27 @@ _ORIGIN_LABELS = {
 }
 
 
+def regenerar_trials(ds, anteriores, ctx=None):
+    """Vuelve a cortar los conjuntos de trials con la frecuencia corregida. Puro: no escribe en `ds`."""
+    nuevos = []
+    for i, td in enumerate(anteriores):
+        if ctx is not None and ctx.cancelled:
+            return None
+        params = (td.metadata or {}).get("generation_params")
+        if not params:
+            nuevos.append(td)
+            continue
+        try:
+            nuevo = cut_trials_single_channel(ds=ds, **params)
+            nuevo.metadata["generation_params"] = params
+            nuevos.append(nuevo)
+        except Exception:
+            nuevos.append(td)
+        if ctx is not None:
+            ctx.progress(int(100 * (i + 1) / len(anteriores)), f"Conjunto {i + 1}/{len(anteriores)}")
+    return nuevos
+
+
 class OpenSignalPlugin(IPlugin):
     MAX_CHANNELS_VISIBLE = 3
 
@@ -75,6 +96,7 @@ class OpenSignalPlugin(IPlugin):
             self.ui.listChannels.itemChanged.connect(self._on_channel_item_changed)
             self.ui.btnApplySamplingRate.clicked.connect(self._on_apply_sampling_rate_clicked)
             self.ui.btnRestoreSamplingRate.clicked.connect(self._on_restore_sampling_rate_clicked)
+            self.ui.btnClear.clicked.connect(self._on_clear_clicked)
 
             if hasattr(self.ui, "splitter"):
                 self.ui.splitter.splitterMoved.connect(lambda *_: self._relayout_charts())
@@ -208,7 +230,10 @@ class OpenSignalPlugin(IPlugin):
         )
         if not fname:
             return
-        
+
+        if self.mainwin and not self.mainwin.cerrar_proyecto_para_nueva_senal():
+            return
+
         # Save the selected folder as last used
         self.settings.set("last_open_dir", str(Path(fname).parent))
 
@@ -368,6 +393,12 @@ class OpenSignalPlugin(IPlugin):
             return
         self._after_sampling_rate_change(ds)
 
+    def _on_clear_clicked(self):
+        """R25: vuelve a los valores iniciales sin tocar la señal ni sus trials."""
+        self.ui.lblSamplingRateError.setText("")
+        if self.current_ds is not None:
+            self.ui.spnNewSamplingRate.setValue(float(self.current_ds.sampling_rate))
+
     def _on_apply_sampling_rate_clicked(self):
         if self.current_ds is None:
             self.alerts.warning("No signal has been loaded.")
@@ -410,20 +441,14 @@ class OpenSignalPlugin(IPlugin):
         if reply != QMessageBox.Yes:
             return
 
-        new_trials = []
-        for td in ds.get_all_trials_datasets():
-            params = (td.metadata or {}).get("generation_params")
-            if not params:
-                new_trials.append(td)
-                continue
-            try:
-                new_td = cut_trials_single_channel(ds=ds, **params)
-                new_td.metadata["generation_params"] = params
-                new_trials.append(new_td)
-            except Exception as e:
-                self._log("Error regenerating trials:", e)
-                new_trials.append(td)
+        # El corte corre en el TaskService (R71); el conjunto nuevo se registra al terminar, en el hilo de la interfaz
+        self.run_task(regenerar_trials, partial(self._on_trials_regenerated, ds),
+                      on_failed=lambda m: self.alerts.error(f"No se pudieron regenerar los trials: {m}"),
+                      ds=ds, anteriores=list(ds.get_all_trials_datasets()))
 
+    def _on_trials_regenerated(self, ds, new_trials):
+        if new_trials is None or ds is not self.current_ds:
+            return
         ds.replace_trial_datasets(new_trials)
         self.mark_project_dirty()
         self.kernel.emit_event("trials_generated", {"key": ds.name})

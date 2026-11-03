@@ -519,3 +519,61 @@ def test_el_plugin_declara_el_dibujo_y_la_exportacion():
     for nombre in ("render_resultado", "ensure_vtk", "exportar_resultados",
                    "get_analysis_params", "apply_analysis_params"):
         assert callable(getattr(Ppc_plugin, nombre, None)), nombre
+
+
+def test_los_trials_que_faltan_se_cortan_fuera_del_hilo_de_la_interfaz_y_el_calculo_sigue(qt_app):
+    """R71: si un canal no tiene trials, su corte corre en el servicio de tareas y, al terminar, el PPC se calcula."""
+    import plugins.analysis.connectivity.ppc.ppc_plugin as modulo
+    from core.filters.trials import cut_trials_single_channel
+
+    n = int(FS * 12)
+    t = np.arange(n) / FS
+    estimulo = np.zeros(n)
+    for k in range(6):
+        estimulo[int((1 + 1.5 * k) * FS): int((1 + 1.5 * k) * FS) + 10] = 1.0
+    ds = SignalDataset(
+        name=ARCHIVO, format="abf", source_path=f"C:/datos/{ARCHIVO}", sampling_rate=FS,
+        time=t, signals=np.vstack([np.sin(2 * np.pi * 10 * t), np.cos(2 * np.pi * 10 * t), estimulo]),
+        channel_names=["CA1", "IN 7", "STIM"], units=["mV", "mV", "V"], metadata={})
+    receta = dict(channel=0, stim_channel=2, threshold=0.5, t0=0.0, t1=1.0,
+                  end_mode="fixed", stim_expected=None, inter_stim_time=None)
+    td = cut_trials_single_channel(ds=ds, **receta, debug=False)
+    td.metadata["generation_params"] = receta
+    ds.add_trial_dataset(td)
+
+    tareas = TaskService()
+    p = plugin_con(ds, tareas)
+    p.ui.channel1ComboBox.setCurrentText("CA1")
+    p.ui.channel2ComboBox.setCurrentText("IN 7")
+    p.ui.lowFrequencySpinBox.setValue(20.0)
+    p.ui.highFrequencySpinBox.setValue(120.0)
+    p.ui.sampleDensitySpinBox.setValue(int(FS))
+
+    hilos = []
+    original = modulo.cut_trials_single_channel
+
+    def espia(*a, **k):
+        hilos.append(threading.current_thread().name)
+        return original(*a, **k)
+
+    modulo.cut_trials_single_channel = espia
+    try:
+        assert ds.get_active_trials(ds.name, "IN 7") is None
+        p.on_create_ppc()
+        assert esperar(lambda: p._ultimo is not None)
+    finally:
+        modulo.cut_trials_single_channel = original
+        tareas.cancel_all_from("ppc")
+
+    assert hilos and hilos[0] != "MainThread" and hilos[0] != threading.current_thread().name
+    assert ds.get_active_trials(ds.name, "IN 7") is not None
+    assert p._ultimo["resultado"].canal_2 == "IN 7"
+
+
+def test_sin_receta_de_la_que_partir_avisa_y_no_calcula(qt_app):
+    ds = señal_con()
+    p = plugin_con(ds, TaskService())
+    p.alerts = type("A", (), {"warning": lambda self, *a, **k: setattr(self, "avisado", True),
+                              "error": lambda self, *a, **k: None, "info": lambda self, *a, **k: None})()
+    p.on_create_ppc()
+    assert getattr(p.alerts, "avisado", False) and p._ultimo is None

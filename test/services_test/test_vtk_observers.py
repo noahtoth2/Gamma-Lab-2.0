@@ -83,3 +83,29 @@ def test_el_menu_contextual_y_la_lectura_del_cursor_usan_el_registro(entorno, mo
     assert contar_observadores(w) == 0
     reponer_en(cont)
     assert contar_observadores(w) == antes
+
+
+def test_recrear_el_menu_no_acumula_observadores_ni_menus(entorno, monkeypatch):
+    """Los plugins crean un menu nuevo en cada calculo: el anterior debe retirarse del widget."""
+    from core.utils.vtk_context_menu import VTKContextMenu
+    from core.kernel import Kernel
+    from core.services.compartidos import registrar_servicios_compartidos
+    from core.services.data_store import DataStore
+    cont, w = entorno
+    kernel = Kernel()
+    kernel.register_service("DataStore", DataStore())
+    registrar_servicios_compartidos(kernel)
+    monkeypatch.setattr(VTKContextMenu, "kernel", kernel)
+
+    def crear():
+        return VTKContextMenu(chart=None, vtk_widget=w, plugin_name="t", parent=cont)
+
+    primero = crear()
+    base = contar_observadores(w)
+    for _ in range(5):
+        menu = crear()
+    assert contar_observadores(w) == base, "cinco menus nuevos no dejan observadores de mas"
+    assert w._gamma_menu is menu
+
+    assert w.receivers(w.customContextMenuRequested) == 1, "solo el menu vigente atiende el clic derecho"
+    assert primero._observadores == []

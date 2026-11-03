@@ -78,6 +78,7 @@ class Wavelet_plugin(IPlugin):
         self.ui = Ui_Wavelet()
         self.ui.setupUi(self.widget)
         self.alerts.parent = self.widget
+        self.crear_selector_de_trials(unico=True)
 
         self.init_controls()
         self.ensure_vtk()
@@ -197,13 +198,16 @@ class Wavelet_plugin(IPlugin):
             self.alerts.error(f"No hay suficiente información de tiempo en {signal.name}.")
             return
 
+        # Este analisis calcula sobre un solo trial: el que marca el selector (el primero si no hay ninguno)
+        n_total = trials.trials.shape[1] if trials.trials.ndim == 2 else 1
+        self.selector_trials.establecer_total(n_total)
+        marcados = self.selector_trials.posiciones()
+        posicion = marcados[0] if marcados else 1
         try:
-            sig = trials.trials[:, 0] if trials.trials.ndim == 2 else np.ravel(trials.trials)
+            sig = trials.trials[:, posicion - 1] if trials.trials.ndim == 2 else np.ravel(trials.trials)
         except Exception:
             sig = np.array(trials.trials, dtype=float).ravel()
-        # Este analisis usa solo el primer trial valido; se indica tal cual.
-        n_total = trials.trials.shape[1] if trials.trials.ndim == 2 else 1
-        self._trials_en_curso = trials_used([1], n_total, "single", channel=trials.channel_name)
+        self._trials_en_curso = trials_used([posicion], n_total, "single", channel=trials.channel_name)
 
         sig = np.nan_to_num(np.asarray(sig).flatten(), nan=0.0, posinf=0.0, neginf=0.0)
         fs_calculado = round(1.0 / (t[1] - t[0]), 3)

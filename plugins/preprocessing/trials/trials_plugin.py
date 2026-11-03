@@ -220,6 +220,12 @@ class TrialsPlugin(IPlugin):
         self.ui.finalTimeDoubleSpinBox.setValue(self.params["t1"])
         self.ui.stimNumberSpinBox.setValue(self.params["stim_count"] or 0)
         self._apply_interstim_ui_rules(self.ui.stimNumberSpinBox.value())
+        # R25: tambien los selectores vuelven a su valor inicial (canal 0, estimulo en el ultimo canal)
+        if self.ui.channelComboBox.count():
+            self.ui.channelComboBox.setCurrentIndex(0)
+        if self.ui.stimChannelComboBox.count():
+            self.ui.stimChannelComboBox.setCurrentIndex(self.ui.stimChannelComboBox.count() - 1)
+        self.ui.endModeCombo.setCurrentIndex(0)
 
 
     def on_kernel_event(self, topic: str, payload: object):

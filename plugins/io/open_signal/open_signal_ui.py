@@ -108,6 +108,11 @@ class Ui_OpenSignal(QtWidgets.QWidget):
         self.samplingRateButtonsLayout = QtWidgets.QHBoxLayout()
         self.samplingRateButtonsLayout.setObjectName("samplingRateButtonsLayout")
 
+        self.btnClear = QtWidgets.QPushButton("Clear", self.sidebar)
+        self.btnClear.setObjectName("btnClearSamplingRate")
+        self.btnClear.setToolTip("Descarta el valor escrito y muestra de nuevo la frecuencia de muestreo vigente")
+        self.samplingRateButtonsLayout.addWidget(self.btnClear)
+
         self.btnRestoreSamplingRate = QtWidgets.QPushButton("Restore Original", self.sidebar)
         self.btnRestoreSamplingRate.setObjectName("btnRestoreSamplingRate")
         self.samplingRateButtonsLayout.addWidget(self.btnRestoreSamplingRate)

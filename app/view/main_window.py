@@ -3,6 +3,7 @@ import html
 import gc
 import os
 import shutil
+from core.utils.ayudas import completar_ayudas
 from functools import partial
 from pathlib import Path
 from PyQt5.QtWidgets import (
@@ -668,6 +669,8 @@ class MainWindow(QMainWindow):
             self.plugin_layout.addWidget(widget)
             self.plugin_widgets[plugin.name()] = widget
 
+        completar_ayudas(widget)    # R42: ningun control queda sin descripcion emergente
+
         # Hide previous and show the new one
         self.clear_plugin_area()
         try:
@@ -1032,7 +1035,15 @@ class MainWindow(QMainWindow):
         try:
             self.liberar_senal_anterior()
             self.project_service.open(path_str, self, preparado=preparado)
-            self.statusBar().showMessage(f"Project opened: {path_str}", 4000)
+            faltante = self.project_service.senal_faltante(*preparado)
+            if faltante:
+                self.statusBar().showMessage(f"Proyecto abierto sin señal: {path_str}", 8000)
+                self.alerts.warning(
+                    f"No se encontró el archivo de señal «{faltante}» que este proyecto referencia. "
+                    "El proyecto se abrió sin señal; ubica el archivo junto al proyecto o en su ruta original y ábrelo de nuevo.",
+                    "Señal no disponible")
+            else:
+                self.statusBar().showMessage(f"Project opened: {path_str}", 4000)
         except Exception as e:
             self.alerts.error(str(e), "Open Project")
         finally:
@@ -1067,11 +1078,55 @@ class MainWindow(QMainWindow):
             store.release_signals()
         gc.collect()
 
+    PASOS_BIENVENIDA = (
+        ("Home", "abre una señal (ABF, EDF o MAT) y mídela con pendiente y amplitud."),
+        ("Preprocessing", "recorta la señal en trials, fíltrala o quita artefactos."),
+        ("Analysis", "calcula promedios, espectros, wavelet, PAC y más sobre los trials que elijas."),
+        ("Explorer y Results", "en la barra lateral: los archivos del proyecto y las tablas de mediciones."),
+        ("Clic derecho en una gráfica", "zoom, mediciones y exportación a CSV, Excel, JSON o imagen."),
+    )
+
+    def mostrar_bienvenida_inicial(self, forzar=False) -> bool:
+        """R10: la primera vez que se ejecuta la aplicación explica las funciones básicas. Devuelve si se mostró."""
+        ajustes = self.kernel.get_service("Settings")
+        if not forzar and (ajustes is None or ajustes.get("bienvenida_mostrada", False)):
+            return False
+        pasos = "".join(f"<li><b>{html.escape(t)}:</b> {html.escape(d)}</li>" for t, d in self.PASOS_BIENVENIDA)
+        caja = QMessageBox(self)
+        caja.setIcon(QMessageBox.Information)
+        caja.setWindowTitle("Bienvenido a Gamma Lab 2.0")
+        caja.setTextFormat(Qt.RichText)
+        caja.setText(f"<b>Bienvenido a Gamma Lab 2.0.</b><br>Para empezar:<ul>{pasos}</ul>"
+                     "Puedes volver a consultar esta ayuda en la sección FAQ.")
+        caja.exec_()
+        if ajustes is not None:
+            ajustes.set("bienvenida_mostrada", True)
+        return True
+
+    def cerrar_proyecto_para_nueva_senal(self) -> bool:
+        """Cargar otra señal equivale a cerrar el proyecto abierto (R11, R12): avisa y pide guardar si hay cambios.
+
+        Devuelve False si el usuario cancela. El proyecto se cierra aquí para que guardar después
+        no escriba la señal nueva sobre el archivo del proyecto anterior.
+        """
+        if not self.project_service.is_open:
+            return True
+        if not self._confirm_discard_unsaved_changes():
+            return False
+        nombre = self.project_service.project_name
+        self.project_service.close()
+        self._update_title_bar_signal_name()
+        self.statusBar().showMessage(f"Proyecto «{nombre}» cerrado al cargar otra señal.", 6000)
+        return True
+
     def on_close_project_clicked(self):
         """File > Close project: forget the project location and free the active signal."""
         if not self._confirm_discard_unsaved_changes():
             return
+        nombre = self.project_service.project_name
         self.project_service.close()
+        if nombre:
+            self.statusBar().showMessage(f"Proyecto «{nombre}» cerrado.", 6000)
         self.liberar_senal_anterior()
         self.ui.resultsPanel.setVisible(False)
         self._update_title_bar_signal_name()

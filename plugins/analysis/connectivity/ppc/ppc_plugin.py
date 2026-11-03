@@ -30,6 +30,22 @@ from plugins.analysis.connectivity.ppc.ppc_plugin_ui import Ui_Ppc
 from plugins.analysis.time_frequency.pac.compute import remuestrear_en_log
 
 
+def cortar_canales(ds, receta, canales, ctx=None):
+    """Corta los trials de `canales` con la receta de otro canal. Puro: no escribe en `ds`; corre en el servicio de tareas."""
+    nombres = list(ds.channel_names)
+    salida = []
+    for i, canal in enumerate(canales):
+        if ctx is not None and ctx.cancelled:
+            return None
+        params = dict(receta, channel=nombres.index(canal))
+        td = cut_trials_single_channel(ds=ds, **params, debug=False)
+        td.metadata["generation_params"] = params
+        salida.append(td)
+        if ctx is not None:
+            ctx.progress(int(100 * (i + 1) / len(canales)), f"Recortando los trials de {canal}")
+    return salida
+
+
 class Ppc_plugin(IPlugin):
     """Consistencia de fase por pares entre dos canales."""
 
@@ -53,6 +69,7 @@ class Ppc_plugin(IPlugin):
         self._params_en_curso = {}
         self._restaurando = False        # apply_analysis_params recalcula al abrir un proyecto
         self._corrida_restaura = False   # la ejecución en curso viene de una restauración
+        self._reintento_corte = False    # el cálculo se retoma tras cortar los trials que faltaban
         self.vtk_widget = None
         self.vtk_menu = None
         self._context_view = None
@@ -129,8 +146,35 @@ class Ppc_plugin(IPlugin):
             return []
         return list(getattr(senal, "channel_names", None) or [])
 
+    @staticmethod
+    def _trials_de(senal, canal):
+        td = senal.get_active_trials(senal.name, canal)
+        return td if td is not None and np.asarray(td.trials).size else None
+
+    @staticmethod
+    def _receta_de(senal):
+        """La receta de corte de cualquier canal ya cortado, o None."""
+        for otro in senal.get_all_trials_datasets():
+            receta = (otro.metadata or {}).get("generation_params")
+            if receta:
+                return receta
+        return None
+
+    def _tras_cortar(self, senal, tds):
+        """Ya en el hilo de la interfaz: registra los trials recortados y retoma el cálculo."""
+        if senal is not self.get_active_signal(silent=True):
+            return
+        for td in tds:
+            senal.add_trial_dataset(td)
+        self._reintento_corte = True
+        self._restaurando = self._corrida_restaura
+        self.on_create_ppc()
+
     def _asegurar_trials(self, senal, canal):
         """Los trials de `canal`; si no existen, los corta con la receta del otro.
+
+        Esta versión corta en el hilo que la llama; `on_create_ppc` no la usa: corta en el
+        servicio de tareas (`cortar_canales`) para no congelar la interfaz.
 
         PPC exige que los dos canales salgan del **mismo corte**: mismos onsets,
         `t0`/`t1` y umbral, cambiando solo el canal. La receta de un canal ya
@@ -206,10 +250,22 @@ class Ppc_plugin(IPlugin):
             return
 
         senal_activa = self.get_active_signal()
-        td1 = self._asegurar_trials(senal_activa, canal_1)
-        td2 = self._asegurar_trials(senal_activa, canal_2)
-        if td1 is None or td2 is None:
+        reintento, self._reintento_corte = self._reintento_corte, False
+        faltan = [c for c in dict.fromkeys((canal_1, canal_2)) if self._trials_de(senal_activa, c) is None]
+        if faltan:
+            receta = self._receta_de(senal_activa)
+            if not receta or reintento:
+                self.alerts.warning(
+                    f"El canal '{faltan[0]}' no tiene trials y no hay ningún corte de otro canal "
+                    f"del que copiar los parámetros. Genera los trials en Trials primero.")
+                return
+            # El corte de los trials que faltan se hace en el servicio de tareas (R71)
+            self.run_task(cortar_canales, partial(self._tras_cortar, senal_activa),
+                          on_failed=lambda m: self.alerts.error(f"No se pudieron generar los trials: {m}"),
+                          ds=senal_activa, receta=receta, canales=faltan)
             return
+        td1 = self._trials_de(senal_activa, canal_1)
+        td2 = self._trials_de(senal_activa, canal_2)
 
         try:
             cp.validar_alineacion(td1, td2)

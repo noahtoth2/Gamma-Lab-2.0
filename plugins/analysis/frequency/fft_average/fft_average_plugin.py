@@ -65,6 +65,7 @@ class Fft_average_plugin(IPlugin):
             self._log("UI created. plotArea:", bool(self.ui.plotArea),
                       "panel:", bool(self.ui.layoutWidget),
                       "splitter:", bool(self.ui.splitter))
+            self.crear_selector_de_trials()
             self._wire_ui()
 
         else:
@@ -103,6 +104,9 @@ class Fft_average_plugin(IPlugin):
             if X is None or fs is None:
                 self._notify("FFT Average: no trials in the active signal.")
                 return
+            X, posiciones, total = self.elegir_trials(X)
+            if X is None:
+                return
 
             # 2) UI parameters
             target_fs = float(self.ui.sampleDensitySpinBox.value())  # 0 = no resampling
@@ -112,12 +116,12 @@ class Fft_average_plugin(IPlugin):
                 lo, hi = hi, lo
 
             # 3) FFT in the TaskService (R71), 4) plot when it finishes
-            self.run_task(calcular_fft_average, partial(self._on_fft_average_done, ch_name, lo, hi, X.shape[1]),
+            self.run_task(calcular_fft_average, partial(self._on_fft_average_done, ch_name, lo, hi, total, posiciones),
                           X=X, fs=fs, target_fs=target_fs, per_trial=False)
 
-    def _on_fft_average_done(self, ch_name, lo, hi, n_trials, resultado):
+    def _on_fft_average_done(self, ch_name, lo, hi, n_trials, posiciones, resultado):
             freq, mag_avg, fs_eff = resultado
-            self._trials_used = trials_used(None, n_trials, "average", channel=ch_name)
+            self._trials_used = trials_used(posiciones, n_trials, "average", channel=ch_name)
             self._plot_fft_average(freq, mag_avg, ch_name, lo, hi, fs_eff)
             self._notify(f"FFT Average ready with {self._trials_used['label']}: "
                          f"fs_eff={fs_eff:.2f} Hz, {freq.size} bins")

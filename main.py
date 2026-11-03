@@ -112,6 +112,8 @@ def main():
     if proyecto:
         QTimer.singleShot(0, lambda: main_win.abrir_proyecto_desde_ruta(proyecto))
     salida_autoprueba = os.environ.get("GAMMALAB_AUTOPRUEBA")
+    if not salida_autoprueba:
+        QTimer.singleShot(600, main_win.mostrar_bienvenida_inicial)
     if salida_autoprueba:
         from core.utils import autoprueba
         autoprueba.programar(main_win, kernel, salida_autoprueba, espera_proyecto=bool(proyecto))

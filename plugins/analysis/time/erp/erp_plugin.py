@@ -28,6 +28,8 @@ def calcular_erp(t, M, idx, ctx=None):
 
 
 class Erp_plugin(IPlugin):
+    MAX_CURVAS = 200
+
     def __init__(self, meta: PluginMeta):
         super().__init__(meta)
         self.vtk_widget = None
@@ -336,6 +338,9 @@ class Erp_plugin(IPlugin):
         scene = self.view_top.GetScene()
         scene.ClearItems()
 
+        if sel.shape[0] > self.MAX_CURVAS:      # R73: solo se limita lo que se dibuja
+            self._log(f"Hay {sel.shape[0]} trials, se dibujan {self.MAX_CURVAS}")
+            sel = sel[:self.MAX_CURVAS]
         table = trials_matrix_to_vtk_table(t, sel.T)
 
         chart = vtk.vtkChartXY()
@@ -351,11 +356,9 @@ class Erp_plugin(IPlugin):
         ax_left = chart.GetAxis(vtk.vtkAxis.LEFT)
         
         # R32: the superposition of all trials is named as such on screen
-        chart.SetTitle("Butterfly Plot")
+        chart.SetTitle(f"Butterfly Plot — {title}" if title else "Butterfly Plot")
         ax_bottom.SetTitle("Time (s)")
         ax_left.SetTitle("Amplitude")
-        if title:
-            chart.SetTitle(title)
 
         try:
             self.vtk_menu = VTKContextMenu(chart, self.vtk_top, self.active_signal.name,self.ch_name,self.meta.id, parent=self.widget)

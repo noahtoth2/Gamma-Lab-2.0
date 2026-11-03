@@ -113,7 +113,7 @@ class Filter_plugin(IPlugin):
         self.ui.lowFrequencySpinBox.setValue(0.5)
         self.ui.orderSpinBox.setRange(0, 100)
         self.ui.orderSpinBox.setValue(8)
-        self.ui.typeSelectComboBox.addItems(["Butterworth", "Chebyshev", "Elliptic"])
+        self.ui.typeSelectComboBox.addItems(["Butterworth"])
 
         # "Filter" filters the trials for real (R79); "Preview" only draws the result
         self.ui.applyFilterButton.clicked.connect(self.on_apply_to_trials)
@@ -175,12 +175,13 @@ class Filter_plugin(IPlugin):
             if trials is None or trials.trials is None:
                 return
 
-            # La vista previa filtra siempre el canal 0 de la senal cruda y el
-            # primer trial valido; se indica tal cual en los titulos.
-            signal_data = self.active_signal.signals[0, :]
-            trial_data = trials.trials[:, 0]
+            # La vista previa filtra el canal de los trials (el canal 0 si no se puede identificar)
+            # y el primer trial valido; se indica tal cual en los titulos.
             nombres = list(getattr(self.active_signal, "channel_names", []) or [])
-            canal_senal = nombres[0] if nombres else "canal 1"
+            canal = nombres.index(trials.channel_name) if trials.channel_name in nombres else 0
+            signal_data = self.active_signal.signals[canal, :]
+            trial_data = trials.trials[:, 0]
+            canal_senal = nombres[canal] if nombres else "canal 1"
             self._trials_used = trials_used([1], trials.trials.shape[1], "single",
                                             channel=trials.channel_name)
             fs = self.active_signal.sampling_rate
