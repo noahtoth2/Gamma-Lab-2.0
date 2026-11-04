@@ -599,13 +599,13 @@ En cambio, se optó por utilizar hilos, ya que las operaciones más exigentes de
 \subparagraph{Corrección de los análisis existentes:}
 
 \begin{itemize}
-    \item \textbf{Filtros digitales.} Los bloqueos que se presentaban al utilizar los filtros elíptico y Chebyshev se debían a problemas de estabilidad numérica en los coeficientes con formato $b/a$, especialmente al trabajar con órdenes altos. Para solucionar esto, se modificó su implementación para utilizar secciones de segundo orden (SOS). También se agregó una validación para comprobar que los coeficientes sean valores finitos antes de utilizarlos. Finalmente, los filtros ahora devuelven copias de sus datos para evitar que otras partes del sistema modifiquen accidentalmente un filtro compartido.
+    \item \textbf{Filtros digitales:} Los bloqueos que se presentaban al utilizar los filtros elíptico y Chebyshev se debían a problemas de estabilidad numérica en los coeficientes con formato $b/a$, especialmente al trabajar con órdenes altos. Para solucionar esto, se modificó su implementación para utilizar secciones de segundo orden (SOS). También se agregó una validación para comprobar que los coeficientes sean valores finitos antes de utilizarlos. Finalmente, los filtros ahora devuelven copias de sus datos para evitar que otras partes del sistema modifiquen accidentalmente un filtro compartido.
 
-    \item \textbf{Transformada Wavelet.} Se corrigió el método de normalización tiempo-frecuencia (\texttt{normalize\_tf}), que ahora calcula la línea base de manera independiente para cada frecuencia. Además, se incorporaron tres métodos de normalización: \textit{z-score}, \textit{percent change} y \textit{relative power}. También se ajustó la validación de los parámetros \texttt{fmin} y \texttt{fmax} para que tenga en cuenta la frecuencia de Nyquist y la tasa de muestreo efectiva.
+    \item \textbf{Transformada Wavelet:} Se corrigió el método de normalización tiempo-frecuencia (\texttt{normalize\_tf}), que ahora calcula la línea base de manera independiente para cada frecuencia. Además, se incorporaron tres métodos de normalización: \textit{z-score}, \textit{percent change} y \textit{relative power}. También se ajustó la validación de los parámetros \texttt{fmin} y \texttt{fmax} para que tenga en cuenta la frecuencia de Nyquist y la tasa de muestreo efectiva.
 
-    \item \textbf{Remoción de artefactos.} Se modificó el proceso de eliminación de artefactos para evitar que los cambios afecten directamente los trials originales. Ahora, cada modificación se realiza sobre un \textbf{conjunto derivado} mediante el método \texttt{crear\_derivado}. Además, los cambios se guardan como una \textit{receta}, que contiene el modo de corrección utilizado, los puntos seleccionados y los descartes realizados. Esto permite volver a aplicar el mismo procedimiento y obtener resultados reproducibles.
+    \item \textbf{Remoción de artefactos:} Se modificó el proceso de eliminación de artefactos para evitar que los cambios afecten directamente los trials originales. Ahora, cada modificación se realiza sobre un \textbf{conjunto derivado} mediante el método \texttt{crear\_derivado}. Además, los cambios se guardan como una \textit{receta}, que contiene el modo de corrección utilizado, los puntos seleccionados y los descartes realizados. Esto permite volver a aplicar el mismo procedimiento y obtener resultados reproducibles.
 
-    \item \textbf{Exportación.} Se corrigieron los problemas que se presentaban al exportar tablas en formatos CSV y JSON. También se agregó la posibilidad de exportar resultados en formato vectorial EMF. Para ello, se desarrolló un escritor propio que genera los ejes, rótulos y líneas como elementos vectoriales, mientras que los mapas de calor se incorporan como imágenes. Por defecto, los archivos exportados se guardan en la carpeta \texttt{archivos/} del proyecto abierto.
+    \item \textbf{Exportación:} Se corrigieron los problemas que se presentaban al exportar tablas en formatos CSV y JSON. También se agregó la posibilidad de exportar resultados en formato vectorial EMF. Para ello, se desarrolló un escritor propio que genera los ejes, rótulos y líneas como elementos vectoriales, mientras que los mapas de calor se incorporan como imágenes. Por defecto, los archivos exportados se guardan en la carpeta \texttt{archivos/} del proyecto abierto.
 \end{itemize}
 
 \subparagraph{Interfaz e interacción:} Una de las decisiones técnicas relacionadas con la interfaz fue evitar que los avisos sobre los resultados de los cálculos abrieran ventanas modales. Esto se debe a que este tipo de ventanas genera un bucle de eventos adicional que podía provocar cierres inesperados cuando se seguían ejecutando los temporizadores de VTK. Por esta razón, se optó por utilizar avisos que no bloquean la interacción del usuario con la aplicación.
@@ -613,7 +613,7 @@ En cambio, se optó por utilizar hilos, ya que las operaciones más exigentes de
 % ------------------------------------------------------------------
 \paragraph{Nuevas funcionalidades}
 
-\subparagraph{Proyectos y archivo \texttt{.glab}.} En Gamma Lab 1.0 no existía una forma de guardar las sesiones de trabajo. Por esta razón, al cerrar la aplicación se perdía la información relacionada con los trials, el preprocesamiento, las mediciones y la configuración de los análisis.
+\subparagraph{Proyectos y archivo \texttt{.glab}:} En Gamma Lab 1.0 no existía una forma de guardar las sesiones de trabajo. Por esta razón, al cerrar la aplicación se perdía la información relacionada con los trials, el preprocesamiento, las mediciones y la configuración de los análisis.
 
 Para solucionar esta limitación, Gamma Lab 2.0 incorpora \texttt{ProjectService} y un nuevo formato de proyecto llamado \texttt{.glab}. Cada proyecto se organiza en una carpeta que contiene tres elementos principales: un manifiesto en formato JSON con extensión \texttt{.glab}, una copia del archivo de señal original y una subcarpeta llamada \texttt{archivos/}, donde se almacenan las exportaciones. Al incluir una copia de la señal dentro del proyecto, es posible trasladarlo a otro equipo sin depender de la ubicación original del archivo.
 
@@ -628,29 +628,6 @@ Con esta estructura, los archivos de proyecto son más livianos, fáciles de con
 El servicio también permite identificar si existen cambios sin guardar mediante el estado \textit{dirty}. Para evitar problemas con los archivos, impide guardar proyectos directamente en carpetas del sistema, como Escritorio, Documentos o Descargas. Asimismo, evita copiar nuevamente la señal cuando esta ya se encuentra dentro del proyecto.
 
 La copia de la señal se realiza por bloques y se guarda inicialmente en un archivo temporal. Una vez finalizada correctamente, este archivo se renombra para completar la operación. De esta manera, si el usuario cancela la copia, no queda un archivo incompleto. Finalmente, el sistema operativo puede abrir directamente los archivos \texttt{.glab} utilizando Gamma Lab.
-
-\subparagraph{Análisis de acoplamiento entre frecuencias.} En Gamma Lab 2.0 se incorporaron dos nuevas extensiones: \textit{Phase-Amplitude Coupling} (PAC), que permite realizar análisis en un canal y entre canales, y \textit{Pairwise Phase Consistency} (PPC).
-
-Estas herramientas permiten estudiar la relación entre la fase de una oscilación de baja frecuencia y la amplitud de una oscilación de mayor frecuencia, aportando nuevas posibilidades para el análisis de señales EEG.
-
-Ambas extensiones siguen un diseño en el que los cálculos se encuentran separados de la interfaz gráfica. Esto facilita realizar pruebas sobre la lógica de procesamiento sin necesidad de abrir la aplicación y permite ejecutar los análisis mediante \texttt{TaskService}. Como parte de la validación, se realizaron 76 pruebas para PPC.
-
-También se reorganizó el filtro de Gabor que utilizan ambas extensiones. Este componente se trasladó a \texttt{core/filters/}, siguiendo el criterio de que las funcionalidades compartidas por varias extensiones deben ubicarse en el núcleo del sistema.
-
-\subparagraph{Otras funcionalidades.} Además de lo anterior, Gamma Lab 2.0 incorpora las siguientes capacidades:
-
-\begin{itemize}
-  \item \textbf{Índice de modulación:} Nueva extensión de análisis tiempo-frecuencia, que complementa a PAC y PPC en el estudio del acoplamiento entre oscilaciones.
-  \item \textbf{Corrección de la frecuencia de muestreo:} El usuario puede corregir la frecuencia detectada en el archivo y restaurar la original. Al cambiarla se recalcula el eje de tiempo y se invalida la tabla de VTK, para no dibujar un eje desactualizado. El valor y su origen se guardan en el proyecto.
-  \item \textbf{Progreso y cancelación globales:} Una única barra no modal en la barra de estado muestra el porcentaje de la tarea en curso y permite cancelarla. Se conecta directamente a \texttt{TaskService}, por lo que sirve para cualquier extensión que use el orquestador. Reemplaza al indicador anterior, que era modal, no mostraba porcentaje y no permitía cancelar.
-  \item \textbf{Centro de notificaciones:} Los mensajes se presentan según su severidad: la información aparece como un aviso que se cierra solo, las advertencias como un aviso no modal que permanece hasta cerrarlo y los errores como un diálogo modal, porque interrumpen el trabajo.
-  \item \textbf{Lectura del cursor:} Al mover el cursor sobre una gráfica se muestra su posición en unidades de los ejes, tanto en el gráfico como en la barra de estado.
-  \item \textbf{Rango de color manual:} En Wavelet y Wavelet Average el usuario puede fijar el mínimo y el máximo de la escala de color, lo que facilita comparar escalogramas entre sí.
-  \item \textbf{Explorador del proyecto:} Un panel lateral muestra la carpeta del proyecto abierto, incluidas las exportaciones de \texttt{archivos/}. El proyecto se puede renombrar con doble clic sobre su nombre.
-  \item \textbf{Exportación de mapas de calor:} Los escalogramas y comodulogramas se exportan como tablas. CSV y JSON conservan la matriz completa; en Excel, por sus límites de tamaño, se toma una de cada $k$ columnas de tiempo y el recorte queda indicado en la hoja de resumen.
-  \item \textbf{Ayudas contextuales:} Los parámetros de las extensiones de análisis y preprocesamiento incluyen descripciones emergentes (\textit{tooltips}).
-  \item \textbf{Instalador:} La aplicación se distribuye con un instalador para Windows que registra la extensión \texttt{.glab}, de modo que un proyecto se abre con doble clic. El ejecutable incluye una autoprueba que verifica que el programa instalado funciona.
-\end{itemize}
 
 % ------------------------------------------------------------------
 \paragraph{Flujo general de la aplicación}
