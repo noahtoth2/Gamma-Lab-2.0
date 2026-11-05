@@ -530,7 +530,57 @@ El sistema debe ejecutarse en Windows 10 de 64 bits o superior, sobre un equipo 
 \capitulo{DISEÑO DE LA SOLUCIÓN}
 
 \subsection{Arquitectura}
-\pendiente
+
+Gamma Lab 2.0 toma como punto de partida la arquitectura de Gamma Lab 1.0 \cite{asencio2025}, conservando el estilo de microkernel y su implementación en Python. Esta decisión respondió, en parte, a que un cambio de estilo o de lenguaje habría obligado a reimplementar los dieciséis plugins existentes y a repetir su validación numérica, un costo que no se justificaba frente a los problemas identificados. Al mismo tiempo, conservar esta base permitió mantener la extensibilidad del sistema como mecanismo para incorporar nuevas técnicas de análisis. En consecuencia, la propuesta se orientó a fortalecer la arquitectura existente mediante la incorporación de mecanismos que permitieran mejorar la ejecución, la gestión de datos y la organización de los componentes, sin modificar el modelo general de extensibilidad.
+
+La arquitectura de partida se organizaba alrededor de un componente \texttt{Kernel}, responsable de mantener el registro de servicios y plugins, y de distribuir eventos entre los módulos mediante señales de Qt. La carga dinámica de los plugins se realizaba a través de un gestor que identificaba sus archivos \texttt{properties.yml}, mientras que la interfaz \texttt{IPlugin} establecía las operaciones básicas para su integración con el núcleo y la interfaz gráfica. Sobre esta estructura se encontraban dieciséis plugins, organizados en funcionalidades de entrada y salida, preprocesamiento, medición y análisis en los dominios del tiempo, la frecuencia y el tiempo-frecuencia. La visualización se apoyaba en VTK, integrado en la interfaz desarrollada con PyQt5.
+
+Tomando esta estructura como la base inicial, el diseño de Gamma Lab 2.0 consideró cinco necesidades arquitectónicas que orientaron la definición de la solución:
+
+\begin{itemize}
+  \item La ejecución de los análisis debía independizarse del hilo principal de la interfaz. Para ello, se planteó un mecanismo centralizado de ejecución en segundo plano, con distribución del trabajo entre varios hilos y gestión del progreso, los errores y la cancelación de las tareas.
+  \item La gestión de los datos debía garantizar un acceso controlado y una administración explícita de los recursos. En respuesta, se definió un esquema de almacenamiento compartido que contempla la sincronización de accesos, la propiedad de los datos y la liberación de memoria al finalizar su uso.
+  \item Los servicios utilizados por distintos plugins debían mantener un estado común y evitar instancias independientes. Por esta razón, se estableció su centralización en el núcleo, de modo que los diferentes módulos pudieran acceder a los mismos recursos y configuraciones.
+  \item La lógica de cálculo debía separarse de los elementos encargados de la interfaz y la visualización. Esta decisión llevó a reorganizar los plugins para que las operaciones numéricas pudieran ejecutarse y validarse de manera independiente de su representación gráfica.
+  \item La aplicación debía permitir conservar el contexto de trabajo y facilitar su ejecución en distintos entornos. Para ello, se incorporó el concepto de proyecto, junto con mecanismos de persistencia y recuperación de sesiones, gestión de rutas y distribución de la aplicación.
+\end{itemize}
+
+Sobre estos criterios se estructuró la solución, manteniendo los componentes centrales del microkernel y ampliando las capacidades de los módulos existentes. La arquitectura conserva los dieciséis plugins originales e incorpora tres nuevos: PAC, PPC y Modulation Index. Además, el diseño contempla una mayor cobertura de pruebas automatizadas, que pasó de 14 archivos en Gamma Lab 1.0 a aproximadamente 70 en Gamma Lab 2.0, incluyendo pruebas de concurrencia, cancelación, persistencia, liberación de memoria, instalación y rendimiento.
+
+La Tabla~\ref{tab:comparacion_arquitectura} presenta una comparación de las principales características arquitectónicas y técnicas de Gamma Lab 1.0 y la solución diseñada para Gamma Lab 2.0.
+
+\begin{table}[H]
+\centering
+\small
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|p{3.2cm}|p{5.4cm}|p{5.4cm}|}
+\hline
+\textbf{Característica} & \textbf{Gamma Lab 1.0} & \textbf{Gamma Lab 2.0} \\
+\hline
+Estilo arquitectónico & Microkernel con plugins & Microkernel con plugins y orquestador de tareas \\
+\hline
+Modelo de ejecución & Síncrono sobre el hilo de la interfaz; hilos aislados en dos plugins & Asíncrono mediante un servicio de tareas en el núcleo, con paralelización por trials \\
+\hline
+Progreso y cancelación & No disponibles & Centralizados en el orquestador \\
+\hline
+Almacén de datos & Diccionario sin sincronización ni liberación de memoria & Acceso sincronizado, propiedad por módulo y liberación de señales \\
+\hline
+Servicios compartidos & Instanciados de forma independiente en varios módulos & Instancia única registrada en el núcleo \\
+\hline
+Organización de los plugins & Cálculo y presentación en la misma clase & Funciones de cálculo independientes de la interfaz y la visualización \\
+\hline
+Persistencia & Inexistente & Proyectos \texttt{.glab} con esquema versionado \\
+\hline
+Ejecución y distribución & Scripts de arranque y rutas relativas & Instalador para Windows y resolución de rutas absolutas \\
+\hline
+Plugins & 16 & 19 (PAC, PPC y Modulation Index) \\
+\hline
+Archivos de pruebas & 14 & $\approx$ 70 (concurrencia, cancelación, persistencia, memoria, instalación y rendimiento) \\
+\hline
+\end{tabular}
+\caption{Comparación arquitectónica entre Gamma Lab 1.0 y Gamma Lab 2.0}
+\label{tab:comparacion_arquitectura}
+\end{table}
 
 \subsection{Vistas de arquitectura}
 \pendiente
