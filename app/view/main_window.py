@@ -4,6 +4,7 @@ import gc
 import os
 import shutil
 from core.utils.ayudas import completar_ayudas
+from core.utils.dialogo_bienvenida import DialogoBienvenida
 from functools import partial
 from pathlib import Path
 from PyQt5.QtWidgets import (
@@ -1091,14 +1092,7 @@ class MainWindow(QMainWindow):
         ajustes = self.kernel.get_service("Settings")
         if not forzar and (ajustes is None or ajustes.get("bienvenida_mostrada", False)):
             return False
-        pasos = "".join(f"<li><b>{html.escape(t)}:</b> {html.escape(d)}</li>" for t, d in self.PASOS_BIENVENIDA)
-        caja = QMessageBox(self)
-        caja.setIcon(QMessageBox.Information)
-        caja.setWindowTitle("Bienvenido a Gamma Lab 2.0")
-        caja.setTextFormat(Qt.RichText)
-        caja.setText(f"<b>Bienvenido a Gamma Lab 2.0.</b><br>Para empezar:<ul>{pasos}</ul>"
-                     "Puedes volver a consultar esta ayuda en la sección FAQ.")
-        caja.exec_()
+        DialogoBienvenida(self.PASOS_BIENVENIDA, self).exec_()
         if ajustes is not None:
             ajustes.set("bienvenida_mostrada", True)
         return True
