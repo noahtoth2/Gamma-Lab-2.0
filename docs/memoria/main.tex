@@ -48,6 +48,7 @@
 \usepackage[normalem]{ulem}
 \usepackage{soul}
 \usepackage{float}
+\usepackage{tabularx} % tablas de texto al ancho exacto de la pagina
 
 \onehalfspacing                        % interlineado 1.5
 \setlength{\parindent}{1.0cm}          % sangria de primera linea
@@ -551,33 +552,33 @@ La Tabla~\ref{tab:comparacion_arquitectura} presenta una comparación de las pri
 
 \begin{table}[H]
 \centering
-\small
+\scriptsize
 \renewcommand{\arraystretch}{1.3}
-\begin{tabular}{|p{3.2cm}|p{5.4cm}|p{5.4cm}|}
+\begin{tabularx}{\textwidth}{|l|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X|}
 \hline
 \textbf{Característica} & \textbf{Gamma Lab 1.0} & \textbf{Gamma Lab 2.0} \\
 \hline
 Estilo arquitectónico & Microkernel con plugins & Microkernel con plugins y orquestador de tareas \\
 \hline
-Modelo de ejecución & Síncrono sobre el hilo de la interfaz; hilos aislados en dos plugins & Asíncrono mediante un servicio de tareas en el núcleo, con paralelización por trials \\
+Modelo de ejecución & Síncrono, en el hilo de la interfaz & Asíncrono, mediante el orquestador del núcleo \\
 \hline
 Progreso y cancelación & No disponibles & Centralizados en el orquestador \\
 \hline
-Almacén de datos & Diccionario sin sincronización ni liberación de memoria & Acceso sincronizado, propiedad por módulo y liberación de señales \\
+Almacén de datos & Sin sincronización ni liberación de memoria & Sincronizado, con propiedad y liberación de datos \\
 \hline
-Servicios compartidos & Instanciados de forma independiente en varios módulos & Instancia única registrada en el núcleo \\
+Servicios compartidos & Instancias independientes por módulo & Instancia única registrada en el núcleo \\
 \hline
-Organización de los plugins & Cálculo y presentación en la misma clase & Funciones de cálculo independientes de la interfaz y la visualización \\
+Organización de plugins & Cálculo y vista en la misma clase & Cálculo separado de la interfaz y la vista \\
 \hline
 Persistencia & Inexistente & Proyectos \texttt{.glab} con esquema versionado \\
 \hline
-Ejecución y distribución & Scripts de arranque y rutas relativas & Instalador para Windows y resolución de rutas absolutas \\
+Distribución & Scripts de arranque y rutas relativas & Instalador para Windows y rutas absolutas \\
 \hline
 Plugins & 16 & 19 (PAC, PPC y Modulation Index) \\
 \hline
-Archivos de pruebas & 14 & $\approx$ 70 (concurrencia, cancelación, persistencia, memoria, instalación y rendimiento) \\
+Archivos de pruebas & 14 & $\approx$ 70 \\
 \hline
-\end{tabular}
+\end{tabularx}
 \caption{Comparación arquitectónica entre Gamma Lab 1.0 y Gamma Lab 2.0}
 \label{tab:comparacion_arquitectura}
 \end{table}
@@ -729,20 +730,21 @@ Después de este proceso, la aplicación regresa a la pantalla de inicio y liber
 % Opcional: tabla resumen de avances v1.0 -> v2.0
 \begin{table}[H]
 \centering
-\small
-\begin{tabular}{|p{0.22\linewidth}|p{0.33\linewidth}|p{0.35\linewidth}|}
+\scriptsize
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{|l|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X|}
 \hline
 \textbf{Aspecto} & \textbf{Gamma Lab 1.0} & \textbf{Gamma Lab 2.0} \\ \hline
-Persistencia & No permitía guardar proyectos & Incorpora proyectos \texttt{.glab} que pueden reconstruirse y trasladarse entre equipos \\ \hline
-Memoria & Las señales anteriores permanecían almacenadas & Incorpora \texttt{release\_signals()} para liberar datos al cambiar de señal o cerrar un proyecto \\ \hline
-Ejecución & Los análisis se ejecutaban principalmente en el hilo de la interfaz & Incorpora \texttt{TaskService} para gestionar tareas, consultar su progreso y cancelarlas \\ \hline
-Concurrencia de datos & No existía un control centralizado & El \texttt{DataStore} utiliza un único escritor y un mecanismo de bloqueo \\ \hline
-Filtros IIR & Presentaba bloqueos con los filtros elíptico y Chebyshev & Utiliza el formato SOS con validaciones y memoización \\ \hline
-Wavelet & Presentaba problemas en la normalización & Incorpora una línea base por frecuencia y utiliza la tasa de muestreo efectiva \\ \hline
-Artefactos & Los cambios se aplicaban directamente sobre los datos originales & Utiliza conjuntos derivados y recetas para reproducir los cambios \\ \hline
-Exportación & Presentaba fallas en CSV y JSON y no ofrecía exportación EMF & Corrige la exportación CSV y JSON e incorpora el formato vectorial EMF \\ \hline
-Análisis & Incluía análisis en tiempo, frecuencia y tiempo-frecuencia & Incorpora PAC (en uno y dos canales) y PPC \\ \hline
-\end{tabular}
+Persistencia & Sin guardado de proyectos & Proyectos \texttt{.glab} reconstruibles y trasladables \\ \hline
+Memoria & Señales anteriores retenidas en memoria & Liberación con \texttt{release\_signals()} \\ \hline
+Ejecución & Análisis en el hilo de la interfaz & \texttt{TaskService} con progreso y cancelación \\ \hline
+Concurrencia de datos & Sin control centralizado & \texttt{DataStore} con escritor único y bloqueo \\ \hline
+Filtros IIR & Bloqueos con filtros elíptico y Chebyshev & Formato SOS con validación y memoización \\ \hline
+Wavelet & Normalización incorrecta & Línea base por frecuencia y tasa efectiva \\ \hline
+Artefactos & Cambios sobre los datos originales & Conjuntos derivados y recetas reproducibles \\ \hline
+Exportación & Fallas en CSV y JSON; sin EMF & CSV y JSON corregidos; formato vectorial EMF \\ \hline
+Análisis & Tiempo, frecuencia y tiempo-frecuencia & Se añaden PAC (uno y dos canales) y PPC \\ \hline
+\end{tabularx}
 \caption{Principales mejoras de Gamma Lab 1.0 a Gamma Lab 2.0}
 \end{table}
 
