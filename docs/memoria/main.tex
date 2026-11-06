@@ -46,6 +46,10 @@
 \usepackage[normalem]{ulem}
 \usepackage{soul}
 \usepackage{float}
+\usepackage{array}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,babel}
+\addto\captionsspanish{\renewcommand{\tablename}{Tabla}}
 
 \onehalfspacing                        % interlineado 1.5
 \setlength{\parindent}{1.0cm}          % sangria de primera linea
@@ -479,32 +483,251 @@ El sistema debe ejecutarse en Windows 10 de 64 bits o superior, sobre un equipo 
 %=====================================================================
 \capitulo{DISEÑO DE LA SOLUCIÓN}
 
-\subsection{Arquitectura}
-\pendiente
+\subsection{Ampliación del Alcance Analítico}
 
-\subsection{Vistas de arquitectura}
-\pendiente
+Esta sección presenta el diseño de la ampliación del alcance analítico de Gamma Lab 2.0, es decir, de los módulos que permiten estudiar el acoplamiento entre ritmos de distinta frecuencia y la sincronización de fase entre canales. Los demás frentes de la solución solo se mencionan cuando estos módulos dependen de ellos.
 
-\subsubsection{Vista lógica}
-\pendiente
+\subsubsection{Técnicas incorporadas}
 
-\subsubsection{Vista física}
-\pendiente
+La ampliación agrega tres módulos al Subsistema de Análisis: PAC (\textit{phase-amplitude coupling}), que reúne cuatro modos de cálculo; el índice de modulación; y PPC (\textit{phase-phase coupling}), que evalúa el acoplamiento de fase entre dos canales. Todos parten de análisis disponibles en el sistema de referencia BOARD-FTD-PACC \cite{gauthier2023} y cubren los requerimientos R13 a R23, R60 a R66, R74 y R75. La Tabla~\ref{tab:tecnicas} resume la pregunta que responde cada técnica.
 
-\subsubsection{Vista de procesos}
-\pendiente
+\begin{table}[H]
+  \centering
+  \caption{Técnicas de la ampliación del alcance analítico}
+  \label{tab:tecnicas}
+  \vspace{4pt}
+  \small\setstretch{1}
+  \renewcommand{\arraystretch}{1.15}
+  \begin{tabular}{|>{\raggedright\arraybackslash}p{2.4cm}|>{\raggedright\arraybackslash}p{5.0cm}|>{\raggedright\arraybackslash}p{2.3cm}|>{\raggedright\arraybackslash}p{4.1cm}|}
+    \hline
+    \textbf{Técnica} & \textbf{Pregunta que responde} & \textbf{Trials que usa} & \textbf{Salida principal} \\ \hline
+    PAC & ¿En qué punto del ciclo lento aumenta la energía rápida de un trial? & Uno, elegido por el usuario & Mapa fase-frecuencia, histograma de fase, vector medio y cuatro señales \\ \hline
+    PAC Average & ¿Se mantiene ese patrón sobre el conjunto de trials? & Todos los válidos & Mapa, histograma y vector medio \\ \hline
+    PAC Psel & ¿Cómo se comporta la actividad rápida alrededor de los ciclos completos del ritmo lento? & Todos, concatenados & Trece paneles con ciclos superpuestos, promedios, mapas y vectores \\ \hline
+    PAC Psel inter-canal & ¿El ritmo lento de un canal organiza la actividad rápida de otro? & Todos, de dos canales & Los mismos paneles de PAC Psel \\ \hline
+    Índice de modulación & ¿Qué pares de bandas de fase y de amplitud están acoplados? & Uno, elegido por el usuario & Comodulograma \\ \hline
+    PPC & ¿La diferencia de fase entre dos canales se mantiene estable? ¿En qué frecuencia y en qué momento? & Todos, emparejados entre canales & Mapa frecuencia-tiempo \\ \hline
+  \end{tabular}
+\end{table}
 
-\subsection{Diseño detallado}
-\pendiente
+\subsubsection{Criterios de diseño}
 
-\subsubsection{Estructura del sistema}
-\pendiente
+Cinco criterios orientaron las decisiones de este diseño:
 
-\subsubsection{Comportamiento del sistema}
-\pendiente
+\begin{itemize}
+  \item \textbf{Un módulo por técnica.} PAC, PAC Average y PAC Psel comparten parámetros, por lo que son modos de un mismo módulo. El índice de modulación usa otro algoritmo y PPC mide otra relación, de modo que cada uno es un módulo independiente.
+  \item \textbf{Cálculo separado de la presentación.} Cada módulo distingue dos responsabilidades: realizar el análisis y atender al usuario. El cálculo recibe datos y parámetros y entrega un resultado, sin conocer la interfaz ni las gráficas. Así puede ejecutarse en segundo plano y verificarse de forma independiente.
+  \item \textbf{Lo compartido se ubica en el núcleo.} Un componente de cálculo que necesitan dos módulos pasa al núcleo, y el que necesita uno solo permanece en ese módulo.
+  \item \textbf{Paridad con la referencia y diferencias justificadas.} El diseño busca reproducir el cálculo de BOARD-FTD-PACC, salvo cuando hacerlo conduciría a un resultado engañoso. Esas diferencias son deliberadas y se recogen en la Sección~\ref{sec:diferencias}.
+  \item \textbf{Ningún resultado dudoso sin advertencia.} Lo que no se puede medir queda sin valor en lugar de mostrar un número, y un parámetro imposible se rechaza con un mensaje en lugar de ajustarse en silencio.
+\end{itemize}
 
-\subsection{Tecnologías}
-\pendiente
+\subsubsection{Componentes y responsabilidades}
+
+La ampliación se organiza en tres niveles de responsabilidad, coherentes con la arquitectura de plugins de la plataforma:
+
+\begin{itemize}
+  \item \textbf{Módulos de análisis.} Cada técnica es un plugin que se integra sin modificar el núcleo (R77). Su parte de coordinación recibe los parámetros, valida las entradas, solicita el cálculo y presenta el resultado. Su parte de cálculo contiene el algoritmo propio de la técnica.
+  \item \textbf{Servicios del núcleo.} Los módulos no resuelven por sí mismos lo transversal: se apoyan en los servicios que ejecutan tareas en segundo plano, dan acceso a los trials, exportan resultados y guardan el proyecto.
+  \item \textbf{Cálculo compartido.} Las operaciones que usan varios módulos forman un componente común, de modo que cada una tiene una sola definición (Tabla~\ref{tab:componentes-compartidos}).
+\end{itemize}
+
+\begin{table}[H]
+  \centering
+  \caption{Componentes de cálculo compartidos}
+  \label{tab:componentes-compartidos}
+  \vspace{4pt}
+  \small\setstretch{1}
+  \renewcommand{\arraystretch}{1.15}
+  \begin{tabular}{|>{\raggedright\arraybackslash}p{3.6cm}|>{\raggedright\arraybackslash}p{6.7cm}|>{\raggedright\arraybackslash}p{3.9cm}|}
+    \hline
+    \textbf{Componente} & \textbf{Responsabilidad} & \textbf{Lo usan} \\ \hline
+    Filtrado & Aislar una banda de frecuencia sin introducir desfase & PAC, índice de modulación \\ \hline
+    Transformada de Gabor & Obtener la representación tiempo-frecuencia de una señal & PAC Psel, PPC \\ \hline
+    Tasa efectiva & Determinar la frecuencia de muestreo real después del submuestreo & PAC, índice de modulación, PPC \\ \hline
+    Reparto de trials & Distribuir los trials para procesarlos en paralelo, según la memoria disponible & PAC Average, PPC \\ \hline
+  \end{tabular}
+\end{table}
+
+La wavelet de Morse \cite{lilly2012} permanece dentro de PAC porque ningún otro módulo la necesita.
+
+\subsubsection{Datos de entrada y resultados}
+
+Los módulos reciben los trials activos del canal: una matriz de muestras por trials que excluye los trials descartados y que, si el canal fue preprocesado, corresponde al conjunto derivado (R79). PAC y el índice de modulación trabajan sobre el canal activo, mientras que el modo inter-canal y PPC solicitan cada canal por su nombre (R68).
+
+Un análisis no modifica la señal ni los trials. Su resultado reúne las matrices, los ejes y los datos de contexto, como la tasa efectiva y el número de trials o de ciclos. El módulo lo conserva junto con los parámetros de la ejecución, lo que permite exportarlo sin recalcular.
+
+\subsubsection{Diseño de cada técnica}
+
+\paragraph{PAC y PAC Average.}
+
+PAC estima en qué punto del ciclo de un ritmo lento aumenta la energía de las frecuencias rápidas. Sobre un trial ya submuestreado, el cálculo sigue estos pasos:
+
+\begin{enumerate}
+  \item Se filtra la señal en la banda de fase con un filtro Chebyshev II bidireccional y se obtiene la fase instantánea $\phi(t)$ con la transformada de Hilbert.
+  \item Se calcula la energía rápida con una wavelet de Morse generalizada \cite{lilly2012}, que produce una matriz $W(f,t)$ con cuatro filas por cada Hz del rango de amplitud.
+  \item Se divide el ciclo en $K=100$ intervalos de fase y se promedia la magnitud de $W$ en los instantes $T_k$ cuya fase cae en cada intervalo:
+  \[
+    \bar{A}(f,k) = \frac{1}{|T_k|}\sum_{t\in T_k}\left|W(f,t)\right|
+  \]
+  \item Se normaliza cada frecuencia con un puntaje z a lo largo de los intervalos. Así, las frecuencias de poca energía se leen igual que las fuertes, porque lo que interesa es si varían con la fase.
+  \item Se resume el acoplamiento en el vector medio, a partir del histograma de fase $h_k$:
+  \[
+    v = \frac{1}{K}\sum_{k=1}^{K} h_k\, e^{i\theta_k}
+  \]
+  donde $\theta_k$ es la fase del intervalo $k$. Su magnitud indica la intensidad del acoplamiento y su ángulo, la fase en que ocurre.
+\end{enumerate}
+
+PAC Average usa el mismo algoritmo, pero acumula las sumas y las cuentas de cada intervalo sobre todos los trials y divide una sola vez al final. Como cada trial es independiente, los trials pueden procesarse en paralelo, dentro de los límites de la memoria disponible.
+
+El mapa, el histograma y el vector se presentan juntos. PAC agrega la señal original, la banda de fase, la fase instantánea y la banda de amplitud sobre un eje de tiempo común. PAC Average no muestra esas señales, porque presentar un trial bajo un título de promedio invitaría a leerlo como promediado.
+
+\paragraph{PAC Psel.}
+
+PAC Psel analiza ciclos completos del ritmo lento. Concatena los trials en una señal continua, la filtra en la banda de fase y localiza sus picos, valles y cruces por cero. Un valle se acepta cuando a su alrededor aparece la secuencia pico, cruce, valle, cruce y pico, sus picos superan la media de los picos, el valle queda por debajo de la media de los valles y cada semiperiodo tiene una duración compatible con la banda elegida.
+
+Alrededor de cada valle aceptado se recorta una ventana y las ventanas se superponen, lo que permite comprobar visualmente si la actividad rápida se alinea con el ciclo (R75). El promedio de esas ventanas delimita el tramo entre sus dos primeros picos, y sobre ese tramo se agrupa la energía por fase. Este modo usa la wavelet de Gabor, con dos filas por Hz, y un panel de actividad rápida fijo en la banda de 25 a 129 Hz, como la referencia. Los trece paneles se presentan en una sola columna, en lugar de las ventanas separadas del sistema original.
+
+\paragraph{PAC Psel inter-canal.}
+
+Este modo aplica el diseño de PAC Psel a dos canales: los ciclos y la fase salen del canal activo, y la amplitud sale del canal que elige el usuario (R60 a R62). La segunda fuente de datos es la única diferencia entre ambos modos. Como en la referencia, los umbrales de selección de ciclos se relajan en una desviación estándar. El panel de actividad rápida se toma del canal de amplitud, decisión propia de este diseño, para que los paneles se lean juntos.
+
+\paragraph{Índice de modulación.}
+
+Este módulo barre una rejilla de bandas para mostrar qué pares están acoplados. Para cada frecuencia de fase filtra una banda de 1 Hz y para cada frecuencia de amplitud, una de 10 Hz; con la transformada de Hilbert obtiene la fase $\phi$ y la envolvente $a$. Después calcula, para cada par, el índice de Canolty \cite{canolty2006} y su variante normalizada \cite{ozkurt2011}:
+\[
+  MI = \left|\frac{1}{N}\sum_{n=1}^{N} a(n)\,e^{i\phi(n)}\right|
+  \qquad
+  MI_{norm} = \frac{\left|\sum_{n=1}^{N} a(n)\,e^{i\phi(n)}\right|}{\sum_{n=1}^{N} a(n)}
+\]
+
+El cruce entre todas las bandas se plantea como una sola operación matricial y no par por par, porque con los valores por defecto la rejilla reúne cerca de cien mil combinaciones. Los pasos de la rejilla solo mueven el centro de cada banda, no su ancho. La gráfica muestra $MI_{norm}$ y la exportación incluye las dos medidas.
+
+\paragraph{Acoplamiento fase-fase entre canales (PPC).}
+
+PPC evalúa si la diferencia de fase entre dos canales se mantiene estable a una misma frecuencia. Para cada trial, ambos canales se transforman con una wavelet de Gabor, de tres ciclos por omisión, sobre un eje logarítmico de frecuencias, y se conserva solo la fase. La referencia cuantifica esa estabilidad con el PLV. Este diseño usa en cambio la consistencia de fase por pares $C$ \cite{vinck2010}, que corrige el sesgo debido al número de muestras $N$:
+\[
+  C = \frac{N\cdot PLV^2 - 1}{N - 1}
+\]
+
+Esa medida también se abrevia PPC en la literatura (\textit{pairwise phase consistency}), pero en este documento la sigla designa el análisis de acoplamiento fase-fase.
+
+El valor de $N$ cuenta solo las muestras independientes, que son las separadas al menos dos desviaciones estándar de la wavelet. Cada frecuencia tiene su propia ventana, dimensionada para reunir 20 muestras independientes entre todos los trials, con un mínimo configurable de 50 ms por omisión y un máximo del trial completo. Junto a los extremos del trial la ventana se recorta y $N$ disminuye en la misma proporción. Si una celda no reúne dos muestras independientes, queda sin valor.
+
+Cada trial se procesa de forma independiente y los aportes se suman en un orden fijo, por lo que el resultado no depende de cuál termine primero. PPC exige que los dos canales provengan del mismo corte: si uno no tiene trials, el módulo los genera con los parámetros del otro.
+
+\subsubsection{Flujo de ejecución}
+
+Todos los módulos siguen el flujo de la Figura~\ref{fig:flujo-analitico}. El módulo lee y valida los datos y solicita el cálculo al servicio de tareas del núcleo, que lo ejecuta en segundo plano, una tarea a la vez. Mientras tanto, el cálculo informa su avance y la aplicación sigue respondiendo.
+
+\begin{figure}[!htb]
+  \centering
+  \begin{tikzpicture}[
+      font=\footnotesize,
+      actor/.style={draw, rounded corners=2pt, align=center, minimum height=9mm, minimum width=2.9cm, inner sep=2pt},
+      vida/.style={densely dashed, gray},
+      msj/.style={-{Stealth[length=2mm]}, semithick},
+      ret/.style={-{Stealth[length=2mm]}, semithick, densely dashed},
+      etq/.style={above, inner sep=2pt, align=center},
+      nota/.style={right, inner sep=3pt, align=left}]
+    \node[actor] (u) at (0,0)    {Usuario};
+    \node[actor] (p) at (4.2,0)  {Módulo de análisis};
+    \node[actor] (t) at (8.4,0)  {Servicio de tareas};
+    \node[actor] (c) at (12.6,0) {Cálculo\\(segundo plano)};
+    \foreach \n in {u,p,t,c} { \draw[vida] (\n.south) -- ++(0,-8.2); }
+    \draw[msj] (0,-1.2) -- node[etq] {solicita el análisis} (4.2,-1.2);
+    \node[nota] at (4.2,-1.75) {lee los trials y valida};
+    \draw[msj] (4.2,-2.6) -- node[etq] {solicita el cálculo} (8.4,-2.6);
+    \draw[msj] (8.4,-3.4) -- node[etq] {ejecuta} (12.6,-3.4);
+    \draw[ret] (12.6,-4.2) -- node[etq] {avance} (8.4,-4.2);
+    \draw[ret] (8.4,-4.8) -- node[etq] {avance} (4.2,-4.8);
+    \draw[ret] (4.2,-5.4) -- node[etq] {progreso} (0,-5.4);
+    \draw[ret] (12.6,-6.1) -- node[etq] {resultado} (8.4,-6.1);
+    \draw[ret] (8.4,-6.7) -- node[etq] {resultado} (4.2,-6.7);
+    \node[nota] at (4.2,-7.3) {comprueba que siga vigente,\\presenta y registra los trials};
+    \draw[ret] (4.2,-8.0) -- node[etq] {gráficas y avisos} (0,-8.0);
+  \end{tikzpicture}
+  \caption{Flujo de ejecución de un análisis}
+  \label{fig:flujo-analitico}
+\end{figure}
+
+Durante la ejecución, la tarea comunica cuatro eventos al módulo: avance, finalización, fallo y cancelación. Antes de atender cada uno, el módulo comprueba que la tarea siga siendo la vigente, porque al cambiar un parámetro se solicita otra y la anterior puede seguir activa un instante; sin esa comprobación, su resultado sobrescribiría al nuevo.
+
+La cancelación es cooperativa: el cálculo la consulta entre etapas y entre trials. Puede pedirla el usuario desde la barra de progreso, y también ocurre al salir del módulo o al lanzar otro cálculo del mismo módulo. Si la tarea no responde en dos segundos, el servicio deja de esperarla, descarta su resultado y continúa con la siguiente.
+
+\subsubsection{Diferencias deliberadas con la referencia}
+\label{sec:diferencias}
+
+La Tabla~\ref{tab:diferencias} recoge los puntos en que el diseño se aparta de BOARD-FTD-PACC. En todos ellos, replicar la referencia habría producido un resultado engañoso o la interrupción del análisis.
+
+\begin{table}[!htb]
+  \centering
+  \caption{Diferencias deliberadas con BOARD-FTD-PACC}
+  \label{tab:diferencias}
+  \vspace{4pt}
+  \small\setstretch{1}
+  \renewcommand{\arraystretch}{1.15}
+  \begin{tabular}{|>{\raggedright\arraybackslash}p{2.5cm}|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}p{3.4cm}|>{\raggedright\arraybackslash}p{4.7cm}|}
+    \hline
+    \textbf{Aspecto} & \textbf{Referencia} & \textbf{Gamma Lab 2.0} & \textbf{Motivo} \\ \hline
+    Medida de PPC & PLV & Consistencia de fase por pares & El PLV depende del número de muestras: con fases al azar da 0,63 con 2 muestras y 0,02 con 2000 \\ \hline
+    Muestras contadas & Todas las de la ventana & Solo las independientes & Contar muestras correlacionadas acerca el valor a 1: una senoidal contra ruido blanco dio 0,99993 \\ \hline
+    Ventana de PPC & Una para toda la banda & Una por frecuencia & Una ventana fija no alcanza en frecuencias bajas y sobra en las altas \\ \hline
+    Celdas no medibles en PPC & Valen 1 & Quedan sin valor & Un 1 se lee como acoplamiento perfecto \\ \hline
+    Frecuencia sobre el Nyquist & Se recorta en silencio & Se rechaza con un mensaje & Quien pide un rango debe saber si el análisis lo cubre \\ \hline
+    Bandas del comodulograma & Tope fijo de 178 bandas & Barrido completo, salvo las bandas junto al Nyquist & Con los valores por defecto, el tope dejaba vacío el 81,9~\% de las filas \\ \hline
+    Ciclos junto al borde en PAC Psel & Detienen el análisis & Se omiten y se informa cuántos & Un ciclo del borde no debe detener todo el análisis \\ \hline
+    Señales mostradas en PAC & Con un desfase acumulado & Sin desfase & El desfase contradecía al mapa que aparece junto a ellas \\ \hline
+  \end{tabular}
+\end{table}
+
+\subsubsection{Persistencia y exportación}
+
+El proyecto guarda la receta de cada análisis y no sus resultados: los parámetros y los trials usados (R23). Al abrirlo, el sistema vuelve a cortar los trials y recalcula, de modo que el proyecto se mantiene liviano y el resultado siempre proviene de la señal. Cada módulo declara si participa en este mecanismo; PAC y PPC lo hacen, y ese recálculo no marca el proyecto como modificado.
+
+Para exportar, cada módulo define las tablas de su resultado y el servicio de exportación del núcleo las escribe (R21, R65). PAC entrega parámetros, resumen, histograma y mapa; el índice de modulación, parámetros, resumen y las dos matrices; y PPC, parámetros, resumen, ventana por frecuencia, mapa y avisos. Los formatos disponibles son CSV, Excel y JSON. Las gráficas se exportan como imagen desde el mismo menú contextual de los demás análisis (R22, R66).
+
+\subsubsection{Control de entradas y avisos}
+
+La Tabla~\ref{tab:controles} resume cómo responde cada módulo ante datos o parámetros que comprometen el resultado. Los errores que detienen el cálculo se muestran en un diálogo. Las advertencias sobre un resultado ya calculado no interrumpen al usuario: PPC las muestra bajo la gráfica y el índice de modulación las deja en el registro de la aplicación.
+
+\begin{table}[!htb]
+  \centering
+  \caption{Respuesta ante entradas que comprometen el resultado}
+  \label{tab:controles}
+  \vspace{4pt}
+  \small\setstretch{1}
+  \renewcommand{\arraystretch}{1.15}
+  \begin{tabular}{|>{\raggedright\arraybackslash}p{6.9cm}|>{\raggedright\arraybackslash}p{7.8cm}|}
+    \hline
+    \textbf{Condición} & \textbf{Respuesta} \\ \hline
+    Frecuencia alta sobre el Nyquist efectivo (PAC, PPC) & Se rechaza y el mensaje indica el límite \\ \hline
+    Bandas del comodulograma junto al Nyquist & Esas bandas quedan sin valor, se calcula el resto y queda constancia en el registro \\ \hline
+    Densidad de muestreo que no divide la tasa del archivo & Todos los ejes usan la tasa efectiva, obtenida con un factor entero; PPC lo advierte bajo la gráfica \\ \hline
+    Menos de tres ciclos utilizables (PAC Psel) & Se rechaza y se sugiere ampliar la banda o usar más trials \\ \hline
+    El mismo canal dos veces (PAC Psel inter-canal, PPC) & Se rechaza antes de iniciar el cálculo \\ \hline
+    Trials de dos canales no alineados & No se calcula: PPC compara forma, inicio de cada trial, tasa y ventana, y PAC Psel inter-canal compara la forma de las matrices \\ \hline
+    Trial sin variación (PPC) & Se rechaza, porque normalizar ruido numérico daría un acoplamiento perfecto falso \\ \hline
+    Frecuencias sin dos muestras independientes (PPC) & Quedan sin valor y se advierte qué rango no se midió \\ \hline
+    Frecuencias con menos muestras de las pedidas (PPC) & Se advierte bajo la gráfica y en la exportación \\ \hline
+    Menos de seis ciclos de la banda lenta (índice de modulación) & Queda constancia en el registro; el cálculo no cambia \\ \hline
+  \end{tabular}
+\end{table}
+
+\subsubsection{Límites del diseño}
+
+El diseño tiene los siguientes límites conocidos:
+
+\begin{itemize}
+  \item \textbf{Sin prueba de significancia.} Los módulos calculan la magnitud del acoplamiento, pero no la comparan contra datos sustitutos. Esa valoración queda a cargo del investigador, con los valores exportados, y debe hacerse con cuidado porque puede aparecer acoplamiento aparente sin interacción real \cite{aru2015}.
+  \item \textbf{Submuestreo sin filtro antialias.} Se conserva para coincidir con la referencia, por lo que el contenido sobre el nuevo Nyquist se pliega sobre frecuencias bajas.
+  \item \textbf{Cancelación no inmediata.} Una etapa en curso no se puede interrumpir. Pasados dos segundos el resultado se descarta, pero el cálculo puede seguir activo hasta terminar, lo que deja parcial a R46.
+  \item \textbf{PAC entre canales solo en modo Psel.} Los modos PAC y PAC Average trabajan sobre un canal.
+  \item \textbf{Índice de modulación sin persistencia.} Este módulo todavía no participa del mecanismo de guardado, por lo que su análisis no se conserva con el proyecto.
+  \item \textbf{Aproximación de las muestras independientes en PPC.} Con ruido independiente, la media medida fue de $-0{,}009$ en lugar de 0. El sesgo va hacia abajo, de modo que no crea acoplamiento.
+  \item \textbf{Tramos planos en PPC.} Se detecta un trial constante, pero no un tramo plano dentro de un trial por lo demás activo.
+  \item \textbf{Dependencia entre módulos.} PPC reutiliza una operación de presentación de PAC, la única excepción al criterio de ubicar en el núcleo lo que comparten dos módulos.
+\end{itemize}
 
 %=====================================================================
 \capitulo{DESARROLLO DE LA SOLUCIÓN}
@@ -584,7 +807,7 @@ El sistema debe ejecutarse en Windows 10 de 64 bits o superior, sobre un equipo 
 %=====================================================================
 \capitulo{REFERENCIAS}
 
-\begin{thebibliography}{9}
+\begin{thebibliography}{99}
 
 \bibitem{singh2023}
 A. K. Singh y S. Krishnan, ``Trends in EEG signal feature extraction applications,'' \textit{Frontiers in Artificial Intelligence}, vol. 5, art. 1072801, ene. 2023, doi: 10.3389/frai.2022.1072801. [En línea]. Disponible: \url{https://pmc.ncbi.nlm.nih.gov/articles/PMC9905640/}.
@@ -606,6 +829,21 @@ S. Asencio Rodríguez, M. F. González Valencia, J. E. Martínez Clavijo, y G. V
 
 \bibitem{gauthier2023}
 C. Gauthier-Umaña, M. Valderrama, A. Múnera, y M. O. Nava-Mesa, ``BOARD-FTD-PACC: a graphical user interface for the synaptic and cross-frequency analysis derived from neural signals,'' \textit{Brain Informatics}, vol. 10, art. 12, may. 2023, issn: 2198-4026, doi: 10.1186/s40708-023-00191-x. [En línea]. Disponible: \url{https://link.springer.com/article/10.1186/s40708-023-00191-x}.
+
+\bibitem{canolty2006}
+R. T. Canolty, E. Edwards, S. S. Dalal, M. Soltani, S. S. Nagarajan, H. E. Kirsch, M. S. Berger, N. M. Barbaro, y R. T. Knight, ``High gamma power is phase-locked to theta oscillations in human neocortex,'' \textit{Science}, vol. 313, n.\textsuperscript{o} 5793, pp. 1626--1628, sep. 2006, doi: 10.1126/science.1128115.
+
+\bibitem{ozkurt2011}
+T. E. Özkurt y A. Schnitzler, ``A critical note on the definition of phase-amplitude cross-frequency coupling,'' \textit{Journal of Neuroscience Methods}, vol. 201, n.\textsuperscript{o} 2, pp. 438--443, 2011, doi: 10.1016/j.jneumeth.2011.08.014.
+
+\bibitem{lilly2012}
+J. M. Lilly y S. C. Olhede, ``Generalized Morse wavelets as a superfamily of analytic wavelets,'' \textit{IEEE Transactions on Signal Processing}, vol. 60, n.\textsuperscript{o} 11, pp. 6036--6041, 2012, doi: 10.1109/TSP.2012.2210890.
+
+\bibitem{vinck2010}
+M. Vinck, M. van Wingerden, T. Womelsdorf, P. Fries, y C. M. A. Pennartz, ``The pairwise phase consistency: a bias-free measure of rhythmic neuronal synchronization,'' \textit{NeuroImage}, vol. 51, n.\textsuperscript{o} 1, pp. 112--122, 2010, doi: 10.1016/j.neuroimage.2010.01.073.
+
+\bibitem{aru2015}
+J. Aru \textit{et al.}, ``Untangling cross-frequency coupling in neuroscience,'' \textit{Current Opinion in Neurobiology}, vol. 31, pp. 51--61, 2015, doi: 10.1016/j.conb.2014.08.002.
 
 \end{thebibliography}
 
