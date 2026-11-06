@@ -26,8 +26,8 @@ from core.model.signal_dataset import SignalDataset
 from core.model.trial_dataset import TrialDataset
 from core.plugins.meta import PluginMeta
 from core.services.task_service import TaskService
-from plugins.analysis.connectivity.ppc import compute as cp
-from plugins.analysis.connectivity.ppc.ppc_plugin import Ppc_plugin
+from plugins.analysis.time_frequency.ppc import compute as cp
+from plugins.analysis.time_frequency.ppc.ppc_plugin import Ppc_plugin
 
 ARCHIVO = "17308005.abf"
 FS = 500.0
@@ -188,7 +188,7 @@ class _MainWin:
 
 def plugin_con(ds, tareas):
     meta = PluginMeta(id="ppc", name="PPC", category="Analysis",
-                      subcategory="Connectivity", version="1.0",
+                      subcategory="Time-Frequency", version="1.0",
                       icon="icn_ppc.png", logic_class="Ppc_plugin")
     p = Ppc_plugin(meta)
     kernel = _Kernel({"DataStore": _Store(ds), "TaskService": tareas})
@@ -477,14 +477,14 @@ def _fuente(modulo):
 def _widgets_que_usa_el_plugin():
     import re
 
-    from plugins.analysis.connectivity.ppc import ppc_plugin
+    from plugins.analysis.time_frequency.ppc import ppc_plugin
 
     usados = set(re.findall(r"self\.ui\.(\w+)", _fuente(ppc_plugin)))
     return usados - NO_SON_WIDGETS
 
 
 def test_cada_widget_que_el_plugin_lee_existe_en_la_interfaz():
-    from plugins.analysis.connectivity.ppc import ppc_plugin_ui
+    from plugins.analysis.time_frequency.ppc import ppc_plugin_ui
 
     usados = _widgets_que_usa_el_plugin()
     assert usados, "se esperaba que el plugin leyera algún widget"
@@ -523,7 +523,7 @@ def test_el_plugin_declara_el_dibujo_y_la_exportacion():
 
 def test_los_trials_que_faltan_se_cortan_fuera_del_hilo_de_la_interfaz_y_el_calculo_sigue(qt_app):
     """R71: si un canal no tiene trials, su corte corre en el servicio de tareas y, al terminar, el PPC se calcula."""
-    import plugins.analysis.connectivity.ppc.ppc_plugin as modulo
+    import plugins.analysis.time_frequency.ppc.ppc_plugin as modulo
     from core.filters.trials import cut_trials_single_channel
 
     n = int(FS * 12)

@@ -650,7 +650,7 @@ La separación no es estética. Permite probar el cálculo sin interfaz --- las 
 \paragraph{Guía para crear una extensión nueva.} Los pasos, en orden:
 
 \begin{enumerate}
-    \item Crear la carpeta bajo la categoría que corresponda, por ejemplo \texttt{plugins/\allowbreak analysis/\allowbreak connectivity/\allowbreak <nombre>/}.
+    \item Crear la carpeta bajo la categoría que corresponda, por ejemplo \texttt{plugins/\allowbreak analysis/\allowbreak time\_frequency/\allowbreak <nombre>/}.
     \item Escribir \texttt{properties.yml} con las ocho claves y colocar el icono.
     \item Escribir \texttt{compute.py} con el cálculo puro, y sus pruebas en \texttt{test/plugins\_test/}. Conviene hacerlo antes que la interfaz: es donde están los errores que importan.
     \item Escribir \texttt{<nombre>\_plugin\_ui.py} con los controles y el área del gráfico.

@@ -678,7 +678,7 @@
   función _filas()
   función escribir_xlsx() — `secciones`: {nombre de hoja: (encabezados, filas)}. Una hoja por sección.
 
-## plugins/analysis/connectivity/ppc/compute.py
+## plugins/analysis/time_frequency/ppc/compute.py
   función filas_por_decada() — Cuántas filas por década de frecuencia tienen sentido.
   función eje_frecuencias() — El eje de frecuencias del mapa, **descendente** como en MATLAB.
   clase ResultadoPPC — El mapa de consistencia de fase entre dos canales, y sus ejes.
@@ -689,7 +689,7 @@
   función ppc_mapa() — El mapa de PPC entre dos canales, frecuencia contra tiempo.
   función avisos() — Lo que condiciona la lectura del mapa, en frases listas para mostrar.
 
-## plugins/analysis/connectivity/ppc/ppc_plugin.py
+## plugins/analysis/time_frequency/ppc/ppc_plugin.py
   función cortar_canales() — Corta los trials de `canales` con la receta de otro canal. Puro: no escribe en `ds`; corre en el servicio de t
   clase Ppc_plugin — Consistencia de fase por pares entre dos canales.
     método __init__()
@@ -723,7 +723,7 @@
     método get_analysis_params()
     método apply_analysis_params()
 
-## plugins/analysis/connectivity/ppc/ppc_plugin_ui.py
+## plugins/analysis/time_frequency/ppc/ppc_plugin_ui.py
   clase Ui_Ppc
     método setupUi()
     método _etiqueta()

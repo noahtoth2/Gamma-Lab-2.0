@@ -25,8 +25,8 @@ from core.plugins.interfaces import IPlugin
 from core.utils.emf_writer import anotar_mapa
 from core.utils.trial_labels import trials_used
 from core.utils.vtk_context_menu import VTKContextMenu
-from plugins.analysis.connectivity.ppc import compute as cp
-from plugins.analysis.connectivity.ppc.ppc_plugin_ui import Ui_Ppc
+from plugins.analysis.time_frequency.ppc import compute as cp
+from plugins.analysis.time_frequency.ppc.ppc_plugin_ui import Ui_Ppc
 from plugins.analysis.time_frequency.pac.compute import remuestrear_en_log
 
 
