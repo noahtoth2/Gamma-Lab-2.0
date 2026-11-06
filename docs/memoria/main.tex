@@ -49,10 +49,12 @@
 \usepackage{soul}
 \usepackage{float}
 
+
 \onehalfspacing                        % interlineado 1.5
 \setlength{\parindent}{1.0cm}          % sangria de primera linea
 \setcounter{secnumdepth}{3}            % numera hasta 1.1.1
 \setcounter{tocdepth}{3}               % indice hasta 1.1.1
+\newcommand{\ingles}[1]{\textsf{#1}}
 \renewcommand{\contentsname}{TABLA DE CONTENIDO}
 
 %=====================================================================
@@ -721,8 +723,8 @@ La barra se organizó en torno a una columna estrecha de iconos que permanece si
 
 
 \subsubsection{Estructura del sistema}
-La Figura~\ref{fig:dc_sistema} muestra el diagrama de clases del sistema de Gamma Lab v.20 simplificado (Para
-más detalles, ver  el documento Software Design Document (SDD)):
+
+La Figura~\ref{fig:dc_sistema} presenta el diagrama de clases simplificado de Gamma Lab 2.0; el detalle completo se encuentra en el documento \ingles{Software Design Document} (SDD). El sistema conserva la arquitectura \ingles{microkernel} de la primera versión: el \texttt{Kernel} registra las extensiones, que implementan la interfaz \texttt{IPlugin} y son cargadas por \texttt{PluginManager}, y da acceso a los servicios que estas comparten. La evolución hacia la versión 2.0 se concentra en esos servicios. Las clases nuevas, señaladas en rojo, responden a limitaciones concretas de Gamma Lab 1.0: el orquestador de tareas, implementado como \texttt{TaskService}, resuelve la ejecución en segundo plano; \texttt{ProjectService}, la persistencia del trabajo; y las extensiones de PAC, la ampliación del alcance analítico. A continuación se explica cómo estas clases y las mejoras sobre las ya existentes se complementan, y cómo intervienen a lo largo de una sesión de trabajo.
 
 \begin{figure}[H]
     \centering
@@ -731,143 +733,73 @@ más detalles, ver  el documento Software Design Document (SDD)):
     \label{fig:dc_sistema}
 \end{figure}
 
-
 % ------------------------------------------------------------------
 \paragraph{Mejoras del sistema}
 
-\subparagraph{Núcleo y gestión de memoria:} En Gamma Lab 1.0, el \texttt{DataStore} se encargaba de almacenar la señal activa, pero no contaba con un mecanismo para liberarla cuando dejaba de utilizarse. Esto hacía que, con cada nueva carga, los datos anteriores permanecieran en memoria, lo que podía provocar que la aplicación se bloqueara.
+El primer problema que debía resolverse era la estabilidad del núcleo. En Gamma Lab 1.0, el \texttt{DataStore} almacenaba la señal activa, pero no contaba con un mecanismo para liberarla, de modo que con cada nueva carga los datos anteriores permanecían en memoria y la aplicación podía bloquearse. Por ello, en Gamma Lab 2.0 se incorporó el método \texttt{release\_signals()}, que al cargar una nueva señal o cerrar un proyecto elimina las señales anteriores junto con sus datos relacionados: los \ingles{trials}, los conjuntos derivados, las mediciones y el \ingles{trial} en curso. Este método forma parte de una limpieza más completa, a cargo del procedimiento \texttt{liberar\_senal\_anterior()}, que además cancela las tareas pendientes, cierra las ventanas de VTK y libera los recursos utilizados por los widgets de las extensiones.
 
-En Gamma Lab 2.0 se solucionó este problema mediante la incorporación del método \texttt{release\_signals()}, que permite eliminar las señales anteriores y sus datos relacionados, como los trials, los conjuntos derivados, las mediciones y el trial en curso. Este proceso se ejecuta al cargar una nueva señal o al cerrar un proyecto.
+Liberar la memoria no era suficiente, porque la nueva versión también debía ejecutar cálculos en paralelo a la interfaz, y varios hilos no pueden modificar los mismos datos sin control. Por esta razón, solo el hilo de la interfaz gráfica puede escribir en el \texttt{DataStore}; si otro hilo lo intenta, el sistema genera la excepción \texttt{EscrituraNoPermitida}. Tanto las lecturas como las escrituras utilizan además un candado reentrante, lo que reduce los posibles conflictos durante la ejecución de tareas en segundo plano.
 
-Además, se implementó un procedimiento llamado \texttt{liberar\_senal\_anterior()}, que se encarga de realizar una limpieza más completa. Este procedimiento cancela las tareas que siguen pendientes, cierra las ventanas de VTK y libera los recursos utilizados por los widgets de las extensiones.
+Esta protección es la que hace posible \texttt{TaskService}. En Gamma Lab 1.0, la mayoría de los análisis se ejecutaban directamente en el hilo de la interfaz, y aunque algunas extensiones usaban sus propios hilos, no existía un mecanismo centralizado para controlarlos. En la versión 2.0, las extensiones dejaron de crear hilos: todas las tareas pasan por \texttt{TaskService}, que utiliza una única cola y procesa una tarea a la vez en un hilo de trabajo, y los resultados se envían al hilo de la interfaz antes de mostrarse. Cada solicitud devuelve un objeto \texttt{TaskHandle}, que mediante las señales \texttt{progress}, \texttt{finished}, \texttt{failed} y \texttt{cancelled} permite consultar el progreso de la tarea y saber si finalizó correctamente, presentó un error o fue cancelada.
 
-Por otra parte, se modificó el funcionamiento del \texttt{DataStore} para que solo el hilo de la interfaz gráfica pueda modificar su contenido. Si otro hilo intenta hacerlo, el sistema genera la excepción \texttt{EscrituraNoPermitida}. Tanto las operaciones de lectura como las de escritura utilizan un candado reentrante para controlar el acceso a los datos. De esta manera, se evita que varios procesos modifiquen la información al mismo tiempo y se reducen los posibles conflictos durante la ejecución de tareas en segundo plano.
+El servicio también controla qué ocurre cuando el usuario cambia de opinión. La cancelación es cooperativa, es decir, cada tarea responde a la solicitud de cancelarse; si no lo hace en dos segundos, el servicio deja de esperarla y libera la interfaz para que el usuario pueda seguir trabajando. De forma similar, cuando una extensión agrega una nueva tarea se descartan las suyas que aún estén pendientes, de modo que presionar varias veces el botón \textit{\ingles{Generate}} no genera múltiples cálculos innecesarios.
 
-\subparagraph{Ejecución en segundo plano:} En Gamma Lab 1.0, la mayoría de los análisis se ejecutaban directamente en el hilo de la interfaz gráfica. Algunas extensiones utilizaban sus propios hilos, pero no existía un mecanismo centralizado para controlar estas tareas.
+Durante el diseño de este servicio se evaluó ejecutar los cálculos en procesos independientes, pero la alternativa se descartó porque las mediciones mostraron que iniciar un proceso y enviarle los datos tomaba 1.486\,ms, mientras que el cálculo en sí tardaba 1.163\,ms. Se optó entonces por los hilos, ya que las operaciones más exigentes de NumPy liberan el \textit{\ingles{GIL}} y permiten aprovechar varios núcleos del procesador. En las pruebas de PPC, distribuir los \ingles{trials} entre cuatro hilos permitió alcanzar una aceleración de entre 1,8$\times$ y 2,7$\times$, manteniendo los mismos resultados.
 
-En Gamma Lab 2.0 se incorporó \texttt{TaskService}, un servicio encargado de organizar y ejecutar las tareas del sistema. Este servicio utiliza una única cola de ejecución y procesa una tarea a la vez mediante un hilo de trabajo. Además, devuelve un objeto \texttt{TaskHandle}, que permite consultar el progreso de cada tarea y conocer si finalizó correctamente, presentó un error o fue cancelada, mediante las señales \texttt{progress}, \texttt{finished}, \texttt{failed} y \texttt{cancelled}.
+Con la ejecución resuelta, el siguiente paso fue reducir el costo de cada cálculo. Los cálculos se realizan en formato \texttt{float64} para mantener la precisión, mientras que los datos enviados a VTK se convierten a \texttt{float32} para reducir el tamaño de lo que se visualiza. Las transformadas tiempo-frecuencia se calculan ahora por bloques de frecuencias, en lugar de procesar toda la matriz al mismo tiempo, lo que redujo el consumo de memoria de 480\,MB a 30\,MB para una matriz de 500$\times$60.000. En los filtros internos de los análisis, un mecanismo de memoización guarda el diseño de los filtros IIR para no repetir cálculos, lo que redujo en 7,25 veces el tiempo necesario al cambiar de \ingles{trial}.
 
-La cancelación de tareas funciona de manera cooperativa, es decir, permite que cada tarea responda a la solicitud de cancelación. Si una tarea no responde después de dos segundos, el servicio deja de esperar su finalización y libera la interfaz para que el usuario pueda seguir interactuando con la aplicación.
+Sin embargo, un cálculo más rápido solo es útil si su resultado es correcto, y por eso estas mejoras se acompañaron de una revisión de los análisis existentes. Al aplicar submuestreo, el eje de frecuencias se construye ahora con la tasa de muestreo efectiva y no con la solicitada inicialmente, lo que evita desplazamientos de hasta un 11\,\% en dicho eje. Esa misma tasa, junto con la frecuencia de Nyquist, se tiene en cuenta al validar los parámetros \texttt{fmin} y \texttt{fmax} de la transformada Wavelet, cuyo método de normalización tiempo-frecuencia (\texttt{normalize\_tf}) también se corrigió: ahora calcula la línea base de manera independiente para cada frecuencia y ofrece los métodos \textit{\ingles{z-score}}, \textit{\ingles{percent change}} y \textit{\ingles{relative power}}.
 
-También se agregó un mecanismo para evitar la acumulación de tareas. Cuando se agrega una nueva tarea de una misma extensión, las tareas anteriores que todavía están pendientes se descartan. Así, si el usuario presiona varias veces el botón \textit{Generate}, no se generan múltiples cálculos innecesarios.
+En el filtrado, Gamma Lab 1.0 solo tenía implementado el filtro Butterworth, por lo que las opciones Chebyshev y elíptico fallaban al ejecutarse. La extensión de filtrado ofrece ahora únicamente Butterworth, ejecuta el filtrado en \texttt{TaskService} y valida que el resultado no contenga valores no numéricos. Por su parte, los filtros internos de los análisis utilizan secciones de segundo orden (SOS), ya que los coeficientes en formato $b/a$ presentan problemas de estabilidad numérica con órdenes altos. Estos filtros comprueban además que los coeficientes sean valores finitos antes de utilizarlos y devuelven copias, para evitar que otras partes del sistema modifiquen accidentalmente un filtro compartido.
 
-Como parte de esta mejora, las extensiones dejaron de crear sus propios hilos. Ahora todas las tareas pasan por \texttt{TaskService}, y los resultados de los cálculos se envían al hilo de la interfaz gráfica antes de mostrarse.
+La remoción de artefactos se modificó con el mismo objetivo de proteger los datos: los cambios ya no afectan directamente los \ingles{trials} originales, sino que se realizan sobre un \textbf{conjunto derivado}, creado mediante el método \texttt{crear\_derivado}. Cada cambio se guarda además como una \textit{receta}, que contiene el modo de corrección utilizado, los puntos seleccionados y los descartes realizados, lo que permite volver a aplicar el mismo procedimiento y obtener resultados reproducibles. Como se explica más adelante, esta idea de guardar cómo se obtuvo un dato, y no el dato mismo, es también la base del formato de proyecto.
 
-Durante el desarrollo también se evaluó la posibilidad de ejecutar los cálculos en procesos independientes. Sin embargo, esta alternativa se descartó porque las mediciones mostraron que iniciar un proceso y enviarle los datos tomaba 1.486\,ms, mientras que el cálculo en sí tardaba 1.163\,ms. Es decir, el costo de preparar el proceso era mayor que el tiempo necesario para realizar el análisis.
+Los resultados corregidos también debían poder salir de la aplicación sin errores. Para ello se solucionaron los problemas al exportar tablas en CSV y JSON y se agregó la exportación en formato vectorial EMF, mediante un escritor propio que genera los ejes, rótulos y líneas como elementos vectoriales e incorpora los mapas de calor como imágenes. Por defecto, los archivos exportados se guardan en la carpeta \texttt{archivos/} del proyecto abierto.
 
-En cambio, se optó por utilizar hilos, ya que las operaciones más exigentes de NumPy liberan el \textit{GIL} y permiten aprovechar varios núcleos del procesador. En las pruebas de PPC, distribuir los trials entre cuatro hilos permitió alcanzar una aceleración de entre 1,8$\times$ y 2,7$\times$, manteniendo los mismos resultados.
-
-\subparagraph{Rendimiento de visualización y cálculo:} Se implementaron cuatro mejoras principales para reducir el consumo de memoria y mejorar el rendimiento de los análisis:
-
-\begin{enumerate}
-    \item \textbf{Submuestreo de señales.} Se ajustó el cálculo del eje de frecuencias para utilizar la tasa de muestreo efectiva después del submuestreo, en lugar de utilizar la tasa solicitada inicialmente. Esto corrige un error de la versión anterior que podía generar desplazamientos de hasta un 11\,\% en el eje de frecuencias.
-
-    \item \textbf{Optimización del manejo de datos.} Los cálculos se realizan utilizando el formato \texttt{float64}, mientras que los datos enviados a VTK se convierten a \texttt{float32}. Esto permite mantener la precisión durante los cálculos y reducir el tamaño de los datos utilizados para la visualización.
-
-    \item \textbf{Procesamiento por bloques.} Las transformadas tiempo-frecuencia ahora se calculan por bloques de frecuencias, en lugar de procesar toda la matriz al mismo tiempo. Con este cambio, el consumo de memoria se redujo de 480\,MB a 30\,MB para una matriz de 500$\times$60.000.
-
-    \item \textbf{Optimización de filtros.} Se incorporó un mecanismo de memoización para guardar el diseño de los filtros IIR y evitar repetir cálculos innecesarios. Esta mejora permitió reducir en 7,25 veces el tiempo necesario al cambiar de trial.
-\end{enumerate}
-
-\subparagraph{Corrección de los análisis existentes:}
-
-\begin{itemize}
-    \item \textbf{Filtros digitales:} Los bloqueos que se presentaban al utilizar los filtros elíptico y Chebyshev se debían a problemas de estabilidad numérica en los coeficientes con formato $b/a$, especialmente al trabajar con órdenes altos. Para solucionar esto, se modificó su implementación para utilizar secciones de segundo orden (SOS). También se agregó una validación para comprobar que los coeficientes sean valores finitos antes de utilizarlos. Finalmente, los filtros ahora devuelven copias de sus datos para evitar que otras partes del sistema modifiquen accidentalmente un filtro compartido.
-
-    \item \textbf{Transformada Wavelet:} Se corrigió el método de normalización tiempo-frecuencia (\texttt{normalize\_tf}), que ahora calcula la línea base de manera independiente para cada frecuencia. Además, se incorporaron tres métodos de normalización: \textit{z-score}, \textit{percent change} y \textit{relative power}. También se ajustó la validación de los parámetros \texttt{fmin} y \texttt{fmax} para que tenga en cuenta la frecuencia de Nyquist y la tasa de muestreo efectiva.
-
-    \item \textbf{Remoción de artefactos:} Se modificó el proceso de eliminación de artefactos para evitar que los cambios afecten directamente los trials originales. Ahora, cada modificación se realiza sobre un \textbf{conjunto derivado} mediante el método \texttt{crear\_derivado}. Además, los cambios se guardan como una \textit{receta}, que contiene el modo de corrección utilizado, los puntos seleccionados y los descartes realizados. Esto permite volver a aplicar el mismo procedimiento y obtener resultados reproducibles.
-
-    \item \textbf{Exportación:} Se corrigieron los problemas que se presentaban al exportar tablas en formatos CSV y JSON. También se agregó la posibilidad de exportar resultados en formato vectorial EMF. Para ello, se desarrolló un escritor propio que genera los ejes, rótulos y líneas como elementos vectoriales, mientras que los mapas de calor se incorporan como imágenes. Por defecto, los archivos exportados se guardan en la carpeta \texttt{archivos/} del proyecto abierto.
-\end{itemize}
-
-\subparagraph{Interfaz e interacción:} Una de las decisiones técnicas relacionadas con la interfaz fue evitar que los avisos sobre los resultados de los cálculos abrieran ventanas modales. Esto se debe a que este tipo de ventanas genera un bucle de eventos adicional que podía provocar cierres inesperados cuando se seguían ejecutando los temporizadores de VTK. Por esta razón, se optó por utilizar avisos que no bloquean la interacción del usuario con la aplicación.
+Finalmente, la forma de comunicar estos resultados también influyó en la estabilidad. Los avisos sobre los resultados de los cálculos dejaron de abrir ventanas modales, porque este tipo de ventanas genera un bucle de eventos adicional que podía provocar cierres inesperados cuando se seguían ejecutando los temporizadores de VTK. En su lugar, se utilizan avisos que no bloquean la interacción del usuario con la aplicación.
 
 % ------------------------------------------------------------------
 \paragraph{Nuevas funcionalidades}
 
-\subparagraph{Proyectos y archivo \texttt{.glab}:} En Gamma Lab 1.0 no existía una forma de guardar las sesiones de trabajo. Por esta razón, al cerrar la aplicación se perdía la información relacionada con los trials, el preprocesamiento, las mediciones y la configuración de los análisis.
+Las mejoras anteriores hacen que una sesión de trabajo sea estable y confiable, pero en Gamma Lab 1.0 esa sesión se perdía al cerrar la aplicación, junto con los \ingles{trials}, el preprocesamiento, las mediciones y la configuración de los análisis. Para solucionarlo, Gamma Lab 2.0 incorpora \texttt{ProjectService} y un nuevo formato de proyecto llamado \texttt{.glab}. Cada proyecto se organiza en una carpeta con tres elementos: un manifiesto en formato JSON con extensión \texttt{.glab}, una copia del archivo de señal original y una subcarpeta \texttt{archivos/}, donde se almacenan las exportaciones. Al incluir la copia de la señal, el proyecto puede trasladarse a otro equipo sin depender de la ubicación original del archivo.
 
-Para solucionar esta limitación, Gamma Lab 2.0 incorpora \texttt{ProjectService} y un nuevo formato de proyecto llamado \texttt{.glab}. Cada proyecto se organiza en una carpeta que contiene tres elementos principales: un manifiesto en formato JSON con extensión \texttt{.glab}, una copia del archivo de señal original y una subcarpeta llamada \texttt{archivos/}, donde se almacenan las exportaciones. Al incluir una copia de la señal dentro del proyecto, es posible trasladarlo a otro equipo sin depender de la ubicación original del archivo.
+El manifiesto aplica el mismo principio de las recetas: en lugar de guardar las matrices de datos, almacena la información necesaria para reconstruirlas al abrir el proyecto. Así, los \ingles{trials} se guardan mediante sus parámetros de recorte, los índices de los elementos descartados y las recetas de preprocesamiento aplicadas; los análisis, mediante los parámetros de cada extensión que tenga habilitada la opción \texttt{saves\_analysis: true}; y la frecuencia de muestreo, junto con su origen, lo que permite identificar si fue modificada manualmente. Las mediciones son la excepción y se almacenan completas, porque contienen pocos datos y dependen de puntos que el usuario marca manualmente. Con esta estructura, los archivos de proyecto son más livianos, fáciles de consultar y cuentan con una versión de esquema (\texttt{schema\_version}). Además, al reconstruir los datos con el mismo código de procesamiento, se busca obtener los mismos resultados que se tenían antes de cerrar el proyecto.
 
-Una de las principales decisiones de diseño fue evitar guardar directamente las matrices de datos dentro del manifiesto. En su lugar, se almacena la información necesaria para reconstruirlas cuando se vuelve a abrir el proyecto.
-
-Por ejemplo, los trials se guardan mediante sus parámetros de recorte, los índices de los elementos descartados y las recetas de preprocesamiento aplicadas. Por su parte, los análisis almacenan los parámetros utilizados por cada extensión que tenga habilitada la opción \texttt{saves\_analysis: true}. También se guarda la frecuencia de muestreo y su origen, lo que permite identificar si fue modificada manualmente.
-
-Las mediciones son la excepción, ya que se almacenan completas. Esto se debe a que contienen pocos datos y dependen de puntos que el usuario marca manualmente.
-
-Con esta estructura, los archivos de proyecto son más livianos, fáciles de consultar y cuentan con una versión de esquema mediante \texttt{schema\_version}. Además, al reconstruir los datos utilizando el mismo código de procesamiento, se busca obtener los mismos resultados que se tenían antes de cerrar el proyecto.
-
-El servicio también permite identificar si existen cambios sin guardar mediante el estado \textit{dirty}. Para evitar problemas con los archivos, impide guardar proyectos directamente en carpetas del sistema, como Escritorio, Documentos o Descargas. Asimismo, evita copiar nuevamente la señal cuando esta ya se encuentra dentro del proyecto.
-
-La copia de la señal se realiza por bloques y se guarda inicialmente en un archivo temporal. Una vez finalizada correctamente, este archivo se renombra para completar la operación. De esta manera, si el usuario cancela la copia, no queda un archivo incompleto. Finalmente, el sistema operativo puede abrir directamente los archivos \texttt{.glab} utilizando Gamma Lab.
+\texttt{ProjectService} también protege la integridad del proyecto. El estado \textit{\ingles{dirty}} permite identificar si existen cambios sin guardar, y el servicio impide guardar proyectos directamente en carpetas del sistema, como Escritorio, Documentos o Descargas. Asimismo, evita copiar nuevamente la señal cuando ya se encuentra dentro del proyecto y, cuando sí debe copiarla, lo hace por bloques en un archivo temporal que solo se renombra al finalizar correctamente, de manera que una copia cancelada no deja un archivo incompleto. Finalmente, el sistema operativo puede abrir directamente los archivos \texttt{.glab} utilizando Gamma Lab.
 
 % ------------------------------------------------------------------
 \paragraph{Flujo general de la aplicación}
 
-\subparagraph{Arranque:} Cuando se inicia Gamma Lab, el archivo \texttt{main.py} se encarga de crear la aplicación Qt y mostrar la pantalla de bienvenida. Después, se crea el \texttt{Kernel} y se registran los servicios principales: \texttt{DataStore}, \texttt{FileIO} y \texttt{TaskService}.
+Los componentes descritos actúan de forma conjunta a lo largo de una sesión de trabajo. Cuando se inicia Gamma Lab, \texttt{main.py} crea la aplicación Qt, muestra la pantalla de bienvenida, crea el \texttt{Kernel} y registra los servicios principales: \texttt{DataStore}, \texttt{FileIO} y \texttt{TaskService}. Este registro se realiza antes de cargar las extensiones, ya que estas pueden necesitar dichos servicios desde su método \texttt{initialize}. Después, \texttt{PluginManager} recorre la carpeta \texttt{plugins/}, crea las instancias de cada extensión y las registra en el Kernel. Por último se construye \texttt{MainWindow}, que organiza las extensiones en la barra de categorías de la interfaz y se registra como un servicio adicional. Si Gamma Lab se inició directamente desde un archivo \texttt{.glab}, el sistema carga también el proyecto correspondiente.
 
-Este registro se realiza antes de cargar las extensiones, ya que estas pueden necesitar acceder a dichos servicios desde su método \texttt{initialize}.
+A partir de ese momento, el usuario puede abrir archivos de señal en formatos \texttt{.abf}, \texttt{.edf} y \texttt{.mat}, o un proyecto completo en formato \texttt{.glab}. En este segundo caso, \texttt{MainWindow} verifica primero si existen cambios sin guardar o cálculos en ejecución, y luego solicita a \texttt{TaskService} el proceso de preparación mediante \texttt{preparar\_apertura()}. Un hilo de trabajo lee el manifiesto y el archivo de señal a través de \texttt{FileIOService}, sin modificar todavía el \texttt{DataStore} ni la interfaz gráfica, conforme a la regla de escritura descrita anteriormente. Solo cuando la lectura finaliza correctamente se libera el proyecto anterior y se ejecuta, desde el hilo de la interfaz, el método \texttt{open()}. Este registra la nueva señal como activa, aplica la frecuencia de muestreo corregida, reconstruye los \ingles{trials} a partir de sus parámetros de recorte y recupera los descartes y luego las recetas de preprocesamiento sobre el conjunto derivado; este orden es importante, porque cada receta conserva los descartes vigentes cuando fue aplicada. Finalmente, se restauran las mediciones y se envían los parámetros guardados a las extensiones correspondientes. Si la lectura falla o el usuario la cancela, el proyecto que estaba abierto se mantiene sin cambios.
 
-Una vez registrados los servicios, \texttt{PluginManager} recorre la carpeta \texttt{plugins/}, crea las instancias de cada extensión y las registra en el Kernel. Finalmente, se construye \texttt{MainWindow}, que organiza las extensiones registradas en la barra de categorías de la interfaz y se registra como un servicio adicional.
+Con la señal cargada, el usuario puede generar \ingles{trials}, realizar tareas de preprocesamiento, como filtrado, eliminación de artefactos y ajuste de la frecuencia de muestreo, y ejecutar los análisis disponibles. Antes de iniciar cada análisis, el sistema valida los parámetros ingresados, cancela cualquier cálculo anterior de la misma extensión y envía la nueva tarea a \texttt{TaskService}. Cuando el cálculo termina correctamente, el resultado llega al hilo de la interfaz, se muestra mediante VTK y el proyecto se marca como modificado. Los resultados numéricos permanecen en la extensión que realizó el análisis, mientras que el \texttt{DataStore} conserva únicamente la información compartida entre los componentes: las señales, la señal activa, las mediciones y el \ingles{trial} en curso.
 
-Si Gamma Lab se inicia directamente desde un archivo \texttt{.glab}, el sistema también se encarga de cargar el proyecto correspondiente.
+Cuando el usuario decide conservar ese trabajo, el método \texttt{iniciar\_guardado()} verifica que exista una señal activa y determina la carpeta del proyecto, que puede ser una ubicación utilizada anteriormente o una nueva carpeta seleccionada y validada por el usuario. Si es necesario copiar el archivo de señal, la operación se realiza mediante \texttt{TaskService}, lo que permite consultar el progreso y cancelarla. Cuando la copia termina correctamente, \texttt{completar\_guardado()} genera el manifiesto a partir de los \ingles{trials}, las mediciones y los parámetros de cada extensión, y el estado cambia a \texttt{dirty = False}, indicando que todos los cambios han sido guardados. Si la copia falla o se cancela, el sistema revierte el estado de la operación y evita generar un archivo \texttt{.glab} incompleto.
 
-\subparagraph{Carga de señal y apertura de proyecto:} El usuario puede abrir archivos de señal en formatos \texttt{.abf}, \texttt{.edf} y \texttt{.mat}, o cargar un proyecto completo en formato \texttt{.glab}.
+La sesión termina al cerrar el proyecto o la ventana principal, y en ambos casos se utiliza el mismo mecanismo de confirmación para evitar la pérdida de información. Si hay un cálculo en ejecución, se pregunta al usuario si desea continuar, lo que implica cancelar las tareas pendientes; si existen cambios sin guardar, se muestran las opciones \textit{\ingles{Save}}, \textit{\ingles{Don't \ingles{Save}}} y \textit{\ingles{Cancel}}. Una vez autorizado el cierre, \texttt{ProjectService.close()} limpia el estado del proyecto y \texttt{liberar\_senal\_anterior()} cancela las tareas, cierra los recursos de VTK, destruye los widgets, desvincula las extensiones de la señal y libera los datos almacenados en el \texttt{DataStore}. La aplicación regresa entonces a la pantalla de inicio, con la memoria disponible para cargar una nueva señal, cerrando el problema de acumulación que presentaba Gamma Lab 1.0. Cuando se cierra completamente la aplicación, también se ejecuta el método \texttt{stop()} de cada extensión.
 
-Cuando se abre un proyecto, \texttt{MainWindow} primero verifica si existen cambios sin guardar o cálculos que todavía se estén ejecutando. Después, solicita a \texttt{TaskService} que realice el proceso de preparación mediante \texttt{preparar\_apertura()}.
+La siguiente tabla resume los principales avances de Gamma Lab 1.0 a Gamma Lab 2.0.
 
-Durante esta etapa, un hilo de trabajo se encarga de leer el manifiesto y el archivo de señal mediante \texttt{FileIOService}, sin modificar todavía el \texttt{DataStore} ni la interfaz gráfica.
-
-Solo cuando la lectura finaliza correctamente se libera el proyecto anterior y se ejecuta el método \texttt{open()}. Este proceso se realiza desde el hilo de la interfaz y se encarga de registrar la nueva señal como activa, aplicar la frecuencia de muestreo corregida, reconstruir los trials a partir de sus parámetros de recorte y recuperar los descartes y las recetas de preprocesamiento sobre el conjunto derivado.
-
-El orden de estos pasos es importante, ya que cada receta conserva los descartes que estaban vigentes cuando fue aplicada. Finalmente, se restauran las mediciones y se envían los parámetros guardados a las extensiones correspondientes.
-
-Si la lectura del proyecto falla o el usuario cancela la operación, el proyecto que estaba abierto anteriormente se mantiene sin cambios.
-
-\subparagraph{Trabajo y análisis:} Una vez cargada la señal, el usuario puede generar trials, realizar tareas de preprocesamiento, como filtrado, eliminación de artefactos y ajuste de la frecuencia de muestreo, y ejecutar los diferentes análisis disponibles.
-
-Antes de iniciar cada análisis, el sistema valida los parámetros ingresados y cancela cualquier cálculo anterior de la misma extensión. Luego, envía la nueva tarea a \texttt{TaskService} para su ejecución en segundo plano.
-
-Cuando el cálculo termina correctamente, el resultado se envía al hilo de la interfaz y se muestra mediante VTK. Además, el proyecto se marca como modificado para indicar que existen cambios que pueden guardarse.
-
-Los resultados numéricos permanecen almacenados en la extensión que realizó el análisis. En cambio, el \texttt{DataStore} conserva únicamente la información compartida entre los componentes, como las señales, la señal activa, las mediciones y el trial en curso.
-
-\subparagraph{Guardado:} El proceso de guardado comienza con el método \texttt{iniciar\_guardado()}, que verifica que exista una señal activa y determina la carpeta donde se almacenará el proyecto. Esta puede ser una ubicación utilizada anteriormente o una nueva carpeta seleccionada y validada por el usuario.
-
-Si es necesario copiar el archivo de señal, esta operación se realiza mediante \texttt{TaskService}, que permite consultar el progreso y cancelar el proceso si es necesario.
-
-Cuando la copia termina correctamente, se ejecuta \texttt{completar\_guardado()}, que genera el manifiesto consultando la información de los trials, las mediciones y los parámetros almacenados en cada extensión. Al finalizar, el estado del proyecto cambia a \texttt{dirty = False}, indicando que todos los cambios han sido guardados.
-
-Si la copia falla o se cancela, el sistema revierte el estado de la operación y evita generar un archivo de proyecto \texttt{.glab} incompleto.
-
-\subparagraph{Cierre:} Al cerrar un proyecto o la ventana principal, el sistema utiliza el mismo mecanismo de confirmación para evitar la pérdida de información.
-
-Si hay un cálculo en ejecución, se pregunta al usuario si desea continuar con el cierre, lo que implica cancelar las tareas pendientes. Si existen cambios sin guardar, se muestran las opciones \textit{Save}, \textit{Don't Save} y \textit{Cancel}, para que el usuario decida cómo proceder.
-
-Una vez autorizado el cierre, \texttt{ProjectService.close()} limpia el estado del proyecto y \texttt{liberar\_senal\_anterior()} se encarga de cancelar las tareas, cerrar los recursos de VTK, destruir los widgets, desvincular las extensiones de la señal y liberar los datos almacenados en el \texttt{DataStore}.
-
-Después de este proceso, la aplicación regresa a la pantalla de inicio y libera la memoria utilizada para que pueda cargarse una nueva señal. Cuando se cierra completamente la aplicación, también se ejecuta el método \texttt{stop()} de cada extensión.
-
-% Opcional: tabla resumen de avances v1.0 -> v2.0
 \begin{table}[H]
 \centering
-\scriptsize
-\renewcommand{\arraystretch}{1.3}
-\begin{tabularx}{\textwidth}{|l|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X|}
+\small
+\begin{tabular}{|p{0.22\linewidth}|p{0.33\linewidth}|p{0.35\linewidth}|}
 \hline
 \textbf{Aspecto} & \textbf{Gamma Lab 1.0} & \textbf{Gamma Lab 2.0} \\ \hline
-Persistencia & Sin guardado de proyectos & Proyectos \texttt{.glab} reconstruibles y trasladables \\ \hline
-Memoria & Señales anteriores retenidas en memoria & Liberación con \texttt{release\_signals()} \\ \hline
-Ejecución & Análisis en el hilo de la interfaz & \texttt{TaskService} con progreso y cancelación \\ \hline
-Concurrencia de datos & Sin control centralizado & \texttt{DataStore} con escritor único y bloqueo \\ \hline
-Filtros IIR & Bloqueos con filtros elíptico y Chebyshev & Formato SOS con validación y memoización \\ \hline
-Wavelet & Normalización incorrecta & Línea base por frecuencia y tasa efectiva \\ \hline
-Artefactos & Cambios sobre los datos originales & Conjuntos derivados y recetas reproducibles \\ \hline
-Exportación & Fallas en CSV y JSON; sin EMF & CSV y JSON corregidos; formato vectorial EMF \\ \hline
-Análisis & Tiempo, frecuencia y tiempo-frecuencia & Se añaden PAC (uno y dos canales) y PPC \\ \hline
-\end{tabularx}
+Persistencia & No permitía guardar proyectos & Incorpora proyectos \texttt{.glab} que pueden reconstruirse y trasladarse entre equipos \\ \hline
+Memoria & Las señales anteriores permanecían almacenadas & Incorpora \texttt{release\_signals()} para liberar datos al cambiar de señal o cerrar un proyecto \\ \hline
+Ejecución & Los análisis se ejecutaban principalmente en el hilo de la interfaz & Incorpora \texttt{TaskService} para gestionar tareas, consultar su progreso y cancelarlas \\ \hline
+Concurrencia de datos & No existía un control centralizado & El \texttt{DataStore} utiliza un único escritor y un mecanismo de bloqueo \\ \hline
+Filtros & Chebyshev y elíptico fallaban porque no estaban implementados & Ofrece Butterworth en segundo plano; los filtros internos usan SOS con validaciones y memoización \\ \hline
+Wavelet & Presentaba problemas en la normalización & Incorpora una línea base por frecuencia y utiliza la tasa de muestreo efectiva \\ \hline
+Artefactos & Los cambios se aplicaban directamente sobre los datos originales & Utiliza conjuntos derivados y recetas para reproducir los cambios \\ \hline
+Exportación & Presentaba fallas en CSV y JSON y no ofrecía exportación EMF & Corrige la exportación CSV y JSON e incorpora el formato vectorial EMF \\ \hline
+Análisis & Incluía análisis en tiempo, frecuencia y tiempo-frecuencia & Incorpora PAC (en uno y dos canales) y PPC \\ \hline
+\end{tabular}
 \caption{Principales mejoras de Gamma Lab 1.0 a Gamma Lab 2.0}
+\label{tab:avances}
 \end{table}
 
 
