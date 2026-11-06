@@ -168,7 +168,7 @@ class _PluginDePrueba(IPlugin):
 
 def plugin_con(ds):
     meta = PluginMeta(id="prueba", name="Prueba", category="Analysis",
-                      subcategory="Connectivity", version="1.0", icon="x.png",
+                      subcategory="Time-Frequency", version="1.0", icon="x.png",
                       logic_class="_PluginDePrueba")
     p = _PluginDePrueba(meta)
     p.active_signal = ds

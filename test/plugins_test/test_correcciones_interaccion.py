@@ -301,8 +301,15 @@ def _ventana_bienvenida(vista):
 def test_la_bienvenida_solo_sale_la_primera_vez(app, monkeypatch):
     f, ventana, ajustes = _ventana_bienvenida(vista=False)
     llamadas = []
-    monkeypatch.setattr(QtWidgets.QMessageBox, "exec_", lambda self: llamadas.append(self.text()) or 0)
-    monkeypatch.setattr(QtWidgets.QMessageBox, "__init__", lambda self, *a, **k: QtWidgets.QDialog.__init__(self))
+
+    class DialogoFalso:
+        def __init__(self, pasos, parent=None):
+            llamadas.append(" ".join(titulo for titulo, _ in pasos))
+
+        def exec_(self):
+            return 0
+
+    monkeypatch.setattr("app.view.main_window.DialogoBienvenida", DialogoFalso)
     assert f(ventana) is True
     assert ajustes["bienvenida_mostrada"] is True and "Home" in llamadas[0] and "Analysis" in llamadas[0]
     assert f(ventana) is False and len(llamadas) == 1

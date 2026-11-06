@@ -16,7 +16,7 @@ Las tres que más importan, porque son las que el original no pasa:
 import numpy as np
 import pytest
 
-from plugins.analysis.connectivity.ppc import compute as pc
+from plugins.analysis.time_frequency.ppc import compute as pc
 
 FS = 500.0
 DUR = 2.0
