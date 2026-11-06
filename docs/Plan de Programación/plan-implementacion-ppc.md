@@ -293,7 +293,7 @@ Lo que la Fase 3 tiene que comprobar antes de calcular, en este orden: `trials.s
 
 ### Fase 3 — El núcleo
 
-`plugins/analysis/connectivity/ppc/compute.py`. Subcategoría nueva: `main_window.py` agrupa por subcategoría con un `defaultdict`, así que *Connectivity* aparece sola, sin tocar el núcleo; solo habría que añadirla a `explicit_order` si se quiere fijar su sitio.
+`plugins/analysis/time_frequency/ppc/compute.py`. Va en la subcategoría existente *Time-Frequency*, con `order: 5` para quedar al final del grupo; no hace falta tocar el núcleo.
 
 El algoritmo, por pasos:
 
@@ -417,7 +417,7 @@ Y el resultado sale **idéntico bit a bit** en los cuatro: cada trial es indepen
 
 #### 5b. Orquestación ✅
 
-`plugins/analysis/connectivity/ppc/ppc_plugin.py`. El patrón es el de PAC: `tasks.submit(cp.ppc_mapa, owner=self.meta.id, ...)` y los cuatro slots, cada uno con su guarda `if handle is not self._handle`. El cálculo corre fuera del hilo de la interfaz —hay una prueba que anota el nombre del hilo y falla si es el de la interfaz—, el botón pasa a *Computing...* y vuelve, y salir de la pestaña cancela lo que esté en vuelo.
+`plugins/analysis/time_frequency/ppc/ppc_plugin.py`. El patrón es el de PAC: `tasks.submit(cp.ppc_mapa, owner=self.meta.id, ...)` y los cuatro slots, cada uno con su guarda `if handle is not self._handle`. El cálculo corre fuera del hilo de la interfaz —hay una prueba que anota el nombre del hilo y falla si es el de la interfaz—, el botón pasa a *Computing...* y vuelve, y salir de la pestaña cancela lo que esté en vuelo.
 
 Lo que se decide **antes** de encolar, para no hacer esperar y luego fallar: que haya dos canales con trials, que sean **distintos**, y que estén alineados (`validar_alineacion`). Los avisos de `compute.avisos` se registran en el log al terminar, sin abrir ningún diálogo. El único camino que abre diálogo es un fallo de verdad.
 
@@ -438,7 +438,7 @@ La cola hace falta gane o no el paralelismo: aun con cuatro hilos, 20 trials tar
 
 | Archivo | Qué |
 |---|---|
-| `properties.yml` | `id: ppc`, `category: Analysis`, `subcategory: Connectivity`, `logic_class: Ppc_plugin` |
+| `properties.yml` | `id: ppc`, `category: Analysis`, `subcategory: Time-Frequency`, `logic_class: Ppc_plugin` |
 | `ppc_plugin.py` | `submit()` + los cuatro slots, y el dibujo |
 | `icn_ppc.png` | el icono |
 
@@ -510,7 +510,7 @@ Y uno que no estaba en duda:
 | 0 — Decisiones y contrato | ✅ este documento |
 | 1 — Gabor a `core/filters/` | ✅ `core/filters/gabor.py`. Las 124 de `test_pac_core.py` pasan **sin tocarlas**, más 6 nuevas en `test/services_test/test_gabor_en_core.py` |
 | 2 — Acceso a dos canales | ✅ `get_active_trials` honra el canal, `IPlugin.get_trials_de_canal`. 12 pruebas en `test/services_test/test_trials_por_canal.py`; el alineamiento comprobado sobre el ABF real |
-| 3 — El núcleo | ✅ `plugins/analysis/connectivity/ppc/compute.py` y `gabor_en` en core. 40 pruebas en `test/plugins_test/test_ppc_core.py` |
+| 3 — El núcleo | ✅ `plugins/analysis/time_frequency/ppc/compute.py` y `gabor_en` en core. 40 pruebas en `test/plugins_test/test_ppc_core.py` |
 | 4 — Guardas y avisos | ✅ 5 errores y 5 avisos, `avisos(resultado)` en `compute.py`. 12 pruebas más |
 | 5a — Paralelismo | ✅ `map_ordenado` sobre los trials. **1,8× a 2,7×**, idéntico bit a bit. 12 pruebas más |
 | 5b — Orquestación | ✅ `ppc_plugin.py` con `submit` y los cuatro slots. 19 pruebas en `test/plugins_test/test_ppc_plugin_orquestado.py` |

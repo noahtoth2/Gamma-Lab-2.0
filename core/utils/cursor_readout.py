@@ -7,7 +7,8 @@ unidades de los ejes:
 - en una etiqueta pequena en la esquina del propio grafico, y
 - en la barra de estado de la ventana principal (`mainwin.cursor_readout`).
 
-Es la posicion libre del cursor, no el punto de datos mas cercano.
+Si el grafico dibuja curvas, el valor mostrado es el del punto de la señal mas cercano al cursor
+(el de la curva que pasa mas cerca); en mapas de calor y otros graficos sin curvas es la posicion libre.
 
 Muchos plugins recrean su `VTKContextMenu` en cada render sobre el mismo
 widget. Por eso `attach` es idempotente: hay un solo observador por widget y
@@ -16,6 +17,9 @@ cada llamada solo actualiza de donde salen los graficos.
 
 from PyQt5.QtCore import Qt, QObject, QEvent
 from PyQt5.QtWidgets import QLabel
+
+import numpy as np
+from vtkmodules.util import numpy_support
 
 from core.utils.vtk_observers import observar
 from core.utils.chart_coords import screen_to_plot, chart_at_pixel, axis_titles, plot_rect_pixels
@@ -36,6 +40,40 @@ def format_readout(x: float, y: float, x_title: str = "", y_title: str = "") -> 
     if y_title:
         ys += f"  [{y_title}]"
     return f"{xs}     {ys}"
+
+
+MAX_CURVAS_ANALIZADAS = 200
+
+
+def punto_mas_cercano(chart, x, y):
+    """(x, y) del punto de una curva del grafico que esta mas cerca de (x, y); None si no hay curvas.
+
+    Se toma, en cada curva, la muestra con la x mas cercana a la del cursor, y entre curvas la
+    que queda mas cerca en y. Los puntos son los dibujados (la serie ya submuestreada, R73).
+    """
+    try:
+        n = min(chart.GetNumberOfPlots(), MAX_CURVAS_ANALIZADAS)
+    except AttributeError:
+        return None
+    mejor = None
+    for i in range(n):
+        try:
+            plot = chart.GetPlot(i)
+            tabla = plot.GetInput()
+            datos = plot.GetData()
+            ax = datos.GetInputArrayToProcess(0, tabla)
+            ay = datos.GetInputArrayToProcess(1, tabla)
+            if ax is None or ay is None or ax.GetNumberOfTuples() == 0:
+                continue
+            xs = numpy_support.vtk_to_numpy(ax)
+            ys = numpy_support.vtk_to_numpy(ay)
+        except Exception:
+            continue
+        j = int(np.argmin(np.abs(xs - x)))
+        distancia = abs(float(ys[j]) - y)
+        if mejor is None or distancia < mejor[0]:
+            mejor = (distancia, float(xs[j]), float(ys[j]))
+    return None if mejor is None else (mejor[1], mejor[2])
 
 
 class CursorReadout(QObject):
@@ -79,6 +117,8 @@ class CursorReadout(QObject):
             charts = self._charts()
             chart = chart_at_pixel(charts, sx, sy)
             xy = screen_to_plot(chart, sx, sy) if chart is not None else None
+            if xy is not None:
+                xy = punto_mas_cercano(chart, *xy) or xy
             if xy is None:
                 self._show(None)
                 return

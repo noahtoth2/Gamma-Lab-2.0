@@ -86,6 +86,7 @@ class Relative_psd_plugin(IPlugin):
             self.ui.setupUi(self.widget)
             self.alerts.parent = self.widget
             self._crear_area_de_grafica()
+            self.crear_selector_de_trials()
             self._inject_optional_controls()
             self._wire_ui()
             self._init_defaults()
@@ -234,6 +235,9 @@ class Relative_psd_plugin(IPlugin):
         if X is None or fs is None:
             self._notify("Relative PSD: no trials in active signal.")
             return
+        X, posiciones, total = self.elegir_trials(X)
+        if X is None:
+            return
 
         # Default target Fs (sufficient resolution)
         if self.ui.sampleDensitySpinBox.value() <= 0:
@@ -260,7 +264,7 @@ class Relative_psd_plugin(IPlugin):
             return
 
         # PSD in the TaskService (R71); the band ratios and the UI update follow when it finishes
-        p = dict(f1=f1, f2=f2, GF=GF, ch_name=ch_name, n_trials=X.shape[1])
+        p = dict(f1=f1, f2=f2, GF=GF, ch_name=ch_name, n_trials=total, posiciones=posiciones)
         self.run_task(calcular_psd, partial(self._on_psd_done, p),
                       on_failed=lambda m: self.alerts.error(f"Could not compute PSD: {m}"),
                       X=X, fs=fs, target_fs=target_fs, window=window, nperseg=nperseg,
@@ -278,7 +282,7 @@ class Relative_psd_plugin(IPlugin):
         self.ui.relPowerValue.setText(f"{rel_power: .4f}")
 
         # GF solo cambia como se combinan (promedio o todos); entran todos los validos
-        self._trials_used = trials_used(None, p["n_trials"], "all" if GF == 1 else "average",
+        self._trials_used = trials_used(p["posiciones"], p["n_trials"], "all" if GF == 1 else "average",
                                         channel=ch_name)
         for lbl in (self.ui.absPowerValue, self.ui.relPowerValue):
             lbl.setToolTip(f"Calculado con {self._trials_used['label']} — {ch_name}")

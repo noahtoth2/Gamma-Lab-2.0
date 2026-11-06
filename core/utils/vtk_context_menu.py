@@ -5,7 +5,9 @@ from vtk import vtkChartXY, vtkChart, vtkAxis
 import os
 
 from core.utils.cursor_readout import CursorReadout
-from core.utils.vtk_observers import observar
+from core.utils.vtk_observers import observar, _estado
+
+EJE_X, EJE_Y = vtkAxis.BOTTOM, vtkAxis.LEFT   # SetAxisZoom recibe el eje de VTK: LEFT es 0 y BOTTOM es 1
 
 
 class VTKContextMenu:
@@ -48,9 +50,17 @@ class VTKContextMenu:
         self._datastore = None
         self._debug = True
 
+        # Un widget tiene un solo menu vivo: el que lo reemplaza retira al anterior (R58)
+        anterior = getattr(self.vtk_widget, "_gamma_menu", None)
+        if anterior is not None and anterior is not self:
+            anterior.liberar()
+        self.vtk_widget._gamma_menu = self
+
         # Wire zoom/mouse
+        antes = len(_estado(self.vtk_widget)["items"])
         self._install_wheel_shortcuts()
         self._install_mouse_observers()
+        self._observadores = _estado(self.vtk_widget)["items"][antes:]
 
         # X/Y readout under the cursor (one observer per widget, even if the
         # plugin recreates this menu on every render)
@@ -86,6 +96,29 @@ class VTKContextMenu:
 
         if self._measure_scope:
             self._apply_measure_scope_to_service()
+
+    def liberar(self):
+        """Retira del widget los observadores, el menu y la rueda de este menu, para que otro lo reemplace."""
+        estado = _estado(self.vtk_widget)
+        try:
+            iren = self.vtk_widget.GetRenderWindow().GetInteractor()
+        except Exception:
+            iren = None
+        for item in getattr(self, "_observadores", []):
+            if item["id"] is not None and iren is not None:
+                iren.RemoveObserver(item["id"])
+            item["id"] = None
+            if item in estado["items"]:
+                estado["items"].remove(item)
+        self._observadores = []
+        try:
+            self.vtk_widget.customContextMenuRequested.disconnect(self.show_menu)
+        except (TypeError, RuntimeError):
+            pass
+        if getattr(self, "_rueda_previa", None) is not None:
+            self.vtk_widget.wheelEvent = self._rueda_previa
+        if getattr(self.vtk_widget, "_gamma_menu", None) is self:
+            self.vtk_widget._gamma_menu = None
 
     # ---------- utils ----------
     def _log(self, *args):
@@ -166,6 +199,7 @@ class VTKContextMenu:
     # ---------- wheel ----------
     def _install_wheel_shortcuts(self):
         old_wheel_event = self.vtk_widget.wheelEvent
+        self._rueda_previa = old_wheel_event
 
         def custom_wheel_event(event):
             modifiers = QApplication.keyboardModifiers()
@@ -174,11 +208,11 @@ class VTKContextMenu:
                     continue
                 ch.SetZoomWithMouseWheel(True)
                 if modifiers == Qt.ControlModifier:
-                    ch.SetAxisZoom(0, True);  ch.SetAxisZoom(1, False)
+                    ch.SetAxisZoom(EJE_X, True);  ch.SetAxisZoom(EJE_Y, False)
                 elif modifiers == Qt.ShiftModifier:
-                    ch.SetAxisZoom(0, False); ch.SetAxisZoom(1, True)
+                    ch.SetAxisZoom(EJE_X, False); ch.SetAxisZoom(EJE_Y, True)
                 else:
-                    ch.SetAxisZoom(0, True);  ch.SetAxisZoom(1, True)
+                    ch.SetAxisZoom(EJE_X, True);  ch.SetAxisZoom(EJE_Y, True)
             old_wheel_event(event)
 
         self.vtk_widget.wheelEvent = custom_wheel_event
@@ -275,11 +309,11 @@ class VTKContextMenu:
             if not ch:
                 continue
             if mode == "x":
-                ch.SetAxisZoom(0, True);  ch.SetAxisZoom(1, False)
+                ch.SetAxisZoom(EJE_X, True);  ch.SetAxisZoom(EJE_Y, False)
             elif mode == "y":
-                ch.SetAxisZoom(0, False); ch.SetAxisZoom(1, True)
+                ch.SetAxisZoom(EJE_X, False); ch.SetAxisZoom(EJE_Y, True)
             elif mode == "xy":
-                ch.SetAxisZoom(0, True);  ch.SetAxisZoom(1, True)
+                ch.SetAxisZoom(EJE_X, True);  ch.SetAxisZoom(EJE_Y, True)
 
     def reset_zoom(self):
         for ch in self._get_charts():

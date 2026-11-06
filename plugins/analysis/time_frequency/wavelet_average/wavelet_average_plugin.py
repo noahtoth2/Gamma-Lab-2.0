@@ -81,6 +81,7 @@ class Wavelet_average_plugin(IPlugin):
         self.ui.setupUi(self.widget)
 
         self.alerts.parent = self.widget
+        self.crear_selector_de_trials()
 
         # initialize controls and VTK container
         self._init_controls()
@@ -212,8 +213,10 @@ class Wavelet_average_plugin(IPlugin):
             return
 
         fs_calculado = round(1.0 / (t[1] - t[0]), 3)
-        n_total = trials.trials.shape[1] if np.ndim(trials.trials) == 2 else 1
-        self._trials_en_curso = trials_used(None, n_total, "average", channel=trials.channel_name)
+        data, posiciones, n_total = self.elegir_trials(data)
+        if data is None:
+            return
+        self._trials_en_curso = trials_used(posiciones, n_total, "average", channel=trials.channel_name)
 
         # UI parameters
         fs = self.ui.sampleDensitySpinBox.value()

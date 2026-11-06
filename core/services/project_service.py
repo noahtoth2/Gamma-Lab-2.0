@@ -249,6 +249,7 @@ class ProjectService:
             "saved_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "signal": {
                 "filename": signal_filename,
+                "source_path": str(Path(getattr(ds, "source_path", "") or "").resolve()) if getattr(ds, "source_path", "") else None,
                 "format": getattr(ds, "format", None),
                 "name": getattr(ds, "name", None),
                 "sampling_rate": getattr(ds, "sampling_rate", None),
@@ -356,14 +357,35 @@ class ProjectService:
             ctx.progress(5, "Leyendo el proyecto")
         manifest = json.loads(glab_path.read_text(encoding="utf-8"))
         ds = None
-        filename = (manifest.get("signal") or {}).get("filename")
+        info = manifest.get("signal") or {}
+        filename = info.get("filename")
         if filename:
-            signal_path = glab_path.parent / filename
-            if signal_path.exists():
+            # primero la copia que está junto al proyecto; si no, la ruta de origen registrada (R07)
+            candidatos = [glab_path.parent / filename]
+            if info.get("source_path"):
+                candidatos.append(Path(info["source_path"]))
+            signal_path = next((c for c in candidatos if c.exists()), None)
+            if signal_path is not None:
                 if ctx is not None:
                     ctx.progress(20, f"Leyendo {filename}")
                 ds = self._leer_senal(signal_path)
+                # La señal aún no está en el DataStore: corregir su frecuencia y volver a cortar los trials
+                # es cómputo que corre aquí, en el hilo de la tarea y no en el de la interfaz (R71).
+                if info.get("sampling_rate_source") == "manual" and info.get("sampling_rate"):
+                    try:
+                        ds.set_sampling_rate(float(info["sampling_rate"]))
+                    except ValueError:
+                        pass
+                if ctx is not None:
+                    ctx.progress(60, "Recortando los trials")
+                self._restore_trials(ds, manifest.get("trials") or [])
         return manifest, ds
+
+    @staticmethod
+    def senal_faltante(manifest, ds):
+        """Nombre de la señal que el proyecto referencia y no se encontró, o None (R78)."""
+        filename = (manifest.get("signal") or {}).get("filename")
+        return filename if filename and ds is None else None
 
     def open(self, glab_path_str, parent_widget=None, preparado=None):
         glab_path = Path(glab_path_str)
@@ -378,17 +400,6 @@ class ProjectService:
             ds = None
         if ds is not None:
             self._registrar_senal(ds)
-
-        if ds is not None and sig_info.get("sampling_rate_source") == "manual":
-            saved_fs = sig_info.get("sampling_rate")
-            if saved_fs:
-                try:
-                    ds.set_sampling_rate(float(saved_fs))
-                except ValueError:
-                    pass
-
-        if ds is not None:
-            self._restore_trials(ds, manifest.get("trials") or [])
 
         store = self._datastore()
         if store is not None:

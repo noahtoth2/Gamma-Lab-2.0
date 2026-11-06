@@ -92,6 +92,39 @@ class IPlugin(ABC):
         self._log(msg)
 
 
+    selector_trials = None
+
+    def crear_selector_de_trials(self, unico=False):
+        """Añade al panel de parámetros la lista de trials que participan (R27). Requiere `self.ui.paramsLayout`.
+
+        Con `unico=True` se elige un solo trial, para los análisis que calculan sobre uno.
+        """
+        from core.utils.selector_trials import SelectorDeTrials
+        capa = getattr(getattr(self, "ui", None), "paramsLayout", None)
+        if capa is None or self.selector_trials is not None:
+            return self.selector_trials
+        self.selector_trials = SelectorDeTrials(self.ui.layoutWidget, unico=unico)
+        capa.insertWidget(max(0, capa.count() - 1), self.selector_trials)    # antes del espaciador final
+        return self.selector_trials
+
+    def elegir_trials(self, X):
+        """Aplica la selección de trials a la matriz (muestras, trials).
+
+        Devuelve `(X_elegida, posiciones, total)`: `posiciones` es None si participan todos. Si no hay
+        ninguno marcado avisa y devuelve `(None, None, total)`.
+        """
+        from core.utils.selector_trials import columnas_elegidas
+        total = int(X.shape[1])
+        if self.selector_trials is None:
+            return X, None, total
+        self.selector_trials.establecer_total(total)
+        marcados = self.selector_trials.posiciones()
+        if not marcados:
+            self.alerts.warning("Marca al menos un trial para calcular.")
+            return None, None, total
+        posiciones = None if len(marcados) == total else marcados
+        return columnas_elegidas(X, marcados), posiciones, total
+
     @property
     def settings(self):
         """Servicio de ajustes del núcleo (R69): los módulos lo piden al Kernel, no crean el suyo."""

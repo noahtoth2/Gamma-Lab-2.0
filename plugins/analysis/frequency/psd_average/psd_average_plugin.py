@@ -96,6 +96,7 @@ class Psd_average_plugin(IPlugin):
                       "panel:", bool(self.ui.layoutWidget),
                       "splitter:", bool(self.ui.splitter))
             
+            self.crear_selector_de_trials()
             self._ensure_vtk()
             self._wire_ui()
 
@@ -188,6 +189,9 @@ class Psd_average_plugin(IPlugin):
         if X is None or fs is None:
             self._notify("PSD Average: no trials in active signal.")
             return
+        X, posiciones, total = self.elegir_trials(X)
+        if X is None:
+            return
 
         # 2) UI parameters
         try:
@@ -212,19 +216,19 @@ class Psd_average_plugin(IPlugin):
             return
 
         # 3) PSD (always for all trials) in the TaskService (R71); 4) plot when it finishes
-        self.run_task(calcular_psd, partial(self._on_psd_done, ch_name, lo, hi, X.shape[1]),
+        self.run_task(calcular_psd, partial(self._on_psd_done, ch_name, lo, hi, total, posiciones),
                       on_failed=lambda m: self.alerts.error(f"Could not compute PSD: {m}", "Computation Error"),
                       X=X, fs=fs, target_fs=target_fs, window=window, nperseg=nperseg,
                       noverlap=noverlap, nfft=nfft)
 
-    def _on_psd_done(self, ch_name, lo, hi, n_trials, resultado):
+    def _on_psd_done(self, ch_name, lo, hi, n_trials, posiciones, resultado):
         freq, power_all_trials, fs_eff = resultado     # (Nf, T) -> equivalent to 'pxx'
 
         # --- Average logic ---
         # Per-frequency mean across trials (axis=1)
         # Equivalent to mean(pxx') in MATLAB
         power_to_plot = np.mean(power_all_trials, axis=1, keepdims=True)
-        self._trials_used = trials_used(None, n_trials, "average", channel=ch_name)
+        self._trials_used = trials_used(posiciones, n_trials, "average", channel=ch_name)
         plot_title = f"PSD (Average) - {ch_name} — {self._trials_used['label']}"
 
         # 4) Plot
