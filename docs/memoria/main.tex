@@ -20,6 +20,7 @@
 \usepackage[T1]{fontenc}
 \usepackage[spanish,es-noquoting,es-nodecimaldot]{babel}
 \addto\captionsspanish{\renewcommand{\tablename}{Tabla}}
+\AtBeginDocument{\shorthandoff{"}}  % evita que babel se coma el espacio tras "
 
 %------------------------- Tipografia --------------------------------
 % Fuente serif tipo Times (la del documento original).
@@ -64,10 +65,11 @@
 \usepackage{fancyhdr}
 \usepackage{titlesec}
 \usepackage{ragged2e}
-\usepackage[hidelinks]{hyperref}
 \usepackage[normalem]{ulem}
-\usepackage{soul}
 \usepackage{float}
+% hyperref debe cargarse despues de float; plainpages=false evita que las
+% paginas romanas y arabigas compartan destino en el PDF.
+\usepackage[hidelinks,plainpages=false]{hyperref}
 
 
 \onehalfspacing                        % interlineado 1.5
@@ -156,8 +158,16 @@ LOS REQUISITOS PARA EL TÍTULO EN INGENIERÍA DE SISTEMAS}
   {\normalfont\normalsize\bfseries}{\thesubsubsection}{0.6em}{}
 \titlespacing*{\subsubsection}{0pt}{12pt}{6pt}
 
+% Cuarto nivel de titulo: sin numero y fuera del indice.
+\makeatletter
+\newcommand{\subsubsubsection}[1]{%
+  \@startsection{paragraph}{4}{\z@}{10pt plus 2pt minus 1pt}{4pt}%
+    {\normalfont\normalsize\bfseries\itshape}*{#1}}
+\makeatother
+
 %=====================================================================
 \begin{document}
+\pagenumbering{alph}% la caratula no comparte destino PDF con la pagina 1
 
 %---------------------------------------------------------------------
 %  CARATULA (pagina sin numeracion). Elimine este bloque si no la usa.
@@ -701,7 +711,7 @@ La integración del orquestador con los demás componentes se establece mediante
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth]{diagrama_actividad_sistema_completo.png}
+  \includegraphics[width=\textwidth,height=0.85\textheight,keepaspectratio]{diagrama_actividad_sistema_completo.png}
   \caption{Diagrama de actividades de Gamma Lab 2.0}
   \label{fig:diagrama-actividad}
 \end{figure}
@@ -849,13 +859,13 @@ Análisis & Incluía análisis en tiempo, frecuencia y tiempo-frecuencia & Incor
 \subsubsection{Análisis de señales}
 \pendiente
 
-\subsubsection{Interfaz de usario (UI/UX)}
+\subsubsection{Interfaz de usuario (UI/UX)}
 
 \subsubsubsection{File}
 
 Se añadió el apartado File como primera opción de la barra de menú superior, antes de Home, Preprocessing y Analysis. Su propósito es reunir en un solo lugar las acciones que afectan a la sesión de trabajo completa y no a un análisis concreto. Su posición responde a la convención de las aplicaciones de escritorio, en las que el usuario espera encontrar en este menú las operaciones para abrir, guardar y cerrar su trabajo. A diferencia de las demás categorías, que presentan sus herramientas en la barra de plugins, File se despliega como un menú breve de seis opciones: Open signal, Open project, Save, Save as, Close project y Exit. El orden acompaña el ciclo natural de una sesión: primero se abre una señal o un proyecto, después se guarda el trabajo y, por último, se cierra el proyecto o se sale de la aplicación. La incorporación de este apartado está ligada al concepto de proyecto. Un proyecto se guarda en una carpeta propia e incluye un archivo con extensión .glab junto con una copia de la señal.
 
-\subsubsection{Home}
+\subsubsubsection{Home}
 
 En la versión 1.0 de GammaLab, al abrir la aplicación, el usuario no recibía ninguna explicación del funcionamiento general. Tenía que descubrir por su cuenta el orden de uso de las secciones (Home, Preprocessing y Analysis) y la existencia de funciones accesibles solo desde el clic derecho sobre una gráfica. Esto es parte de lo que dificultaba construir un modelo mental claro de la herramienta.
 
@@ -1276,8 +1286,6 @@ J. Aru \textit{et al.}, ``Untangling cross-frequency coupling in neuroscience,''
 \bibitem{normaleeg2019} "Normal EEG variants," en \textit{Handbook of Clinical Neurology}, vol. 160, Elsevier, 2019, pp. 143-160, isbn: 9780444640321, doi: 10.1016/B978-0-444-64032-1.00009-6. [En línea]. Disponible: \url{https://linkinghub.elsevier.com/retrieve/pii/B9780444640321000096}.
 
 \bibitem{combrisson2020} E. Combrisson, T. Nest, A. Brovelli, R. A. A. Ince, J. L. P. Soto, A. Guillot, y K. Jerbi, "Tensorpac: An open-source Python toolbox for tensor-based phase-amplitude coupling measurement in electrophysiological brain signals," \textit{PLOS Computational Biology}, vol. 16, n.\textsuperscript{o} 10, art. e1008302, oct. 2020, issn: 1553-7358, doi: 10.1371/journal.pcbi.1008302. [En línea]. Disponible: \url{https://doi.org/10.1371/journal.pcbi.1008302}.
-
-\bibitem{vinck2010} M. Vinck, M. van Wingerden, T. Womelsdorf, P. Fries, y C. M. A. Pennartz, "The pairwise phase consistency: a bias-free measure of rhythmic neuronal synchronization," \textit{NeuroImage}, vol. 51, n.\textsuperscript{o} 1, pp. 112-122, may. 2010, issn: 1053-8119, doi: 10.1016/j.neuroimage.2010.01.073. [En línea]. Disponible: \url{https://doi.org/10.1016/j.neuroimage.2010.01.073}.
 
 \bibitem{richards2022} M. Richards, \textit{Software Architecture Patterns}, 2.\textsuperscript{a} ed. Sebastopol, CA, EE. UU.: O'Reilly Media, 2022. [En línea]. Disponible: \url{https://www.oreilly.com/library/view/software-architecture-patterns/9781098134280/}.
 
