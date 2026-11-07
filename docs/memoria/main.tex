@@ -38,6 +38,26 @@
 ]{geometry}
 
 \usepackage{graphicx}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta}
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\scriptsize,
+  columns=fixed,
+  keepspaces=true,
+  breaklines=false,
+  frame=single,
+  showstringspaces=false,
+  xleftmargin=0pt,
+  inputencoding=utf8,
+  extendedchars=true,
+  literate=
+    {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+    {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+    {ñ}{{\~n}}1 {Ñ}{{\~N}}1,
+}
 \usepackage{xcolor}
 \usepackage{soul}   % \hl{...}: resaltado de texto
 \usepackage{setspace}
@@ -531,9 +551,7 @@ El sistema debe ejecutarse en Windows 10 de 64 bits o superior, sobre un equipo 
 %=====================================================================
 \capitulo{DISEÑO DE LA SOLUCIÓN}
 
-<<<<<<< HEAD
 \subsection{Ampliación del Alcance Analítico}
-=======
 \subsection{Arquitectura}
 
 Gamma Lab 2.0 toma como punto de partida la arquitectura de Gamma Lab 1.0 \cite{asencio2025}, conservando el estilo de microkernel y su implementación en Python. Esta decisión respondió, en parte, a que un cambio de estilo o de lenguaje habría obligado a reimplementar los dieciséis plugins existentes y a repetir su validación numérica, un costo que no se justificaba frente a los problemas identificados. Al mismo tiempo, conservar esta base permitió mantener la extensibilidad del sistema como mecanismo para incorporar nuevas técnicas de análisis. En consecuencia, la propuesta se orientó a fortalecer la arquitectura existente mediante la incorporación de mecanismos que permitieran mejorar la ejecución, la gestión de datos y la organización de los componentes, sin modificar el modelo general de extensibilidad.
@@ -586,7 +604,124 @@ Archivos de pruebas & 14 & $\approx$ 70 \\
 \caption{Comparación arquitectónica entre Gamma Lab 1.0 y Gamma Lab 2.0}
 \label{tab:comparacion_arquitectura}
 \end{table}
->>>>>>> 425f026223a3410f981f92df1b7fa11dc36899cf
+
+Para ilustrar cómo se materializan estos componentes en el código, la Figura~\ref{fig:estructura-archivos} muestra la organización de carpetas y archivos del proyecto. La aplicación (\texttt{app/}) contiene la interfaz principal, el núcleo (\texttt{core/}) agrupa el \texttt{kernel.py} y los servicios, filtros, modelos y utilidades compartidas, y cada plugin, alojado dentro de \texttt{plugins/}, sigue una misma estructura de archivos, aquí expandida a modo de ejemplo para el plugin \texttt{erp}.
+
+\begin{figure}[!htb]
+\centering
+\begin{lstlisting}
+Gamma-Lab-2.0/
+|-- app/                      interfaz grafica (VTK, hilo propio)
+|   `-- view/
+|
+|-- core/                     NUCLEO: logica central y servicios compartidos
+|   |-- kernel.py             registro de plugins y servicios
+|   |-- plugins/              gestor de carga de plugins
+|   |-- services/
+|   |   |-- task_service.py       orquestador de tareas (nuevo)
+|   |   |-- data_store.py         manejo de datos compartidos
+|   |   |-- project_service.py    persistencia de proyectos (.glab)
+|   |   `-- settings_service.py   configuracion de la aplicacion
+|   |-- model/                modelos de datos (senal, trial)
+|   |-- filters/              filtros de senal
+|   `-- utils/                utilidades comunes
+|
+`-- plugins/                  PLUGINS: modulos de analisis (via orquestador)
+    |-- analysis/
+    |   `-- time/
+    |       `-- erp/
+    |           |-- erp_plugin.py        logica (IPlugin)
+    |           |-- erp_plugin_ui.py     vista (independiente)
+    |           |-- compute.py           calculo (validado aparte)
+    |           |-- properties.yml       metadatos y registro
+    |           `-- icn_erp.png          icono
+    |-- faq/
+    |-- io/
+    |-- measure/
+    `-- preprocessing/
+\end{lstlisting}
+\caption{Árbol de paquetes Gamma Lab 2.0. }
+\label{fig:estructura-archivos}
+\end{figure}
+
+La incorporación del orquestador implicó una reestructuración importante de la arquitectura de Gamma Lab 2.0, debido a su relación con otros componentes del sistema. Por su carácter transversal, resulta pertinente detallar su diseño y organización. Este mecanismo se integró al núcleo mediante el servicio TaskService, encargado de organizar y gestionar el ciclo de vida de las tareas.
+
+El diseño del orquestador se basa en la gestión de \textit{tareas}, representadas por funciones de Python junto con sus argumentos. Cada tarea se caracteriza por cinco propiedades: es \textbf{pura}, pues ejecuta un cálculo y devuelve un resultado sin modificar directamente el estado compartido; es \textbf{cerrada}, pues recibe mediante parámetros todos los datos necesarios para su ejecución; es \textbf{independiente de la interfaz}, pues no depende de componentes de Qt ni de VTK; es \textbf{interrumpible}, pues puede atender solicitudes de cancelación durante su procesamiento; y es \textbf{capaz de declarar su costo}, pues proporciona información sobre sus requerimientos computacionales para ajustar la distribución de recursos.
+
+Bajo esta estructura, un mismo plugin puede enviar múltiples tareas al orquestador durante una sesión, cada una asociada a una operación de cómputo particular. La comunicación se establece mediante \textit{submit()}, que recibe la función, sus argumentos y un identificador de propietario. Cada solicitud cuenta con los elementos que presenta la Tabla~\ref{tab:elementos-orquestador}.
+
+\begin{table}[!htb]
+  \centering
+  \caption{Elementos del contrato de solicitud del orquestador}
+  \label{tab:elementos-orquestador}
+  \vspace{4pt}
+  \small\setstretch{1}
+  \renewcommand{\arraystretch}{1.15}
+  \begin{tabular}{|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}p{11.3cm}|}
+    \hline
+    \textbf{Elemento} & \textbf{Descripción y función} \\ \hline
+    \textit{id} & Identificador único de la tarea, utilizado para reconocer su ejecución y descartar resultados tardíos. \\ \hline
+    \textit{owner} & Identificador del plugin que solicita la tarea, utilizado para agrupar solicitudes y aplicar políticas de gestión. \\ \hline
+    \textit{TaskHandle} & Manejador que permite consultar el progreso, recibir notificaciones de finalización, fallo o cancelación y solicitar la interrupción. \\ \hline
+    \textit{TaskContext} & Contexto opcional que proporciona mecanismos para reportar el progreso y consultar solicitudes de cancelación. \\ \hline
+    \textit{task\_started} & Señal global que notifica el inicio de una tarea y permite actualizar la barra de progreso. \\ \hline
+  \end{tabular}
+\end{table}
+
+La gestión de las tareas contempla cuatro estados: \textit{queued}, cuando permanece en espera; \textit{running}, durante su ejecución; \textit{done}, cuando finaliza o presenta un error; y \textit{cancelled}, cuando se cancela o descarta. Sobre este ciclo de vida se aplican tres mecanismos: reemplazo, que descarta las solicitudes anteriores del mismo propietario que permanecen en espera y, en la mayoría de los módulos, cancela también la tarea en ejecución; cancelación por contexto, que permite detener las tareas asociadas a un plugin al abandonar su módulo o cerrar un proyecto; y cancelación cooperativa, mediante la cual las tareas consultan las solicitudes de interrupción durante su procesamiento. Si una tarea no responde dentro del tiempo establecido, el servicio la desvincula de su gestión y descarta sus resultados posteriores. Los errores se notifican mediante el manejador, permitiendo continuar con las demás solicitudes.
+
+La ejecución se organiza en dos niveles de concurrencia. En el primero, el hilo principal de Qt administra la cola y recibe las notificaciones, mientras cada tarea se ejecuta en un hilo trabajador (\textit{QThread}) independiente. En el segundo, determinadas tareas, como el PAC promedio y el PPC, distribuyen internamente el procesamiento de los trials mediante un conjunto de hilos (\textit{ThreadPoolExecutor}). Esta distribución considera los recursos de procesamiento y memoria disponibles y conserva el orden original de los resultados. La actualización del estado compartido y las operaciones de visualización VTK permanecen en el hilo principal.
+
+La integración del orquestador con los demás componentes se establece mediante las relaciones que presenta la Tabla~\ref{tab:relaciones-orquestador}.
+
+\begin{table}[!htb]
+  \centering
+  \caption{Relación del orquestador con los demás componentes}
+  \label{tab:relaciones-orquestador}
+  \vspace{4pt}
+  \small\setstretch{1}
+  \renewcommand{\arraystretch}{1.15}
+  \begin{tabular}{|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}p{11.3cm}|}
+    \hline
+    \textbf{Componente} & \textbf{Relación con el orquestador} \\ \hline
+    \textit{Kernel} & Registra \textit{TaskService} como servicio del núcleo antes del descubrimiento de los plugins. \\ \hline
+    \textit{IPlugin} & Proporciona la interfaz \textit{run\_task()} para solicitar tareas y gestionar sus resultados. \\ \hline
+    \textit{MainWindow} & Recibe las notificaciones de inicio, administra la barra de progreso y coordina las cancelaciones. \\ \hline
+    \textit{DataStore} & Garantiza la integridad del estado compartido mediante una política de escritor único desde el hilo principal. \\ \hline
+    \textit{ProjectService} & Integra las operaciones de preparación y almacenamiento de proyectos al mecanismo de ejecución. \\ \hline
+    \textit{Plugins} & Proporcionan las funciones de cálculo que se envían al orquestador desde los módulos de análisis, preprocesamiento y entrada y salida. \\ \hline
+    \textit{parallel.py} & Proporciona el mecanismo de paralelismo interno utilizado por las tareas que distribuyen el procesamiento entre varios hilos. \\ \hline
+  \end{tabular}
+\end{table}
+
+\subsection{Vistas de arquitectura}
+
+\subsubsection{Vista de lógica}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{diagrama_actividad_sistema_completo.png}
+  \caption{Diagrama de actividades de Gamma Lab 2.0}
+  \label{fig:diagrama-actividad}
+\end{figure}
+
+\subsubsection{Vista física}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{diagrama_despliegue_sistema_completo.png}
+  \caption{Diagrama de despliegue de Gamma Lab 2.0}
+  \label{fig:diagrama-despliegue}
+\end{figure}
+
+\subsubsection{Vista de procesos}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{diagrama_clases_sistema_completo.png}
+  \caption{Diagrama de clases de Gamma Lab 2.0}
+  \label{fig:diagrama-clases}
+\end{figure}
 
 Esta sección presenta el diseño de la ampliación del alcance analítico de Gamma Lab 2.0, es decir, de los módulos que permiten estudiar el acoplamiento entre ritmos de distinta frecuencia y la sincronización de fase entre canales. Los demás frentes de la solución solo se mencionan cuando estos módulos dependen de ellos.
 
@@ -613,7 +748,6 @@ La ampliación agrega tres módulos al Subsistema de Análisis: PAC (\textit{pha
   \end{tabular}
 \end{table}
 
-<<<<<<< HEAD
 \subsubsection{Criterios de diseño}
 
 Cinco criterios orientaron las decisiones de este diseño:
@@ -625,7 +759,6 @@ Cinco criterios orientaron las decisiones de este diseño:
   \item \textbf{Paridad con la referencia y diferencias justificadas.} El diseño busca reproducir el cálculo de BOARD-FTD-PACC, salvo cuando hacerlo conduciría a un resultado engañoso. Esas diferencias son deliberadas y se recogen en la Sección~\ref{sec:diferencias}.
   \item \textbf{Ningún resultado dudoso sin advertencia.} Lo que no se puede medir queda sin valor en lugar de mostrar un número, y un parámetro imposible se rechaza con un mensaje en lugar de ajustarse en silencio.
 \end{itemize}
-=======
 \subsection{Diseño detallado}
 
 \subsection{Fortalecimiento de la experiencia de navegación e interacción}
@@ -810,7 +943,6 @@ Análisis & Incluía análisis en tiempo, frecuencia y tiempo-frecuencia & Incor
 
 \subsubsection{Interfaz de usario (UI/UX)}
 \pendiente
->>>>>>> 425f026223a3410f981f92df1b7fa11dc36899cf
 
 \subsubsection{Componentes y responsabilidades}
 
@@ -1120,7 +1252,6 @@ S. Asencio Rodríguez, M. F. González Valencia, J. E. Martínez Clavijo, y G. V
 \bibitem{gauthier2023}
 C. Gauthier-Umaña, M. Valderrama, A. Múnera, y M. O. Nava-Mesa, ``BOARD-FTD-PACC: a graphical user interface for the synaptic and cross-frequency analysis derived from neural signals,'' \textit{Brain Informatics}, vol. 10, art. 12, may. 2023, issn: 2198-4026, doi: 10.1186/s40708-023-00191-x. [En línea]. Disponible: \url{https://link.springer.com/article/10.1186/s40708-023-00191-x}.
 
-<<<<<<< HEAD
 \bibitem{canolty2006}
 R. T. Canolty, E. Edwards, S. S. Dalal, M. Soltani, S. S. Nagarajan, H. E. Kirsch, M. S. Berger, N. M. Barbaro, y R. T. Knight, ``High gamma power is phase-locked to theta oscillations in human neocortex,'' \textit{Science}, vol. 313, n.\textsuperscript{o} 5793, pp. 1626--1628, sep. 2006, doi: 10.1126/science.1128115.
 
@@ -1135,7 +1266,6 @@ M. Vinck, M. van Wingerden, T. Womelsdorf, P. Fries, y C. M. A. Pennartz, ``The 
 
 \bibitem{aru2015}
 J. Aru \textit{et al.}, ``Untangling cross-frequency coupling in neuroscience,'' \textit{Current Opinion in Neurobiology}, vol. 31, pp. 51--61, 2015, doi: 10.1016/j.conb.2014.08.002.
-=======
 
 \bibitem{morris2025} P. Morris y O. Calaway, "3.1 Foundations of Neural Communication," en \textit{General Psychology}, ago. 2025. [En línea]. Disponible: \url{https://acd.pressbooks.pub/generalpsychology/chapter/2192/}.
 
@@ -1160,7 +1290,6 @@ J. Aru \textit{et al.}, ``Untangling cross-frequency coupling in neuroscience,''
 \bibitem{iso29148} ISO/IEC/IEEE 29148:2018, "Systems and software engineering --- Life cycle processes --- Requirements engineering," 2.\textsuperscript{a} ed., International Organization for Standardization / International Electrotechnical Commission / Institute of Electrical and Electronics Engineers, nov. 2018. [En línea]. Disponible: \url{https://www.iso.org/standard/72089.html}.
 
 \bibitem{eeles2001} P. Eeles, "Capturing Architectural Requirements," Rational Software Corporation, nov. 2001. [En línea]. Disponible: \url{https://www.ibm.com/developerworks/rational/library/4706.html}.
->>>>>>> 425f026223a3410f981f92df1b7fa11dc36899cf
 
 \end{thebibliography}
 
