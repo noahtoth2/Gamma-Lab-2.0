@@ -558,7 +558,7 @@ Gamma Lab 2.0 toma como punto de partida la arquitectura de Gamma Lab 1.0 \cite{
 
 La arquitectura de partida se organizaba alrededor de un componente \texttt{Kernel}, responsable de mantener el registro de servicios y plugins, y de distribuir eventos entre los módulos mediante señales de Qt. La carga dinámica de los plugins se realizaba a través de un gestor que identificaba sus archivos \texttt{properties.yml}, mientras que la interfaz \texttt{IPlugin} establecía las operaciones básicas para su integración con el núcleo y la interfaz gráfica. Sobre esta estructura se encontraban dieciséis plugins, organizados en funcionalidades de entrada y salida, preprocesamiento, medición y análisis en los dominios del tiempo, la frecuencia y el tiempo-frecuencia. La visualización se apoyaba en VTK, integrado en la interfaz desarrollada con PyQt5.
 
-Tomando esta estructura como la base inicial, el diseño de Gamma Lab 2.0 consideró cinco necesidades arquitectónicas que orientaron la definición de la solución:
+El diseño de Gamma Lab 2.0 consideró cinco necesidades arquitectónicas que orientaron la definición de la solución:
 
 \begin{itemize}
   \item La ejecución de los análisis debía independizarse del hilo principal de la interfaz. Para ello, se planteó un mecanismo centralizado de ejecución en segundo plano, con distribución del trabajo entre varios hilos y gestión del progreso, los errores y la cancelación de las tareas.
@@ -568,7 +568,7 @@ Tomando esta estructura como la base inicial, el diseño de Gamma Lab 2.0 consid
   \item La aplicación debía permitir conservar el contexto de trabajo y facilitar su ejecución en distintos entornos. Para ello, se incorporó el concepto de proyecto, junto con mecanismos de persistencia y recuperación de sesiones, gestión de rutas y distribución de la aplicación.
 \end{itemize}
 
-Sobre estos criterios se estructuró la solución, manteniendo los componentes centrales del microkernel y ampliando las capacidades de los módulos existentes. La arquitectura conserva los dieciséis plugins originales e incorpora tres nuevos: PAC, PPC y Modulation Index. Además, el diseño contempla una mayor cobertura de pruebas automatizadas, que pasó de 14 archivos en Gamma Lab 1.0 a aproximadamente 70 en Gamma Lab 2.0, incluyendo pruebas de concurrencia, cancelación, persistencia, liberación de memoria, instalación y rendimiento.
+Sobre estos criterios se estructuró la solución, manteniendo los componentes centrales del microkernel y ampliando las capacidades de los módulos existentes. La arquitectura conserva los dieciséis plugins originales e incorpora tres nuevos: PAC, PPC y Modulation Index. Además, el diseño contempla una mayor cobertura de pruebas automatizadas incluyendo pruebas de concurrencia, cancelación, persistencia, liberación de memoria, instalación y rendimiento.
 
 La Tabla~\ref{tab:comparacion_arquitectura} presenta una comparación de las principales características arquitectónicas y técnicas de Gamma Lab 1.0 y la solución diseñada para Gamma Lab 2.0.
 
@@ -605,7 +605,6 @@ Archivos de pruebas & 14 & $\approx$ 70 \\
 \label{tab:comparacion_arquitectura}
 \end{table}
 
-Para ilustrar cómo se materializan estos componentes en el código, la Figura~\ref{fig:estructura-archivos} muestra la organización de carpetas y archivos del proyecto. La aplicación (\texttt{app/}) contiene la interfaz principal, el núcleo (\texttt{core/}) agrupa el \texttt{kernel.py} y los servicios, filtros, modelos y utilidades compartidas, y cada plugin, alojado dentro de \texttt{plugins/}, sigue una misma estructura de archivos, aquí expandida a modo de ejemplo para el plugin \texttt{erp}.
 
 \begin{figure}[!htb]
 \centering
@@ -643,6 +642,8 @@ Gamma-Lab-2.0/
 \caption{Árbol de paquetes Gamma Lab 2.0. }
 \label{fig:estructura-archivos}
 \end{figure}
+
+\subsubsection{Orquestador de Tareas}
 
 La incorporación del orquestador implicó una reestructuración importante de la arquitectura de Gamma Lab 2.0, debido a su relación con otros componentes del sistema. Por su carácter transversal, resulta pertinente detallar su diseño y organización. Este mecanismo se integró al núcleo mediante el servicio TaskService, encargado de organizar y gestionar el ciclo de vida de las tareas.
 
