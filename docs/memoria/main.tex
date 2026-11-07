@@ -38,6 +38,26 @@
 ]{geometry}
 
 \usepackage{graphicx}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta}
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\scriptsize,
+  columns=fixed,
+  keepspaces=true,
+  breaklines=false,
+  frame=single,
+  showstringspaces=false,
+  xleftmargin=0pt,
+  inputencoding=utf8,
+  extendedchars=true,
+  literate=
+    {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+    {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+    {ñ}{{\~n}}1 {Ñ}{{\~N}}1,
+}
 \usepackage{xcolor}
 \usepackage{soul}   % \hl{...}: resaltado de texto
 \usepackage{setspace}
@@ -49,10 +69,12 @@
 \usepackage{soul}
 \usepackage{float}
 
+
 \onehalfspacing                        % interlineado 1.5
 \setlength{\parindent}{1.0cm}          % sangria de primera linea
 \setcounter{secnumdepth}{3}            % numera hasta 1.1.1
 \setcounter{tocdepth}{3}               % indice hasta 1.1.1
+\newcommand{\ingles}[1]{\textsf{#1}}
 \renewcommand{\contentsname}{TABLA DE CONTENIDO}
 
 %=====================================================================
@@ -529,6 +551,7 @@ El sistema debe ejecutarse en Windows 10 de 64 bits o superior, sobre un equipo 
 %=====================================================================
 \capitulo{DISEÑO DE LA SOLUCIÓN}
 
+\subsection{Ampliación del Alcance Analítico}
 \subsection{Arquitectura}
 
 Gamma Lab 2.0 toma como punto de partida la arquitectura de Gamma Lab 1.0 \cite{asencio2025}, conservando el estilo de microkernel y su implementación en Python. Esta decisión respondió, en parte, a que un cambio de estilo o de lenguaje habría obligado a reimplementar los dieciséis plugins existentes y a repetir su validación numérica, un costo que no se justificaba frente a los problemas identificados. Al mismo tiempo, conservar esta base permitió mantener la extensibilidad del sistema como mecanismo para incorporar nuevas técnicas de análisis. En consecuencia, la propuesta se orientó a fortalecer la arquitectura existente mediante la incorporación de mecanismos que permitieran mejorar la ejecución, la gestión de datos y la organización de los componentes, sin modificar el modelo general de extensibilidad.
@@ -551,55 +574,197 @@ La Tabla~\ref{tab:comparacion_arquitectura} presenta una comparación de las pri
 
 \begin{table}[H]
 \centering
-\small
+\scriptsize
 \renewcommand{\arraystretch}{1.3}
-\begin{tabular}{|p{3.2cm}|p{5.4cm}|p{5.4cm}|}
+\begin{tabularx}{\textwidth}{|l|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X|}
 \hline
 \textbf{Característica} & \textbf{Gamma Lab 1.0} & \textbf{Gamma Lab 2.0} \\
 \hline
 Estilo arquitectónico & Microkernel con plugins & Microkernel con plugins y orquestador de tareas \\
 \hline
-Modelo de ejecución & Síncrono sobre el hilo de la interfaz; hilos aislados en dos plugins & Asíncrono mediante un servicio de tareas en el núcleo, con paralelización por trials \\
+Modelo de ejecución & Síncrono, en el hilo de la interfaz & Asíncrono, mediante el orquestador del núcleo \\
 \hline
 Progreso y cancelación & No disponibles & Centralizados en el orquestador \\
 \hline
-Almacén de datos & Diccionario sin sincronización ni liberación de memoria & Acceso sincronizado, propiedad por módulo y liberación de señales \\
+Almacén de datos & Sin sincronización ni liberación de memoria & Sincronizado, con propiedad y liberación de datos \\
 \hline
-Servicios compartidos & Instanciados de forma independiente en varios módulos & Instancia única registrada en el núcleo \\
+Servicios compartidos & Instancias independientes por módulo & Instancia única registrada en el núcleo \\
 \hline
-Organización de los plugins & Cálculo y presentación en la misma clase & Funciones de cálculo independientes de la interfaz y la visualización \\
+Organización de plugins & Cálculo y vista en la misma clase & Cálculo separado de la interfaz y la vista \\
 \hline
 Persistencia & Inexistente & Proyectos \texttt{.glab} con esquema versionado \\
 \hline
-Ejecución y distribución & Scripts de arranque y rutas relativas & Instalador para Windows y resolución de rutas absolutas \\
+Distribución & Scripts de arranque y rutas relativas & Instalador para Windows y rutas absolutas \\
 \hline
 Plugins & 16 & 19 (PAC, PPC y Modulation Index) \\
 \hline
-Archivos de pruebas & 14 & $\approx$ 70 (concurrencia, cancelación, persistencia, memoria, instalación y rendimiento) \\
+Archivos de pruebas & 14 & $\approx$ 70 \\
 \hline
-\end{tabular}
+\end{tabularx}
 \caption{Comparación arquitectónica entre Gamma Lab 1.0 y Gamma Lab 2.0}
 \label{tab:comparacion_arquitectura}
 \end{table}
 
-\subsection{Vistas de arquitectura}
-\pendiente
+Para ilustrar cómo se materializan estos componentes en el código, la Figura~\ref{fig:estructura-archivos} muestra la organización de carpetas y archivos del proyecto. La aplicación (\texttt{app/}) contiene la interfaz principal, el núcleo (\texttt{core/}) agrupa el \texttt{kernel.py} y los servicios, filtros, modelos y utilidades compartidas, y cada plugin, alojado dentro de \texttt{plugins/}, sigue una misma estructura de archivos, aquí expandida a modo de ejemplo para el plugin \texttt{erp}.
 
-\subsubsection{Vista lógica}
-\pendiente
+\begin{figure}[!htb]
+\centering
+\begin{lstlisting}
+Gamma-Lab-2.0/
+|-- app/                      interfaz grafica (VTK, hilo propio)
+|   `-- view/
+|
+|-- core/                     NUCLEO: logica central y servicios compartidos
+|   |-- kernel.py             registro de plugins y servicios
+|   |-- plugins/              gestor de carga de plugins
+|   |-- services/
+|   |   |-- task_service.py       orquestador de tareas (nuevo)
+|   |   |-- data_store.py         manejo de datos compartidos
+|   |   |-- project_service.py    persistencia de proyectos (.glab)
+|   |   `-- settings_service.py   configuracion de la aplicacion
+|   |-- model/                modelos de datos (senal, trial)
+|   |-- filters/              filtros de senal
+|   `-- utils/                utilidades comunes
+|
+`-- plugins/                  PLUGINS: modulos de analisis (via orquestador)
+    |-- analysis/
+    |   `-- time/
+    |       `-- erp/
+    |           |-- erp_plugin.py        logica (IPlugin)
+    |           |-- erp_plugin_ui.py     vista (independiente)
+    |           |-- compute.py           calculo (validado aparte)
+    |           |-- properties.yml       metadatos y registro
+    |           `-- icn_erp.png          icono
+    |-- faq/
+    |-- io/
+    |-- measure/
+    `-- preprocessing/
+\end{lstlisting}
+\caption{Árbol de paquetes Gamma Lab 2.0. }
+\label{fig:estructura-archivos}
+\end{figure}
+
+La incorporación del orquestador implicó una reestructuración importante de la arquitectura de Gamma Lab 2.0, debido a su relación con otros componentes del sistema. Por su carácter transversal, resulta pertinente detallar su diseño y organización. Este mecanismo se integró al núcleo mediante el servicio TaskService, encargado de organizar y gestionar el ciclo de vida de las tareas.
+
+El diseño del orquestador se basa en la gestión de \textit{tareas}, representadas por funciones de Python junto con sus argumentos. Cada tarea se caracteriza por cinco propiedades: es \textbf{pura}, pues ejecuta un cálculo y devuelve un resultado sin modificar directamente el estado compartido; es \textbf{cerrada}, pues recibe mediante parámetros todos los datos necesarios para su ejecución; es \textbf{independiente de la interfaz}, pues no depende de componentes de Qt ni de VTK; es \textbf{interrumpible}, pues puede atender solicitudes de cancelación durante su procesamiento; y es \textbf{capaz de declarar su costo}, pues proporciona información sobre sus requerimientos computacionales para ajustar la distribución de recursos.
+
+Bajo esta estructura, un mismo plugin puede enviar múltiples tareas al orquestador durante una sesión, cada una asociada a una operación de cómputo particular. La comunicación se establece mediante \textit{submit()}, que recibe la función, sus argumentos y un identificador de propietario. Cada solicitud cuenta con los elementos que presenta la Tabla~\ref{tab:elementos-orquestador}.
+
+\begin{table}[!htb]
+  \centering
+  \caption{Elementos del contrato de solicitud del orquestador}
+  \label{tab:elementos-orquestador}
+  \vspace{4pt}
+  \small\setstretch{1}
+  \renewcommand{\arraystretch}{1.15}
+  \begin{tabular}{|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}p{11.3cm}|}
+    \hline
+    \textbf{Elemento} & \textbf{Descripción y función} \\ \hline
+    \textit{id} & Identificador único de la tarea, utilizado para reconocer su ejecución y descartar resultados tardíos. \\ \hline
+    \textit{owner} & Identificador del plugin que solicita la tarea, utilizado para agrupar solicitudes y aplicar políticas de gestión. \\ \hline
+    \textit{TaskHandle} & Manejador que permite consultar el progreso, recibir notificaciones de finalización, fallo o cancelación y solicitar la interrupción. \\ \hline
+    \textit{TaskContext} & Contexto opcional que proporciona mecanismos para reportar el progreso y consultar solicitudes de cancelación. \\ \hline
+    \textit{task\_started} & Señal global que notifica el inicio de una tarea y permite actualizar la barra de progreso. \\ \hline
+  \end{tabular}
+\end{table}
+
+La gestión de las tareas contempla cuatro estados: \textit{queued}, cuando permanece en espera; \textit{running}, durante su ejecución; \textit{done}, cuando finaliza o presenta un error; y \textit{cancelled}, cuando se cancela o descarta. Sobre este ciclo de vida se aplican tres mecanismos: reemplazo, que descarta las solicitudes anteriores del mismo propietario que permanecen en espera y, en la mayoría de los módulos, cancela también la tarea en ejecución; cancelación por contexto, que permite detener las tareas asociadas a un plugin al abandonar su módulo o cerrar un proyecto; y cancelación cooperativa, mediante la cual las tareas consultan las solicitudes de interrupción durante su procesamiento. Si una tarea no responde dentro del tiempo establecido, el servicio la desvincula de su gestión y descarta sus resultados posteriores. Los errores se notifican mediante el manejador, permitiendo continuar con las demás solicitudes.
+
+La ejecución se organiza en dos niveles de concurrencia. En el primero, el hilo principal de Qt administra la cola y recibe las notificaciones, mientras cada tarea se ejecuta en un hilo trabajador (\textit{QThread}) independiente. En el segundo, determinadas tareas, como el PAC promedio y el PPC, distribuyen internamente el procesamiento de los trials mediante un conjunto de hilos (\textit{ThreadPoolExecutor}). Esta distribución considera los recursos de procesamiento y memoria disponibles y conserva el orden original de los resultados. La actualización del estado compartido y las operaciones de visualización VTK permanecen en el hilo principal.
+
+La integración del orquestador con los demás componentes se establece mediante las relaciones que presenta la Tabla~\ref{tab:relaciones-orquestador}.
+
+\begin{table}[!htb]
+  \centering
+  \caption{Relación del orquestador con los demás componentes}
+  \label{tab:relaciones-orquestador}
+  \vspace{4pt}
+  \small\setstretch{1}
+  \renewcommand{\arraystretch}{1.15}
+  \begin{tabular}{|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}p{11.3cm}|}
+    \hline
+    \textbf{Componente} & \textbf{Relación con el orquestador} \\ \hline
+    \textit{Kernel} & Registra \textit{TaskService} como servicio del núcleo antes del descubrimiento de los plugins. \\ \hline
+    \textit{IPlugin} & Proporciona la interfaz \textit{run\_task()} para solicitar tareas y gestionar sus resultados. \\ \hline
+    \textit{MainWindow} & Recibe las notificaciones de inicio, administra la barra de progreso y coordina las cancelaciones. \\ \hline
+    \textit{DataStore} & Garantiza la integridad del estado compartido mediante una política de escritor único desde el hilo principal. \\ \hline
+    \textit{ProjectService} & Integra las operaciones de preparación y almacenamiento de proyectos al mecanismo de ejecución. \\ \hline
+    \textit{Plugins} & Proporcionan las funciones de cálculo que se envían al orquestador desde los módulos de análisis, preprocesamiento y entrada y salida. \\ \hline
+    \textit{parallel.py} & Proporciona el mecanismo de paralelismo interno utilizado por las tareas que distribuyen el procesamiento entre varios hilos. \\ \hline
+  \end{tabular}
+\end{table}
+
+\subsection{Vistas de arquitectura}
+
+\subsubsection{Vista de lógica}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{diagrama_actividad_sistema_completo.png}
+  \caption{Diagrama de actividades de Gamma Lab 2.0}
+  \label{fig:diagrama-actividad}
+\end{figure}
 
 \subsubsection{Vista física}
-\pendiente
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{diagrama_despliegue_sistema_completo.png}
+  \caption{Diagrama de despliegue de Gamma Lab 2.0}
+  \label{fig:diagrama-despliegue}
+\end{figure}
 
 \subsubsection{Vista de procesos}
-\pendiente
 
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{diagrama_clases_sistema_completo.png}
+  \caption{Diagrama de clases de Gamma Lab 2.0}
+  \label{fig:diagrama-clases}
+\end{figure}
+
+Esta sección presenta el diseño de la ampliación del alcance analítico de Gamma Lab 2.0, es decir, de los módulos que permiten estudiar el acoplamiento entre ritmos de distinta frecuencia y la sincronización de fase entre canales. Los demás frentes de la solución solo se mencionan cuando estos módulos dependen de ellos.
+
+\subsubsection{Técnicas incorporadas}
+
+La ampliación agrega tres módulos al Subsistema de Análisis: PAC (\textit{phase-amplitude coupling}), que reúne cuatro modos de cálculo; el índice de modulación; y PPC (\textit{phase-phase coupling}), que evalúa el acoplamiento de fase entre dos canales. Todos parten de análisis disponibles en el sistema de referencia BOARD-FTD-PACC \cite{gauthier2023} y cubren los requerimientos R13 a R23, R60 a R66, R74 y R75. La Tabla~\ref{tab:tecnicas} resume la pregunta que responde cada técnica.
+
+\begin{table}[H]
+  \centering
+  \caption{Técnicas de la ampliación del alcance analítico}
+  \label{tab:tecnicas}
+  \vspace{4pt}
+  \small\setstretch{1}
+  \renewcommand{\arraystretch}{1.15}
+  \begin{tabular}{|>{\raggedright\arraybackslash}p{2.4cm}|>{\raggedright\arraybackslash}p{5.0cm}|>{\raggedright\arraybackslash}p{2.3cm}|>{\raggedright\arraybackslash}p{4.1cm}|}
+    \hline
+    \textbf{Técnica} & \textbf{Pregunta que responde} & \textbf{Trials que usa} & \textbf{Salida principal} \\ \hline
+    PAC & ¿En qué punto del ciclo lento aumenta la energía rápida de un trial? & Uno, elegido por el usuario & Mapa fase-frecuencia, histograma de fase, vector medio y cuatro señales \\ \hline
+    PAC Average & ¿Se mantiene ese patrón sobre el conjunto de trials? & Todos los válidos & Mapa, histograma y vector medio \\ \hline
+    PAC Psel & ¿Cómo se comporta la actividad rápida alrededor de los ciclos completos del ritmo lento? & Todos, concatenados & Trece paneles con ciclos superpuestos, promedios, mapas y vectores \\ \hline
+    PAC Psel inter-canal & ¿El ritmo lento de un canal organiza la actividad rápida de otro? & Todos, de dos canales & Los mismos paneles de PAC Psel \\ \hline
+    Índice de modulación & ¿Qué pares de bandas de fase y de amplitud están acoplados? & Uno, elegido por el usuario & Comodulograma \\ \hline
+    PPC & ¿La diferencia de fase entre dos canales se mantiene estable? ¿En qué frecuencia y en qué momento? & Todos, emparejados entre canales & Mapa frecuencia-tiempo \\ \hline
+  \end{tabular}
+\end{table}
+
+\subsubsection{Criterios de diseño}
+
+Cinco criterios orientaron las decisiones de este diseño:
+
+\begin{itemize}
+  \item \textbf{Un módulo por técnica.} PAC, PAC Average y PAC Psel comparten parámetros, por lo que son modos de un mismo módulo. El índice de modulación usa otro algoritmo y PPC mide otra relación, de modo que cada uno es un módulo independiente.
+  \item \textbf{Cálculo separado de la presentación.} Cada módulo distingue dos responsabilidades: realizar el análisis y atender al usuario. El cálculo recibe datos y parámetros y entrega un resultado, sin conocer la interfaz ni las gráficas. Así puede ejecutarse en segundo plano y verificarse de forma independiente.
+  \item \textbf{Lo compartido se ubica en el núcleo.} Un componente de cálculo que necesitan dos módulos pasa al núcleo, y el que necesita uno solo permanece en ese módulo.
+  \item \textbf{Paridad con la referencia y diferencias justificadas.} El diseño busca reproducir el cálculo de BOARD-FTD-PACC, salvo cuando hacerlo conduciría a un resultado engañoso. Esas diferencias son deliberadas y se recogen en la Sección~\ref{sec:diferencias}.
+  \item \textbf{Ningún resultado dudoso sin advertencia.} Lo que no se puede medir queda sin valor en lugar de mostrar un número, y un parámetro imposible se rechaza con un mensaje en lugar de ajustarse en silencio.
+\end{itemize}
 \subsection{Diseño detallado}
 
 
 \subsubsection{Estructura del sistema}
-La Figura~\ref{fig:dc_sistema} muestra el diagrama de clases del sistema de Gamma Lab v.20 simplificado (Para
-más detalles, ver  el documento Software Design Document (SDD)):
+
+La Figura~\ref{fig:dc_sistema} presenta el diagrama de clases simplificado de Gamma Lab 2.0; el detalle completo se encuentra en el documento \ingles{Software Design Document} (SDD). El sistema conserva la arquitectura \ingles{microkernel} de la primera versión: el \texttt{Kernel} registra las extensiones, que implementan la interfaz \texttt{IPlugin} y son cargadas por \texttt{PluginManager}, y da acceso a los servicios que estas comparten. La evolución hacia la versión 2.0 se concentra en esos servicios. Las clases nuevas, señaladas en rojo, responden a limitaciones concretas de Gamma Lab 1.0: el orquestador de tareas, implementado como \texttt{TaskService}, resuelve la ejecución en segundo plano; \texttt{ProjectService}, la persistencia del trabajo; y las extensiones de PAC, la ampliación del alcance analítico. A continuación se explica cómo estas clases y las mejoras sobre las ya existentes se complementan, y cómo intervienen a lo largo de una sesión de trabajo.
 
 \begin{figure}[H]
     \centering
@@ -608,125 +773,55 @@ más detalles, ver  el documento Software Design Document (SDD)):
     \label{fig:dc_sistema}
 \end{figure}
 
-
 % ------------------------------------------------------------------
 \paragraph{Mejoras del sistema}
 
-\subparagraph{Núcleo y gestión de memoria:} En Gamma Lab 1.0, el \texttt{DataStore} se encargaba de almacenar la señal activa, pero no contaba con un mecanismo para liberarla cuando dejaba de utilizarse. Esto hacía que, con cada nueva carga, los datos anteriores permanecieran en memoria, lo que podía provocar que la aplicación se bloqueara.
+El primer problema que debía resolverse era la estabilidad del núcleo. En Gamma Lab 1.0, el \texttt{DataStore} almacenaba la señal activa, pero no contaba con un mecanismo para liberarla, de modo que con cada nueva carga los datos anteriores permanecían en memoria y la aplicación podía bloquearse. Por ello, en Gamma Lab 2.0 se incorporó el método \texttt{release\_signals()}, que al cargar una nueva señal o cerrar un proyecto elimina las señales anteriores junto con sus datos relacionados: los \ingles{trials}, los conjuntos derivados, las mediciones y el \ingles{trial} en curso. Este método forma parte de una limpieza más completa, a cargo del procedimiento \texttt{liberar\_senal\_anterior()}, que además cancela las tareas pendientes, cierra las ventanas de VTK y libera los recursos utilizados por los widgets de las extensiones.
 
-En Gamma Lab 2.0 se solucionó este problema mediante la incorporación del método \texttt{release\_signals()}, que permite eliminar las señales anteriores y sus datos relacionados, como los trials, los conjuntos derivados, las mediciones y el trial en curso. Este proceso se ejecuta al cargar una nueva señal o al cerrar un proyecto.
+Liberar la memoria no era suficiente, porque la nueva versión también debía ejecutar cálculos en paralelo a la interfaz, y varios hilos no pueden modificar los mismos datos sin control. Por esta razón, solo el hilo de la interfaz gráfica puede escribir en el \texttt{DataStore}; si otro hilo lo intenta, el sistema genera la excepción \texttt{EscrituraNoPermitida}. Tanto las lecturas como las escrituras utilizan además un candado reentrante, lo que reduce los posibles conflictos durante la ejecución de tareas en segundo plano.
 
-Además, se implementó un procedimiento llamado \texttt{liberar\_senal\_anterior()}, que se encarga de realizar una limpieza más completa. Este procedimiento cancela las tareas que siguen pendientes, cierra las ventanas de VTK y libera los recursos utilizados por los widgets de las extensiones.
+Esta protección es la que hace posible \texttt{TaskService}. En Gamma Lab 1.0, la mayoría de los análisis se ejecutaban directamente en el hilo de la interfaz, y aunque algunas extensiones usaban sus propios hilos, no existía un mecanismo centralizado para controlarlos. En la versión 2.0, las extensiones dejaron de crear hilos: todas las tareas pasan por \texttt{TaskService}, que utiliza una única cola y procesa una tarea a la vez en un hilo de trabajo, y los resultados se envían al hilo de la interfaz antes de mostrarse. Cada solicitud devuelve un objeto \texttt{TaskHandle}, que mediante las señales \texttt{progress}, \texttt{finished}, \texttt{failed} y \texttt{cancelled} permite consultar el progreso de la tarea y saber si finalizó correctamente, presentó un error o fue cancelada.
 
-Por otra parte, se modificó el funcionamiento del \texttt{DataStore} para que solo el hilo de la interfaz gráfica pueda modificar su contenido. Si otro hilo intenta hacerlo, el sistema genera la excepción \texttt{EscrituraNoPermitida}. Tanto las operaciones de lectura como las de escritura utilizan un candado reentrante para controlar el acceso a los datos. De esta manera, se evita que varios procesos modifiquen la información al mismo tiempo y se reducen los posibles conflictos durante la ejecución de tareas en segundo plano.
+El servicio también controla qué ocurre cuando el usuario cambia de opinión. La cancelación es cooperativa, es decir, cada tarea responde a la solicitud de cancelarse; si no lo hace en dos segundos, el servicio deja de esperarla y libera la interfaz para que el usuario pueda seguir trabajando. De forma similar, cuando una extensión agrega una nueva tarea se descartan las suyas que aún estén pendientes, de modo que presionar varias veces el botón \textit{\ingles{Generate}} no genera múltiples cálculos innecesarios.
 
-\subparagraph{Ejecución en segundo plano:} En Gamma Lab 1.0, la mayoría de los análisis se ejecutaban directamente en el hilo de la interfaz gráfica. Algunas extensiones utilizaban sus propios hilos, pero no existía un mecanismo centralizado para controlar estas tareas.
+Durante el diseño de este servicio se evaluó ejecutar los cálculos en procesos independientes, pero la alternativa se descartó porque las mediciones mostraron que iniciar un proceso y enviarle los datos tomaba 1.486\,ms, mientras que el cálculo en sí tardaba 1.163\,ms. Se optó entonces por los hilos, ya que las operaciones más exigentes de NumPy liberan el \textit{\ingles{GIL}} y permiten aprovechar varios núcleos del procesador. En las pruebas de PPC, distribuir los \ingles{trials} entre cuatro hilos permitió alcanzar una aceleración de entre 1,8$\times$ y 2,7$\times$, manteniendo los mismos resultados.
 
-En Gamma Lab 2.0 se incorporó \texttt{TaskService}, un servicio encargado de organizar y ejecutar las tareas del sistema. Este servicio utiliza una única cola de ejecución y procesa una tarea a la vez mediante un hilo de trabajo. Además, devuelve un objeto \texttt{TaskHandle}, que permite consultar el progreso de cada tarea y conocer si finalizó correctamente, presentó un error o fue cancelada, mediante las señales \texttt{progress}, \texttt{finished}, \texttt{failed} y \texttt{cancelled}.
+Con la ejecución resuelta, el siguiente paso fue reducir el costo de cada cálculo. Los cálculos se realizan en formato \texttt{float64} para mantener la precisión, mientras que los datos enviados a VTK se convierten a \texttt{float32} para reducir el tamaño de lo que se visualiza. Las transformadas tiempo-frecuencia se calculan ahora por bloques de frecuencias, en lugar de procesar toda la matriz al mismo tiempo, lo que redujo el consumo de memoria de 480\,MB a 30\,MB para una matriz de 500$\times$60.000. En los filtros internos de los análisis, un mecanismo de memoización guarda el diseño de los filtros IIR para no repetir cálculos, lo que redujo en 7,25 veces el tiempo necesario al cambiar de \ingles{trial}.
 
-La cancelación de tareas funciona de manera cooperativa, es decir, permite que cada tarea responda a la solicitud de cancelación. Si una tarea no responde después de dos segundos, el servicio deja de esperar su finalización y libera la interfaz para que el usuario pueda seguir interactuando con la aplicación.
+Sin embargo, un cálculo más rápido solo es útil si su resultado es correcto, y por eso estas mejoras se acompañaron de una revisión de los análisis existentes. Al aplicar submuestreo, el eje de frecuencias se construye ahora con la tasa de muestreo efectiva y no con la solicitada inicialmente, lo que evita desplazamientos de hasta un 11\,\% en dicho eje. Esa misma tasa, junto con la frecuencia de Nyquist, se tiene en cuenta al validar los parámetros \texttt{fmin} y \texttt{fmax} de la transformada Wavelet, cuyo método de normalización tiempo-frecuencia (\texttt{normalize\_tf}) también se corrigió: ahora calcula la línea base de manera independiente para cada frecuencia y ofrece los métodos \textit{\ingles{z-score}}, \textit{\ingles{percent change}} y \textit{\ingles{relative power}}.
 
-También se agregó un mecanismo para evitar la acumulación de tareas. Cuando se agrega una nueva tarea de una misma extensión, las tareas anteriores que todavía están pendientes se descartan. Así, si el usuario presiona varias veces el botón \textit{Generate}, no se generan múltiples cálculos innecesarios.
+En el filtrado, Gamma Lab 1.0 solo tenía implementado el filtro Butterworth, por lo que las opciones Chebyshev y elíptico fallaban al ejecutarse. La extensión de filtrado ofrece ahora únicamente Butterworth, ejecuta el filtrado en \texttt{TaskService} y valida que el resultado no contenga valores no numéricos. Por su parte, los filtros internos de los análisis utilizan secciones de segundo orden (SOS), ya que los coeficientes en formato $b/a$ presentan problemas de estabilidad numérica con órdenes altos. Estos filtros comprueban además que los coeficientes sean valores finitos antes de utilizarlos y devuelven copias, para evitar que otras partes del sistema modifiquen accidentalmente un filtro compartido.
 
-Como parte de esta mejora, las extensiones dejaron de crear sus propios hilos. Ahora todas las tareas pasan por \texttt{TaskService}, y los resultados de los cálculos se envían al hilo de la interfaz gráfica antes de mostrarse.
+La remoción de artefactos se modificó con el mismo objetivo de proteger los datos: los cambios ya no afectan directamente los \ingles{trials} originales, sino que se realizan sobre un \textbf{conjunto derivado}, creado mediante el método \texttt{crear\_derivado}. Cada cambio se guarda además como una \textit{receta}, que contiene el modo de corrección utilizado, los puntos seleccionados y los descartes realizados, lo que permite volver a aplicar el mismo procedimiento y obtener resultados reproducibles. Como se explica más adelante, esta idea de guardar cómo se obtuvo un dato, y no el dato mismo, es también la base del formato de proyecto.
 
-Durante el desarrollo también se evaluó la posibilidad de ejecutar los cálculos en procesos independientes. Sin embargo, esta alternativa se descartó porque las mediciones mostraron que iniciar un proceso y enviarle los datos tomaba 1.486\,ms, mientras que el cálculo en sí tardaba 1.163\,ms. Es decir, el costo de preparar el proceso era mayor que el tiempo necesario para realizar el análisis.
+Los resultados corregidos también debían poder salir de la aplicación sin errores. Para ello se solucionaron los problemas al exportar tablas en CSV y JSON y se agregó la exportación en formato vectorial EMF, mediante un escritor propio que genera los ejes, rótulos y líneas como elementos vectoriales e incorpora los mapas de calor como imágenes. Por defecto, los archivos exportados se guardan en la carpeta \texttt{archivos/} del proyecto abierto.
 
-En cambio, se optó por utilizar hilos, ya que las operaciones más exigentes de NumPy liberan el \textit{GIL} y permiten aprovechar varios núcleos del procesador. En las pruebas de PPC, distribuir los trials entre cuatro hilos permitió alcanzar una aceleración de entre 1,8$\times$ y 2,7$\times$, manteniendo los mismos resultados.
-
-\subparagraph{Rendimiento de visualización y cálculo:} Se implementaron cuatro mejoras principales para reducir el consumo de memoria y mejorar el rendimiento de los análisis:
-
-\begin{enumerate}
-    \item \textbf{Submuestreo de señales.} Se ajustó el cálculo del eje de frecuencias para utilizar la tasa de muestreo efectiva después del submuestreo, en lugar de utilizar la tasa solicitada inicialmente. Esto corrige un error de la versión anterior que podía generar desplazamientos de hasta un 11\,\% en el eje de frecuencias.
-
-    \item \textbf{Optimización del manejo de datos.} Los cálculos se realizan utilizando el formato \texttt{float64}, mientras que los datos enviados a VTK se convierten a \texttt{float32}. Esto permite mantener la precisión durante los cálculos y reducir el tamaño de los datos utilizados para la visualización.
-
-    \item \textbf{Procesamiento por bloques.} Las transformadas tiempo-frecuencia ahora se calculan por bloques de frecuencias, en lugar de procesar toda la matriz al mismo tiempo. Con este cambio, el consumo de memoria se redujo de 480\,MB a 30\,MB para una matriz de 500$\times$60.000.
-
-    \item \textbf{Optimización de filtros.} Se incorporó un mecanismo de memoización para guardar el diseño de los filtros IIR y evitar repetir cálculos innecesarios. Esta mejora permitió reducir en 7,25 veces el tiempo necesario al cambiar de trial.
-\end{enumerate}
-
-\subparagraph{Corrección de los análisis existentes:}
-
-\begin{itemize}
-    \item \textbf{Filtros digitales:} Los bloqueos que se presentaban al utilizar los filtros elíptico y Chebyshev se debían a problemas de estabilidad numérica en los coeficientes con formato $b/a$, especialmente al trabajar con órdenes altos. Para solucionar esto, se modificó su implementación para utilizar secciones de segundo orden (SOS). También se agregó una validación para comprobar que los coeficientes sean valores finitos antes de utilizarlos. Finalmente, los filtros ahora devuelven copias de sus datos para evitar que otras partes del sistema modifiquen accidentalmente un filtro compartido.
-
-    \item \textbf{Transformada Wavelet:} Se corrigió el método de normalización tiempo-frecuencia (\texttt{normalize\_tf}), que ahora calcula la línea base de manera independiente para cada frecuencia. Además, se incorporaron tres métodos de normalización: \textit{z-score}, \textit{percent change} y \textit{relative power}. También se ajustó la validación de los parámetros \texttt{fmin} y \texttt{fmax} para que tenga en cuenta la frecuencia de Nyquist y la tasa de muestreo efectiva.
-
-    \item \textbf{Remoción de artefactos:} Se modificó el proceso de eliminación de artefactos para evitar que los cambios afecten directamente los trials originales. Ahora, cada modificación se realiza sobre un \textbf{conjunto derivado} mediante el método \texttt{crear\_derivado}. Además, los cambios se guardan como una \textit{receta}, que contiene el modo de corrección utilizado, los puntos seleccionados y los descartes realizados. Esto permite volver a aplicar el mismo procedimiento y obtener resultados reproducibles.
-
-    \item \textbf{Exportación:} Se corrigieron los problemas que se presentaban al exportar tablas en formatos CSV y JSON. También se agregó la posibilidad de exportar resultados en formato vectorial EMF. Para ello, se desarrolló un escritor propio que genera los ejes, rótulos y líneas como elementos vectoriales, mientras que los mapas de calor se incorporan como imágenes. Por defecto, los archivos exportados se guardan en la carpeta \texttt{archivos/} del proyecto abierto.
-\end{itemize}
-
-\subparagraph{Interfaz e interacción:} Una de las decisiones técnicas relacionadas con la interfaz fue evitar que los avisos sobre los resultados de los cálculos abrieran ventanas modales. Esto se debe a que este tipo de ventanas genera un bucle de eventos adicional que podía provocar cierres inesperados cuando se seguían ejecutando los temporizadores de VTK. Por esta razón, se optó por utilizar avisos que no bloquean la interacción del usuario con la aplicación.
+Finalmente, la forma de comunicar estos resultados también influyó en la estabilidad. Los avisos sobre los resultados de los cálculos dejaron de abrir ventanas modales, porque este tipo de ventanas genera un bucle de eventos adicional que podía provocar cierres inesperados cuando se seguían ejecutando los temporizadores de VTK. En su lugar, se utilizan avisos que no bloquean la interacción del usuario con la aplicación.
 
 % ------------------------------------------------------------------
 \paragraph{Nuevas funcionalidades}
 
-\subparagraph{Proyectos y archivo \texttt{.glab}:} En Gamma Lab 1.0 no existía una forma de guardar las sesiones de trabajo. Por esta razón, al cerrar la aplicación se perdía la información relacionada con los trials, el preprocesamiento, las mediciones y la configuración de los análisis.
+Las mejoras anteriores hacen que una sesión de trabajo sea estable y confiable, pero en Gamma Lab 1.0 esa sesión se perdía al cerrar la aplicación, junto con los \ingles{trials}, el preprocesamiento, las mediciones y la configuración de los análisis. Para solucionarlo, Gamma Lab 2.0 incorpora \texttt{ProjectService} y un nuevo formato de proyecto llamado \texttt{.glab}. Cada proyecto se organiza en una carpeta con tres elementos: un manifiesto en formato JSON con extensión \texttt{.glab}, una copia del archivo de señal original y una subcarpeta \texttt{archivos/}, donde se almacenan las exportaciones. Al incluir la copia de la señal, el proyecto puede trasladarse a otro equipo sin depender de la ubicación original del archivo.
 
-Para solucionar esta limitación, Gamma Lab 2.0 incorpora \texttt{ProjectService} y un nuevo formato de proyecto llamado \texttt{.glab}. Cada proyecto se organiza en una carpeta que contiene tres elementos principales: un manifiesto en formato JSON con extensión \texttt{.glab}, una copia del archivo de señal original y una subcarpeta llamada \texttt{archivos/}, donde se almacenan las exportaciones. Al incluir una copia de la señal dentro del proyecto, es posible trasladarlo a otro equipo sin depender de la ubicación original del archivo.
+El manifiesto aplica el mismo principio de las recetas: en lugar de guardar las matrices de datos, almacena la información necesaria para reconstruirlas al abrir el proyecto. Así, los \ingles{trials} se guardan mediante sus parámetros de recorte, los índices de los elementos descartados y las recetas de preprocesamiento aplicadas; los análisis, mediante los parámetros de cada extensión que tenga habilitada la opción \texttt{saves\_analysis: true}; y la frecuencia de muestreo, junto con su origen, lo que permite identificar si fue modificada manualmente. Las mediciones son la excepción y se almacenan completas, porque contienen pocos datos y dependen de puntos que el usuario marca manualmente. Con esta estructura, los archivos de proyecto son más livianos, fáciles de consultar y cuentan con una versión de esquema (\texttt{schema\_version}). Además, al reconstruir los datos con el mismo código de procesamiento, se busca obtener los mismos resultados que se tenían antes de cerrar el proyecto.
 
-Una de las principales decisiones de diseño fue evitar guardar directamente las matrices de datos dentro del manifiesto. En su lugar, se almacena la información necesaria para reconstruirlas cuando se vuelve a abrir el proyecto.
-
-Por ejemplo, los trials se guardan mediante sus parámetros de recorte, los índices de los elementos descartados y las recetas de preprocesamiento aplicadas. Por su parte, los análisis almacenan los parámetros utilizados por cada extensión que tenga habilitada la opción \texttt{saves\_analysis: true}. También se guarda la frecuencia de muestreo y su origen, lo que permite identificar si fue modificada manualmente.
-
-Las mediciones son la excepción, ya que se almacenan completas. Esto se debe a que contienen pocos datos y dependen de puntos que el usuario marca manualmente.
-
-Con esta estructura, los archivos de proyecto son más livianos, fáciles de consultar y cuentan con una versión de esquema mediante \texttt{schema\_version}. Además, al reconstruir los datos utilizando el mismo código de procesamiento, se busca obtener los mismos resultados que se tenían antes de cerrar el proyecto.
-
-El servicio también permite identificar si existen cambios sin guardar mediante el estado \textit{dirty}. Para evitar problemas con los archivos, impide guardar proyectos directamente en carpetas del sistema, como Escritorio, Documentos o Descargas. Asimismo, evita copiar nuevamente la señal cuando esta ya se encuentra dentro del proyecto.
-
-La copia de la señal se realiza por bloques y se guarda inicialmente en un archivo temporal. Una vez finalizada correctamente, este archivo se renombra para completar la operación. De esta manera, si el usuario cancela la copia, no queda un archivo incompleto. Finalmente, el sistema operativo puede abrir directamente los archivos \texttt{.glab} utilizando Gamma Lab.
+\texttt{ProjectService} también protege la integridad del proyecto. El estado \textit{\ingles{dirty}} permite identificar si existen cambios sin guardar, y el servicio impide guardar proyectos directamente en carpetas del sistema, como Escritorio, Documentos o Descargas. Asimismo, evita copiar nuevamente la señal cuando ya se encuentra dentro del proyecto y, cuando sí debe copiarla, lo hace por bloques en un archivo temporal que solo se renombra al finalizar correctamente, de manera que una copia cancelada no deja un archivo incompleto. Finalmente, el sistema operativo puede abrir directamente los archivos \texttt{.glab} utilizando Gamma Lab.
 
 % ------------------------------------------------------------------
 \paragraph{Flujo general de la aplicación}
 
-\subparagraph{Arranque:} Cuando se inicia Gamma Lab, el archivo \texttt{main.py} se encarga de crear la aplicación Qt y mostrar la pantalla de bienvenida. Después, se crea el \texttt{Kernel} y se registran los servicios principales: \texttt{DataStore}, \texttt{FileIO} y \texttt{TaskService}.
+Los componentes descritos actúan de forma conjunta a lo largo de una sesión de trabajo. Cuando se inicia Gamma Lab, \texttt{main.py} crea la aplicación Qt, muestra la pantalla de bienvenida, crea el \texttt{Kernel} y registra los servicios principales: \texttt{DataStore}, \texttt{FileIO} y \texttt{TaskService}. Este registro se realiza antes de cargar las extensiones, ya que estas pueden necesitar dichos servicios desde su método \texttt{initialize}. Después, \texttt{PluginManager} recorre la carpeta \texttt{plugins/}, crea las instancias de cada extensión y las registra en el Kernel. Por último se construye \texttt{MainWindow}, que organiza las extensiones en la barra de categorías de la interfaz y se registra como un servicio adicional. Si Gamma Lab se inició directamente desde un archivo \texttt{.glab}, el sistema carga también el proyecto correspondiente.
 
-Este registro se realiza antes de cargar las extensiones, ya que estas pueden necesitar acceder a dichos servicios desde su método \texttt{initialize}.
+A partir de ese momento, el usuario puede abrir archivos de señal en formatos \texttt{.abf}, \texttt{.edf} y \texttt{.mat}, o un proyecto completo en formato \texttt{.glab}. En este segundo caso, \texttt{MainWindow} verifica primero si existen cambios sin guardar o cálculos en ejecución, y luego solicita a \texttt{TaskService} el proceso de preparación mediante \texttt{preparar\_apertura()}. Un hilo de trabajo lee el manifiesto y el archivo de señal a través de \texttt{FileIOService}, sin modificar todavía el \texttt{DataStore} ni la interfaz gráfica, conforme a la regla de escritura descrita anteriormente. Solo cuando la lectura finaliza correctamente se libera el proyecto anterior y se ejecuta, desde el hilo de la interfaz, el método \texttt{open()}. Este registra la nueva señal como activa, aplica la frecuencia de muestreo corregida, reconstruye los \ingles{trials} a partir de sus parámetros de recorte y recupera los descartes y luego las recetas de preprocesamiento sobre el conjunto derivado; este orden es importante, porque cada receta conserva los descartes vigentes cuando fue aplicada. Finalmente, se restauran las mediciones y se envían los parámetros guardados a las extensiones correspondientes. Si la lectura falla o el usuario la cancela, el proyecto que estaba abierto se mantiene sin cambios.
 
-Una vez registrados los servicios, \texttt{PluginManager} recorre la carpeta \texttt{plugins/}, crea las instancias de cada extensión y las registra en el Kernel. Finalmente, se construye \texttt{MainWindow}, que organiza las extensiones registradas en la barra de categorías de la interfaz y se registra como un servicio adicional.
+Con la señal cargada, el usuario puede generar \ingles{trials}, realizar tareas de preprocesamiento, como filtrado, eliminación de artefactos y ajuste de la frecuencia de muestreo, y ejecutar los análisis disponibles. Antes de iniciar cada análisis, el sistema valida los parámetros ingresados, cancela cualquier cálculo anterior de la misma extensión y envía la nueva tarea a \texttt{TaskService}. Cuando el cálculo termina correctamente, el resultado llega al hilo de la interfaz, se muestra mediante VTK y el proyecto se marca como modificado. Los resultados numéricos permanecen en la extensión que realizó el análisis, mientras que el \texttt{DataStore} conserva únicamente la información compartida entre los componentes: las señales, la señal activa, las mediciones y el \ingles{trial} en curso.
 
-Si Gamma Lab se inicia directamente desde un archivo \texttt{.glab}, el sistema también se encarga de cargar el proyecto correspondiente.
+Cuando el usuario decide conservar ese trabajo, el método \texttt{iniciar\_guardado()} verifica que exista una señal activa y determina la carpeta del proyecto, que puede ser una ubicación utilizada anteriormente o una nueva carpeta seleccionada y validada por el usuario. Si es necesario copiar el archivo de señal, la operación se realiza mediante \texttt{TaskService}, lo que permite consultar el progreso y cancelarla. Cuando la copia termina correctamente, \texttt{completar\_guardado()} genera el manifiesto a partir de los \ingles{trials}, las mediciones y los parámetros de cada extensión, y el estado cambia a \texttt{dirty = False}, indicando que todos los cambios han sido guardados. Si la copia falla o se cancela, el sistema revierte el estado de la operación y evita generar un archivo \texttt{.glab} incompleto.
 
-\subparagraph{Carga de señal y apertura de proyecto:} El usuario puede abrir archivos de señal en formatos \texttt{.abf}, \texttt{.edf} y \texttt{.mat}, o cargar un proyecto completo en formato \texttt{.glab}.
+La sesión termina al cerrar el proyecto o la ventana principal, y en ambos casos se utiliza el mismo mecanismo de confirmación para evitar la pérdida de información. Si hay un cálculo en ejecución, se pregunta al usuario si desea continuar, lo que implica cancelar las tareas pendientes; si existen cambios sin guardar, se muestran las opciones \textit{\ingles{Save}}, \textit{\ingles{Don't \ingles{Save}}} y \textit{\ingles{Cancel}}. Una vez autorizado el cierre, \texttt{ProjectService.close()} limpia el estado del proyecto y \texttt{liberar\_senal\_anterior()} cancela las tareas, cierra los recursos de VTK, destruye los widgets, desvincula las extensiones de la señal y libera los datos almacenados en el \texttt{DataStore}. La aplicación regresa entonces a la pantalla de inicio, con la memoria disponible para cargar una nueva señal, cerrando el problema de acumulación que presentaba Gamma Lab 1.0. Cuando se cierra completamente la aplicación, también se ejecuta el método \texttt{stop()} de cada extensión.
 
-Cuando se abre un proyecto, \texttt{MainWindow} primero verifica si existen cambios sin guardar o cálculos que todavía se estén ejecutando. Después, solicita a \texttt{TaskService} que realice el proceso de preparación mediante \texttt{preparar\_apertura()}.
+La siguiente tabla resume los principales avances de Gamma Lab 1.0 a Gamma Lab 2.0.
 
-Durante esta etapa, un hilo de trabajo se encarga de leer el manifiesto y el archivo de señal mediante \texttt{FileIOService}, sin modificar todavía el \texttt{DataStore} ni la interfaz gráfica.
-
-Solo cuando la lectura finaliza correctamente se libera el proyecto anterior y se ejecuta el método \texttt{open()}. Este proceso se realiza desde el hilo de la interfaz y se encarga de registrar la nueva señal como activa, aplicar la frecuencia de muestreo corregida, reconstruir los trials a partir de sus parámetros de recorte y recuperar los descartes y las recetas de preprocesamiento sobre el conjunto derivado.
-
-El orden de estos pasos es importante, ya que cada receta conserva los descartes que estaban vigentes cuando fue aplicada. Finalmente, se restauran las mediciones y se envían los parámetros guardados a las extensiones correspondientes.
-
-Si la lectura del proyecto falla o el usuario cancela la operación, el proyecto que estaba abierto anteriormente se mantiene sin cambios.
-
-\subparagraph{Trabajo y análisis:} Una vez cargada la señal, el usuario puede generar trials, realizar tareas de preprocesamiento, como filtrado, eliminación de artefactos y ajuste de la frecuencia de muestreo, y ejecutar los diferentes análisis disponibles.
-
-Antes de iniciar cada análisis, el sistema valida los parámetros ingresados y cancela cualquier cálculo anterior de la misma extensión. Luego, envía la nueva tarea a \texttt{TaskService} para su ejecución en segundo plano.
-
-Cuando el cálculo termina correctamente, el resultado se envía al hilo de la interfaz y se muestra mediante VTK. Además, el proyecto se marca como modificado para indicar que existen cambios que pueden guardarse.
-
-Los resultados numéricos permanecen almacenados en la extensión que realizó el análisis. En cambio, el \texttt{DataStore} conserva únicamente la información compartida entre los componentes, como las señales, la señal activa, las mediciones y el trial en curso.
-
-\subparagraph{Guardado:} El proceso de guardado comienza con el método \texttt{iniciar\_guardado()}, que verifica que exista una señal activa y determina la carpeta donde se almacenará el proyecto. Esta puede ser una ubicación utilizada anteriormente o una nueva carpeta seleccionada y validada por el usuario.
-
-Si es necesario copiar el archivo de señal, esta operación se realiza mediante \texttt{TaskService}, que permite consultar el progreso y cancelar el proceso si es necesario.
-
-Cuando la copia termina correctamente, se ejecuta \texttt{completar\_guardado()}, que genera el manifiesto consultando la información de los trials, las mediciones y los parámetros almacenados en cada extensión. Al finalizar, el estado del proyecto cambia a \texttt{dirty = False}, indicando que todos los cambios han sido guardados.
-
-Si la copia falla o se cancela, el sistema revierte el estado de la operación y evita generar un archivo de proyecto \texttt{.glab} incompleto.
-
-\subparagraph{Cierre:} Al cerrar un proyecto o la ventana principal, el sistema utiliza el mismo mecanismo de confirmación para evitar la pérdida de información.
-
-Si hay un cálculo en ejecución, se pregunta al usuario si desea continuar con el cierre, lo que implica cancelar las tareas pendientes. Si existen cambios sin guardar, se muestran las opciones \textit{Save}, \textit{Don't Save} y \textit{Cancel}, para que el usuario decida cómo proceder.
-
-Una vez autorizado el cierre, \texttt{ProjectService.close()} limpia el estado del proyecto y \texttt{liberar\_senal\_anterior()} se encarga de cancelar las tareas, cerrar los recursos de VTK, destruir los widgets, desvincular las extensiones de la señal y liberar los datos almacenados en el \texttt{DataStore}.
-
-Después de este proceso, la aplicación regresa a la pantalla de inicio y libera la memoria utilizada para que pueda cargarse una nueva señal. Cuando se cierra completamente la aplicación, también se ejecuta el método \texttt{stop()} de cada extensión.
-
-% Opcional: tabla resumen de avances v1.0 -> v2.0
 \begin{table}[H]
 \centering
 \small
@@ -737,13 +832,14 @@ Persistencia & No permitía guardar proyectos & Incorpora proyectos \texttt{.gla
 Memoria & Las señales anteriores permanecían almacenadas & Incorpora \texttt{release\_signals()} para liberar datos al cambiar de señal o cerrar un proyecto \\ \hline
 Ejecución & Los análisis se ejecutaban principalmente en el hilo de la interfaz & Incorpora \texttt{TaskService} para gestionar tareas, consultar su progreso y cancelarlas \\ \hline
 Concurrencia de datos & No existía un control centralizado & El \texttt{DataStore} utiliza un único escritor y un mecanismo de bloqueo \\ \hline
-Filtros IIR & Presentaba bloqueos con los filtros elíptico y Chebyshev & Utiliza el formato SOS con validaciones y memoización \\ \hline
+Filtros & Chebyshev y elíptico fallaban porque no estaban implementados & Ofrece Butterworth en segundo plano; los filtros internos usan SOS con validaciones y memoización \\ \hline
 Wavelet & Presentaba problemas en la normalización & Incorpora una línea base por frecuencia y utiliza la tasa de muestreo efectiva \\ \hline
 Artefactos & Los cambios se aplicaban directamente sobre los datos originales & Utiliza conjuntos derivados y recetas para reproducir los cambios \\ \hline
 Exportación & Presentaba fallas en CSV y JSON y no ofrecía exportación EMF & Corrige la exportación CSV y JSON e incorpora el formato vectorial EMF \\ \hline
 Análisis & Incluía análisis en tiempo, frecuencia y tiempo-frecuencia & Incorpora PAC (en uno y dos canales) y PPC \\ \hline
 \end{tabular}
 \caption{Principales mejoras de Gamma Lab 1.0 a Gamma Lab 2.0}
+\label{tab:avances}
 \end{table}
 
 
@@ -847,8 +943,212 @@ La barra se organizó en torno a una columna estrecha de iconos que permanece si
 
 
 
-\subsection{Tecnologías}
-\pendiente
+\subsubsection{Componentes y responsabilidades}
+
+La ampliación se organiza en tres niveles de responsabilidad, coherentes con la arquitectura de plugins de la plataforma:
+
+\begin{itemize}
+  \item \textbf{Módulos de análisis.} Cada técnica es un plugin que se integra sin modificar el núcleo (R77). Su parte de coordinación recibe los parámetros, valida las entradas, solicita el cálculo y presenta el resultado. Su parte de cálculo contiene el algoritmo propio de la técnica.
+  \item \textbf{Servicios del núcleo.} Los módulos no resuelven por sí mismos lo transversal: se apoyan en los servicios que ejecutan tareas en segundo plano, dan acceso a los trials, exportan resultados y guardan el proyecto.
+  \item \textbf{Cálculo compartido.} Las operaciones que usan varios módulos forman un componente común, de modo que cada una tiene una sola definición (Tabla~\ref{tab:componentes-compartidos}).
+\end{itemize}
+
+\begin{table}[H]
+  \centering
+  \caption{Componentes de cálculo compartidos}
+  \label{tab:componentes-compartidos}
+  \vspace{4pt}
+  \small\setstretch{1}
+  \renewcommand{\arraystretch}{1.15}
+  \begin{tabular}{|>{\raggedright\arraybackslash}p{3.6cm}|>{\raggedright\arraybackslash}p{6.7cm}|>{\raggedright\arraybackslash}p{3.9cm}|}
+    \hline
+    \textbf{Componente} & \textbf{Responsabilidad} & \textbf{Lo usan} \\ \hline
+    Filtrado & Aislar una banda de frecuencia sin introducir desfase & PAC, índice de modulación \\ \hline
+    Transformada de Gabor & Obtener la representación tiempo-frecuencia de una señal & PAC Psel, PPC \\ \hline
+    Tasa efectiva & Determinar la frecuencia de muestreo real después del submuestreo & PAC, índice de modulación, PPC \\ \hline
+    Reparto de trials & Distribuir los trials para procesarlos en paralelo, según la memoria disponible & PAC Average, PPC \\ \hline
+  \end{tabular}
+\end{table}
+
+La wavelet de Morse \cite{lilly2012} permanece dentro de PAC porque ningún otro módulo la necesita.
+
+\subsubsection{Datos de entrada y resultados}
+
+Los módulos reciben los trials activos del canal: una matriz de muestras por trials que excluye los trials descartados y que, si el canal fue preprocesado, corresponde al conjunto derivado (R79). PAC y el índice de modulación trabajan sobre el canal activo, mientras que el modo inter-canal y PPC solicitan cada canal por su nombre (R68).
+
+Un análisis no modifica la señal ni los trials. Su resultado reúne las matrices, los ejes y los datos de contexto, como la tasa efectiva y el número de trials o de ciclos. El módulo lo conserva junto con los parámetros de la ejecución, lo que permite exportarlo sin recalcular.
+
+\subsubsection{Diseño de cada técnica}
+
+\paragraph{PAC y PAC Average.}
+
+PAC estima en qué punto del ciclo de un ritmo lento aumenta la energía de las frecuencias rápidas. Sobre un trial ya submuestreado, el cálculo sigue estos pasos:
+
+\begin{enumerate}
+  \item Se filtra la señal en la banda de fase con un filtro Chebyshev II bidireccional y se obtiene la fase instantánea $\phi(t)$ con la transformada de Hilbert.
+  \item Se calcula la energía rápida con una wavelet de Morse generalizada \cite{lilly2012}, que produce una matriz $W(f,t)$ con cuatro filas por cada Hz del rango de amplitud.
+  \item Se divide el ciclo en $K=100$ intervalos de fase y se promedia la magnitud de $W$ en los instantes $T_k$ cuya fase cae en cada intervalo:
+  \[
+    \bar{A}(f,k) = \frac{1}{|T_k|}\sum_{t\in T_k}\left|W(f,t)\right|
+  \]
+  \item Se normaliza cada frecuencia con un puntaje z a lo largo de los intervalos. Así, las frecuencias de poca energía se leen igual que las fuertes, porque lo que interesa es si varían con la fase.
+  \item Se resume el acoplamiento en el vector medio, a partir del histograma de fase $h_k$:
+  \[
+    v = \frac{1}{K}\sum_{k=1}^{K} h_k\, e^{i\theta_k}
+  \]
+  donde $\theta_k$ es la fase del intervalo $k$. Su magnitud indica la intensidad del acoplamiento y su ángulo, la fase en que ocurre.
+\end{enumerate}
+
+PAC Average usa el mismo algoritmo, pero acumula las sumas y las cuentas de cada intervalo sobre todos los trials y divide una sola vez al final. Como cada trial es independiente, los trials pueden procesarse en paralelo, dentro de los límites de la memoria disponible.
+
+El mapa, el histograma y el vector se presentan juntos. PAC agrega la señal original, la banda de fase, la fase instantánea y la banda de amplitud sobre un eje de tiempo común. PAC Average no muestra esas señales, porque presentar un trial bajo un título de promedio invitaría a leerlo como promediado.
+
+\paragraph{PAC Psel.}
+
+PAC Psel analiza ciclos completos del ritmo lento. Concatena los trials en una señal continua, la filtra en la banda de fase y localiza sus picos, valles y cruces por cero. Un valle se acepta cuando a su alrededor aparece la secuencia pico, cruce, valle, cruce y pico, sus picos superan la media de los picos, el valle queda por debajo de la media de los valles y cada semiperiodo tiene una duración compatible con la banda elegida.
+
+Alrededor de cada valle aceptado se recorta una ventana y las ventanas se superponen, lo que permite comprobar visualmente si la actividad rápida se alinea con el ciclo (R75). El promedio de esas ventanas delimita el tramo entre sus dos primeros picos, y sobre ese tramo se agrupa la energía por fase. Este modo usa la wavelet de Gabor, con dos filas por Hz, y un panel de actividad rápida fijo en la banda de 25 a 129 Hz, como la referencia. Los trece paneles se presentan en una sola columna, en lugar de las ventanas separadas del sistema original.
+
+\paragraph{PAC Psel inter-canal.}
+
+Este modo aplica el diseño de PAC Psel a dos canales: los ciclos y la fase salen del canal activo, y la amplitud sale del canal que elige el usuario (R60 a R62). La segunda fuente de datos es la única diferencia entre ambos modos. Como en la referencia, los umbrales de selección de ciclos se relajan en una desviación estándar. El panel de actividad rápida se toma del canal de amplitud, decisión propia de este diseño, para que los paneles se lean juntos.
+
+\paragraph{Índice de modulación.}
+
+Este módulo barre una rejilla de bandas para mostrar qué pares están acoplados. Para cada frecuencia de fase filtra una banda de 1 Hz y para cada frecuencia de amplitud, una de 10 Hz; con la transformada de Hilbert obtiene la fase $\phi$ y la envolvente $a$. Después calcula, para cada par, el índice de Canolty \cite{canolty2006} y su variante normalizada \cite{ozkurt2011}:
+\[
+  MI = \left|\frac{1}{N}\sum_{n=1}^{N} a(n)\,e^{i\phi(n)}\right|
+  \qquad
+  MI_{norm} = \frac{\left|\sum_{n=1}^{N} a(n)\,e^{i\phi(n)}\right|}{\sum_{n=1}^{N} a(n)}
+\]
+
+El cruce entre todas las bandas se plantea como una sola operación matricial y no par por par, porque con los valores por defecto la rejilla reúne cerca de cien mil combinaciones. Los pasos de la rejilla solo mueven el centro de cada banda, no su ancho. La gráfica muestra $MI_{norm}$ y la exportación incluye las dos medidas.
+
+\paragraph{Acoplamiento fase-fase entre canales (PPC).}
+
+PPC evalúa si la diferencia de fase entre dos canales se mantiene estable a una misma frecuencia. Para cada trial, ambos canales se transforman con una wavelet de Gabor, de tres ciclos por omisión, sobre un eje logarítmico de frecuencias, y se conserva solo la fase. La referencia cuantifica esa estabilidad con el PLV. Este diseño usa en cambio la consistencia de fase por pares $C$ \cite{vinck2010}, que corrige el sesgo debido al número de muestras $N$:
+\[
+  C = \frac{N\cdot PLV^2 - 1}{N - 1}
+\]
+
+Esa medida también se abrevia PPC en la literatura (\textit{pairwise phase consistency}), pero en este documento la sigla designa el análisis de acoplamiento fase-fase.
+
+El valor de $N$ cuenta solo las muestras independientes, que son las separadas al menos dos desviaciones estándar de la wavelet. Cada frecuencia tiene su propia ventana, dimensionada para reunir 20 muestras independientes entre todos los trials, con un mínimo configurable de 50 ms por omisión y un máximo del trial completo. Junto a los extremos del trial la ventana se recorta y $N$ disminuye en la misma proporción. Si una celda no reúne dos muestras independientes, queda sin valor.
+
+Cada trial se procesa de forma independiente y los aportes se suman en un orden fijo, por lo que el resultado no depende de cuál termine primero. PPC exige que los dos canales provengan del mismo corte: si uno no tiene trials, el módulo los genera con los parámetros del otro.
+
+\subsubsection{Flujo de ejecución}
+
+Todos los módulos siguen el flujo de la Figura~\ref{fig:flujo-analitico}. El módulo lee y valida los datos y solicita el cálculo al servicio de tareas del núcleo, que lo ejecuta en segundo plano, una tarea a la vez. Mientras tanto, el cálculo informa su avance y la aplicación sigue respondiendo.
+
+\begin{figure}[!htb]
+  \centering
+  \begin{tikzpicture}[
+      font=\footnotesize,
+      actor/.style={draw, rounded corners=2pt, align=center, minimum height=9mm, minimum width=2.9cm, inner sep=2pt},
+      vida/.style={densely dashed, gray},
+      msj/.style={-{Stealth[length=2mm]}, semithick},
+      ret/.style={-{Stealth[length=2mm]}, semithick, densely dashed},
+      etq/.style={above, inner sep=2pt, align=center},
+      nota/.style={right, inner sep=3pt, align=left}]
+    \node[actor] (u) at (0,0)    {Usuario};
+    \node[actor] (p) at (4.2,0)  {Módulo de análisis};
+    \node[actor] (t) at (8.4,0)  {Servicio de tareas};
+    \node[actor] (c) at (12.6,0) {Cálculo\\(segundo plano)};
+    \foreach \n in {u,p,t,c} { \draw[vida] (\n.south) -- ++(0,-8.2); }
+    \draw[msj] (0,-1.2) -- node[etq] {solicita el análisis} (4.2,-1.2);
+    \node[nota] at (4.2,-1.75) {lee los trials y valida};
+    \draw[msj] (4.2,-2.6) -- node[etq] {solicita el cálculo} (8.4,-2.6);
+    \draw[msj] (8.4,-3.4) -- node[etq] {ejecuta} (12.6,-3.4);
+    \draw[ret] (12.6,-4.2) -- node[etq] {avance} (8.4,-4.2);
+    \draw[ret] (8.4,-4.8) -- node[etq] {avance} (4.2,-4.8);
+    \draw[ret] (4.2,-5.4) -- node[etq] {progreso} (0,-5.4);
+    \draw[ret] (12.6,-6.1) -- node[etq] {resultado} (8.4,-6.1);
+    \draw[ret] (8.4,-6.7) -- node[etq] {resultado} (4.2,-6.7);
+    \node[nota] at (4.2,-7.3) {comprueba que siga vigente,\\presenta y registra los trials};
+    \draw[ret] (4.2,-8.0) -- node[etq] {gráficas y avisos} (0,-8.0);
+  \end{tikzpicture}
+  \caption{Flujo de ejecución de un análisis}
+  \label{fig:flujo-analitico}
+\end{figure}
+
+Durante la ejecución, la tarea comunica cuatro eventos al módulo: avance, finalización, fallo y cancelación. Antes de atender cada uno, el módulo comprueba que la tarea siga siendo la vigente, porque al cambiar un parámetro se solicita otra y la anterior puede seguir activa un instante; sin esa comprobación, su resultado sobrescribiría al nuevo.
+
+La cancelación es cooperativa: el cálculo la consulta entre etapas y entre trials. Puede pedirla el usuario desde la barra de progreso, y también ocurre al salir del módulo o al lanzar otro cálculo del mismo módulo. Si la tarea no responde en dos segundos, el servicio deja de esperarla, descarta su resultado y continúa con la siguiente.
+
+\subsubsection{Diferencias deliberadas con la referencia}
+\label{sec:diferencias}
+
+La Tabla~\ref{tab:diferencias} recoge los puntos en que el diseño se aparta de BOARD-FTD-PACC. En todos ellos, replicar la referencia habría producido un resultado engañoso o la interrupción del análisis.
+
+\begin{table}[!htb]
+  \centering
+  \caption{Diferencias deliberadas con BOARD-FTD-PACC}
+  \label{tab:diferencias}
+  \vspace{4pt}
+  \small\setstretch{1}
+  \renewcommand{\arraystretch}{1.15}
+  \begin{tabular}{|>{\raggedright\arraybackslash}p{2.5cm}|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}p{3.4cm}|>{\raggedright\arraybackslash}p{4.7cm}|}
+    \hline
+    \textbf{Aspecto} & \textbf{Referencia} & \textbf{Gamma Lab 2.0} & \textbf{Motivo} \\ \hline
+    Medida de PPC & PLV & Consistencia de fase por pares & El PLV depende del número de muestras: con fases al azar da 0,63 con 2 muestras y 0,02 con 2000 \\ \hline
+    Muestras contadas & Todas las de la ventana & Solo las independientes & Contar muestras correlacionadas acerca el valor a 1: una senoidal contra ruido blanco dio 0,99993 \\ \hline
+    Ventana de PPC & Una para toda la banda & Una por frecuencia & Una ventana fija no alcanza en frecuencias bajas y sobra en las altas \\ \hline
+    Celdas no medibles en PPC & Valen 1 & Quedan sin valor & Un 1 se lee como acoplamiento perfecto \\ \hline
+    Frecuencia sobre el Nyquist & Se recorta en silencio & Se rechaza con un mensaje & Quien pide un rango debe saber si el análisis lo cubre \\ \hline
+    Bandas del comodulograma & Tope fijo de 178 bandas & Barrido completo, salvo las bandas junto al Nyquist & Con los valores por defecto, el tope dejaba vacío el 81,9~\% de las filas \\ \hline
+    Ciclos junto al borde en PAC Psel & Detienen el análisis & Se omiten y se informa cuántos & Un ciclo del borde no debe detener todo el análisis \\ \hline
+    Señales mostradas en PAC & Con un desfase acumulado & Sin desfase & El desfase contradecía al mapa que aparece junto a ellas \\ \hline
+  \end{tabular}
+\end{table}
+
+\subsubsection{Persistencia y exportación}
+
+El proyecto guarda la receta de cada análisis y no sus resultados: los parámetros y los trials usados (R23). Al abrirlo, el sistema vuelve a cortar los trials y recalcula, de modo que el proyecto se mantiene liviano y el resultado siempre proviene de la señal. Cada módulo declara si participa en este mecanismo; PAC y PPC lo hacen, y ese recálculo no marca el proyecto como modificado.
+
+Para exportar, cada módulo define las tablas de su resultado y el servicio de exportación del núcleo las escribe (R21, R65). PAC entrega parámetros, resumen, histograma y mapa; el índice de modulación, parámetros, resumen y las dos matrices; y PPC, parámetros, resumen, ventana por frecuencia, mapa y avisos. Los formatos disponibles son CSV, Excel y JSON. Las gráficas se exportan como imagen desde el mismo menú contextual de los demás análisis (R22, R66).
+
+\subsubsection{Control de entradas y avisos}
+
+La Tabla~\ref{tab:controles} resume cómo responde cada módulo ante datos o parámetros que comprometen el resultado. Los errores que detienen el cálculo se muestran en un diálogo. Las advertencias sobre un resultado ya calculado no interrumpen al usuario: PPC las muestra bajo la gráfica y el índice de modulación las deja en el registro de la aplicación.
+
+\begin{table}[!htb]
+  \centering
+  \caption{Respuesta ante entradas que comprometen el resultado}
+  \label{tab:controles}
+  \vspace{4pt}
+  \small\setstretch{1}
+  \renewcommand{\arraystretch}{1.15}
+  \begin{tabular}{|>{\raggedright\arraybackslash}p{6.9cm}|>{\raggedright\arraybackslash}p{7.8cm}|}
+    \hline
+    \textbf{Condición} & \textbf{Respuesta} \\ \hline
+    Frecuencia alta sobre el Nyquist efectivo (PAC, PPC) & Se rechaza y el mensaje indica el límite \\ \hline
+    Bandas del comodulograma junto al Nyquist & Esas bandas quedan sin valor, se calcula el resto y queda constancia en el registro \\ \hline
+    Densidad de muestreo que no divide la tasa del archivo & Todos los ejes usan la tasa efectiva, obtenida con un factor entero; PPC lo advierte bajo la gráfica \\ \hline
+    Menos de tres ciclos utilizables (PAC Psel) & Se rechaza y se sugiere ampliar la banda o usar más trials \\ \hline
+    El mismo canal dos veces (PAC Psel inter-canal, PPC) & Se rechaza antes de iniciar el cálculo \\ \hline
+    Trials de dos canales no alineados & No se calcula: PPC compara forma, inicio de cada trial, tasa y ventana, y PAC Psel inter-canal compara la forma de las matrices \\ \hline
+    Trial sin variación (PPC) & Se rechaza, porque normalizar ruido numérico daría un acoplamiento perfecto falso \\ \hline
+    Frecuencias sin dos muestras independientes (PPC) & Quedan sin valor y se advierte qué rango no se midió \\ \hline
+    Frecuencias con menos muestras de las pedidas (PPC) & Se advierte bajo la gráfica y en la exportación \\ \hline
+    Menos de seis ciclos de la banda lenta (índice de modulación) & Queda constancia en el registro; el cálculo no cambia \\ \hline
+  \end{tabular}
+\end{table}
+
+\subsubsection{Límites del diseño}
+
+El diseño tiene los siguientes límites conocidos:
+
+\begin{itemize}
+  \item \textbf{Sin prueba de significancia.} Los módulos calculan la magnitud del acoplamiento, pero no la comparan contra datos sustitutos. Esa valoración queda a cargo del investigador, con los valores exportados, y debe hacerse con cuidado porque puede aparecer acoplamiento aparente sin interacción real \cite{aru2015}.
+  \item \textbf{Submuestreo sin filtro antialias.} Se conserva para coincidir con la referencia, por lo que el contenido sobre el nuevo Nyquist se pliega sobre frecuencias bajas.
+  \item \textbf{Cancelación no inmediata.} Una etapa en curso no se puede interrumpir. Pasados dos segundos el resultado se descarta, pero el cálculo puede seguir activo hasta terminar, lo que deja parcial a R46.
+  \item \textbf{PAC entre canales solo en modo Psel.} Los modos PAC y PAC Average trabajan sobre un canal.
+  \item \textbf{Índice de modulación sin persistencia.} Este módulo todavía no participa del mecanismo de guardado, por lo que su análisis no se conserva con el proyecto.
+  \item \textbf{Aproximación de las muestras independientes en PPC.} Con ruido independiente, la media medida fue de $-0{,}009$ en lugar de 0. El sesgo va hacia abajo, de modo que no crea acoplamiento.
+  \item \textbf{Tramos planos en PPC.} Se detecta un trial constante, pero no un tramo plano dentro de un trial por lo demás activo.
+  \item \textbf{Dependencia entre módulos.} PPC reutiliza una operación de presentación de PAC, la única excepción al criterio de ubicar en el núcleo lo que comparten dos módulos.
+\end{itemize}
 
 %=====================================================================
 \capitulo{DESARROLLO DE LA SOLUCIÓN}
@@ -928,7 +1228,7 @@ La barra se organizó en torno a una columna estrecha de iconos que permanece si
 %=====================================================================
 \capitulo{REFERENCIAS}
 
-\begin{thebibliography}{9}
+\begin{thebibliography}{99}
 
 \bibitem{singh2023}
 A. K. Singh y S. Krishnan, ``Trends in EEG signal feature extraction applications,'' \textit{Frontiers in Artificial Intelligence}, vol. 5, art. 1072801, ene. 2023, doi: 10.3389/frai.2022.1072801. [En línea]. Disponible: \url{https://pmc.ncbi.nlm.nih.gov/articles/PMC9905640/}.
@@ -951,6 +1251,20 @@ S. Asencio Rodríguez, M. F. González Valencia, J. E. Martínez Clavijo, y G. V
 \bibitem{gauthier2023}
 C. Gauthier-Umaña, M. Valderrama, A. Múnera, y M. O. Nava-Mesa, ``BOARD-FTD-PACC: a graphical user interface for the synaptic and cross-frequency analysis derived from neural signals,'' \textit{Brain Informatics}, vol. 10, art. 12, may. 2023, issn: 2198-4026, doi: 10.1186/s40708-023-00191-x. [En línea]. Disponible: \url{https://link.springer.com/article/10.1186/s40708-023-00191-x}.
 
+\bibitem{canolty2006}
+R. T. Canolty, E. Edwards, S. S. Dalal, M. Soltani, S. S. Nagarajan, H. E. Kirsch, M. S. Berger, N. M. Barbaro, y R. T. Knight, ``High gamma power is phase-locked to theta oscillations in human neocortex,'' \textit{Science}, vol. 313, n.\textsuperscript{o} 5793, pp. 1626--1628, sep. 2006, doi: 10.1126/science.1128115.
+
+\bibitem{ozkurt2011}
+T. E. Özkurt y A. Schnitzler, ``A critical note on the definition of phase-amplitude cross-frequency coupling,'' \textit{Journal of Neuroscience Methods}, vol. 201, n.\textsuperscript{o} 2, pp. 438--443, 2011, doi: 10.1016/j.jneumeth.2011.08.014.
+
+\bibitem{lilly2012}
+J. M. Lilly y S. C. Olhede, ``Generalized Morse wavelets as a superfamily of analytic wavelets,'' \textit{IEEE Transactions on Signal Processing}, vol. 60, n.\textsuperscript{o} 11, pp. 6036--6041, 2012, doi: 10.1109/TSP.2012.2210890.
+
+\bibitem{vinck2010}
+M. Vinck, M. van Wingerden, T. Womelsdorf, P. Fries, y C. M. A. Pennartz, ``The pairwise phase consistency: a bias-free measure of rhythmic neuronal synchronization,'' \textit{NeuroImage}, vol. 51, n.\textsuperscript{o} 1, pp. 112--122, 2010, doi: 10.1016/j.neuroimage.2010.01.073.
+
+\bibitem{aru2015}
+J. Aru \textit{et al.}, ``Untangling cross-frequency coupling in neuroscience,'' \textit{Current Opinion in Neurobiology}, vol. 31, pp. 51--61, 2015, doi: 10.1016/j.conb.2014.08.002.
 
 \bibitem{morris2025} P. Morris y O. Calaway, "3.1 Foundations of Neural Communication," en \textit{General Psychology}, ago. 2025. [En línea]. Disponible: \url{https://acd.pressbooks.pub/generalpsychology/chapter/2192/}.
 
