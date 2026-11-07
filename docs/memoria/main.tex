@@ -596,99 +596,6 @@ Archivos de pruebas & 14 & $\approx$ 70 (concurrencia, cancelación, persistenci
 
 \subsection{Diseño detallado}
 
-\subsection{Fortalecimiento de la experiencia de navegación e interacción}
-
-\subsubsection{File}
-
-Se añadió el apartado File como primera opción de la barra de menú superior, antes de Home, Preprocessing y Analysis. Su propósito es reunir en un solo lugar las acciones que afectan a la sesión de trabajo completa y no a un análisis concreto. Su posición responde a la convención de las aplicaciones de escritorio, en las que el usuario espera encontrar en este menú las operaciones para abrir, guardar y cerrar su trabajo. A diferencia de las demás categorías, que presentan sus herramientas en la barra de plugins, File se despliega como un menú breve de seis opciones: Open signal, Open project, Save, Save as, Close project y Exit. El orden acompaña el ciclo natural de una sesión: primero se abre una señal o un proyecto, después se guarda el trabajo y, por último, se cierra el proyecto o se sale de la aplicación. La incorporación de este apartado está ligada al concepto de proyecto. Un proyecto se guarda en una carpeta propia e incluye un archivo con extensión .glab junto con una copia de la señal.
-
-\subsubsection{Home}
-
-En la versión 1.0 de GammaLab, al abrir la aplicación, el usuario no recibía ninguna explicación del funcionamiento general. Tenía que descubrir por su cuenta el orden de uso de las secciones (Home, Preprocessing y Analysis) y la existencia de funciones accesibles solo desde el clic derecho sobre una gráfica. Esto es parte de lo que dificultaba construir un modelo mental claro de la herramienta.
-
-En la actualidad GammaLab se diseñó para que "Home" fuera la primera sección que viera el usuario y la que se muestra por defecto. Concentra las acciones básicas para trabajar de esta manera el usuario conoce que funciones existen directamente con una señal ya cargada, como lo son medirla y ajustar la vista de la gráfica. Sus botones se organizan en dos grupos: Measurements (pendiente y amplitud, con menús para eliminar y para mostrar u ocultar mediciones) y Zoom (ventana emergente que actúa sobre la última gráfica visitada). El botón de la herramienta activa queda resaltado con un contorno, para que el usuario sepa en todo momento qué está usando.
-
-Para orientar al usuario nuevo se añadieron tres elementos. El primero es un panel de bienvenida en el área central, con el logotipo y la instrucción "To get started, open a signal". Se muestra solo en el Home y mientras no haya una herramienta activa. El segundo es una guía que aparece la primera vez que se ejecuta la aplicación, con el recorrido en cinco pasos (Home, Preprocessing, Analysis, las barras Explorer y Results, y el clic derecho sobre una gráfica). El tercero son mensajes explicativos por cada funcionalidad para que el usuario sepa qué hace cada herramienta antes de usarla: al pasar el cursor sobre un botón de la cinta aparece su nombre y una descripción breve de su función, y lo mismo ocurre con cada control de los paneles de parámetros.
-
-\subsubsection{Preprocessing}
-
-La sección Preprocessing reúne las herramientas que preparan la señal antes del análisis: segmentarla en trials, filtrarla y retirar artefactos. Lo que se hace aquí determina los datos sobre los que trabajan las herramientas de Analysis.
-
-Los botones se agrupan en cuadros etiquetados, igual que en el Home, y siguen el orden del flujo de trabajo, de izquierda a derecha. El grupo Trials contiene la herramienta que segmenta la señal. El grupo Prepare contiene Filter y Remove Artifact, que modifican los trials ya generados. Cada botón muestra al pasar el cursor su nombre y una descripción breve de su función.
-
-Antes, al generar los trials, el resto de la aplicación no se enteraba, y el usuario no tenía forma de saber qué trial estaba revisando. Ahora, al generarlos, la herramienta avisa a la ventana principal, que muestra un indicador con el trial visible, por ejemplo, su posición entre los válidos. El indicador dice "Sin trials generados" si aún no hay, y señala cuando el trial visible está descartado. Se actualiza al cambiar de herramienta. La barra de estado confirma cada acción, como cuántos trials se generaron y con qué umbral, o qué trial se está revisando. Previous y Next recorren los trials de forma circular, de modo que el usuario nunca llega a un extremo sin salida.
-
-\subsubsection{Barra Parameters}
-
-La barra Parameters es el panel de la derecha, que cada herramienta de Preprocessing y Analysis usa para configurar y lanzar su cálculo. Se diseñó con la misma estructura en todas las herramientas, para que lo aprendido en una sirva en las demás.
-
-\paragraph{Estructura.} El panel tiene dos zonas. La cabecera es fija, nunca se desplaza, y contiene el título "Parameters", el botón de limpiar parámetros y el botón que ejecuta la herramienta (por ejemplo, Generate). Debajo, una línea divisoria la separa del cuerpo, que reúne los controles en secciones y se desplaza solo si el panel queda estrecho, por ejemplo cuando se abre el panel de resultados. Así, el botón de ejecutar y el de limpiar siempre están a la vista, sin importar cuántos parámetros tenga la herramienta.
-
-GammaLab 2.0 incorporó tres mejoras a esta barra:
-
-\begin{enumerate}
-    \item \textbf{Descripción emergente en cada control.} Al dejar el cursor sobre un campo, lista o botón, aparece una explicación breve. Por ejemplo, "Frecuencia máxima del rango de análisis, en Hz" o "Orden del filtro. Un orden mayor corta con más pendiente". Un servicio recorre los controles de cada módulo al abrirlo y completa los que no traen descripción propia. Usa un diccionario con las descripciones de los parámetros habituales y, si el control no está ahí, el rótulo que lo acompaña. Nunca reemplaza una descripción que el módulo ya declaró. De este modo ningún control queda sin explicación, incluso en los módulos que se agreguen después.
-
-    \item \textbf{Selector de trials.} Las herramientas de análisis añaden al panel una lista con una casilla por trial válido, con los botones All y None. Los trials descartados no aparecen. Algunas herramientas solo calculan sobre un trial; en ellas la lista permite marcar uno a la vez, y al marcar uno se desmarcan los demás. Así el usuario controla sobre qué datos se calcula sin salir del panel.
-
-    \item \textbf{Limpiar restablece todo.} El botón de limpiar devuelve al valor inicial todos los controles del panel, incluidos los selectores de canal, de canal de estímulo y de modo de fin de trial. Open Signal añadió además un botón Clear que descarta el valor escrito y muestra de nuevo la frecuencia de muestreo vigente.
-\end{enumerate}
-
-\subsubsection{Barra de búsqueda}
-
-Para la primera versión de la aplicación, el usuario tenía que saber en qué sección estaba (Home, Preprocessing o Analysis), cambiar a esa sección y buscar el botón en la cinta. Esto exige haber construido de antemano un modelo mental de dónde está cada función, algo difícil para quien usa la aplicación por primera vez. Ahora, existe una barra de búsqueda visible desde cualquier sección. Lleva un ícono de lupa y el texto guía "search function by name", que indica qué se puede escribir. Funciona así:
-
-\begin{enumerate}
-    \item Al teclear, aparece una lista con los nombres de las herramientas que contienen el texto, sin distinguir mayúsculas de minúsculas. Basta escribir un fragmento, por ejemplo "wav" para encontrar las herramientas de wavelet, sin recordar el nombre completo.
-
-    \item Al elegir una sugerencia, la herramienta se abre y el campo se limpia, listo para la siguiente búsqueda. Si el usuario escribe el nombre exacto y pulsa Enter, también se abre.
-
-    \item Las sugerencias se calculan a partir de las herramientas registradas en el núcleo de la aplicación. Cuando se agrega una herramienta nueva, aparece en la búsqueda sin modificar la interfaz, en coherencia con la arquitectura de plugins.
-\end{enumerate}
-
-\subsubsection{Analysis}
-
-La sección Analysis reúne las técnicas que se calculan sobre los trials ya preparados. Es la más extensa de la aplicación, por lo que su diseño buscó que el usuario encontrara cada técnica con rapidez y supiera siempre sobre qué datos se calculó cada resultado.
-
-En la versión 1.0 de GammaLab, los botones de las técnicas no tenían un orden definido por dominio. Ahora se agrupan en cuatro cuadros etiquetados, de izquierda a derecha, por tipo de análisis: Time (Average y Event Related Potential), Frequency (FFT, FFT Average, PSD, PSD Average y Relative PSD), Time-Frequency (PAC, Modulation Index, Wavelet, Wavelet Average y PPC). El orden de los grupos y de los botones dentro de cada grupo lo declara cada herramienta en su descriptor, de modo que una técnica nueva se coloca sin modificar la interfaz. Cada botón muestra al pasar el cursor su nombre y una descripción de lo que calcula y de las opciones que ofrece.
-
-\subsubsection{Clasificación de avisos}
-
-En la clasificación anterior, todos los avisos de la aplicación eran el mismo cuadro de diálogo modal del sistema (QMessageBox). Una confirmación como "Image exported successfully" interrumpía al usuario igual que un error: había que cerrar la ventana antes de seguir trabajando. Lo único que distinguía un aviso de otro era el ícono estándar del sistema. En la práctica, el usuario aprendía a cerrar todos los mensajes sin leerlos, y los importantes se perdían entre los informativos. Ahora los avisos se clasifican en tres niveles de severidad, y cada nivel se presenta de forma distinta según cuánto debe interrumpir al usuario:
-
-\begin{table}[h]
-\centering
-\begin{tabular}{|l|l|l|l|}
-\hline
-\textbf{Nivel} & \textbf{Color} & \textbf{Presentación} & \textbf{Duración} \\
-\hline
-Información & Azul & \begin{tabular}[t]{@{}l@{}}Tarjeta no modal en la esquina\\inferior izquierda del área de trabajo\end{tabular} & Se cierra sola a los 4,5 s \\
-\hline
-Advertencia & Ámbar & Tarjeta no modal en el mismo lugar & \begin{tabular}[t]{@{}l@{}}Permanece hasta que\\el usuario la cierra\end{tabular} \\
-\hline
-Error & Rojo & Cuadro de diálogo modal & \begin{tabular}[t]{@{}l@{}}Exige que el usuario\\lo atienda\end{tabular} \\
-\hline
-\end{tabular}
-\caption{Niveles de severidad de los avisos en GammaLab 2.0.}
-\label{tab:niveles-avisos}
-\end{table}
-
-La lógica detrás de esta clasificación es que el aviso debe interrumpir tanto como lo merezca lo ocurrido. Una confirmación de éxito no requiere acción, así que desaparece sola y no estorba. Una advertencia, por ejemplo "Marca al menos un trial para calcular", sí requiere que el usuario la note, pero no detiene su trabajo, así que se queda visible sin bloquear la ventana. Un error detiene lo que el usuario estaba haciendo, así que es el único que bloquea hasta que lo atiende.
-
-\paragraph{Organización.} Las tarjetas aparecen abajo a la izquierda porque en todas las herramientas el panel de parámetros está a la derecha. Así los avisos caen sobre la gráfica y no tapan los controles. Se apilan con el más reciente abajo, y se muestran como máximo cuatro a la vez: cuando hay más, se descartan primero los informativos más antiguos y las advertencias se conservan.
-
-\subsubsection{Barra lateral: Explorer y Results}
-
-Para fortalecer la navegación se diseñó una barra lateral ubicada en el costado izquierdo de la ventana principal. Esta barra concentra los accesos a los recursos que pertenecen a todo el proyecto y no a un análisis en particular: los archivos del proyecto (Explorer) y las tablas de mediciones (Results). Antes de este diseño, el usuario debía buscar esta información en menús o ventanas separadas. Con la barra lateral, ambos recursos quedan a un clic de distancia desde cualquier punto de la aplicación.
-
-La barra se organizó en torno a una columna estrecha de iconos que permanece siempre visible. En la parte superior se ubican los accesos a Explorer y Results, que son las herramientas de trabajo, y en la parte inferior se separa el acceso a Help, que cumple una función de soporte. La columna sirve como punto de referencia fijo y, gracias a su reducido ancho, cede casi todo el espacio a las señales y gráficas. Para no ocupar espacio con etiquetas permanentes, cada botón presenta un icono y muestra su nombre al pasar el cursor, momento en el que también se resalta con un azul claro que indica que es interactivo.
-
-\paragraph{Explorer.} El Explorer se concibió como un panel de consulta y organización de archivos. Se abre y se cierra con el mismo botón, y su ancho se ajusta arrastrando el borde. Al reabrirlo conserva el ancho elegido, mientras que la primera vez se abre con un tamaño que permite leer los nombres de los archivos. Cuando cambia de tamaño, el área de trabajo y la barra de herramientas se reacomodan juntas, de manera que ningún elemento queda oculto. El panel muestra la carpeta real del proyecto activo, se actualiza al abrir, guardar, renombrar o cerrar un proyecto y excluye las carpetas ajenas. Además, presenta únicamente el nombre de cada elemento, lo que favorece una lectura limpia en un espacio reducido. Si no hay un proyecto abierto, en lugar de un panel vacío se muestra un mensaje que indica cómo proceder. El Explorer también permite trabajar directamente con los archivos. Con un doble clic, el usuario abre un archivo en el programa asociado del sistema, y mediante el menú contextual puede renombrar, copiar, pegar, eliminar y crear carpetas. También puede mover archivos entre carpetas arrastrándolos. Para evitar pérdidas accidentales, la eliminación solicita confirmación. Así, los datos y las exportaciones se organizan sin salir de la aplicación facilitando su usabilidad.
-
-\paragraph{Results.} El panel Results se diseñó para consultar las mediciones sin abandonar el análisis en curso, ya que en la versión anterior de GammaLab el usuario debía cambiar constantemente de pestaña para poder consultar los resultados de sus mediciones. Al ubicarse debajo del área de trabajo, permite ver las tablas y la señal al mismo tiempo, sin cambiar de pantalla. Su altura se ajusta arrastrando el borde superior, según se quiera dar prioridad a los datos o a la señal. Las mediciones de pendiente y de amplitud se separan en las pestañas Slope y Amplitude, y su contenido se actualiza cada vez que se abre el panel. La cabecera reúne el título, un menú para exportar la tabla activa a CSV o Excel y un botón de cierre, de modo que las acciones sobre los resultados quedan junto a ellos. El panel también puede cerrarse pulsando de nuevo su icono en la barra lateral.
-
-
-
 
 \subsubsection{Estructura del sistema}
 La Figura~\ref{fig:dc_sistema} muestra el diagrama de clases del sistema de Gamma Lab v.20 simplificado (Para
@@ -846,7 +753,99 @@ Análisis & Incluía análisis en tiempo, frecuencia y tiempo-frecuencia & Incor
 \pendiente
 
 \subsubsection{Interfaz de usario (UI/UX)}
-\pendiente
+
+\subsubsubsection{File}
+
+Se añadió el apartado File como primera opción de la barra de menú superior, antes de Home, Preprocessing y Analysis. Su propósito es reunir en un solo lugar las acciones que afectan a la sesión de trabajo completa y no a un análisis concreto. Su posición responde a la convención de las aplicaciones de escritorio, en las que el usuario espera encontrar en este menú las operaciones para abrir, guardar y cerrar su trabajo. A diferencia de las demás categorías, que presentan sus herramientas en la barra de plugins, File se despliega como un menú breve de seis opciones: Open signal, Open project, Save, Save as, Close project y Exit. El orden acompaña el ciclo natural de una sesión: primero se abre una señal o un proyecto, después se guarda el trabajo y, por último, se cierra el proyecto o se sale de la aplicación. La incorporación de este apartado está ligada al concepto de proyecto. Un proyecto se guarda en una carpeta propia e incluye un archivo con extensión .glab junto con una copia de la señal.
+
+\subsubsection{Home}
+
+En la versión 1.0 de GammaLab, al abrir la aplicación, el usuario no recibía ninguna explicación del funcionamiento general. Tenía que descubrir por su cuenta el orden de uso de las secciones (Home, Preprocessing y Analysis) y la existencia de funciones accesibles solo desde el clic derecho sobre una gráfica. Esto es parte de lo que dificultaba construir un modelo mental claro de la herramienta.
+
+En la actualidad GammaLab se diseñó para que "Home" fuera la primera sección que viera el usuario y la que se muestra por defecto. Concentra las acciones básicas para trabajar de esta manera el usuario conoce que funciones existen directamente con una señal ya cargada, como lo son medirla y ajustar la vista de la gráfica. Sus botones se organizan en dos grupos: Measurements (pendiente y amplitud, con menús para eliminar y para mostrar u ocultar mediciones) y Zoom (ventana emergente que actúa sobre la última gráfica visitada). El botón de la herramienta activa queda resaltado con un contorno, para que el usuario sepa en todo momento qué está usando.
+
+Para orientar al usuario nuevo se añadieron tres elementos. El primero es un panel de bienvenida en el área central, con el logotipo y la instrucción "To get started, open a signal". Se muestra solo en el Home y mientras no haya una herramienta activa. El segundo es una guía que aparece la primera vez que se ejecuta la aplicación, con el recorrido en cinco pasos (Home, Preprocessing, Analysis, las barras Explorer y Results, y el clic derecho sobre una gráfica). El tercero son mensajes explicativos por cada funcionalidad para que el usuario sepa qué hace cada herramienta antes de usarla: al pasar el cursor sobre un botón de la cinta aparece su nombre y una descripción breve de su función, y lo mismo ocurre con cada control de los paneles de parámetros.
+
+\subsubsubsection{Preprocessing}
+
+La sección Preprocessing reúne las herramientas que preparan la señal antes del análisis: segmentarla en trials, filtrarla y retirar artefactos. Lo que se hace aquí determina los datos sobre los que trabajan las herramientas de Analysis.
+
+Los botones se agrupan en cuadros etiquetados, igual que en el Home, y siguen el orden del flujo de trabajo, de izquierda a derecha. El grupo Trials contiene la herramienta que segmenta la señal. El grupo Prepare contiene Filter y Remove Artifact, que modifican los trials ya generados. Cada botón muestra al pasar el cursor su nombre y una descripción breve de su función.
+
+Antes, al generar los trials, el resto de la aplicación no se enteraba, y el usuario no tenía forma de saber qué trial estaba revisando. Ahora, al generarlos, la herramienta avisa a la ventana principal, que muestra un indicador con el trial visible, por ejemplo, su posición entre los válidos. El indicador dice "Sin trials generados" si aún no hay, y señala cuando el trial visible está descartado. Se actualiza al cambiar de herramienta. La barra de estado confirma cada acción, como cuántos trials se generaron y con qué umbral, o qué trial se está revisando. Previous y Next recorren los trials de forma circular, de modo que el usuario nunca llega a un extremo sin salida.
+
+\subsubsubsection{Barra Parameters}
+
+La barra Parameters es el panel de la derecha, que cada herramienta de Preprocessing y Analysis usa para configurar y lanzar su cálculo. Se diseñó con la misma estructura en todas las herramientas, para que lo aprendido en una sirva en las demás.
+
+\paragraph{Estructura.} El panel tiene dos zonas. La cabecera es fija, nunca se desplaza, y contiene el título "Parameters", el botón de limpiar parámetros y el botón que ejecuta la herramienta (por ejemplo, Generate). Debajo, una línea divisoria la separa del cuerpo, que reúne los controles en secciones y se desplaza solo si el panel queda estrecho, por ejemplo cuando se abre el panel de resultados. Así, el botón de ejecutar y el de limpiar siempre están a la vista, sin importar cuántos parámetros tenga la herramienta.
+
+GammaLab 2.0 incorporó tres mejoras a esta barra:
+
+\begin{enumerate}
+    \item \textbf{Descripción emergente en cada control.} Al dejar el cursor sobre un campo, lista o botón, aparece una explicación breve. Por ejemplo, "Frecuencia máxima del rango de análisis, en Hz" o "Orden del filtro. Un orden mayor corta con más pendiente". Un servicio recorre los controles de cada módulo al abrirlo y completa los que no traen descripción propia. Usa un diccionario con las descripciones de los parámetros habituales y, si el control no está ahí, el rótulo que lo acompaña. Nunca reemplaza una descripción que el módulo ya declaró. De este modo ningún control queda sin explicación, incluso en los módulos que se agreguen después.
+
+    \item \textbf{Selector de trials.} Las herramientas de análisis añaden al panel una lista con una casilla por trial válido, con los botones All y None. Los trials descartados no aparecen. Algunas herramientas solo calculan sobre un trial; en ellas la lista permite marcar uno a la vez, y al marcar uno se desmarcan los demás. Así el usuario controla sobre qué datos se calcula sin salir del panel.
+
+    \item \textbf{Limpiar restablece todo.} El botón de limpiar devuelve al valor inicial todos los controles del panel, incluidos los selectores de canal, de canal de estímulo y de modo de fin de trial. Open Signal añadió además un botón Clear que descarta el valor escrito y muestra de nuevo la frecuencia de muestreo vigente.
+\end{enumerate}
+
+\subsubsubsection{Barra de búsqueda}
+
+Para la primera versión de la aplicación, el usuario tenía que saber en qué sección estaba (Home, Preprocessing o Analysis), cambiar a esa sección y buscar el botón en la cinta. Esto exige haber construido de antemano un modelo mental de dónde está cada función, algo difícil para quien usa la aplicación por primera vez. Ahora, existe una barra de búsqueda visible desde cualquier sección. Lleva un ícono de lupa y el texto guía "search function by name", que indica qué se puede escribir. Funciona así:
+
+\begin{enumerate}
+    \item Al teclear, aparece una lista con los nombres de las herramientas que contienen el texto, sin distinguir mayúsculas de minúsculas. Basta escribir un fragmento, por ejemplo "wav" para encontrar las herramientas de wavelet, sin recordar el nombre completo.
+
+    \item Al elegir una sugerencia, la herramienta se abre y el campo se limpia, listo para la siguiente búsqueda. Si el usuario escribe el nombre exacto y pulsa Enter, también se abre.
+
+    \item Las sugerencias se calculan a partir de las herramientas registradas en el núcleo de la aplicación. Cuando se agrega una herramienta nueva, aparece en la búsqueda sin modificar la interfaz, en coherencia con la arquitectura de plugins.
+\end{enumerate}
+
+\subsubsubsection{Analysis}
+
+La sección Analysis reúne las técnicas que se calculan sobre los trials ya preparados. Es la más extensa de la aplicación, por lo que su diseño buscó que el usuario encontrara cada técnica con rapidez y supiera siempre sobre qué datos se calculó cada resultado.
+
+En la versión 1.0 de GammaLab, los botones de las técnicas no tenían un orden definido por dominio. Ahora se agrupan en cuatro cuadros etiquetados, de izquierda a derecha, por tipo de análisis: Time (Average y Event Related Potential), Frequency (FFT, FFT Average, PSD, PSD Average y Relative PSD), Time-Frequency (PAC, Modulation Index, Wavelet, Wavelet Average y PPC). El orden de los grupos y de los botones dentro de cada grupo lo declara cada herramienta en su descriptor, de modo que una técnica nueva se coloca sin modificar la interfaz. Cada botón muestra al pasar el cursor su nombre y una descripción de lo que calcula y de las opciones que ofrece.
+
+\subsubsubsection{Clasificación de avisos}
+
+En la clasificación anterior, todos los avisos de la aplicación eran el mismo cuadro de diálogo modal del sistema (QMessageBox). Una confirmación como "Image exported successfully" interrumpía al usuario igual que un error: había que cerrar la ventana antes de seguir trabajando. Lo único que distinguía un aviso de otro era el ícono estándar del sistema. En la práctica, el usuario aprendía a cerrar todos los mensajes sin leerlos, y los importantes se perdían entre los informativos. Ahora los avisos se clasifican en tres niveles de severidad, y cada nivel se presenta de forma distinta según cuánto debe interrumpir al usuario:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|l|l|l|}
+\hline
+\textbf{Nivel} & \textbf{Color} & \textbf{Presentación} & \textbf{Duración} \\
+\hline
+Información & Azul & \begin{tabular}[t]{@{}l@{}}Tarjeta no modal en la esquina\\inferior izquierda del área de trabajo\end{tabular} & Se cierra sola a los 4,5 s \\
+\hline
+Advertencia & Ámbar & Tarjeta no modal en el mismo lugar & \begin{tabular}[t]{@{}l@{}}Permanece hasta que\\el usuario la cierra\end{tabular} \\
+\hline
+Error & Rojo & Cuadro de diálogo modal & \begin{tabular}[t]{@{}l@{}}Exige que el usuario\\lo atienda\end{tabular} \\
+\hline
+\end{tabular}
+\caption{Niveles de severidad de los avisos en GammaLab 2.0.}
+\label{tab:niveles-avisos}
+\end{table}
+
+La lógica detrás de esta clasificación es que el aviso debe interrumpir tanto como lo merezca lo ocurrido. Una confirmación de éxito no requiere acción, así que desaparece sola y no estorba. Una advertencia, por ejemplo "Marca al menos un trial para calcular", sí requiere que el usuario la note, pero no detiene su trabajo, así que se queda visible sin bloquear la ventana. Un error detiene lo que el usuario estaba haciendo, así que es el único que bloquea hasta que lo atiende.
+
+\paragraph{Organización.} Las tarjetas aparecen abajo a la izquierda porque en todas las herramientas el panel de parámetros está a la derecha. Así los avisos caen sobre la gráfica y no tapan los controles. Se apilan con el más reciente abajo, y se muestran como máximo cuatro a la vez: cuando hay más, se descartan primero los informativos más antiguos y las advertencias se conservan.
+
+\subsubsubsection{Barra lateral: Explorer y Results}
+
+Para fortalecer la navegación se diseñó una barra lateral ubicada en el costado izquierdo de la ventana principal. Esta barra concentra los accesos a los recursos que pertenecen a todo el proyecto y no a un análisis en particular: los archivos del proyecto (Explorer) y las tablas de mediciones (Results). Antes de este diseño, el usuario debía buscar esta información en menús o ventanas separadas. Con la barra lateral, ambos recursos quedan a un clic de distancia desde cualquier punto de la aplicación.
+
+La barra se organizó en torno a una columna estrecha de iconos que permanece siempre visible. En la parte superior se ubican los accesos a Explorer y Results, que son las herramientas de trabajo, y en la parte inferior se separa el acceso a Help, que cumple una función de soporte. La columna sirve como punto de referencia fijo y, gracias a su reducido ancho, cede casi todo el espacio a las señales y gráficas. Para no ocupar espacio con etiquetas permanentes, cada botón presenta un icono y muestra su nombre al pasar el cursor, momento en el que también se resalta con un azul claro que indica que es interactivo.
+
+\paragraph{Explorer.} El Explorer se concibió como un panel de consulta y organización de archivos. Se abre y se cierra con el mismo botón, y su ancho se ajusta arrastrando el borde. Al reabrirlo conserva el ancho elegido, mientras que la primera vez se abre con un tamaño que permite leer los nombres de los archivos. Cuando cambia de tamaño, el área de trabajo y la barra de herramientas se reacomodan juntas, de manera que ningún elemento queda oculto. El panel muestra la carpeta real del proyecto activo, se actualiza al abrir, guardar, renombrar o cerrar un proyecto y excluye las carpetas ajenas. Además, presenta únicamente el nombre de cada elemento, lo que favorece una lectura limpia en un espacio reducido. Si no hay un proyecto abierto, en lugar de un panel vacío se muestra un mensaje que indica cómo proceder. El Explorer también permite trabajar directamente con los archivos. Con un doble clic, el usuario abre un archivo en el programa asociado del sistema, y mediante el menú contextual puede renombrar, copiar, pegar, eliminar y crear carpetas. También puede mover archivos entre carpetas arrastrándolos. Para evitar pérdidas accidentales, la eliminación solicita confirmación. Así, los datos y las exportaciones se organizan sin salir de la aplicación facilitando su usabilidad.
+
+\paragraph{Results.} El panel Results se diseñó para consultar las mediciones sin abandonar el análisis en curso, ya que en la versión anterior de GammaLab el usuario debía cambiar constantemente de pestaña para poder consultar los resultados de sus mediciones. Al ubicarse debajo del área de trabajo, permite ver las tablas y la señal al mismo tiempo, sin cambiar de pantalla. Su altura se ajusta arrastrando el borde superior, según se quiera dar prioridad a los datos o a la señal. Las mediciones de pendiente y de amplitud se separan en las pestañas Slope y Amplitude, y su contenido se actualiza cada vez que se abre el panel. La cabecera reúne el título, un menú para exportar la tabla activa a CSV o Excel y un botón de cierre, de modo que las acciones sobre los resultados quedan junto a ellos. El panel también puede cerrarse pulsando de nuevo su icono en la barra lateral.
+
+
+
+
 
 \subsection{Tecnologías}
 \pendiente
