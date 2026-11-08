@@ -777,16 +777,32 @@ Análisis & Incluía análisis en tiempo, frecuencia y tiempo-frecuencia & Incor
 \subsubsection{Comportamiento del sistema}
 
 % ------------------------------------------------------------------
+En esta secciónse documenta algunos de los flujos más importantes del sistema.
+Los flujos documentados a continuación son:
 
-Los componentes descritos actúan de forma conjunta a lo largo de una sesión de trabajo. Cuando se inicia Gamma Lab, \textit{main.py} crea la aplicación Qt, muestra la pantalla de bienvenida, crea el \textit{Kernel} y registra los servicios principales: \textit{DataStore}, \textit{FileIO} y \textit{TaskService}. Este registro se realiza antes de cargar las extensiones, ya que estas pueden necesitar dichos servicios desde su método \textit{initialize}. Después, \textit{PluginManager} recorre la carpeta \textit{plugins/}, crea las instancias de cada extensión y las registra en el \textit{Kernel}. Por último se construye \textit{MainWindow}, que organiza las extensiones en la barra de categorías de la interfaz y se registra como un servicio adicional. Si Gamma Lab se inició directamente desde un archivo \textit{.glab}, el sistema carga también el proyecto correspondiente.
+\begin{itemize}
+  \item Guardar un proyecto
+\end{itemize}
 
-A partir de ese momento, el usuario puede abrir archivos de señal en formatos \textit{.abf}, \textit{.edf} y \textit{.mat}, o un proyecto completo en formato \textit{.glab}. En este segundo caso, \textit{MainWindow} verifica primero si existen cambios sin guardar o cálculos en ejecución, y luego solicita a \textit{TaskService} el proceso de preparación mediante \textit{preparar\_apertura()}. Un hilo de trabajo lee el manifiesto y el archivo de señal a través de \textit{FileIOService}, sin modificar todavía el \textit{DataStore} ni la interfaz gráfica, conforme a la regla de escritura descrita anteriormente. Solo cuando la lectura finaliza correctamente se libera el proyecto anterior y se ejecuta, desde el hilo de la interfaz, el método \textit{open()}. Este registra la nueva señal como activa, aplica la frecuencia de muestreo corregida, reconstruye los \textit{trials} a partir de sus parámetros de recorte y recupera los descartes y luego las recetas de preprocesamiento sobre el conjunto derivado; este orden es importante, porque cada receta conserva los descartes vigentes cuando fue aplicada. Finalmente, se restauran las mediciones y se envían los parámetros guardados a las extensiones correspondientes. Si la lectura falla o el usuario la cancela, el proyecto que estaba abierto se mantiene sin cambios.
+\begin{figure}[H]
+    \centering
+    \includegraphics[
+        width=0.7\linewidth,
+        height=0.65\textheight,
+        keepaspectratio
+    ]{Guardar_proyecto.png}
+    \caption{Diagrama de secuencia para guardar proyecto}
+    \label{fig:sdd_diagrama_guardar_proyecto}
+\end{figure}
 
-Con la señal cargada, el usuario puede generar \textit{trials}, realizar tareas de preprocesamiento, como filtrado, eliminación de artefactos y ajuste de la frecuencia de muestreo, y ejecutar los análisis disponibles. Antes de iniciar cada análisis, el sistema valida los parámetros ingresados, cancela cualquier cálculo anterior de la misma extensión y envía la nueva tarea a \textit{TaskService}. Cuando el cálculo termina correctamente, el resultado llega al hilo de la interfaz, se muestra mediante VTK y el proyecto se marca como modificado. Los resultados numéricos permanecen en la extensión que realizó el análisis, mientras que el \textit{DataStore} conserva únicamente la información compartida entre los componentes: las señales, la señal activa, las mediciones y el \textit{trial} en curso.
-
-Cuando el usuario decide conservar ese trabajo, el método \textit{iniciar\_guardado()} verifica que exista una señal activa y determina la carpeta del proyecto, que puede ser una ubicación utilizada anteriormente o una nueva carpeta seleccionada y validada por el usuario. Si es necesario copiar el archivo de señal, la operación se realiza mediante \textit{TaskService}, lo que permite consultar el progreso y cancelarla. Cuando la copia termina correctamente, \textit{completar\_guardado()} genera el manifiesto a partir de los \textit{trials}, las mediciones y los parámetros de cada extensión, y el estado cambia a \textit{dirty = False}, indicando que todos los cambios han sido guardados. Si la copia falla o se cancela, el sistema revierte el estado de la operación y evita generar un archivo \textit{.glab} incompleto.
-
-La sesión termina al cerrar el proyecto o la ventana principal, y en ambos casos se utiliza el mismo mecanismo de confirmación para evitar la pérdida de información. Si hay un cálculo en ejecución, se pregunta al usuario si desea continuar, lo que implica cancelar las tareas pendientes; si existen cambios sin guardar, se muestran las opciones \textit{Save}, \textit{Don't Save} y \textit{Cancel}. Una vez autorizado el cierre, \textit{ProjectService.close()} limpia el estado del proyecto y \textit{liberar\_senal\_anterior()} cancela las tareas, cierra los recursos de VTK, destruye los \textit{widgets}, desvincula las extensiones de la señal y libera los datos almacenados en el \textit{DataStore}. La aplicación regresa entonces a la pantalla de inicio, con la memoria disponible para cargar una nueva señal, cerrando el problema de acumulación que presentaba Gamma Lab 1.0. Cuando se cierra completamente la aplicación, también se ejecuta el método \textit{stop()} de cada extensión.
+En la figura~\ref{fig:sdd_diagrama_guardar_proyecto} se observa el flujo de guardado de un proyecto. Aquí se destacan cinco aspectos importantes del flujo de trabajo:
+\begin{itemize}
+    \item \textbf{Verificación inicial:} solo se puede guardar si hay una señal activa. Si no la hay, se lanza un \textit{RuntimeError} y el proceso se detiene.
+    \item \textbf{Validación de la carpeta:} si la ruta no es válida, se abre el selector de carpetas y se repite hasta que el usuario elija una carpeta permitida o cancele.
+    \item \textbf{Copia en segundo plano:} si hace falta copiar la señal, \textit{TaskService} la copia por bloques, muestra el progreso y permite cancelar. Si la señal ya está en la carpeta, este paso se omite.
+    \item \textbf{Generación del manifiesto:} \textit{completar\_guardado()} reúne los \textit{trials}, las medidas y los parámetros de los \textit{plugins}, escribe el archivo \textit{.glab} y marca \textit{dirty = False}.
+    \item \textbf{Protección ante fallos:} si la copia falla o se cancela, \textit{\textunderscore{}guardado\_fallido()} revierte el estado temporal y no se escribe el \textit{.glab}, así que nunca queda un proyecto incompleto.
+\end{itemize}
 
 
 
