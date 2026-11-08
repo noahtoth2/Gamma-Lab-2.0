@@ -600,7 +600,7 @@ Archivos de pruebas & 14 & $\approx$ 70 \\
 \end{table}
 
 
-\begin{figure}[!htb]
+\begin{figure}[H]
 \centering
 \begin{lstlisting}
 Gamma-Lab-2.0/
@@ -637,11 +637,11 @@ Gamma-Lab-2.0/
 \label{fig:estructura-archivos}
 \end{figure}
 
-\subsubsubsection{Orquestador de Tareas}
+\subsubsection{Orquestador de Tareas}
 
 La incorporación del orquestador implicó una reestructuración importante de la arquitectura de Gamma Lab 2.0, debido a su relación con otros componentes del sistema. Por su carácter transversal, resulta pertinente detallar su diseño y organización. Este mecanismo se integró al núcleo mediante el servicio \textit{TaskService}, encargado de organizar y gestionar el ciclo de vida de las tareas.
 
-El diseño del orquestador se basa en la gestión de \textit{tareas}, representadas por funciones de Python junto con sus argumentos. Cada tarea se caracteriza por cinco propiedades: es \textbf{pura}, pues ejecuta un cálculo y devuelve un resultado sin modificar directamente el estado compartido; es \textbf{cerrada}, pues recibe mediante parámetros todos los datos necesarios para su ejecución; es \textbf{independiente de la interfaz}, pues no depende de componentes de Qt ni de VTK; es \textbf{interrumpible}, pues puede atender solicitudes de cancelación durante su procesamiento; y es \textbf{capaz de declarar su costo}, pues proporciona información sobre sus requerimientos computacionales para ajustar la distribución de recursos.
+El diseño del orquestador se basa en la gestión de \textit{tareas}, representadas por funciones de Python junto con sus argumentos. Cada tarea se caracteriza por cinco propiedades: (1) pura, pues ejecuta un cálculo y devuelve un resultado sin modificar directamente el estado compartido; (2) cerrada, pues recibe mediante parámetros todos los datos necesarios para su ejecución; (3) independiente de la interfaz, pues no depende de componentes de Qt ni de VTK; (4) interrumpible, pues puede atender solicitudes de cancelación durante su procesamiento; y (5) capaz de declarar su costo, pues proporciona información sobre sus requerimientos computacionales para ajustar la distribución de recursos.
 
 Bajo esta estructura, un mismo \textit{plugin} puede enviar múltiples tareas al orquestador durante una sesión, cada una asociada a una operación de cómputo particular. La comunicación se establece mediante \textit{submit()}, que recibe la función, sus argumentos y un identificador de propietario. Cada solicitud cuenta con los elementos que presenta la Tabla~\ref{tab:elementos-orquestador}.
 
@@ -669,7 +669,7 @@ La ejecución se organiza en dos niveles de concurrencia. En el primero, el hilo
 
 La integración del orquestador con los demás componentes se establece mediante las relaciones que presenta la Tabla~\ref{tab:relaciones-orquestador}.
 
-\begin{table}[!htb]
+\begin{table}[H]
   \centering
   \caption{Relación del orquestador con los demás componentes}
   \label{tab:relaciones-orquestador}
@@ -695,7 +695,7 @@ La integración del orquestador con los demás componentes se establece mediante
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth,height=0.85\textheight,keepaspectratio]{diagrama_actividad_sistema_completo.png}
+  \includegraphics[width=\textwidth,height=0.44\textheight,keepaspectratio]{diagrama_actividad_sistema_completo.png}
   \caption{Diagrama de actividades de Gamma Lab 2.0}
   \label{fig:diagrama-actividad}
 \end{figure}
@@ -708,6 +708,10 @@ La integración del orquestador con los demás componentes se establece mediante
   \caption{Diagrama de despliegue de Gamma Lab 2.0}
   \label{fig:diagrama-despliegue}
 \end{figure}
+
+Gamma Lab 2.0 se despliega como una aplicación de escritorio monousuario en la estación de trabajo del investigador. Todos sus componentes se ejecutan localmente, dentro de un único proceso, sin requerir servidores, comunicación en red ni servicios externos. Por tanto, la infraestructura de ejecución y los recursos de procesamiento y memoria disponibles corresponden al propio equipo, que constituye el único nodo físico del sistema.
+
+La interacción con el entorno se realiza a través del sistema de archivos, que constituye la frontera de entrada y salida de la aplicación. Esta interacción comprende la lectura de archivos de señal (\texttt{.edf}, \texttt{.abf}, \texttt{.mat}) para el análisis, la persistencia y restauración de sesiones mediante archivos de proyecto (\texttt{.glab}), y la generación de archivos de exportación con resultados numéricos y gráficos. También incluye la lectura de archivos de configuración y descriptores de extensión, necesarios para conservar las preferencias de la aplicación y descubrir los módulos disponibles durante el arranque. De esta manera, la ejecución de Gamma Lab 2.0 se concentra en el equipo del investigador, mientras que el intercambio de información con el exterior se realiza mediante archivos almacenados en el sistema de archivos local.
 
 \subsubsection{Vista de procesos}
 

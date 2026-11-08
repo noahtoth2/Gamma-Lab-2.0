@@ -116,16 +116,22 @@ El presente documento tiene como propósito definir y documentar la arquitectura
  establecidos para GammaLab v2.0.
 
 \subsection{Alcance}
-Este documento abarca la definición de los principios y decisiones
-arquitectónicas que rigen la estructura de Gamma Lab v2.0. La arquitectura
-adopta un estilo Microkernel, compuesto por un núcleo de servicios
-esenciales y un conjunto de plugins que extienden las capacidades del
-sistema mediante componentes desacoplados. Asimismo, se describen las
-vistas arquitectónicas bajo el modelo 4+1, los componentes y sus relaciones,
-los atributos de calidad, las estrategias para alcanzarlos y las métricas
-utilizadas para su evaluación. Finalmente, se documentan los principales
-riesgos y decisiones arquitectónicas y su trazabilidad con el SRS de
-Gamma Lab.
+Este documento abarca la arquitectura de Gamma Lab v2.0. En primer lugar,
+presenta el contexto del sistema: la arquitectura de partida de Gamma Lab
+v1.0, el diagnóstico de sus limitaciones y las restricciones de software,
+hardware y datos que condicionan el diseño. A continuación, identifica a los
+interesados y sus requisitos, define los atributos de calidad que la
+solución debe exhibir y las estrategias para alcanzarlos, y declara los
+supuestos del diseño. Sobre esa base, documenta los principios y las
+decisiones arquitectónicas que rigen la estructura del sistema, que adopta
+un estilo Microkernel compuesto por un núcleo de servicios esenciales y un
+conjunto de plugins que extienden sus capacidades mediante componentes
+desacoplados. Luego describe las vistas arquitectónicas bajo el modelo 4+1,
+con los componentes y sus relaciones. Después establece los escenarios de
+calidad, las reglas de compatibilidad y versionado, y las métricas utilizadas
+para evaluar la arquitectura. Finalmente, documenta la trazabilidad entre
+los requerimientos del SRS, los casos de uso y las decisiones
+arquitectónicas.
 
 Fuera del alcance de este documento quedan los aspectos relacionados con
 la administración del proyecto, la implementación detallada de los
@@ -287,10 +293,6 @@ Las características de los datos que procesa el sistema también condicionan su
 % ======================================================================
 \section{Requisitos y atributos de calidad}
 \label{sec:requisitos_calidad}
-
-Una arquitectura no se justifica por sí misma, sino por las necesidades que debe satisfacer. Este capítulo establece ese punto de partida: identifica a las personas y entidades con interés en GammaLab v2.0 y traduce sus expectativas en requisitos que condicionan la estructura del sistema (Sección~\ref{sec:stakeholders}), define las cualidades que la solución debe exhibir y cómo se miden (Sección~\ref{sec:atributos_calidad}) y declara las condiciones que se dan por ciertas durante el diseño (Sección~\ref{sec:supuestos}).
-
-Los stakeholders y sus roles provienen del Plan de Administración del Proyecto (PMP), mientras que los requisitos no funcionales provienen de la Especificación de Requisitos de Software (SRS). Así, cada decisión descrita en los capítulos siguientes puede rastrearse hasta una necesidad concreta de un interesado.
 
 % ----------------------------------------------------------------------
 \subsection{Requisitos de los Stakeholders}
@@ -815,7 +817,11 @@ Un plugin defectuoso podría comprometer la estabilidad de la sesión (NFR-R-01,
 \section{Principios y decisiones arquitect\'onicas}
 \label{sec:principios}
 
-La arquitectura de Gamma Lab 2.0 no parte de cero. Conserva el estilo microkernel de la versión 1.0, pero corrige las limitaciones identificadas en el diagnóstico de las secciones anteriores. Por esta razón, los principios y las decisiones de esta sección se formulan como respuesta a problemas concretos y no como aspiraciones generales. La siguente tabla sintetiza esos problemas y les asigna un identificador, de D1 a D15, que se utiliza en el resto de la sección para trazar cada principio y cada decisión hasta su origen.
+% ----------------------------------------------------------------------
+\subsection{Síntesis del diagnóstico}
+\label{sec:sintesis_diagnostico}
+
+La arquitectura de Gamma Lab 2.0 no parte de cero. Conserva el estilo microkernel de la versión 1.0, pero corrige las limitaciones identificadas en el diagnóstico de las secciones anteriores. Por esta razón, los principios y las decisiones de esta sección se formulan como respuesta a problemas concretos. La siguente tabla sintetiza esos problemas y les asigna un identificador, de D1 a D15, que se utiliza en el resto de la sección para trazar cada principio y cada decisión hasta su origen.
 
 \begin{center}
 \small
@@ -1517,32 +1523,6 @@ La concentración de la lectura de archivos en el FileIOService asegura la indep
 La persistencia de proyectos mediante el ProjectService y la estructura ProjectData produce proyectos autocontenidos y versionados. La inclusión de una copia de la señal de origen permite reabrir el trabajo en otro equipo, y la versión del esquema permite detectar incompatibilidades entre versiones del formato.
 
 Por último, la jerarquía encabezada por PACAnalysisPlugin promueve la reutilización, al evitar la duplicación del cálculo del mapa de fase y frecuencia entre las variantes de análisis de uno y de dos canales.
-
-\subsubsection{Trazabilidad con los requerimientos}
-
-La Tabla~\ref{tab:trazabilidad_logica} relaciona los elementos y operaciones del modelo lógico con los casos de uso y requerimientos que los originan.
-
-\begin{table}[H]
-\centering
-\caption{Trazabilidad entre elementos de la vista lógica y requerimientos.}
-\label{tab:trazabilidad_logica}
-\begin{tabularx}{\linewidth}{@{}X p{5cm}@{}}
-\toprule
-\textbf{Elemento u operación} & \textbf{Caso de uso o requerimiento} \\
-\midrule
-IPlugin, operación clear\_params & CU-009 \\
-TaskOrchestrator, operación cancelar & CU-014 \\
-TaskOrchestrator, operación forzar\_terminacion & CU-014, excepción 2a \\
-ExportService, operación export\_vector & CU-017 \\
-ProjectService, operaciones save, save\_as y close & CU-021, R07 \\
-ProjectService, operación open, y ProjectData & CU-023 \\
-TaskOrchestrator, operación publicar\_resultado & R54 \\
-TaskOrchestrator, operación encolar & R70 \\
-MainWindow, operación build\_home\_welcome & R10 \\
-PACSingleChannelPlugin y PACInterChannelPlugin & CU-001 y CU-002 \\
-\bottomrule
-\end{tabularx}
-\end{table}
 
 
 \subsection{Vista de despliegue}
@@ -2371,8 +2351,6 @@ Los escenarios de calidad, las reglas de compatibilidad y la tabla de m\'etricas
 % ======================================================================
 \section{Trazabilidad de requerimientos y casos de uso}
 \label{sec:trazabilidad}
-
-Esta sección relaciona tres niveles de la especificación: los requerimientos del sistema, los casos de uso que los realizan y las decisiones de arquitectura que los sostienen. Su propósito es permitir dos lecturas opuestas. De los requerimientos hacia los casos de uso, para comprobar que ninguna necesidad del laboratorio quedó sin un comportamiento observable que la atienda. De los casos de uso hacia los requerimientos y las decisiones, para saber qué se compromete en el diseño cuando un caso de uso cambia.
 
 \subsection{Fuentes y criterio de construcción}
 
