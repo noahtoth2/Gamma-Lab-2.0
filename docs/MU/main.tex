@@ -108,7 +108,7 @@
 
     \vspace{0.5cm}
     {\large \textbf{Pontificia Universidad Javeriana}}\\
-    {\large Facultad de Ingenier\'ia --- Ingenier\'ia de Sistemas}
+    {\large Facultad de Ingenier\'ia, Ingenier\'ia de Sistemas}
 
     \vspace{1.5cm}
     {\Large\bfseries\color{titleblue} Manual de Usuario}\\
@@ -121,7 +121,7 @@
 
     \begin{tabular}{@{}ll@{}}
         \textbf{Proyecto} & Plataforma de an\'alisis y visualizaci\'on de se\~nales neurofisiol\'ogicas Gamma Lab \\
-        \textbf{Documento} & Manual de Usuario --- MU \\
+        \textbf{Documento} & Manual de Usuario (MU) \\
         \textbf{Versi\'on} & 2.0 \\
         \textbf{Estado} & En elaboraci\'on \\
         \textbf{Fecha} & 31 de octubre de 2026 \\
@@ -129,10 +129,10 @@
 
     \vspace{2cm}
     {\bfseries Autores}\\[0.3cm]
-    Juan Felipe Romero Ortiz --- \texttt{juanromeroo@javeriana.edu.co}\\
-    Laura Juliana Garz\'on Arias --- \texttt{garzonlj@javeriana.edu.co}\\
-    Xiomara Herrera Su\'arez --- \texttt{x\_herrera@javeriana.edu.co}\\
-    Sebasti\'an Almanza Galvis --- \texttt{s.almanzag@javeriana.edu.co}
+    Juan Felipe Romero Ortiz (\texttt{juanromeroo@javeriana.edu.co})\\
+    Laura Juliana Garz\'on Arias (\texttt{garzonlj@javeriana.edu.co})\\
+    Xiomara Herrera Su\'arez (\texttt{x\_herrera@javeriana.edu.co})\\
+    Sebasti\'an Almanza Galvis (\texttt{s.almanzag@javeriana.edu.co})
 
 \end{center}
 
@@ -157,24 +157,24 @@
 \section{Introducci\'on}
 
     \subsection{Prop\'osito del documento}
-    El presente \textbf{Manual de Usuario (MU)} tiene como prop\'osito describir el uso pr\'actico de GammaLab v2.0: la organizaci\'on de su interfaz, el recorrido completo de un an\'alisis y el funcionamiento de cada uno de los \textit{plugins} que componen el sistema. A diferencia del \textbf{Software Design Document (SDD)}, que documenta c\'omo est\'a construido el software, este manual documenta c\'omo se opera.
+    El presente \textbf{Manual de Usuario (MU)} tiene como prop\'osito describir el uso pr\'actico de GammaLab v2.0: la organizaci\'on de su interfaz, el recorrido completo de un an\'alisis y el funcionamiento de cada uno de los \textit{plugins} que componen el sistema. A diferencia del \textbf{\textit{Software Design Document} (SDD)}, que documenta c\'omo est\'a construido el \textit{software}, este manual documenta c\'omo se opera.
 
-    El documento est\'a redactado para ser le\'ido en el orden de un an\'alisis real: primero la instalaci\'on, luego la interfaz, despu\'es la carga de la se\~nal, el preprocesamiento, el an\'alisis y por \'ultimo la obtenci\'on de medidas y su exportaci\'on. Cada secci\'on de \textit{plugin} sigue siempre la misma estructura --- componentes de la pantalla, procedimiento paso a paso y resultados que se obtienen ---, de modo que tambi\'en pueda consultarse de forma suelta.
+    El documento est\'a redactado para ser le\'ido en el orden de un an\'alisis real: primero la instalaci\'on, luego la interfaz, despu\'es la carga de la se\~nal, el preprocesamiento, el an\'alisis y por \'ultimo la obtenci\'on de medidas y su exportaci\'on. Cada secci\'on de \textit{plugin} sigue siempre la misma estructura (componentes de la pantalla, procedimiento paso a paso y resultados que se obtienen), de modo que tambi\'en pueda consultarse de forma suelta.
 
     \subsection{Alcance}
     El alcance de este manual comprende la totalidad de las funcionalidades expuestas al usuario en GammaLab v2.0:
 
     \begin{itemize}
-        \item \textbf{Instalaci\'on y ejecuci\'on:} requisitos de hardware y software, instalaci\'on de Python, uso del lanzador y resoluci\'on de los problemas m\'as frecuentes.
+        \item \textbf{Instalaci\'on y ejecuci\'on:} requisitos de \textit{hardware} y \textit{software}, instalaci\'on de Python, uso del lanzador y resoluci\'on de los problemas m\'as frecuentes.
         \item \textbf{Interfaz principal:} barra de t\'itulo, cinta de secciones, barra lateral, \'area de trabajo, panel de resultados, explorador del proyecto, avisos del sistema e indicador de progreso.
-        \item \textbf{Gesti\'on de se\~nales y proyectos:} carga de se\~nales en formato ABF, EDF y MAT, y creaci\'on, guardado, apertura y cierre de proyectos \texttt{.glab}.
+        \item \textbf{Gesti\'on de se\~nales y proyectos:} carga de se\~nales en formato ABF, EDF y MAT, y creaci\'on, guardado, apertura y cierre de proyectos \textit{.glab}.
         \item \textbf{Preprocesamiento:} segmentaci\'on en \textit{trials}, eliminaci\'on de artefactos y filtrado.
         \item \textbf{An\'alisis:} dominio del tiempo, dominio de la frecuencia, dominio tiempo--frecuencia y conectividad entre canales.
         \item \textbf{Medidas:} medici\'on de pendiente y amplitud sobre las gr\'aficas, y consulta de las tablas de resultados.
         \item \textbf{Exportaci\'on:} im\'agenes y tablas en los formatos disponibles.
     \end{itemize}
 
-    Queda fuera del alcance la descripci\'on de los algoritmos y de las decisiones de implementaci\'on, que corresponden al SDD y al TD, as\'i como la especificaci\'on de requisitos, que corresponde al SRS.
+    Queda fuera del alcance la descripci\'on de los algoritmos y de las decisiones de implementaci\'on, que corresponden al SDD; la especificaci\'on de requisitos, que corresponde al SRS, y la documentaci\'on de las pruebas, que corresponde al TD.
 
     \subsection{Audiencia}
     La audiencia principal de este documento incluye:
@@ -189,9 +189,9 @@
     Para facilitar la lectura se emplean las siguientes convenciones:
 
     \begin{itemize}
-        \item Los nombres de los botones, men\'us, pesta\~nas y campos de la interfaz se escriben en \textbf{negrita} y con el mismo texto con que aparecen en pantalla, que en la versi\'on actual est\'a en ingl\'es (por ejemplo \textbf{Generate} o \textbf{Open signal}).
-        \item Las rutas de men\'u se escriben con el s\'imbolo \textbf{>} entre niveles: \textbf{File > Save as}.
-        \item Los nombres de archivo, los comandos y los valores literales se escriben en \texttt{monoespaciado}.
+        \item Los nombres de los botones, men\'us, pesta\~nas y campos de la interfaz se escriben en \textbf{\textit{negrita cursiva}} y con el mismo texto con que aparecen en pantalla, que en la versi\'on actual est\'a en ingl\'es (por ejemplo \textbf{\textit{Generate}} o \textbf{\textit{Open signal}}).
+        \item Las rutas de men\'u se escriben con el s\'imbolo \textbf{>} entre niveles: \textbf{\textit{File} > \textit{Save as}}.
+        \item Los nombres de archivo, los comandos, los valores literales y los dem\'as t\'erminos en ingl\'es se escriben en \textit{cursiva}.
         \item Los elementos numerados \textbf{(1)}, \textbf{(2)}, \textbf{(3)}\ldots\ de cada lista de \emph{Componentes} corresponden a los r\'otulos que llevan las capturas de pantalla de la secci\'on.
         \item Las limitaciones conocidas y las advertencias se presentan en recuadros.
     \end{itemize}
@@ -206,7 +206,7 @@
         \item Ejecutar an\'alisis en los dominios del tiempo, de la frecuencia y de tiempo--frecuencia, as\'i como el an\'alisis de conectividad entre dos canales.
         \item Interpretar los paneles que produce cada an\'alisis.
         \item Tomar medidas de amplitud y de pendiente sobre las gr\'aficas y consultarlas en las tablas de resultados.
-        \item Guardar el trabajo en un proyecto \texttt{.glab} y volver a abrirlo m\'as adelante.
+        \item Guardar el trabajo en un proyecto \textit{.glab} y volver a abrirlo m\'as adelante.
         \item Exportar gr\'aficas y tablas para su uso en informes y publicaciones.
     \end{enumerate}
 
@@ -237,17 +237,17 @@ Python & 3.11 & 3.11 (recomendada), 3.12 o 3.13 \\
 Pantalla & 1366 $\times$ 768 & 1920 $\times$ 1080 o superior \\
 \hline
 \end{tabularx}
-\captionof{table}{Requerimientos de hardware y software de GammaLab v2.0}
+\captionof{table}{Requerimientos de \textit{hardware} y \textit{software} de GammaLab v2.0}
 \label{tab:mu_requerimientos}
 \end{center}
 
-\aviso{Sobre la resoluci\'on de pantalla.}{GammaLab reserva un panel lateral fijo de 300 p\'ixeles para los par\'ametros de cada an\'alisis y destina el resto de la ventana al \'area de gr\'aficas. En pantallas de menos de 1366 p\'ixeles de ancho el \'area de gr\'aficas queda muy reducida, sobre todo en los an\'alisis que apilan varios paneles, como \textbf{PAC Psel}.}
+\aviso{Sobre la resoluci\'on de pantalla.}{GammaLab reserva un panel lateral fijo de 300 p\'ixeles para los par\'ametros de cada an\'alisis y destina el resto de la ventana al \'area de gr\'aficas. En pantallas de menos de 1366 p\'ixeles de ancho el \'area de gr\'aficas queda muy reducida, sobre todo en los an\'alisis que apilan varios paneles, como \textbf{\textit{PAC Psel}}.}
 
 \clearpage
 
 \section{Instalaci\'on y ejecuci\'on}
 
-Este apartado describe el procedimiento para instalar y ejecutar GammaLab v2.0 en sistemas Windows. El proyecto incluye un lanzador, \texttt{gamma\_lab.bat}, que automatiza la verificaci\'on del entorno y la instalaci\'on de las dependencias.
+Este apartado describe el procedimiento para instalar y ejecutar GammaLab v2.0 en sistemas Windows. El proyecto incluye un lanzador, \textit{gamma\_lab.bat}, que automatiza la verificaci\'on del entorno y la instalaci\'on de las dependencias.
 
     \subsection{Obtenci\'on del proyecto}
     La forma recomendada de obtener GammaLab es descargar el paquete comprimido con la \'ultima versi\'on estable desde la secci\'on \emph{Releases} del repositorio oficial del proyecto. Una vez descargado, el contenido debe descomprimirse en una carpeta sobre la que el usuario tenga permisos de escritura. Se recomienda evitar las carpetas sincronizadas con servicios en la nube, porque la escritura de los archivos del proyecto puede entrar en conflicto con la sincronizaci\'on.
@@ -255,7 +255,7 @@ Este apartado describe el procedimiento para instalar y ejecutar GammaLab v2.0 e
     \subsection{Verificaci\'on de la versi\'on de Python}
     Antes de proceder, verifique la versi\'on de Python instalada en el sistema abriendo una terminal y ejecutando:
 
-    \begin{center}\texttt{python -{}-version}\end{center}
+    \begin{center}\textit{python -{}-version}\end{center}
 
     \begin{itemize}
         \item Versiones compatibles: Python 3.11, 3.12 o 3.13.
@@ -270,33 +270,33 @@ Este apartado describe el procedimiento para instalar y ejecutar GammaLab v2.0 e
     Seleccione uno de los instaladores de 64 bits de las versiones 3.11.x, 3.12.x o 3.13.x. Durante la instalaci\'on:
 
     \begin{itemize}
-        \item Active la opci\'on \textbf{Add Python to PATH}.
+        \item Active la opci\'on \textbf{\textit{Add Python to PATH}}.
         \item Mantenga el resto de la configuraci\'on por defecto.
     \end{itemize}
 
-    Verifique la instalaci\'on ejecutando nuevamente \texttt{python -{}-version}.
+    Verifique la instalaci\'on ejecutando nuevamente \textit{python -{}-version}.
 
     \subsection{Ejecuci\'on con el lanzador}
-    El proyecto incluye el lanzador \texttt{gamma\_lab.bat}, que puede ejecutarse haciendo doble clic sobre \'el desde el Explorador de archivos o invoc\'andolo desde una terminal abierta en la carpeta del proyecto. El lanzador realiza autom\'aticamente las siguientes operaciones:
+    El proyecto incluye el lanzador \textit{gamma\_lab.bat}, que puede ejecutarse haciendo doble clic sobre \'el desde el Explorador de archivos o invoc\'andolo desde una terminal abierta en la carpeta del proyecto. El lanzador realiza autom\'aticamente las siguientes operaciones:
 
     \begin{enumerate}
         \item Detecta la versi\'on de Python instalada en el sistema.
         \item Valida que sea 3.11 o superior, y detiene la ejecuci\'on con un mensaje de error si no lo es.
-        \item Instala o actualiza las dependencias declaradas en \texttt{requirements.txt}.
-        \item Ejecuta \texttt{main.py} con la carpeta de trabajo correcta.
+        \item Instala o actualiza las dependencias declaradas en \textit{requirements.txt}.
+        \item Ejecuta \textit{main.py} con la carpeta de trabajo correcta.
     \end{enumerate}
 
     La primera ejecuci\'on es notablemente m\'as lenta que las siguientes, porque en ella se descargan e instalan todas las dependencias.
 
     \subsection{Creaci\'on de un acceso directo}
-    Para generar un acceso directo en el escritorio, ejecute el archivo \texttt{create\_shortcut.bat}. El acceso directo se crea con el nombre y el icono oficiales del proyecto, tomados de la carpeta \texttt{assets/logos}.
+    Para generar un acceso directo en el escritorio, ejecute el archivo \textit{create\_shortcut.bat}. El acceso directo se crea con el nombre y el icono oficiales del proyecto, tomados de la carpeta \textit{assets/logos}.
 
     \subsection{Ejecuci\'on manual}
     Si se prefiere ejecutar GammaLab sin el lanzador, abra una terminal en la carpeta ra\'iz del proyecto y ejecute:
 
     \begin{center}
-    \texttt{pip install -r requirements.txt}\\
-    \texttt{python main.py}
+    \textit{pip install -r requirements.txt}\\
+    \textit{python main.py}
     \end{center}
 
     \subsection{Resoluci\'on de problemas de instalaci\'on}
@@ -307,11 +307,11 @@ Este apartado describe el procedimiento para instalar y ejecutar GammaLab v2.0 e
     \hline
     \textbf{S\'intoma} & \textbf{Soluci\'on} \\
     \hline
-    \texttt{Python not found}, o bien Python no se reconoce como comando & Reinstale Python asegur\'andose de activar \textbf{Add Python to PATH} y abra una terminal nueva para que el cambio surta efecto. \\
+    \textit{Python not found}, o bien Python no se reconoce como comando & Reinstale Python asegur\'andose de activar \textbf{\textit{Add Python to PATH}} y abra una terminal nueva para que el cambio surta efecto. \\
     \hline
-    \texttt{ModuleNotFoundError} al arrancar & Reinstale las dependencias con \texttt{python -m pip install -{}-force-reinstall -r requirements.txt} \\
+    \textit{ModuleNotFoundError} al arrancar & Reinstale las dependencias con \textit{python -m pip install -{}-force-reinstall -r requirements.txt} \\
     \hline
-    Falla la instalaci\'on de dependencias & Actualice \texttt{pip} con \texttt{python -m pip install -{}-upgrade pip} y reintente con \texttt{python -m pip install -r requirements.txt} \\
+    Falla la instalaci\'on de dependencias & Actualice \textit{pip} con \textit{python -m pip install -{}-upgrade pip} y reintente con \textit{python -m pip install -r requirements.txt} \\
     \hline
     Incompatibilidad de versiones de librer\'ias & Utilice \'unicamente versiones soportadas de Python, de la 3.11 a la 3.13. Algunas librer\'ias cient\'ificas no publican paquetes para versiones m\'as recientes. \\
     \hline
@@ -328,11 +328,11 @@ Este apartado describe el procedimiento para instalar y ejecutar GammaLab v2.0 e
 
 \section{La interfaz de GammaLab}
 
-Al iniciar la aplicaci\'on se abre la ventana principal en la secci\'on \textbf{Home}, con la pantalla de bienvenida y sin ninguna se\~nal cargada. Esta secci\'on describe las zonas de la ventana y los elementos comunes a todos los \textit{plugins}; las secciones siguientes describen cada herramienta.
+Al iniciar la aplicaci\'on se abre la ventana principal en la secci\'on \textbf{\textit{Home}}, con la pantalla de bienvenida y sin ninguna se\~nal cargada. Esta secci\'on describe las zonas de la ventana y los elementos comunes a todos los \textit{plugins}; las secciones siguientes describen cada herramienta.
 
 \capturaPendiente{6.5cm}
-{Ventana principal reci\'en abierta, en la secci\'on \textbf{Home}, sin se\~nal cargada (pantalla de bienvenida).}
-{(1) la barra de t\'itulo con el logo y el r\'otulo \textbf{LAB}; (2) el texto \textbf{No signal loaded}; (3) la barra de b\'usqueda con el texto gu\'ia \emph{search function by name}; (4) la cinta de secciones \textbf{File}, \textbf{Home}, \textbf{Preprocessing} y \textbf{Analysis}; (5) la barra lateral izquierda con los iconos de \textbf{Explorer}, \textbf{Results} y \textbf{Help}; (6) el \'area central de trabajo con el t\'itulo de bienvenida.}
+{Ventana principal reci\'en abierta, en la secci\'on \textbf{\textit{Home}}, sin se\~nal cargada (pantalla de bienvenida).}
+{(1) la barra de t\'itulo con el logo y el r\'otulo \textbf{LAB}; (2) el texto \textbf{\textit{No signal loaded}}; (3) la barra de b\'usqueda con el texto gu\'ia \emph{search function by name}; (4) la cinta de secciones \textbf{\textit{File}}, \textbf{\textit{Home}}, \textbf{\textit{Preprocessing}} y \textbf{\textit{Analysis}}; (5) la barra lateral izquierda con los iconos de \textbf{\textit{Explorer}}, \textbf{\textit{Results}} y \textbf{\textit{Help}}; (6) el \'area central de trabajo con el t\'itulo de bienvenida.}
 {Ventana de bienvenida de GammaLab v2.0}
 {fig:mu_bienvenida}
 
@@ -341,7 +341,7 @@ Al iniciar la aplicaci\'on se abre la ventana principal en la secci\'on \textbf{
 
     \begin{enumerate}
         \item \textbf{Logo y r\'otulo LAB:} identifican la aplicaci\'on.
-        \item \textbf{Nombre de la se\~nal activa:} muestra el texto \textbf{No signal loaded} mientras no haya ninguna se\~nal cargada, y el nombre del archivo en cuanto se carga una.
+        \item \textbf{Nombre de la se\~nal activa:} muestra el texto \textbf{\textit{No signal loaded}} mientras no haya ninguna se\~nal cargada, y el nombre del archivo en cuanto se carga una.
         \item \textbf{Nombre del proyecto:} aparece a la derecha del nombre de la se\~nal, separado por un gui\'on, en cuanto hay un proyecto abierto. Es un campo editable: al hacer clic sobre \'el se puede renombrar el proyecto sin pasar por ning\'un men\'u.
         \item \textbf{Indicador del \textit{trial} actual:} etiqueta que informa sobre qu\'e datos est\'a trabajando el \textit{plugin} activo, por ejemplo el \textit{trial} seleccionado o la indicaci\'on de que el an\'alisis usa todos los \textit{trials} concatenados. Permanece oculta mientras no haya \textit{trials} generados.
         \item \textbf{Barra de b\'usqueda:} permite localizar un \textit{plugin} escribiendo su nombre, sin necesidad de recorrer las secciones de la cinta.
@@ -362,13 +362,13 @@ Al iniciar la aplicaci\'on se abre la ventana principal en la secci\'on \textbf{
     \hline
     \textbf{Entrada} & \textbf{Contenido} \\
     \hline
-    \textbf{File} & Men\'u desplegable con las operaciones de archivo y de proyecto: \textbf{Open signal}, \textbf{Open proyect}, \textbf{Save}, \textbf{Save as}, \textbf{Close proyect} y \textbf{Exit}. \\
+    \textbf{\textit{File}} & Men\'u desplegable con las operaciones de archivo y de proyecto: \textbf{\textit{Open signal}}, \textbf{\textit{Open project}}, \textbf{\textit{Save}}, \textbf{\textit{Save as}}, \textbf{\textit{Close project}} y \textbf{\textit{Exit}}. \\
     \hline
-    \textbf{Home} & Tablas de medidas (\textbf{Slope Results} y \textbf{Amplitude Results}), controles de borrado y de visibilidad de las medidas, y el control de \textbf{Zoom} de la gr\'afica activa. \\
+    \textbf{\textit{Home}} & Tablas de medidas (\textbf{\textit{Slope Results}} y \textbf{\textit{Amplitude Results}}), controles de borrado y de visibilidad de las medidas, y el control de \textbf{\textit{Zoom}} de la gr\'afica activa. \\
     \hline
-    \textbf{Preprocessing} & \textit{Plugins} de preparaci\'on de la se\~nal: \textbf{Trials}, \textbf{Remove Artifact} y \textbf{Filter}. \\
+    \textbf{\textit{Preprocessing}} & \textit{Plugins} de preparaci\'on de la se\~nal: \textbf{\textit{Trials}}, \textbf{\textit{Remove Artifact}} y \textbf{\textit{Filter}}. \\
     \hline
-    \textbf{Analysis} & \textit{Plugins} de an\'alisis, organizados por subcategor\'ia: \textbf{Time}, \textbf{Frequency} y \textbf{Time-Frequency}. \\
+    \textbf{\textit{Analysis}} & \textit{Plugins} de an\'alisis, organizados por subcategor\'ia: \textbf{\textit{Time}}, \textbf{\textit{Frequency}} y \textbf{\textit{Time-Frequency}}. \\
     \hline
     \end{tabularx}
     \captionof{table}{Secciones de la cinta y su contenido}
@@ -378,40 +378,40 @@ Al iniciar la aplicaci\'on se abre la ventana principal en la secci\'on \textbf{
     Al pulsar una entrada de la cinta, la fila inferior se repuebla con los botones de los \textit{plugins} de esa secci\'on, separados por un divisor y agrupados bajo el nombre de su subcategor\'ia. El bot\'on del \textit{plugin} activo queda resaltado con un borde, de modo que siempre es posible saber qu\'e herramienta est\'a abierta.
 
     \capturaPendiente{5.5cm}
-    {Secci\'on \textbf{Analysis} de la cinta, desplegada, con una se\~nal cargada y \textit{trials} generados.}
-    {(1) el grupo \textbf{Time} con \textbf{Average} y \textbf{Event Related Potential}; (2) el grupo \textbf{Frequency} con los cinco \textit{plugins} espectrales; (3) el grupo \textbf{Time-Frequency} con \textbf{PAC}, \textbf{Modulation Index}, \textbf{Wavelet}, \textbf{Wavelet Average} y \textbf{PPC}; (4) el borde resaltado del bot\'on del \textit{plugin} activo.}
-    {Secci\'on \textbf{Analysis} de la cinta}
+    {Secci\'on \textbf{\textit{Analysis}} de la cinta, desplegada, con una se\~nal cargada y \textit{trials} generados.}
+    {(1) el grupo \textbf{\textit{Time}} con \textbf{\textit{Average}} y \textbf{\textit{Event Related Potential}}; (2) el grupo \textbf{\textit{Frequency}} con los cinco \textit{plugins} espectrales; (3) el grupo \textbf{\textit{Time-Frequency}} con \textbf{PAC}, \textbf{\textit{Modulation Index}}, \textbf{\textit{Wavelet}}, \textbf{\textit{Wavelet Average}} y \textbf{PPC}; (4) el borde resaltado del bot\'on del \textit{plugin} activo.}
+    {Secci\'on \textbf{\textit{Analysis}} de la cinta}
     {fig:mu_cinta_analysis}
 
     \subsection{Barra lateral y paneles laterales}
     La franja vertical de la izquierda contiene tres iconos permanentes:
 
     \begin{enumerate}
-        \item \textbf{Explorer:} despliega y repliega el panel del explorador de archivos del proyecto.
-        \item \textbf{Results:} muestra y oculta el panel de resultados con las tablas de medidas.
-        \item \textbf{Help:} abre el \textit{plugin} de ayuda con los enlaces a la documentaci\'on y al material de apoyo.
+        \item \textbf{\textit{Explorer}:} despliega y repliega el panel del explorador de archivos del proyecto.
+        \item \textbf{\textit{Results}:} muestra y oculta el panel de resultados con las tablas de medidas.
+        \item \textbf{\textit{Help}:} abre el \textit{plugin} de ayuda, que muestra este manual en un visor integrado junto con los enlaces a la documentaci\'on y al material de apoyo.
     \end{enumerate}
 
-    El panel del \textbf{Explorer} muestra el \'arbol de carpetas del proyecto abierto. Mientras no haya ning\'un proyecto, muestra en su lugar el mensaje \emph{No project open. Save or open a project to see its folder here}. El panel arranca replegado: debe abrirse con el icono de la barra lateral.
+    El panel del \textbf{\textit{Explorer}} muestra el \'arbol de carpetas del proyecto abierto. Mientras no haya ning\'un proyecto, muestra en su lugar el mensaje \emph{No project open. Save or open a project to see its folder here}. El panel arranca replegado: debe abrirse con el icono de la barra lateral.
 
     \capturaPendiente{6cm}
-    {Panel \textbf{Explorer} desplegado con un proyecto abierto.}
-    {(1) el icono de \textbf{Explorer} en la barra lateral; (2) el r\'otulo \textbf{EXPLORER}; (3) la carpeta ra\'iz del proyecto; (4) el archivo \texttt{.glab} del proyecto; (5) la subcarpeta con la copia de la se\~nal.}
-    {Panel \textbf{Explorer} con un proyecto abierto}
+    {Panel \textbf{\textit{Explorer}} desplegado con un proyecto abierto.}
+    {(1) el icono de \textbf{\textit{Explorer}} en la barra lateral; (2) el r\'otulo \textbf{\textit{EXPLORER}}; (3) la carpeta ra\'iz del proyecto; (4) el archivo \textit{.glab} del proyecto; (5) la subcarpeta con la copia de la se\~nal.}
+    {Panel \textbf{\textit{Explorer}} con un proyecto abierto}
     {fig:mu_explorer}
 
     \subsection{Panel de resultados}
-    El panel \textbf{Results} se abre desde el icono correspondiente de la barra lateral y contiene dos pesta\~nas, \textbf{Slope} y \textbf{Amplitude}, con las tablas de todas las medidas tomadas sobre las gr\'aficas. En su cabecera dispone de dos controles:
+    El panel \textbf{\textit{Results}} se abre desde el icono correspondiente de la barra lateral y contiene dos pesta\~nas, \textbf{\textit{Slope}} y \textbf{\textit{Amplitude}}, con las tablas de todas las medidas tomadas sobre las gr\'aficas. En su cabecera dispone de dos controles:
 
     \begin{itemize}
-        \item El bot\'on \textbf{\textbullet\textbullet\textbullet}, que despliega las acciones \textbf{Export CSV} y \textbf{Export Excel (.xlsx)} y exporta la pesta\~na que est\'e activa en ese momento.
+        \item El bot\'on \textbf{\textbullet\textbullet\textbullet}, que despliega las acciones \textbf{\textit{Export CSV}} y \textbf{\textit{Export Excel (.xlsx)}} y exporta la pesta\~na que est\'e activa en ese momento.
         \item El bot\'on \textbf{\texttimes}, que cierra el panel.
     \end{itemize}
 
     \capturaPendiente{6cm}
-    {Panel \textbf{Results} abierto, con la pesta\~na \textbf{Slope} activa y varias medidas tomadas.}
-    {(1) el icono de \textbf{Results} en la barra lateral; (2) las pesta\~nas \textbf{Slope} y \textbf{Amplitude}; (3) el bot\'on \textbf{\textbullet\textbullet\textbullet} con las opciones de exportaci\'on; (4) el bot\'on \textbf{\texttimes} de cierre; (5) una fila de la tabla con la columna \textbf{Slope (m)}.}
-    {Panel \textbf{Results} con la tabla de pendientes}
+    {Panel \textbf{\textit{Results}} abierto, con la pesta\~na \textbf{\textit{Slope}} activa y varias medidas tomadas.}
+    {(1) el icono de \textbf{\textit{Results}} en la barra lateral; (2) las pesta\~nas \textbf{\textit{Slope}} y \textbf{\textit{Amplitude}}; (3) el bot\'on \textbf{\textbullet\textbullet\textbullet} con las opciones de exportaci\'on; (4) el bot\'on \textbf{\texttimes} de cierre; (5) una fila de la tabla con la columna \textbf{\textit{Slope (m)}}.}
+    {Panel \textbf{\textit{Results}} con la tabla de pendientes}
     {fig:mu_panel_resultados}
 
     \subsection{\'Area de trabajo y panel de par\'ametros}
@@ -419,10 +419,10 @@ Al iniciar la aplicaci\'on se abre la ventana principal en la secci\'on \textbf{
 
     \begin{itemize}
         \item El \textbf{\'area de gr\'aficas}, a la izquierda, donde se dibujan la se\~nal y los resultados. Admite acercamiento y desplazamiento con la rueda y el arrastre del rat\'on, y dispone de un men\'u contextual con el bot\'on derecho (Secci\'on~\ref{sec:mu_menu_contextual}).
-        \item El \textbf{panel de par\'ametros}, a la derecha, con el t\'itulo \textbf{Parameters}, los campos de configuraci\'on del an\'alisis, el bot\'on de limpieza de par\'ametros y el bot\'on \textbf{Generate} que lanza el c\'alculo.
+        \item El \textbf{panel de par\'ametros}, a la derecha, con el t\'itulo \textbf{\textit{Parameters}}, los campos de configuraci\'on del an\'alisis, el bot\'on de limpieza de par\'ametros y el bot\'on \textbf{\textit{Generate}} que lanza el c\'alculo.
     \end{itemize}
 
-    Al desplazar el cursor sobre una gr\'afica, GammaLab muestra la lectura de la posici\'on del cursor en forma de \texttt{X = \ldots\ Y = \ldots}, con el nombre de cada eje cuando est\'a disponible. Esta lectura permite situar un punto antes de tomar una medida.
+    Al desplazar el cursor sobre una gr\'afica, GammaLab muestra la lectura de la posici\'on del cursor en forma de \textit{X = \ldots\ Y = \ldots}, con el nombre de cada eje cuando est\'a disponible. Esta lectura permite situar un punto antes de tomar una medida.
 
     \subsection{Avisos del sistema}
     Los mensajes de GammaLab aparecen como tarjetas superpuestas en una esquina de la ventana, con tres niveles distinguibles por su icono y su color:
@@ -450,7 +450,7 @@ Al iniciar la aplicaci\'on se abre la ventana principal en la secci\'on \textbf{
     Los c\'alculos de GammaLab no bloquean la interfaz: se ejecutan en segundo plano y publican su avance. Mientras una operaci\'on est\'a en curso aparece una barra de progreso con el nombre de la operaci\'on, el porcentaje completado y un bot\'on \textbf{Cancelar}. Al pulsarlo, el r\'otulo cambia a \textbf{Cancelando\ldots} hasta que la operaci\'on se detiene de forma ordenada y la aplicaci\'on vuelve a su estado anterior sin resultados parciales.
 
     \capturaPendiente{4.5cm}
-    {Barra de progreso durante un c\'alculo largo, por ejemplo \textbf{Wavelet Average} sobre muchos \textit{trials}, con una tarjeta de aviso visible.}
+    {Barra de progreso durante un c\'alculo largo, por ejemplo \textbf{\textit{Wavelet Average}} sobre muchos \textit{trials}, con una tarjeta de aviso visible.}
     {(1) el nombre de la operaci\'on en curso; (2) el porcentaje de avance; (3) el bot\'on \textbf{Cancelar}; (4) una tarjeta de aviso con su bot\'on de cierre.}
     {Indicador de progreso con el bot\'on de cancelaci\'on}
     {fig:mu_progreso}
@@ -461,10 +461,10 @@ Al iniciar la aplicaci\'on se abre la ventana principal en la secci\'on \textbf{
 
 \section{Gesti\'on de se\~nales y proyectos}
 
-El flujo de trabajo de GammaLab comienza siempre con la carga de una se\~nal. A partir de ese momento, todo lo que el usuario haga ---generar \textit{trials}, filtrar, calcular an\'alisis, tomar medidas--- puede guardarse en un \textbf{proyecto}, que es el archivo con el que se retoma el trabajo m\'as adelante.
+El flujo de trabajo de GammaLab comienza siempre con la carga de una se\~nal. A partir de ese momento, todo lo que el usuario haga (generar \textit{trials}, filtrar, calcular an\'alisis, tomar medidas) puede guardarse en un \textbf{proyecto}, que es el archivo con el que se retoma el trabajo m\'as adelante.
 
     \subsection{Men\'u File}
-    La entrada \textbf{File} de la cinta despliega un men\'u con todas las operaciones de archivo:
+    La entrada \textbf{\textit{File}} de la cinta despliega un men\'u con todas las operaciones de archivo:
 
     \begin{center}
     \small
@@ -472,82 +472,82 @@ El flujo de trabajo de GammaLab comienza siempre con la carga de una se\~nal. A 
     \hline
     \textbf{Opci\'on} & \textbf{Funci\'on} \\
     \hline
-    \textbf{Open signal} & Abre el explorador del sistema para cargar una se\~nal en formato ABF, EDF o MAT. \\
+    \textbf{\textit{Open signal}} & Abre el explorador del sistema para cargar una se\~nal en formato ABF, EDF o MAT. \\
     \hline
-    \textbf{Open proyect} & Abre el explorador del sistema filtrado por \texttt{Gamma Lab Project (*.glab)} para recuperar un proyecto guardado. \\
+    \textbf{\textit{Open project}} & Abre el explorador del sistema filtrado por \textit{Gamma Lab Project (*.glab)} para recuperar un proyecto guardado. \\
     \hline
-    \textbf{Save} & Guarda el proyecto en su ubicaci\'on actual. Si el proyecto a\'un no se ha guardado nunca, se comporta como \textbf{Save as}. \\
+    \textbf{\textit{Save}} & Guarda el proyecto en su ubicaci\'on actual. Si el proyecto a\'un no se ha guardado nunca, se comporta como \textbf{\textit{Save as}}. \\
     \hline
-    \textbf{Save as} & Pide siempre una ubicaci\'on y crea el proyecto en ella. \\
+    \textbf{\textit{Save as}} & Pide siempre una ubicaci\'on y crea el proyecto en ella. \\
     \hline
-    \textbf{Close proyect} & Cierra el proyecto en curso. Si hay cambios sin guardar, GammaLab pregunta antes con las opciones \textbf{Save}, \textbf{Don't Save} y \textbf{Cancel}. \\
+    \textbf{\textit{Close project}} & Cierra el proyecto en curso. Si hay cambios sin guardar, GammaLab pregunta antes con las opciones \textbf{\textit{Save}}, \textbf{\textit{Don't Save}} y \textbf{\textit{Cancel}}. \\
     \hline
-    \textbf{Exit} & Cierra la aplicaci\'on, preguntando igualmente si hay cambios sin guardar. \\
+    \textbf{\textit{Exit}} & Cierra la aplicaci\'on, preguntando igualmente si hay cambios sin guardar. \\
     \hline
     \end{tabularx}
-    \captionof{table}{Opciones del men\'u \textbf{File}}
+    \captionof{table}{Opciones del men\'u \textbf{\textit{File}}}
     \label{tab:mu_menu_file}
     \end{center}
 
     \capturaPendiente{6cm}
-    {Men\'u \textbf{File} desplegado sobre la ventana principal.}
-    {(1) la entrada \textbf{File} de la cinta; (2) la opci\'on \textbf{Open signal}; (3) la opci\'on \textbf{Open proyect}; (4) las opciones \textbf{Save} y \textbf{Save as}; (5) las opciones \textbf{Close proyect} y \textbf{Exit}.}
-    {Men\'u \textbf{File} desplegado}
+    {Men\'u \textbf{\textit{File}} desplegado sobre la ventana principal.}
+    {(1) la entrada \textbf{\textit{File}} de la cinta; (2) la opci\'on \textbf{\textit{Open signal}}; (3) la opci\'on \textbf{\textit{Open project}}; (4) las opciones \textbf{\textit{Save}} y \textbf{\textit{Save as}}; (5) las opciones \textbf{\textit{Close project}} y \textbf{\textit{Exit}}.}
+    {Men\'u \textbf{\textit{File}} desplegado}
     {fig:mu_menu_file}
 
     \subsection{Carga de una se\~nal: Open Signal}
-    El \textit{plugin} \textbf{Open Signal} es el punto de entrada de los datos al sistema. Admite tres formatos de archivo:
+    El \textit{plugin} \textbf{\textit{Open Signal}} es el punto de entrada de los datos al sistema. Admite tres formatos de archivo:
 
     \begin{itemize}
-        \item \textbf{ABF} (\texttt{*.abf}), el formato de los registros de electrofisiolog\'ia de Axon Instruments.
-        \item \textbf{EDF} (\texttt{*.edf}), el formato europeo de intercambio de se\~nales biol\'ogicas.
-        \item \textbf{MAT} (\texttt{*.mat}), el formato de MATLAB, que permite reanalizar en GammaLab se\~nales ya preparadas en ese entorno.
+        \item \textbf{ABF} (\textit{*.abf}), el formato de los registros de electrofisiolog\'ia de Axon Instruments.
+        \item \textbf{EDF} (\textit{*.edf}), el formato europeo de intercambio de se\~nales biol\'ogicas.
+        \item \textbf{MAT} (\textit{*.mat}), el formato de MATLAB, que permite reanalizar en GammaLab se\~nales ya preparadas en ese entorno.
     \end{itemize}
 
     \subsubsection*{Componentes}
     \begin{enumerate}
-        \item \textbf{Bot\'on Open signal del men\'u File:} acceso a la carga desde la cinta.
-        \item \textbf{Bot\'on Open Signal del \textit{plugin}:} inicia el proceso de carga desde el explorador del sistema.
+        \item \textbf{Bot\'on \textit{Open signal} del men\'u \textit{File}:} acceso a la carga desde la cinta.
+        \item \textbf{Bot\'on \textit{Open Signal} del \textit{plugin}:} inicia el proceso de carga desde el explorador del sistema.
         \item \textbf{Filtro de formatos del explorador:} permite restringir la lista a un \'unico formato o ver los tres a la vez con la entrada \emph{Signals}.
     \end{enumerate}
 
     \subsubsection*{C\'omo cargar una se\~nal}
     \begin{enumerate}
-        \item Seleccione \textbf{File > Open signal}, o bien abra el \textit{plugin} \textbf{Open Signal} y pulse su bot\'on \textbf{Open Signal}.
+        \item Seleccione \textbf{\textit{File} > \textit{Open signal}}, o bien abra el \textit{plugin} \textbf{\textit{Open Signal}} y pulse su bot\'on \textbf{\textit{Open Signal}}.
         \item Se abrir\'a una ventana del explorador del sistema.
         \item Seleccione un archivo v\'alido con uno de los formatos soportados.
         \item Confirme la selecci\'on.
     \end{enumerate}
 
     \capturaPendiente{6cm}
-    {Explorador del sistema abierto por \textbf{Open Signal}, con el filtro de formatos visible.}
-    {(1) el bot\'on \textbf{Open Signal} que abri\'o el di\'alogo; (2) el desplegable de formatos con las entradas \emph{Signals}, \emph{ABF Files}, \emph{EDF Files} y \emph{MAT Files}; (3) el archivo de se\~nal seleccionado; (4) el bot\'on de confirmaci\'on.}
+    {Explorador del sistema abierto por \textbf{\textit{Open Signal}}, con el filtro de formatos visible.}
+    {(1) el bot\'on \textbf{\textit{Open Signal}} que abri\'o el di\'alogo; (2) el desplegable de formatos con las entradas \emph{Signals}, \emph{ABF Files}, \emph{EDF Files} y \emph{MAT Files}; (3) el archivo de se\~nal seleccionado; (4) el bot\'on de confirmaci\'on.}
     {Selecci\'on del archivo de se\~nal}
     {fig:mu_open_signal_dialogo}
 
     Si el archivo es v\'alido, la se\~nal se procesa y se muestra de la siguiente manera:
 
     \begin{itemize}
-        \item En el \'area central aparece la se\~nal cargada. Si contiene m\'as de tres canales, se dibujan \'unicamente los tres primeros, para que la vista siga siendo legible.
-        \item En el panel lateral aparece el listado completo de canales disponibles, desde el que se elige el canal activo para los an\'alisis posteriores.
-        \item La barra de t\'itulo reemplaza el texto \textbf{No signal loaded} por el nombre del archivo.
+        \item En el \'area central aparece la se\~nal cargada. Para que la vista siga siendo legible, se dibujan como m\'aximo tres canales a la vez; al cargar la se\~nal se muestran los tres primeros.
+        \item En el panel lateral aparece el listado completo de canales disponibles, cada uno con una casilla que indica si se dibuja. Marcando y desmarcando las casillas se eligen los canales visibles; si se intenta marcar un cuarto canal, la casilla no se marca y la barra de estado muestra el mensaje \emph{Maximum 3 visible channels}. Esta lista solo controla la visualizaci\'on: no determina el canal sobre el que trabajan los an\'alisis.
+        \item La barra de t\'itulo reemplaza el texto \textbf{\textit{No signal loaded}} por el nombre del archivo.
     \end{itemize}
 
     Si el archivo no es compatible o est\'a da\~nado, el sistema muestra un aviso de error con la causa y conserva la se\~nal anterior, si hab\'ia alguna.
 
     \capturaPendiente{6.5cm}
     {Ventana principal con una se\~nal multicanal reci\'en cargada.}
-    {(1) el nombre del archivo en la barra de t\'itulo; (2) los tres primeros canales dibujados en el \'area central; (3) el listado completo de canales en el panel lateral; (4) el canal seleccionado como canal activo; (5) la lectura \texttt{X = \ldots\ Y = \ldots} de la posici\'on del cursor.}
+    {(1) el nombre del archivo en la barra de t\'itulo; (2) los tres primeros canales dibujados en el \'area central; (3) el listado completo de canales en el panel lateral; (4) las casillas de los canales visibles; (5) la lectura \textit{X = \ldots\ Y = \ldots} de la posici\'on del cursor.}
     {Se\~nal cargada y listado de canales}
     {fig:mu_senal_cargada}
 
-    \subsubsection*{Selecci\'on del canal activo}
-    Casi todos los \textit{plugins} de GammaLab trabajan sobre un \'unico canal: el canal activo. Su elecci\'on es, por tanto, el primer par\'ametro de cualquier an\'alisis. Al cambiar de canal activo, los \textit{plugins} que ya hab\'ian calculado un resultado lo recalculan o lo descartan, seg\'un corresponda, para que nunca se muestre un resultado de un canal bajo el nombre de otro.
+    \subsubsection*{El canal activo}
+    Los an\'alisis de GammaLab trabajan sobre los \textit{trials} de un canal. Ese canal, llamado \textbf{canal activo}, no se elige en la lista de canales de \textbf{\textit{Open Signal}}: es el \'ultimo canal para el que se generaron \textit{trials} en \textbf{\textit{Preprocessing} > \textit{Trials}}. Cada canal conserva su propio conjunto de \textit{trials}, de modo que generar los de un segundo canal no borra los del primero, pero s\'i convierte al segundo en el canal activo. Para volver a trabajar sobre el primero, hay que generar de nuevo sus \textit{trials}.
 
-    \aviso{Importante.}{Los \textit{trials} pertenecen al canal sobre el que se cortaron. Si se cambia de canal activo, hay que volver a generar los \textit{trials} para ese canal antes de ejecutar los an\'alisis que los requieren. El \textit{plugin} \textbf{PPC} y el modo \textbf{PAC Psel inter-canal} necesitan expresamente que los dos canales implicados tengan \textit{trials} cortados con los mismos par\'ametros.}
+    \aviso{Importante.}{El \textit{plugin} \textbf{PPC} y el modo \textbf{\textit{PAC Psel inter-canal}} trabajan con dos canales a la vez y necesitan que ambos tengan \textit{trials} cortados con los mismos par\'ametros. En \textbf{\textit{PAC Psel inter-canal}}, adem\'as, el canal de fase es el canal activo, por lo que sus \textit{trials} deben generarse en \'ultimo lugar.}
 
     \subsection{Proyectos}
-    Un \textbf{proyecto} de GammaLab es una carpeta que contiene un archivo \texttt{.glab} y una copia de la se\~nal analizada. El archivo \texttt{.glab} es un manifiesto en formato de texto que registra:
+    Un \textbf{proyecto} de GammaLab es una carpeta que contiene un archivo \textit{.glab} y una copia de la se\~nal analizada. El archivo \textit{.glab} es un manifiesto en formato de texto que registra:
 
     \begin{itemize}
         \item El nombre del proyecto y la fecha y hora del guardado.
@@ -561,144 +561,142 @@ El flujo de trabajo de GammaLab comienza siempre con la carga de una se\~nal. A 
 
     \subsubsection*{C\'omo guardar un proyecto}
     \begin{enumerate}
-        \item Seleccione \textbf{File > Save as}.
+        \item Seleccione \textbf{\textit{File} > \textit{Save as}}.
         \item Elija la carpeta en la que desea crear el proyecto.
-        \item GammaLab crea la carpeta del proyecto, copia la se\~nal dentro de ella y escribe el archivo \texttt{.glab}.
-        \item El nombre del proyecto aparece en la barra de t\'itulo y el panel \textbf{Explorer} pasa a mostrar su carpeta.
+        \item GammaLab crea la carpeta del proyecto, copia la se\~nal dentro de ella y escribe el archivo \textit{.glab}.
+        \item El nombre del proyecto aparece en la barra de t\'itulo y el panel \textbf{\textit{Explorer}} pasa a mostrar su carpeta.
     \end{enumerate}
 
-    A partir de ese momento, \textbf{File > Save} guarda sobre la misma ubicaci\'on sin volver a preguntar. Para renombrar el proyecto basta con hacer clic sobre su nombre en la barra de t\'itulo y escribir el nuevo.
+    A partir de ese momento, \textbf{\textit{File} > \textit{Save}} guarda sobre la misma ubicaci\'on sin volver a preguntar. Para renombrar el proyecto basta con hacer clic sobre su nombre en la barra de t\'itulo y escribir el nuevo.
 
     \subsubsection*{C\'omo abrir un proyecto}
     \begin{enumerate}
-        \item Seleccione \textbf{File > Open proyect}.
-        \item Elija el archivo \texttt{.glab} del proyecto.
+        \item Seleccione \textbf{\textit{File} > \textit{Open project}}.
+        \item Elija el archivo \textit{.glab} del proyecto.
         \item GammaLab carga la se\~nal copiada en la carpeta del proyecto, reconstruye los \textit{trials}, vuelve a aplicar el filtro si estaba aplicado a los \textit{trials}, recalcula los an\'alisis guardados y restaura las medidas.
     \end{enumerate}
 
     Si el archivo del proyecto est\'a incompleto o la copia de la se\~nal no se encuentra, GammaLab muestra un aviso de error indicando el motivo y no deja el proyecto a medio abrir.
 
-    \aviso{Cambios sin guardar.}{GammaLab marca el proyecto como modificado en cuanto se genera un \textit{trial}, se ejecuta un an\'alisis o se toma una medida. Al cerrar el proyecto o la aplicaci\'on con cambios pendientes, aparece un di\'alogo con las opciones \textbf{Save}, \textbf{Don't Save} y \textbf{Cancel}.}
+    \aviso{Cambios sin guardar.}{GammaLab marca el proyecto como modificado en cuanto se genera un \textit{trial}, se ejecuta un an\'alisis o se toma una medida. Al cerrar el proyecto o la aplicaci\'on con cambios pendientes, aparece un di\'alogo con las opciones \textbf{\textit{Save}}, \textbf{\textit{Don't Save}} y \textbf{\textit{Cancel}}.}
 
 \clearpage
 
 \section{Preprocesamiento}
 
-La secci\'on \textbf{Preprocessing} de la cinta re\'une las tres herramientas que preparan la se\~nal antes del an\'alisis. El orden recomendado es el mismo en que aparecen: primero se cortan los \textit{trials}, despu\'es se eliminan los artefactos y por \'ultimo se filtra.
+La secci\'on \textbf{\textit{Preprocessing}} de la cinta re\'une las tres herramientas que preparan la se\~nal antes del an\'alisis. El orden recomendado es el mismo en que aparecen: primero se cortan los \textit{trials}, despu\'es se eliminan los artefactos y por \'ultimo se filtra.
 
     \subsection{Trials}
-    El \textit{plugin} \textbf{Trials} segmenta la se\~nal continua en \textit{trials}, es decir, en los fragmentos alineados con cada est\'imulo. Es el paso obligatorio para casi todos los an\'alisis: \textbf{Average}, \textbf{Event Related Potential}, los promedios espectrales, \textbf{PAC}, \textbf{Modulation Index}, \textbf{Wavelet Average} y \textbf{PPC} trabajan sobre \textit{trials} y no sobre la se\~nal completa.
+    El \textit{plugin} \textbf{\textit{Trials}} segmenta la se\~nal continua en \textit{trials}, es decir, en los fragmentos alineados con cada est\'imulo. Es un paso obligatorio: todos los an\'alisis de la secci\'on \textbf{\textit{Analysis}}, as\'i como \textbf{\textit{Remove Artifact}} y \textbf{\textit{Filter}}, trabajan sobre \textit{trials} y no sobre la se\~nal completa.
 
     \subsubsection*{Componentes}
     \begin{enumerate}
-        \item \textbf{Channel > Name:} canal que se va a segmentar. Es el canal cuyos datos quedar\'an en los \textit{trials}.
-        \item \textbf{Stim Channel > Name:} canal en el que se detectan los est\'imulos. Puede ser distinto del anterior: lo habitual es registrar el est\'imulo en un canal propio.
-        \item \textbf{Threshold:} umbral de detecci\'on, expresado en milivoltios. Una marca de est\'imulo se reconoce cuando el canal de est\'imulo cruza este valor.
-        \item \textbf{Stim Number:} n\'umero de est\'imulos que se espera encontrar. Sirve de comprobaci\'on: si se detecta un n\'umero distinto, conviene revisar el umbral.
-        \item \textbf{Time > Initial Time} y \textbf{Final Time:} inicio y fin de la ventana de cada \textit{trial}, en segundos, relativos a la marca del est\'imulo. Un valor inicial negativo incorpora la l\'inea de base previa al est\'imulo.
-        \item \textbf{Time > Inter Stim Time:} tiempo m\'inimo, en segundos, que debe transcurrir entre dos marcas para considerarlas est\'imulos distintos. Evita que un mismo est\'imulo se detecte varias veces por el ruido del flanco.
-        \item \textbf{Time > Trial End mode:} criterio de cierre de cada \textit{trial}, con dos opciones: \textbf{Cut to the next stim}, que corta en la marca siguiente, y \textbf{Fixed window}, que usa siempre la ventana fijada por \textbf{Initial Time} y \textbf{Final Time}.
-        \item \textbf{Bot\'on Generate:} ejecuta la segmentaci\'on.
+        \item \textbf{\textit{Channel} > \textit{Name}:} canal que se va a segmentar. Es el canal cuyos datos quedar\'an en los \textit{trials} y, al pulsar \textbf{\textit{Generate}}, pasa a ser el canal activo de los an\'alisis.
+        \item \textbf{\textit{Stim Channel} > \textit{Name}:} canal en el que se detectan los est\'imulos. Puede ser distinto del anterior: lo habitual es registrar el est\'imulo en un canal propio.
+        \item \textbf{\textit{Threshold}:} umbral de detecci\'on, expresado en milivoltios. Una marca de est\'imulo se reconoce cuando el canal de est\'imulo cruza este valor.
+        \item \textbf{\textit{Stim Number}:} n\'umero de est\'imulos que se espera encontrar. Sirve de comprobaci\'on: si se detecta un n\'umero distinto, conviene revisar el umbral.
+        \item \textbf{\textit{Time} > \textit{Initial Time}} y \textbf{\textit{Final Time}:} inicio y fin de la ventana de cada \textit{trial}, en segundos, relativos a la marca del est\'imulo. Un valor inicial negativo incorpora la l\'inea de base previa al est\'imulo.
+        \item \textbf{\textit{Time} > \textit{Inter Stim Time}:} tiempo m\'inimo, en segundos, que debe transcurrir entre dos marcas para considerarlas est\'imulos distintos. Evita que un mismo est\'imulo se detecte varias veces por el ruido del flanco.
+        \item \textbf{\textit{Time} > \textit{Trial End mode}:} criterio de cierre de cada \textit{trial}, con dos opciones: \textbf{\textit{Cut to the next stim}}, que corta en la marca siguiente, y \textbf{\textit{Fixed window}}, que usa siempre la ventana fijada por \textbf{\textit{Initial Time}} y \textbf{\textit{Final Time}}.
+        \item \textbf{Bot\'on \textit{Generate}:} ejecuta la segmentaci\'on.
         \item \textbf{Bot\'on de limpieza de par\'ametros:} devuelve todos los campos a sus valores por defecto.
-        \item \textbf{Total Trials:} n\'umero de \textit{trials} obtenidos.
-        \item \textbf{Current Trial:} \textit{trial} que se est\'a mostrando.
-        \item \textbf{Botones Previous} y \textbf{Next:} recorren los \textit{trials} uno a uno.
-        \item \textbf{Bot\'on Discard:} descarta el \textit{trial} que se muestra, de modo que no entre en ning\'un an\'alisis posterior.
+        \item \textbf{\textit{Total Trials}:} n\'umero de \textit{trials} obtenidos.
+        \item \textbf{\textit{Current Trial}:} \textit{trial} que se est\'a mostrando.
+        \item \textbf{Botones \textit{Previous}} y \textbf{\textit{Next}:} recorren los \textit{trials} uno a uno.
+        \item \textbf{Bot\'on \textit{Discard}:} descarta el \textit{trial} que se muestra, de modo que no entre en ning\'un an\'alisis posterior.
     \end{enumerate}
 
     \capturaPendiente{7cm}
-    {\textit{Plugin} \textbf{Trials} con los par\'ametros rellenos y antes de pulsar \textbf{Generate}.}
-    {(1) el desplegable \textbf{Channel > Name}; (2) el desplegable \textbf{Stim Channel > Name}; (3) el campo \textbf{Threshold} con su unidad \texttt{mV}; (4) el campo \textbf{Stim Number}; (5) los campos \textbf{Initial Time} y \textbf{Final Time}; (6) el campo \textbf{Inter Stim Time}; (7) el desplegable \textbf{Trial End mode}; (8) el bot\'on \textbf{Generate}; (9) el bot\'on de limpieza de par\'ametros.}
-    {Par\'ametros del \textit{plugin} \textbf{Trials}}
+    {\textit{Plugin} \textbf{\textit{Trials}} con los par\'ametros rellenos y antes de pulsar \textbf{\textit{Generate}}.}
+    {(1) el desplegable \textbf{\textit{Channel} > \textit{Name}}; (2) el desplegable \textbf{\textit{Stim Channel} > \textit{Name}}; (3) el campo \textbf{\textit{Threshold}} con su unidad \textit{mV}; (4) el campo \textbf{\textit{Stim Number}}; (5) los campos \textbf{\textit{Initial Time}} y \textbf{\textit{Final Time}}; (6) el campo \textbf{\textit{Inter Stim Time}}; (7) el desplegable \textbf{\textit{Trial End mode}}; (8) el bot\'on \textbf{\textit{Generate}}; (9) el bot\'on de limpieza de par\'ametros.}
+    {Par\'ametros del \textit{plugin} \textbf{\textit{Trials}}}
     {fig:mu_trials_parametros}
 
     \subsubsection*{C\'omo generar los \textit{trials}}
     \begin{enumerate}
-        \item Abra \textbf{Preprocessing > Trials}.
-        \item En \textbf{Channel > Name} elija el canal que desea segmentar.
-        \item En \textbf{Stim Channel > Name} elija el canal donde est\'an registrados los est\'imulos.
-        \item Ajuste el \textbf{Threshold} a un valor que quede claramente por encima del ruido del canal de est\'imulo y por debajo de la amplitud de las marcas.
-        \item Indique en \textbf{Stim Number} cu\'antos est\'imulos espera.
-        \item Defina la ventana del \textit{trial} con \textbf{Initial Time} y \textbf{Final Time}.
-        \item Ajuste \textbf{Inter Stim Time} al intervalo m\'inimo entre est\'imulos del protocolo experimental.
-        \item Elija el \textbf{Trial End mode} que corresponda al dise\~no del experimento.
-        \item Pulse \textbf{Generate}.
+        \item Abra \textbf{\textit{Preprocessing} > \textit{Trials}}.
+        \item En \textbf{\textit{Channel} > \textit{Name}} elija el canal que desea segmentar.
+        \item En \textbf{\textit{Stim Channel} > \textit{Name}} elija el canal donde est\'an registrados los est\'imulos.
+        \item Ajuste el \textbf{\textit{Threshold}} a un valor que quede claramente por encima del ruido del canal de est\'imulo y por debajo de la amplitud de las marcas.
+        \item Indique en \textbf{\textit{Stim Number}} cu\'antos est\'imulos espera.
+        \item Defina la ventana del \textit{trial} con \textbf{\textit{Initial Time}} y \textbf{\textit{Final Time}}.
+        \item Ajuste \textbf{\textit{Inter Stim Time}} al intervalo m\'inimo entre est\'imulos del protocolo experimental.
+        \item Elija el \textbf{\textit{Trial End mode}} que corresponda al dise\~no del experimento.
+        \item Pulse \textbf{\textit{Generate}}.
     \end{enumerate}
 
-    Al terminar, el \'area de gr\'aficas muestra el primer \textit{trial}, el campo \textbf{Total Trials} indica cu\'antos se obtuvieron y el indicador de la barra de t\'itulo refleja el \textit{trial} en curso.
+    Al terminar, el \'area de gr\'aficas muestra el primer \textit{trial}, el campo \textbf{\textit{Total Trials}} indica cu\'antos se obtuvieron y el indicador de la barra de t\'itulo refleja el \textit{trial} en curso.
 
     \capturaPendiente{7cm}
-    {\textit{Plugin} \textbf{Trials} despu\'es de pulsar \textbf{Generate}, mostrando un \textit{trial} concreto.}
-    {(1) el valor de \textbf{Total Trials}; (2) el valor de \textbf{Current Trial}; (3) el \textit{trial} dibujado en el \'area de gr\'aficas; (4) los botones \textbf{Previous} y \textbf{Next}; (5) el bot\'on \textbf{Discard}; (6) el indicador del \textit{trial} actual en la barra de t\'itulo.}
+    {\textit{Plugin} \textbf{\textit{Trials}} despu\'es de pulsar \textbf{\textit{Generate}}, mostrando un \textit{trial} concreto.}
+    {(1) el valor de \textbf{\textit{Total Trials}}; (2) el valor de \textbf{\textit{Current Trial}}; (3) el \textit{trial} dibujado en el \'area de gr\'aficas; (4) los botones \textbf{\textit{Previous}} y \textbf{\textit{Next}}; (5) el bot\'on \textbf{\textit{Discard}}; (6) el indicador del \textit{trial} actual en la barra de t\'itulo.}
     {\textit{Trials} generados y navegaci\'on entre ellos}
     {fig:mu_trials_generados}
 
     \subsubsection*{Revisi\'on y descarte}
-    Conviene recorrer los \textit{trials} con \textbf{Previous} y \textbf{Next} antes de analizar, y descartar con \textbf{Discard} los que presenten saturaci\'on, movimiento o artefactos evidentes. Los \textit{trials} descartados dejan de participar en todos los c\'alculos posteriores, de modo que el descarte es la forma m\'as directa de evitar que un registro defectuoso contamine un promedio.
+    Conviene recorrer los \textit{trials} con \textbf{\textit{Previous}} y \textbf{\textit{Next}} antes de analizar, y descartar con \textbf{\textit{Discard}} los que presenten saturaci\'on, movimiento o artefactos evidentes. Los \textit{trials} descartados dejan de participar en todos los c\'alculos posteriores, de modo que el descarte es la forma m\'as directa de evitar que un registro defectuoso contamine un promedio.
 
-    \aviso{Si no se detecta ning\'un est\'imulo.}{Cuando \textbf{Generate} no encuentra marcas, GammaLab muestra un aviso de error. Las dos causas habituales son un \textbf{Threshold} demasiado alto para la amplitud real de las marcas y la elecci\'on de un \textbf{Stim Channel} equivocado. Revise el canal de est\'imulo en el \'area de gr\'aficas y lea la amplitud de sus marcas con la lectura del cursor antes de fijar el umbral.}
+    \aviso{Si no se detecta ning\'un est\'imulo.}{Cuando \textbf{\textit{Generate}} no encuentra marcas, GammaLab muestra un aviso de error. Las dos causas habituales son un \textbf{\textit{Threshold}} demasiado alto para la amplitud real de las marcas y la elecci\'on de un \textbf{\textit{Stim Channel}} equivocado. Revise el canal de est\'imulo en el \'area de gr\'aficas y lea la amplitud de sus marcas con la lectura del cursor antes de fijar el umbral.}
 
     \subsection{Remove Artifact}
-    El \textit{plugin} \textbf{Remove Artifact} corrige los artefactos que quedan dentro de un \textit{trial} que, por lo demas, es aprovechable. Opera sobre un \textit{trial} a la vez y ofrece dos modos de correcci\'on.
+    El \textit{plugin} \textbf{\textit{Remove Artifact}} corrige los artefactos que quedan dentro de un \textit{trial} que, por lo demas, es aprovechable. Opera sobre un \textit{trial} a la vez y ofrece dos modos de correcci\'on.
 
     \subsubsection*{Componentes}
     \begin{enumerate}
-        \item \textbf{Total Trials:} n\'umero total de \textit{trials} disponibles.
-        \item \textbf{Current Trial:} \textit{trial} que se est\'a corrigiendo.
-        \item \textbf{Mode:} modo de correcci\'on, con dos opciones: \textbf{Interpolate Interval}, que sustituye el tramo seleccionado por una interpolaci\'on entre sus extremos, y \textbf{Cut From The Start}, que elimina la se\~nal desde el comienzo del \textit{trial} hasta el punto seleccionado.
-        \item \textbf{Point A (s)} y \textbf{Point B (s):} extremos del tramo que se va a corregir, en segundos.
-        \item \textbf{Bot\'on Remove:} aplica la correcci\'on.
-        \item \textbf{Botones Previous} y \textbf{Next:} recorren los \textit{trials}.
-        \item \textbf{Bot\'on Restore original trials:} deshace todas las correcciones y devuelve los \textit{trials} a su estado original.
+        \item \textbf{\textit{Total Trials}:} n\'umero total de \textit{trials} disponibles.
+        \item \textbf{\textit{Current Trial}:} \textit{trial} que se est\'a corrigiendo.
+        \item \textbf{\textit{Mode}:} modo de correcci\'on, con dos opciones: \textbf{\textit{Interpolate Interval}}, que sustituye el tramo seleccionado por una interpolaci\'on entre sus extremos, y \textbf{\textit{Cut From The Start}}, que elimina la se\~nal desde el comienzo del \textit{trial} hasta el punto seleccionado.
+        \item \textbf{\textit{Point A (s)}} y \textbf{\textit{Point B (s)}:} extremos del tramo que se va a corregir, en segundos.
+        \item \textbf{Bot\'on \textit{Remove}:} aplica la correcci\'on.
+        \item \textbf{Botones \textit{Previous}} y \textbf{\textit{Next}:} recorren los \textit{trials}.
+        \item \textbf{Bot\'on \textit{Restore original trials}:} deshace todas las correcciones y devuelve los \textit{trials} a su estado original.
     \end{enumerate}
 
     \subsubsection*{C\'omo eliminar un artefacto}
     \begin{enumerate}
-        \item Abra \textbf{Preprocessing > Remove Artifact}.
-        \item Recorra los \textit{trials} con \textbf{Previous} y \textbf{Next} hasta encontrar el que contiene el artefacto.
-        \item Sit\'ue el cursor sobre la gr\'afica y lea en la indicaci\'on \texttt{X = \ldots} los instantes de inicio y de fin del artefacto.
-        \item Escriba esos valores en \textbf{Point A (s)} y \textbf{Point B (s)}.
-        \item Elija el \textbf{Mode} que corresponda: \textbf{Interpolate Interval} para un artefacto rodeado de se\~nal v\'alida, y \textbf{Cut From The Start} cuando el inicio del \textit{trial} entero es inservible.
-        \item Pulse \textbf{Remove} y compruebe el resultado en la gr\'afica.
+        \item Abra \textbf{\textit{Preprocessing} > \textit{Remove Artifact}}.
+        \item Recorra los \textit{trials} con \textbf{\textit{Previous}} y \textbf{\textit{Next}} hasta encontrar el que contiene el artefacto.
+        \item Sit\'ue el cursor sobre la gr\'afica y lea en la indicaci\'on \textit{X = \ldots} los instantes de inicio y de fin del artefacto.
+        \item Escriba esos valores en \textbf{\textit{Point A (s)}} y \textbf{\textit{Point B (s)}}.
+        \item Elija el \textbf{\textit{Mode}} que corresponda: \textbf{\textit{Interpolate Interval}} para un artefacto rodeado de se\~nal v\'alida, y \textbf{\textit{Cut From The Start}} cuando el inicio del \textit{trial} entero es inservible.
+        \item Pulse \textbf{\textit{Remove}} y compruebe el resultado en la gr\'afica.
     \end{enumerate}
 
     \capturaPendiente{7cm}
-    {\textit{Plugin} \textbf{Remove Artifact} con un \textit{trial} que contiene un artefacto y el tramo ya delimitado.}
-    {(1) los campos \textbf{Point A (s)} y \textbf{Point B (s)}; (2) el desplegable \textbf{Mode}; (3) el bot\'on \textbf{Remove}; (4) el artefacto en la gr\'afica, antes de corregirlo; (5) el bot\'on \textbf{Restore original trials}; (6) el r\'otulo \textbf{Trial: - / -} con la posici\'on en la serie.}
-    {\textit{Plugin} \textbf{Remove Artifact}}
+    {\textit{Plugin} \textbf{\textit{Remove Artifact}} con un \textit{trial} que contiene un artefacto y el tramo ya delimitado.}
+    {(1) los campos \textbf{\textit{Point A (s)}} y \textbf{\textit{Point B (s)}}; (2) el desplegable \textbf{\textit{Mode}}; (3) el bot\'on \textbf{\textit{Remove}}; (4) el artefacto en la gr\'afica, antes de corregirlo; (5) el bot\'on \textbf{\textit{Restore original trials}}; (6) el r\'otulo \textbf{\textit{Trial: - / -}} con la posici\'on en la serie.}
+    {\textit{Plugin} \textbf{\textit{Remove Artifact}}}
     {fig:mu_remove_artifact}
 
-    \aviso{Reversibilidad.}{El bot\'on \textbf{Restore original trials} deshace todas las correcciones de artefactos de una sola vez; no existe un deshacer por pasos. Conviene corregir un artefacto, comprobar el resultado y continuar, en lugar de acumular varias correcciones sin revisarlas.}
+    \aviso{Reversibilidad.}{El bot\'on \textbf{\textit{Restore original trials}} deshace todas las correcciones de artefactos de una sola vez; no existe un deshacer por pasos. Conviene corregir un artefacto, comprobar el resultado y continuar, en lugar de acumular varias correcciones sin revisarlas.}
 
     \subsection{Filter}
-    El \textit{plugin} \textbf{Filter} aplica un filtro pasa-banda de fase cero a la se\~nal. Distingue entre una \emph{vista previa}, que solo dibuja el resultado, y la \emph{aplicaci\'on} propiamente dicha, que modifica los \textit{trials} con los que trabajar\'an los an\'alisis posteriores.
+    El \textit{plugin} \textbf{\textit{Filter}} aplica un filtro pasa-banda de fase cero a la se\~nal. Distingue entre una \emph{vista previa}, que solo dibuja el resultado, y la \emph{aplicaci\'on} propiamente dicha, que modifica los \textit{trials} con los que trabajar\'an los an\'alisis posteriores.
 
     \subsubsection*{Componentes}
     \begin{enumerate}
-        \item \textbf{Filters > type:} familia del filtro.
-        \item \textbf{Frecuency (Hz) > Low} y \textbf{High:} frecuencias de corte inferior y superior de la banda que se desea conservar.
-        \item \textbf{Order:} orden del filtro. Un orden m\'as alto produce una transici\'on m\'as abrupta entre la banda conservada y la rechazada.
-        \item \textbf{Bot\'on Preview:} dibuja el resultado del filtrado sin modificar los \textit{trials}.
-        \item \textbf{Bot\'on Filter:} aplica el filtro a los \textit{trials} de forma efectiva.
-        \item \textbf{Bot\'on Restore original trials:} devuelve los \textit{trials} a su estado sin filtrar.
+        \item \textbf{\textit{Filters} > \textit{type}:} tipo de filtro. En la versi\'on actual la \'unica opci\'on disponible es \textbf{\textit{Butterworth}}.
+        \item \textbf{\textit{Frecuency (Hz)} > \textit{Low}} y \textbf{\textit{High}:} frecuencias de corte inferior y superior de la banda que se desea conservar.
+        \item \textbf{\textit{Order}:} orden del filtro. Un orden m\'as alto produce una transici\'on m\'as abrupta entre la banda conservada y la rechazada.
+        \item \textbf{Bot\'on \textit{Preview}:} dibuja el resultado del filtrado sin modificar los \textit{trials}.
+        \item \textbf{Bot\'on \textit{Filter}:} aplica el filtro a los \textit{trials} de forma efectiva.
+        \item \textbf{Bot\'on \textit{Restore original trials}:} devuelve los \textit{trials} a su estado sin filtrar.
     \end{enumerate}
 
     \subsubsection*{C\'omo filtrar}
     \begin{enumerate}
-        \item Abra \textbf{Preprocessing > Filter}.
-        \item Fije las frecuencias de corte en \textbf{Low} y \textbf{High}. Deben cumplir que \textbf{Low} sea mayor que cero, que \textbf{High} sea menor que la mitad de la frecuencia de muestreo y que \textbf{Low} sea menor que \textbf{High}.
-        \item Fije el \textbf{Order}.
-        \item Pulse \textbf{Preview} y examine el resultado: el \textit{plugin} dibuja la se\~nal completa filtrada y el primer \textit{trial} filtrado, uno sobre otro.
-        \item Si el resultado es el esperado, pulse \textbf{Filter} para aplicarlo a los \textit{trials}.
+        \item Abra \textbf{\textit{Preprocessing} > \textit{Filter}}.
+        \item Fije las frecuencias de corte en \textbf{\textit{Low}} y \textbf{\textit{High}}. Deben cumplir que \textbf{\textit{Low}} sea mayor que cero, que \textbf{\textit{High}} sea menor que la mitad de la frecuencia de muestreo y que \textbf{\textit{Low}} sea menor que \textbf{\textit{High}}.
+        \item Fije el \textbf{\textit{Order}}.
+        \item Pulse \textbf{\textit{Preview}} y examine el resultado: el \textit{plugin} dibuja la se\~nal completa filtrada y el primer \textit{trial} filtrado, uno sobre otro.
+        \item Si el resultado es el esperado, pulse \textbf{\textit{Filter}} para aplicarlo a los \textit{trials}.
     \end{enumerate}
 
     \capturaPendiente{7cm}
-    {\textit{Plugin} \textbf{Filter} tras pulsar \textbf{Preview}, con las dos gr\'aficas del resultado.}
-    {(1) el desplegable \textbf{Filters > type}; (2) los campos \textbf{Low} y \textbf{High}; (3) el campo \textbf{Order}; (4) el bot\'on \textbf{Preview}; (5) el bot\'on \textbf{Filter}; (6) la gr\'afica superior con la se\~nal completa filtrada; (7) la gr\'afica inferior con el primer \textit{trial} filtrado; (8) el bot\'on \textbf{Restore original trials}.}
-    {\textit{Plugin} \textbf{Filter} con la vista previa}
+    {\textit{Plugin} \textbf{\textit{Filter}} tras pulsar \textbf{\textit{Preview}}, con las dos gr\'aficas del resultado.}
+    {(1) el desplegable \textbf{\textit{Filters} > \textit{type}}; (2) los campos \textbf{\textit{Low}} y \textbf{\textit{High}}; (3) el campo \textbf{\textit{Order}}; (4) el bot\'on \textbf{\textit{Preview}}; (5) el bot\'on \textbf{\textit{Filter}}; (6) la gr\'afica superior con la se\~nal completa filtrada; (7) la gr\'afica inferior con el primer \textit{trial} filtrado; (8) el bot\'on \textbf{\textit{Restore original trials}}.}
+    {\textit{Plugin} \textbf{\textit{Filter}} con la vista previa}
     {fig:mu_filter}
-
-    \aviso{Limitaci\'on conocida.}{El desplegable \textbf{type} ofrece las entradas \textbf{Butterworth}, \textbf{Chebyshev} y \textbf{Elliptic}, pero en la versi\'on actual solo est\'a implementado el filtro \textbf{Butterworth}. Al elegir cualquiera de los otros dos, el c\'alculo se interrumpe con un aviso de error. Mantenga seleccionado \textbf{Butterworth}.}
 
     \aviso{Sobre las frecuencias de corte.}{Si las frecuencias no cumplen las condiciones indicadas, GammaLab muestra un aviso de error con los valores normalizados que produjeron el fallo, en lugar de devolver una se\~nal sin sentido. Recuerde que el l\'imite superior real es la mitad de la frecuencia de muestreo de la se\~nal.}
 
@@ -706,65 +704,65 @@ La secci\'on \textbf{Preprocessing} de la cinta re\'une las tres herramientas qu
 
 \section{An\'alisis en el dominio del tiempo}
 
-La subcategor\'ia \textbf{Time} de la secci\'on \textbf{Analysis} contiene los dos an\'alisis que operan directamente sobre la forma de onda de los \textit{trials}.
+La subcategor\'ia \textbf{\textit{Time}} de la secci\'on \textbf{\textit{Analysis}} contiene los dos an\'alisis que operan directamente sobre la forma de onda de los \textit{trials}.
 
     \subsection{Average}
-    El \textit{plugin} \textbf{Average} calcula el promedio muestra a muestra de los \textit{trials} seleccionados. Es el an\'alisis m\'as directo para destacar la respuesta com\'un a todos los est\'imulos y atenuar el ruido no sincronizado con ellos.
+    El \textit{plugin} \textbf{\textit{Average}} calcula el promedio muestra a muestra de los \textit{trials} seleccionados. Es el an\'alisis m\'as directo para destacar la respuesta com\'un a todos los est\'imulos y atenuar el ruido no sincronizado con ellos.
 
     \subsubsection*{Componentes}
     \begin{enumerate}
-        \item \textbf{Select all trials:} casilla que incluye en el promedio todos los \textit{trials} v\'alidos.
-        \item \textbf{Single trial:} casilla y campo num\'erico para promediar un \'unico \textit{trial}, lo que equivale a mostrarlo tal cual.
-        \item \textbf{Range > From} y \textbf{To:} casilla y campos para promediar un intervalo continuo de \textit{trials}.
-        \item \textbf{List:} lista con una casilla por \textit{trial}, para una selecci\'on arbitraria.
-        \item \textbf{Filter\ldots:} campo de b\'usqueda que acota la lista anterior cuando hay muchos \textit{trials}.
-        \item \textbf{Bot\'on Generate:} ejecuta el promedio.
+        \item \textbf{\textit{Select all trials}:} casilla que incluye en el promedio todos los \textit{trials} v\'alidos.
+        \item \textbf{\textit{Single trial}:} casilla y campo num\'erico para promediar un \'unico \textit{trial}, lo que equivale a mostrarlo tal cual.
+        \item \textbf{\textit{Range}:} casilla y dos campos, separados por el r\'otulo \textbf{\textit{To}}, que fijan el primer y el \'ultimo \textit{trial} de un intervalo continuo.
+        \item \textbf{\textit{List}:} lista con una casilla por \textit{trial}, para una selecci\'on arbitraria.
+        \item \textbf{\textit{Filter\ldots}:} campo de b\'usqueda que acota la lista anterior cuando hay muchos \textit{trials}.
+        \item \textbf{Bot\'on \textit{Generate}:} ejecuta el promedio.
     \end{enumerate}
 
     \subsubsection*{C\'omo calcular el promedio}
     \begin{enumerate}
-        \item Genere los \textit{trials} en \textbf{Preprocessing > Trials}.
-        \item Abra \textbf{Analysis > Average}.
+        \item Genere los \textit{trials} en \textbf{\textit{Preprocessing} > \textit{Trials}}.
+        \item Abra \textbf{\textit{Analysis} > \textit{Average}}.
         \item Elija el modo de selecci\'on: todos, uno solo, un rango o una lista.
-        \item Pulse \textbf{Generate}.
+        \item Pulse \textbf{\textit{Generate}}.
     \end{enumerate}
 
     \subsubsection*{Qu\'e se obtiene}
     El \'area de gr\'aficas muestra una sola curva: el promedio en funci\'on del tiempo relativo al est\'imulo. El aviso de informaci\'on que acompa\~na al c\'alculo indica expresamente cu\'antos \textit{trials} entraron en el promedio y de qu\'e canal proceden, de modo que el resultado quede documentado sin depender de lo que el usuario recuerde haber seleccionado.
 
     \capturaPendiente{7cm}
-    {\textit{Plugin} \textbf{Average} con el promedio ya calculado sobre una selecci\'on de \textit{trials}.}
-    {(1) la casilla \textbf{Select all trials}; (2) la casilla \textbf{Single trial} con su campo; (3) la secci\'on \textbf{Range} con \textbf{From} y \textbf{To}; (4) la \textbf{List} de \textit{trials} con sus casillas; (5) el campo \textbf{Filter\ldots}; (6) el bot\'on \textbf{Generate}; (7) la curva del promedio; (8) el aviso que indica cu\'antos \textit{trials} se promediaron.}
-    {\textit{Plugin} \textbf{Average}}
+    {\textit{Plugin} \textbf{\textit{Average}} con el promedio ya calculado sobre una selecci\'on de \textit{trials}.}
+    {(1) la casilla \textbf{\textit{Select all trials}}; (2) la casilla \textbf{\textit{Single trial}} con su campo; (3) la secci\'on \textbf{\textit{Range}} con sus dos campos y el r\'otulo \textbf{\textit{To}}; (4) la \textbf{\textit{List}} de \textit{trials} con sus casillas; (5) el campo \textbf{\textit{Filter\ldots}}; (6) el bot\'on \textbf{\textit{Generate}}; (7) la curva del promedio; (8) el aviso que indica cu\'antos \textit{trials} se promediaron.}
+    {\textit{Plugin} \textbf{\textit{Average}}}
     {fig:mu_average}
 
     \subsection{Event Related Potential}
-    El \textit{plugin} \textbf{Event Related Potential} calcula el potencial relacionado con el evento y, adem\'as del promedio, produce dos representaciones complementarias: un diagrama de mariposa con todos los \textit{trials} superpuestos y alineados al est\'imulo, y un espectrograma de la din\'amica tiempo--frecuencia.
+    El \textit{plugin} \textbf{\textit{Event Related Potential}} calcula el potencial relacionado con el evento y, adem\'as del promedio, produce dos representaciones complementarias: un diagrama de mariposa con todos los \textit{trials} superpuestos y alineados al est\'imulo, y un espectrograma de la din\'amica tiempo--frecuencia.
 
     El diagrama de mariposa permite valorar de un vistazo la consistencia de la respuesta: si las trazas de los distintos \textit{trials} se agrupan en torno al promedio, la respuesta es estable; si se dispersan, el promedio est\'a resumiendo fen\'omenos distintos.
 
     \subsubsection*{Componentes}
-    Los controles de selecci\'on de \textit{trials} son los mismos que en \textbf{Average}: \textbf{Select all trials}, \textbf{Single trial}, \textbf{Range} con \textbf{From} y \textbf{To}, \textbf{List} con su \textbf{Filter\ldots}, y el bot\'on \textbf{Generate}.
+    Los controles de selecci\'on de \textit{trials} son los mismos que en \textbf{\textit{Average}}: \textbf{\textit{Select all trials}}, \textbf{\textit{Single trial}}, \textbf{\textit{Range}} con sus dos campos, \textbf{\textit{List}} con su \textbf{\textit{Filter\ldots}}, y el bot\'on \textbf{\textit{Generate}}.
 
     \subsubsection*{C\'omo calcularlo}
     \begin{enumerate}
         \item Genere los \textit{trials} y rev\'iselos, descartando los defectuosos.
-        \item Abra \textbf{Analysis > Event Related Potential}.
+        \item Abra \textbf{\textit{Analysis} > \textit{Event Related Potential}}.
         \item Elija los \textit{trials} que desea incluir.
-        \item Pulse \textbf{Generate}.
+        \item Pulse \textbf{\textit{Generate}}.
     \end{enumerate}
 
     \capturaPendiente{7.5cm}
-    {\textit{Plugin} \textbf{Event Related Potential} con el diagrama de mariposa y el espectrograma calculados.}
-    {(1) los controles de selecci\'on de \textit{trials}; (2) el bot\'on \textbf{Generate}; (3) el diagrama de mariposa con todos los \textit{trials} superpuestos; (4) la traza del promedio, destacada sobre las dem\'as; (5) el espectrograma de la din\'amica tiempo--frecuencia; (6) la escala de color del espectrograma.}
-    {\textit{Plugin} \textbf{Event Related Potential}}
+    {\textit{Plugin} \textbf{\textit{Event Related Potential}} con el diagrama de mariposa y el espectrograma calculados.}
+    {(1) los controles de selecci\'on de \textit{trials}; (2) el bot\'on \textbf{\textit{Generate}}; (3) el diagrama de mariposa con todos los \textit{trials} superpuestos; (4) la traza del promedio, destacada sobre las dem\'as; (5) el espectrograma de la din\'amica tiempo--frecuencia; (6) la escala de color del espectrograma.}
+    {\textit{Plugin} \textbf{\textit{Event Related Potential}}}
     {fig:mu_erp}
 
 \clearpage
 
 \section{An\'alisis en el dominio de la frecuencia}
 
-La subcategor\'ia \textbf{Frequency} re\'une cinco \textit{plugins} espectrales. Los tres primeros comparten gran parte de sus par\'ametros, de modo que lo aprendido en uno se aplica a los dem\'as.
+La subcategor\'ia \textbf{\textit{Frequency}} re\'une cinco \textit{plugins} espectrales. Los tres primeros comparten gran parte de sus par\'ametros, de modo que lo aprendido en uno se aplica a los dem\'as.
 
     \subsection{Par\'ametros comunes}
     Antes de describir cada \textit{plugin} conviene fijar el significado de los par\'ametros que comparten, recogidos en la Tabla~\ref{tab:mu_parametros_frecuencia}.
@@ -775,23 +773,23 @@ La subcategor\'ia \textbf{Frequency} re\'une cinco \textit{plugins} espectrales.
     \hline
     \textbf{Par\'ametro} & \textbf{Significado} \\
     \hline
-    \textbf{Sample density (Hz)} & Frecuencia a la que se remuestrea la se\~nal antes del c\'alculo. Reducirla acelera el an\'alisis y limita la frecuencia m\'axima observable a su mitad. \\
+    \textbf{\textit{Sample density (Hz)}} & Frecuencia a la que se remuestrea la se\~nal antes del c\'alculo. Reducirla acelera el an\'alisis y limita la frecuencia m\'axima observable a su mitad. \\
     \hline
-    \textbf{Range > Low} y \textbf{High} & Extremos del eje de frecuencias del resultado, en hercios. No cambian el c\'alculo: acotan lo que se muestra. \\
+    \textbf{\textit{Range} > \textit{Low}} y \textbf{\textit{High}} & Extremos del eje de frecuencias del resultado, en hercios. No cambian el c\'alculo: acotan lo que se muestra. \\
     \hline
-    \textbf{Window} & Ventana de an\'alisis del m\'etodo de Welch, con las opciones \texttt{hann}, \texttt{hamming}, \texttt{blackman} y \texttt{bartlett}. \\
+    \textbf{\textit{Window}} & Ventana de an\'alisis del m\'etodo de Welch, con las opciones \textit{hann}, \textit{hamming}, \textit{blackman} y \textit{bartlett}. \\
     \hline
-    \textbf{N-Per-Seg} & N\'umero de muestras de cada segmento. Un segmento m\'as largo da m\'as resoluci\'on en frecuencia y menos segmentos que promediar. \\
+    \textbf{\textit{N-Per-Seg}} & N\'umero de muestras de cada segmento. Un segmento m\'as largo da m\'as resoluci\'on en frecuencia y menos segmentos que promediar. \\
     \hline
-    \textbf{N-Overlap} & Muestras que se solapan entre segmentos consecutivos. \\
+    \textbf{\textit{N-Overlap}} & Muestras que se solapan entre segmentos consecutivos. \\
     \hline
-    \textbf{N-FFT} & N\'umero de puntos de la transformada de cada segmento. \\
+    \textbf{\textit{N-FFT}} & N\'umero de puntos de la transformada de cada segmento. \\
     \hline
-    \textbf{Detrend} & Tendencia que se resta a cada segmento antes de transformarlo, con las opciones \texttt{none}, \texttt{constant} y \texttt{linear}. \\
+    \textbf{\textit{Detrend}} & Tendencia que se resta a cada segmento antes de transformarlo, con las opciones \textit{none}, \textit{constant} y \textit{linear}. \\
     \hline
-    \textbf{Mode} & Modo de c\'alculo sobre los \textit{trials}, con las opciones \textbf{All Trials}, \textbf{Average} e \textbf{Individual}. \\
+    \textbf{\textit{Mode}} & Modo de c\'alculo sobre los \textit{trials}, con las opciones \textbf{\textit{All Trials}}, \textbf{\textit{Average}} e \textbf{\textit{Individual}}. \\
     \hline
-    \textbf{Trial Index} & \textit{Trial} concreto que se analiza cuando el \textbf{Mode} es \textbf{Individual}. \\
+    \textbf{\textit{Trial Index}} & \textit{Trial} concreto que se analiza cuando el \textbf{\textit{Mode}} es \textbf{\textit{Individual}}. \\
     \hline
     \end{tabularx}
     \captionof{table}{Par\'ametros comunes de los an\'alisis en frecuencia}
@@ -799,29 +797,29 @@ La subcategor\'ia \textbf{Frequency} re\'une cinco \textit{plugins} espectrales.
     \end{center}
 
     \subsection{FFT}
-    El \textit{plugin} \textbf{FFT} calcula la transformada r\'apida de Fourier y muestra el espectro de potencia de la se\~nal. Sus par\'ametros son \textbf{Sample density} y el \textbf{Range} de frecuencias.
+    El \textit{plugin} \textbf{FFT} calcula la transformada r\'apida de Fourier de cada \textit{trial} del canal activo y dibuja un espectro de potencia por \textit{trial}, hasta un m\'aximo de 200 curvas. Sus par\'ametros son \textbf{\textit{Sample density}} y el \textbf{\textit{Range}} de frecuencias.
 
     \subsubsection*{C\'omo calcularla}
     \begin{enumerate}
-        \item Abra \textbf{Analysis > FFT}.
-        \item Ajuste \textbf{Sample density} si desea remuestrear la se\~nal.
-        \item Fije el intervalo de frecuencias con \textbf{Low} y \textbf{High}.
-        \item Pulse \textbf{Generate}.
+        \item Abra \textbf{\textit{Analysis} > FFT}.
+        \item Ajuste \textbf{\textit{Sample density}} si desea remuestrear la se\~nal.
+        \item Fije el intervalo de frecuencias con \textbf{\textit{Low}} y \textbf{\textit{High}}.
+        \item Pulse \textbf{\textit{Generate}}.
     \end{enumerate}
 
     \capturaPendiente{6.5cm}
     {\textit{Plugin} \textbf{FFT} con el espectro calculado.}
-    {(1) el campo \textbf{Sample density} con su unidad \textbf{Hz}; (2) los campos \textbf{Low} y \textbf{High} de \textbf{Range}; (3) el bot\'on \textbf{Generate}; (4) el espectro de potencia; (5) los r\'otulos de los ejes de frecuencia y de potencia.}
+    {(1) el campo \textbf{\textit{Sample density}} con su unidad \textbf{Hz}; (2) los campos \textbf{\textit{Low}} y \textbf{\textit{High}} de \textbf{\textit{Range}}; (3) el bot\'on \textbf{\textit{Generate}}; (4) el espectro de potencia; (5) los r\'otulos de los ejes de frecuencia y de potencia.}
     {\textit{Plugin} \textbf{FFT}}
     {fig:mu_fft}
 
     \subsection{FFT Average}
-    El \textit{plugin} \textbf{FFT Average} calcula la transformada de Fourier de cada \textit{trial} y promedia los espectros resultantes. Los par\'ametros son los mismos que en \textbf{FFT}; la diferencia est\'a en que requiere \textit{trials} generados.
+    El \textit{plugin} \textbf{\textit{FFT Average}} calcula la transformada de Fourier de cada \textit{trial} y promedia los espectros resultantes. Los par\'ametros son los mismos que en \textbf{FFT}, m\'as el selector \textbf{\textit{Trials to use}}: una lista con una casilla por cada \textit{trial} v\'alido y los botones \textbf{\textit{All}} y \textbf{\textit{None}}, que marcan o desmarcan todos a la vez. Solo los \textit{trials} marcados entran en el promedio, y los descartados no aparecen en la lista.
 
     \capturaPendiente{6.5cm}
-    {\textit{Plugin} \textbf{FFT Average} con el espectro promedio calculado.}
-    {(1) el campo \textbf{Sample density}; (2) los campos del \textbf{Range}; (3) el bot\'on \textbf{Generate}; (4) el espectro promedio; (5) el aviso que indica cu\'antos \textit{trials} entraron en el promedio.}
-    {\textit{Plugin} \textbf{FFT Average}}
+    {\textit{Plugin} \textbf{\textit{FFT Average}} con el espectro promedio calculado.}
+    {(1) el campo \textbf{\textit{Sample density}}; (2) los campos del \textbf{\textit{Range}}; (3) el bot\'on \textbf{\textit{Generate}}; (4) el espectro promedio; (5) el aviso que indica cu\'antos \textit{trials} entraron en el promedio; (6) el selector \textbf{\textit{Trials to use}} con los botones \textbf{\textit{All}} y \textbf{\textit{None}}.}
+    {\textit{Plugin} \textbf{\textit{FFT Average}}}
     {fig:mu_fft_average}
 
     \subsection{PSD}
@@ -829,48 +827,48 @@ La subcategor\'ia \textbf{Frequency} re\'une cinco \textit{plugins} espectrales.
 
     \subsubsection*{Componentes}
     \begin{enumerate}
-        \item \textbf{Calculation Mode > Mode:} \textbf{All Trials}, \textbf{Average} o \textbf{Individual}.
-        \item \textbf{Calculation Mode > Trial Index:} \textit{trial} analizado en el modo \textbf{Individual}.
-        \item \textbf{Sample density:} frecuencia de remuestreo.
-        \item \textbf{Welch > Window}, \textbf{N-Per-Seg}, \textbf{N-Overlap} y \textbf{N-FFT:} configuraci\'on del m\'etodo.
-        \item \textbf{Range > Low} y \textbf{High:} extremos del eje de frecuencias.
-        \item \textbf{Detrend:} tendencia que se resta a cada segmento.
-        \item \textbf{Bot\'on Generate:} ejecuta el c\'alculo.
+        \item \textbf{\textit{Calculation Mode} > \textit{Mode}:} \textbf{\textit{All Trials}}, \textbf{\textit{Average}} o \textbf{\textit{Individual}}.
+        \item \textbf{\textit{Calculation Mode} > \textit{Trial Index}:} \textit{trial} analizado en el modo \textbf{\textit{Individual}}.
+        \item \textbf{\textit{Sample density}:} frecuencia de remuestreo.
+        \item \textbf{\textit{Welch} > \textit{Window}}, \textbf{\textit{N-Per-Seg}}, \textbf{\textit{N-Overlap}} y \textbf{\textit{N-FFT}:} configuraci\'on del m\'etodo.
+        \item \textbf{\textit{Range} > \textit{Low}} y \textbf{\textit{High}:} extremos del eje de frecuencias.
+        \item \textbf{\textit{Detrend}:} tendencia que se resta a cada segmento.
+        \item \textbf{Bot\'on \textit{Generate}:} ejecuta el c\'alculo.
     \end{enumerate}
 
     \subsubsection*{C\'omo calcular la PSD}
     \begin{enumerate}
-        \item Abra \textbf{Analysis > PSD}.
-        \item Elija el \textbf{Mode}. Si elige \textbf{Individual}, indique el \textbf{Trial Index}.
+        \item Abra \textbf{\textit{Analysis} > PSD}.
+        \item Elija el \textbf{\textit{Mode}}. Si elige \textbf{\textit{Individual}}, indique el \textbf{\textit{Trial Index}}.
         \item Ajuste los par\'ametros de Welch. Los valores por defecto son un punto de partida razonable para se\~nales de electrofisiolog\'ia.
-        \item Fije el \textbf{Range} de frecuencias y el \textbf{Detrend}.
-        \item Pulse \textbf{Generate}.
+        \item Fije el \textbf{\textit{Range}} de frecuencias y el \textbf{\textit{Detrend}}.
+        \item Pulse \textbf{\textit{Generate}}.
     \end{enumerate}
 
     \capturaPendiente{7cm}
     {\textit{Plugin} \textbf{PSD} con todos los par\'ametros visibles y el resultado calculado.}
-    {(1) la secci\'on \textbf{Calculation Mode} con \textbf{Mode} y \textbf{Trial Index}; (2) el campo \textbf{Sample density}; (3) la secci\'on \textbf{Welch} con \textbf{Window}, \textbf{N-Per-Seg}, \textbf{N-Overlap} y \textbf{N-FFT}; (4) la secci\'on \textbf{Range}; (5) el desplegable \textbf{Detrend}; (6) el bot\'on \textbf{Generate}; (7) la curva de densidad espectral de potencia.}
+    {(1) la secci\'on \textbf{\textit{Calculation Mode}} con \textbf{\textit{Mode}} y \textbf{\textit{Trial Index}}; (2) el campo \textbf{\textit{Sample density}}; (3) la secci\'on \textbf{\textit{Welch}} con \textbf{\textit{Window}}, \textbf{\textit{N-Per-Seg}}, \textbf{\textit{N-Overlap}} y \textbf{\textit{N-FFT}}; (4) la secci\'on \textbf{\textit{Range}}; (5) el desplegable \textbf{\textit{Detrend}}; (6) el bot\'on \textbf{\textit{Generate}}; (7) la curva de densidad espectral de potencia.}
     {\textit{Plugin} \textbf{PSD}}
     {fig:mu_psd}
 
     \subsection{PSD Average}
-    El \textit{plugin} \textbf{PSD Average} calcula la densidad espectral de potencia de cada \textit{trial} y promedia los resultados. Expone los mismos par\'ametros de Welch y de rango que \textbf{PSD}, sin la secci\'on \textbf{Calculation Mode}, puesto que el modo est\'a impl\'icito: siempre promedia.
+    El \textit{plugin} \textbf{\textit{PSD Average}} calcula la densidad espectral de potencia de cada \textit{trial} y promedia los resultados. Expone los mismos par\'ametros de Welch y de rango que \textbf{PSD}, sin la secci\'on \textbf{\textit{Calculation Mode}}, puesto que el modo est\'a impl\'icito: siempre promedia. Incluye tambi\'en el selector \textbf{\textit{Trials to use}} descrito en \textbf{\textit{FFT Average}}.
 
     \capturaPendiente{6.5cm}
-    {\textit{Plugin} \textbf{PSD Average} con el resultado calculado.}
-    {(1) el campo \textbf{Sample density}; (2) la secci\'on \textbf{Welch}; (3) la secci\'on \textbf{Range}; (4) el bot\'on \textbf{Generate}; (5) la curva promedio; (6) el aviso con el n\'umero de \textit{trials} promediados.}
-    {\textit{Plugin} \textbf{PSD Average}}
+    {\textit{Plugin} \textbf{\textit{PSD Average}} con el resultado calculado.}
+    {(1) el campo \textbf{\textit{Sample density}}; (2) la secci\'on \textbf{\textit{Welch}}; (3) la secci\'on \textbf{\textit{Range}}; (4) el bot\'on \textbf{\textit{Generate}}; (5) la curva promedio; (6) el aviso con el n\'umero de \textit{trials} promediados; (7) el selector \textbf{\textit{Trials to use}}.}
+    {\textit{Plugin} \textbf{\textit{PSD Average}}}
     {fig:mu_psd_average}
 
     \subsection{Relative PSD}
-    El \textit{plugin} \textbf{Relative PSD} calcula la densidad espectral de potencia y, a partir de ella, la potencia absoluta y la potencia relativa de cada banda de frecuencia. La potencia relativa expresa qu\'e fracci\'on de la potencia total aporta cada banda, lo que permite comparar registros cuya amplitud absoluta difiere.
+    El \textit{plugin} \textbf{\textit{Relative PSD}} calcula la densidad espectral de potencia y, a partir de ella, la potencia absoluta y la potencia relativa de cada banda de frecuencia. La potencia relativa expresa qu\'e fracci\'on de la potencia total aporta cada banda, lo que permite comparar registros cuya amplitud absoluta difiere.
 
     \subsubsection*{Componentes}
-    A los par\'ametros de Welch y de rango se a\~nade la secci\'on \textbf{Results}, con dos tablas:
+    A los par\'ametros de Welch y de rango se a\~naden el desplegable \textbf{\textit{Detrend}}, el selector \textbf{\textit{Trials to use}} descrito en \textbf{\textit{FFT Average}} y el desplegable \textbf{\textit{Calculation Mode (GF)}}, con dos opciones: \textbf{\textit{Average (GF=0)}}, que promedia la densidad espectral de los \textit{trials}, y \textbf{\textit{All Trials (GF=1)}}, que suma la potencia de todos los \textit{trials} sin promediarla y es la opci\'on por defecto. Los resultados se presentan en la secci\'on \textbf{\textit{Results}}, con dos tablas:
 
     \begin{enumerate}
-        \item \textbf{Absolute Power (Pow):} potencia absoluta de cada banda.
-        \item \textbf{Relative Power (Powr):} fracci\'on de la potencia total correspondiente a cada banda.
+        \item \textbf{\textit{Absolute Power (Pow)}:} potencia absoluta de cada banda.
+        \item \textbf{\textit{Relative Power (Powr)}:} fracci\'on de la potencia total correspondiente a cada banda.
     \end{enumerate}
 
     Las bandas que se informan son las de la Tabla~\ref{tab:mu_bandas}.
@@ -891,42 +889,42 @@ La subcategor\'ia \textbf{Frequency} re\'une cinco \textit{plugins} espectrales.
     HFO2   & 251.0 & 490.0 \\
     \hline
     \end{tabular}
-    \captionof{table}{Bandas de frecuencia de \textbf{Relative PSD}}
+    \captionof{table}{Bandas de frecuencia de \textbf{\textit{Relative PSD}}}
     \label{tab:mu_bandas}
     \end{center}
 
     \capturaPendiente{7cm}
-    {\textit{Plugin} \textbf{Relative PSD} con las dos tablas de resultados pobladas.}
-    {(1) la secci\'on \textbf{Welch}; (2) la secci\'on \textbf{Range}; (3) el bot\'on \textbf{Generate}; (4) la tabla \textbf{Absolute Power (Pow)}; (5) la tabla \textbf{Relative Power (Powr)}; (6) la curva de densidad espectral; (7) la fila de una banda concreta, por ejemplo \texttt{gamma1}.}
-    {\textit{Plugin} \textbf{Relative PSD}}
+    {\textit{Plugin} \textbf{\textit{Relative PSD}} con las dos tablas de resultados pobladas.}
+    {(1) la secci\'on \textbf{\textit{Welch}}; (2) la secci\'on \textbf{\textit{Range}}; (3) el bot\'on \textbf{\textit{Generate}}; (4) la tabla \textbf{\textit{Absolute Power (Pow)}}; (5) la tabla \textbf{\textit{Relative Power (Powr)}}; (6) la curva de densidad espectral; (7) la fila de una banda concreta, por ejemplo \textit{gamma1}; (8) el selector \textbf{\textit{Trials to use}}; (9) el desplegable \textbf{\textit{Calculation Mode (GF)}}.}
+    {\textit{Plugin} \textbf{\textit{Relative PSD}}}
     {fig:mu_relative_psd}
 
-    \aviso{Sobre el l\'imite superior de las bandas.}{Las bandas \texttt{HFO1} y \texttt{HFO2} llegan hasta 490\,Hz. Solo tienen contenido si la frecuencia de muestreo de la se\~nal, o la fijada en \textbf{Sample density}, es al menos el doble de ese l\'imite. Con se\~nales muestreadas m\'as despacio, esas filas aparecen vac\'ias o a cero, y esto no indica un fallo del c\'alculo.}
+    \aviso{Sobre el l\'imite superior de las bandas.}{Las bandas \textit{HFO1} y \textit{HFO2} llegan hasta 490\,Hz. Solo tienen contenido si la frecuencia de muestreo de la se\~nal, o la fijada en \textbf{\textit{Sample density}}, es al menos el doble de ese l\'imite. Con se\~nales muestreadas m\'as despacio, esas filas aparecen vac\'ias o a cero, y esto no indica un fallo del c\'alculo.}
 
 \clearpage
 
 \section{An\'alisis en el dominio tiempo--frecuencia}
 
-La subcategor\'ia \textbf{Time-Frequency} re\'une los an\'alisis que describen c\'omo cambia el contenido espectral de la se\~nal a lo largo del tiempo, y los que miden el acoplamiento entre la fase de un ritmo lento y la amplitud de un ritmo r\'apido.
+La subcategor\'ia \textbf{\textit{Time-Frequency}} re\'une los an\'alisis que describen c\'omo cambia el contenido espectral de la se\~nal a lo largo del tiempo, y los que miden el acoplamiento entre la fase de un ritmo lento y la amplitud de un ritmo r\'apido.
 
     \subsection{PAC}
-    El \textit{plugin} \textbf{PAC} (\emph{Phase-Amplitude Coupling}) mide la relaci\'on entre la fase de una banda de baja frecuencia y la amplitud de un rango de frecuencias m\'as altas, empleando la transformada \textit{wavelet}. Es el \textit{plugin} con m\'as modos de c\'alculo del sistema: cuatro, seleccionables en el desplegable \textbf{PAC Type}.
+    El \textit{plugin} \textbf{PAC} (\emph{Phase-Amplitude Coupling}) mide la relaci\'on entre la fase de una banda de baja frecuencia y la amplitud de un rango de frecuencias m\'as altas, empleando la transformada \textit{wavelet}. Es el \textit{plugin} con m\'as modos de c\'alculo del sistema: cuatro, seleccionables en el desplegable \textbf{\textit{PAC Type}}.
 
     \subsubsection*{Componentes}
     \begin{enumerate}
-        \item \textbf{Sample frequency:} frecuencia de remuestreo, en hercios.
-        \item \textbf{Phase Band > P1} y \textbf{P2:} extremos de la banda del ritmo lento, cuya fase se toma como referencia.
-        \item \textbf{PAC Type:} modo de c\'alculo, con cuatro opciones: \textbf{PAC}, \textbf{PAC Average}, \textbf{PAC Psel} y \textbf{PAC Psel inter-canal}.
-        \item \textbf{Amplitude channel:} canal del que se toma la amplitud. Solo aparece en el modo \textbf{PAC Psel inter-canal} (Secci\'on~\ref{sec:mu_pac_inter}).
-        \item \textbf{Phase units > Degrees (0-360):} casilla que expresa la fase en grados en lugar de radianes, en todos los paneles a la vez.
-        \item \textbf{Amplitude Band > A1} y \textbf{A2:} extremos del rango de frecuencias cuya amplitud se analiza.
-        \item \textbf{Trial:} selector del \textit{trial} analizado, con los botones \textbf{\guilsinglleft} y \textbf{\guilsinglright} y el r\'otulo con el total disponible. Se aplica al modo \textbf{PAC}.
-        \item \textbf{Bot\'on Generate:} ejecuta el c\'alculo.
+        \item \textbf{\textit{Sample frequency}:} frecuencia de remuestreo, en hercios.
+        \item \textbf{\textit{Phase Band} > P1} y \textbf{P2:} extremos de la banda del ritmo lento, cuya fase se toma como referencia.
+        \item \textbf{\textit{PAC Type}:} modo de c\'alculo, con cuatro opciones: \textbf{PAC}, \textbf{\textit{PAC Average}}, \textbf{\textit{PAC Psel}} y \textbf{\textit{PAC Psel inter-canal}}.
+        \item \textbf{\textit{Amplitude channel}:} canal del que se toma la amplitud. Solo aparece en el modo \textbf{\textit{PAC Psel inter-canal}} (Secci\'on~\ref{sec:mu_pac_inter}).
+        \item \textbf{\textit{Phase units} > \textit{Degrees (0-360)}:} casilla que expresa la fase en grados en lugar de radianes, en todos los paneles a la vez.
+        \item \textbf{\textit{Amplitude Band} > A1} y \textbf{A2:} extremos del rango de frecuencias cuya amplitud se analiza.
+        \item \textbf{\textit{Trial}:} selector del \textit{trial} analizado, con los botones \textbf{\guilsinglleft} y \textbf{\guilsinglright} y el r\'otulo con el total disponible. Se aplica al modo \textbf{PAC}.
+        \item \textbf{Bot\'on \textit{Generate}:} ejecuta el c\'alculo.
     \end{enumerate}
 
     \capturaPendiente{7cm}
-    {Panel de par\'ametros del \textit{plugin} \textbf{PAC}, con el desplegable \textbf{PAC Type} abierto y sus cuatro opciones visibles.}
-    {(1) el campo \textbf{Sample frequency}; (2) la secci\'on \textbf{Phase Band} con \textbf{P1} y \textbf{P2}; (3) el desplegable \textbf{PAC Type} desplegado con las entradas \textbf{PAC}, \textbf{PAC Average}, \textbf{PAC Psel} y \textbf{PAC Psel inter-canal}; (4) la casilla \textbf{Degrees (0-360)}; (5) la secci\'on \textbf{Amplitude Band} con \textbf{A1} y \textbf{A2}; (6) el selector de \textbf{Trial}; (7) el bot\'on \textbf{Generate}.}
+    {Panel de par\'ametros del \textit{plugin} \textbf{PAC}, con el desplegable \textbf{\textit{PAC Type}} abierto y sus cuatro opciones visibles.}
+    {(1) el campo \textbf{\textit{Sample frequency}}; (2) la secci\'on \textbf{\textit{Phase Band}} con \textbf{P1} y \textbf{P2}; (3) el desplegable \textbf{\textit{PAC Type}} desplegado con las entradas \textbf{PAC}, \textbf{\textit{PAC Average}}, \textbf{\textit{PAC Psel}} y \textbf{\textit{PAC Psel inter-canal}}; (4) la casilla \textbf{\textit{Degrees (0-360)}}; (5) la secci\'on \textbf{\textit{Amplitude Band}} con \textbf{A1} y \textbf{A2}; (6) el selector de \textbf{\textit{Trial}}; (7) el bot\'on \textbf{\textit{Generate}}.}
     {Par\'ametros del \textit{plugin} \textbf{PAC} y sus cuatro modos}
     {fig:mu_pac_parametros}
 
@@ -938,13 +936,13 @@ La subcategor\'ia \textbf{Time-Frequency} re\'une los an\'alisis que describen c
     \hline
     \textbf{Modo} & \textbf{Qu\'e calcula} \\
     \hline
-    \textbf{PAC} & Acoplamiento sobre un \'unico \textit{trial}, el que indique el selector \textbf{Trial}. \\
+    \textbf{PAC} & Acoplamiento sobre un \'unico \textit{trial}, el que indique el selector \textbf{\textit{Trial}}. \\
     \hline
-    \textbf{PAC Average} & Promedio del acoplamiento sobre todos los \textit{trials}. \\
+    \textbf{\textit{PAC Average}} & Promedio del acoplamiento sobre todos los \textit{trials}. \\
     \hline
-    \textbf{PAC Psel} & Concatena todos los \textit{trials}, detecta los ciclos completos del ritmo lento y promedia ventanas centradas en sus valles. El acoplamiento se mide, por tanto, respecto de ciclos reales del ritmo lento y no de un reloj externo. \\
+    \textbf{\textit{PAC Psel}} & Concatena todos los \textit{trials}, detecta los ciclos completos del ritmo lento y promedia ventanas centradas en sus valles. El acoplamiento se mide, por tanto, respecto de ciclos reales del ritmo lento y no de un reloj externo. \\
     \hline
-    \textbf{PAC Psel inter-canal} & Igual que \textbf{PAC Psel}, pero tomando los ciclos y la fase de un canal y la amplitud de otro. \\
+    \textbf{\textit{PAC Psel inter-canal}} & Igual que \textbf{\textit{PAC Psel}}, pero tomando los ciclos y la fase de un canal y la amplitud de otro. \\
     \hline
     \end{tabularx}
     \captionof{table}{Modos de c\'alculo del \textit{plugin} \textbf{PAC}}
@@ -954,11 +952,11 @@ La subcategor\'ia \textbf{Time-Frequency} re\'une los an\'alisis que describen c
     \subsubsection*{C\'omo calcular el PAC de un \textit{trial}}
     \begin{enumerate}
         \item Genere los \textit{trials} del canal que desea analizar.
-        \item Abra \textbf{Analysis > PAC}.
-        \item Deje \textbf{PAC Type} en \textbf{PAC}.
+        \item Abra \textbf{\textit{Analysis} > PAC}.
+        \item Deje \textbf{\textit{PAC Type}} en \textbf{PAC}.
         \item Fije la banda del ritmo lento en \textbf{P1} y \textbf{P2}, y el rango de amplitud en \textbf{A1} y \textbf{A2}.
-        \item Elija el \textit{trial} con el selector \textbf{Trial}.
-        \item Pulse \textbf{Generate}.
+        \item Elija el \textit{trial} con el selector \textbf{\textit{Trial}}.
+        \item Pulse \textbf{\textit{Generate}}.
     \end{enumerate}
 
     \subsubsection*{Qu\'e se obtiene en los modos PAC y PAC Average}
@@ -971,7 +969,7 @@ La subcategor\'ia \textbf{Time-Frequency} re\'une los an\'alisis que describen c
         \item Cuatro trazas temporales con el eje de tiempo compartido: \textbf{Original}, \textbf{Filtrada en fase}, \textbf{Fase instant\'anea} y \textbf{Filtrada en amplitud}.
     \end{enumerate}
 
-    En el modo \textbf{PAC Average} se muestran el mapa, el histograma, la br\'ujula y, debajo, una traza de referencia \textbf{cos(fase)} que sirve para situar visualmente la fase. No se dibujan las trazas temporales, porque un promedio sobre muchos \textit{trials} no corresponde a ninguna traza concreta.
+    En el modo \textbf{\textit{PAC Average}} se muestran el mapa, el histograma, la br\'ujula y, debajo, una traza de referencia \textbf{cos(fase)} que sirve para situar visualmente la fase. No se dibujan las trazas temporales, porque un promedio sobre muchos \textit{trials} no corresponde a ninguna traza concreta.
 
     \capturaPendiente{8cm}
     {\textit{Plugin} \textbf{PAC} en el modo \textbf{PAC}, con los siete paneles apilados.}
@@ -980,7 +978,7 @@ La subcategor\'ia \textbf{Time-Frequency} re\'une los an\'alisis que describen c
     {fig:mu_pac_salidas}
 
     \subsubsection{PAC Psel}
-    El modo \textbf{PAC Psel} concatena todos los \textit{trials} en una sola serie, filtra el ritmo lento, localiza sus ciclos completos y promedia ventanas centradas en los valles de esos ciclos. De este modo, el eje de fase del resultado corresponde a ciclos efectivamente presentes en la se\~nal.
+    El modo \textbf{\textit{PAC Psel}} concatena todos los \textit{trials} en una sola serie, filtra el ritmo lento, localiza sus ciclos completos y promedia ventanas centradas en los valles de esos ciclos. De este modo, el eje de fase del resultado corresponde a ciclos efectivamente presentes en la se\~nal.
 
     Este modo produce trece paneles apilados en una \'unica columna deslizable:
 
@@ -1001,99 +999,100 @@ La subcategor\'ia \textbf{Time-Frequency} re\'une los an\'alisis que describen c
     \end{enumerate}
 
     \capturaPendiente{8cm}
-    {\textit{Plugin} \textbf{PAC} en el modo \textbf{PAC Psel}, mostrando la parte superior de la pila de paneles.}
-    {(1) el modo \textbf{PAC Psel} seleccionado en \textbf{PAC Type}; (2) el panel \textbf{Original}; (3) el panel \textbf{Filtrada en fase}; (4) el panel \textbf{Ciclos en la banda de fase} con su promedio destacado; (5) el t\'itulo del panel, que indica el n\'umero de ciclos detectados; (6) la barra de desplazamiento vertical.}
-    {\textit{Plugin} \textbf{PAC} en el modo \textbf{PAC Psel}}
+    {\textit{Plugin} \textbf{PAC} en el modo \textbf{\textit{PAC Psel}}, mostrando la parte superior de la pila de paneles.}
+    {(1) el modo \textbf{\textit{PAC Psel}} seleccionado en \textbf{\textit{PAC Type}}; (2) el panel \textbf{Original}; (3) el panel \textbf{Filtrada en fase}; (4) el panel \textbf{Ciclos en la banda de fase} con su promedio destacado; (5) el t\'itulo del panel, que indica el n\'umero de ciclos detectados; (6) la barra de desplazamiento vertical.}
+    {\textit{Plugin} \textbf{PAC} en el modo \textbf{\textit{PAC Psel}}}
     {fig:mu_pac_psel}
 
     \aviso{Sobre el n\'umero de ciclos dibujados.}{Con datos reales, la concatenaci\'on de los \textit{trials} puede producir varios cientos de ciclos. Para que la interfaz siga siendo utilizable, los paneles de ciclos dibujan solo una muestra representativa repartida por toda la pila, mientras que el \textbf{promedio se calcula sobre todos}. El n\'umero real de ciclos detectados aparece siempre en el t\'itulo del panel.}
 
     \subsubsection{PAC Psel inter-canal}
     \label{sec:mu_pac_inter}
-    El modo \textbf{PAC Psel inter-canal} aplica el mismo procedimiento que \textbf{PAC Psel}, pero reparte el trabajo entre dos canales: los ciclos y la fase proceden del canal activo, y la amplitud, del canal elegido en \textbf{Amplitude channel}. Permite responder a la pregunta de si el ritmo lento de un canal organiza la actividad r\'apida de otro.
+    El modo \textbf{\textit{PAC Psel inter-canal}} aplica el mismo procedimiento que \textbf{\textit{PAC Psel}}, pero reparte el trabajo entre dos canales: los ciclos y la fase proceden del canal activo, y la amplitud, del canal elegido en \textbf{\textit{Amplitude channel}}. Permite responder a la pregunta de si el ritmo lento de un canal organiza la actividad r\'apida de otro.
 
-    Al seleccionar este modo aparece el desplegable \textbf{Amplitude channel}, que lista los canales con \textit{trials} disponibles excluyendo el canal activo, puesto que ese ya act\'ua como canal de fase.
+    Al seleccionar este modo aparece el desplegable \textbf{\textit{Amplitude channel}}, que lista los canales con \textit{trials} disponibles excluyendo el canal activo, puesto que ese ya act\'ua como canal de fase.
 
     \subsubsection*{C\'omo calcularlo}
     \begin{enumerate}
-        \item Genere los \textit{trials} del \textbf{primer canal}, el que aportar\'a la fase.
-        \item Cambie el canal activo al \textbf{segundo canal} y genere sus \textit{trials} \textbf{con exactamente los mismos par\'ametros}: el mismo umbral, los mismos tiempos y los mismos \textit{trials} descartados.
-        \item Vuelva al canal de fase y d\'ejelo como canal activo.
-        \item Abra \textbf{Analysis > PAC} y elija \textbf{PAC Type > PAC Psel inter-canal}.
-        \item En \textbf{Amplitude channel} elija el segundo canal.
-        \item Fije las bandas \textbf{Phase Band} y \textbf{Amplitude Band}.
-        \item Pulse \textbf{Generate}.
+        \item Genere los \textit{trials} del canal que aportar\'a la \textbf{amplitud}.
+        \item Genere despu\'es los \textit{trials} del canal que aportar\'a la \textbf{fase}, \textbf{con exactamente los mismos par\'ametros}: el mismo umbral y los mismos tiempos. Al ser el \'ultimo canal cortado, queda como canal activo y act\'ua como canal de fase.
+        \item Si descarta \textit{trials}, descarte los mismos en los dos canales, para que ambas series conserven el mismo n\'umero de \textit{trials}.
+        \item Abra \textbf{\textit{Analysis} > PAC} y elija \textbf{\textit{PAC Type} > \textit{PAC Psel inter-canal}}.
+        \item En \textbf{\textit{Amplitude channel}} elija el canal de amplitud.
+        \item Fije las bandas \textbf{\textit{Phase Band}} y \textbf{\textit{Amplitude Band}}.
+        \item Pulse \textbf{\textit{Generate}}.
     \end{enumerate}
 
     \capturaPendiente{7cm}
-    {Panel de par\'ametros del \textit{plugin} \textbf{PAC} con el modo \textbf{PAC Psel inter-canal} seleccionado.}
-    {(1) la entrada \textbf{PAC Psel inter-canal} seleccionada en \textbf{PAC Type}; (2) el desplegable \textbf{Amplitude channel} con la lista de canales disponibles; (3) la ayuda contextual del desplegable, que advierte de que los dos canales tienen que estar cortados igual; (4) el canal activo, que act\'ua como canal de fase; (5) el bot\'on \textbf{Generate}.}
+    {Panel de par\'ametros del \textit{plugin} \textbf{PAC} con el modo \textbf{\textit{PAC Psel inter-canal}} seleccionado.}
+    {(1) la entrada \textbf{\textit{PAC Psel inter-canal}} seleccionada en \textbf{\textit{PAC Type}}; (2) el desplegable \textbf{\textit{Amplitude channel}} con la lista de canales disponibles; (3) la ayuda contextual del desplegable, que advierte de que los dos canales tienen que estar cortados igual; (4) el canal activo, que act\'ua como canal de fase; (5) el bot\'on \textbf{\textit{Generate}}.}
     {Selector de canal de amplitud del modo entre canales}
     {fig:mu_pac_inter_selector}
 
     \subsubsection*{Qu\'e se obtiene}
-    Los trece paneles son los mismos que en \textbf{PAC Psel}, con una diferencia importante para la interpretaci\'on: \textbf{cada panel lleva el nombre del canal del que proceden sus datos}. Los paneles que se derivan de la fase llevan el nombre del canal de fase, y los que se derivan de la amplitud, el del canal de amplitud. El t\'itulo del mapa indica expresamente la direcci\'on del an\'alisis, en la forma \emph{fase \textless canal\textgreater\ $\rightarrow$ amplitud \textless canal\textgreater}.
+    Los trece paneles son los mismos que en \textbf{\textit{PAC Psel}}, con una diferencia importante para la interpretaci\'on: \textbf{cada panel lleva el nombre del canal del que proceden sus datos}. Los paneles que se derivan de la fase llevan el nombre del canal de fase, y los que se derivan de la amplitud, el del canal de amplitud. El t\'itulo del mapa indica expresamente la direcci\'on del an\'alisis, con el nombre del canal de fase seguido del nombre del canal de amplitud.
 
     \capturaPendiente{8cm}
-    {\textit{Plugin} \textbf{PAC} en el modo \textbf{PAC Psel inter-canal}, mostrando los paneles rotulados con el canal de origen.}
-    {(1) el t\'itulo del mapa con la direcci\'on \emph{fase \textless canal\textgreater\ $\rightarrow$ amplitud \textless canal\textgreater}; (2) el r\'otulo del canal de fase en el panel \textbf{Ciclos en la banda de fase}; (3) el r\'otulo del canal de amplitud en el panel \textbf{Ciclos en gamma}; (4) el panel \textbf{Ciclos sin filtrar} con el r\'otulo del canal de amplitud; (5) la br\'ujula del vector medio.}
-    {Paneles rotulados del modo \textbf{PAC Psel inter-canal}}
+    {\textit{Plugin} \textbf{PAC} en el modo \textbf{\textit{PAC Psel inter-canal}}, mostrando los paneles rotulados con el canal de origen.}
+    {(1) el t\'itulo del mapa, que indica el canal de fase y el canal de amplitud; (2) el r\'otulo del canal de fase en el panel \textbf{Ciclos en la banda de fase}; (3) el r\'otulo del canal de amplitud en el panel \textbf{Ciclos en gamma}; (4) el panel \textbf{Ciclos sin filtrar} con el r\'otulo del canal de amplitud; (5) la br\'ujula del vector medio.}
+    {Paneles rotulados del modo \textbf{\textit{PAC Psel inter-canal}}}
     {fig:mu_pac_inter_paneles}
 
     \aviso{Requisito de alineaci\'on.}{Los \textit{trials} de los dos canales deben tener la misma forma, es decir, el mismo n\'umero de muestras y el mismo n\'umero de \textit{trials}. Si no coinciden, GammaLab interrumpe el c\'alculo con un aviso que indica que hay que volver a cortarlos con el mismo umbral, los mismos tiempos y los mismos \textit{trials}, cambiando \'unicamente el canal. Esta comprobaci\'on es deliberada: comparar la fase de un canal con la amplitud de otro solo tiene sentido si ambas series describen los mismos instantes.}
 
-    \aviso{Si la se\~nal tiene un solo canal.}{El modo entre canales necesita, por definici\'on, dos canales con \textit{trials}. Con un \'unico canal disponible, utilice \textbf{PAC Psel}.}
+    \aviso{Si la se\~nal tiene un solo canal.}{El modo entre canales necesita, por definici\'on, dos canales con \textit{trials}. Con un \'unico canal disponible, utilice \textbf{\textit{PAC Psel}}.}
 
     \subsection{Modulation Index}
-    El \textit{plugin} \textbf{Modulation Index} calcula el \'indice de modulaci\'on del acoplamiento fase--amplitud. A diferencia de \textbf{PAC}, que fija una banda de fase y un rango de amplitud y examina su acoplamiento en detalle, el \'indice de modulaci\'on \textbf{recorre dos rejillas de frecuencias} y produce un mapa que indica qu\'e pares de bandas est\'an acoplados. Es, por tanto, la herramienta de exploraci\'on previa: se usa para descubrir d\'onde hay acoplamiento, y \textbf{PAC} para estudiarlo.
+    El \textit{plugin} \textbf{\textit{Modulation Index}} calcula el \'indice de modulaci\'on del acoplamiento fase--amplitud. A diferencia de \textbf{PAC}, que fija una banda de fase y un rango de amplitud y examina su acoplamiento en detalle, el \'indice de modulaci\'on \textbf{recorre dos rejillas de frecuencias} y produce un mapa que indica qu\'e pares de bandas est\'an acoplados. Es, por tanto, la herramienta de exploraci\'on previa: se usa para descubrir d\'onde hay acoplamiento, y \textbf{PAC} para estudiarlo.
 
     \subsubsection*{Componentes}
     \begin{enumerate}
-        \item \textbf{Sample frequency:} frecuencia de remuestreo, en hercios.
-        \item \textbf{Trial:} selector del \textit{trial} analizado, con los botones \textbf{\guilsinglleft} y \textbf{\guilsinglright} y el total disponible.
-        \item \textbf{Phase Band > Fq P1} y \textbf{Fq P2:} extremos de la rejilla de frecuencias de fase.
-        \item \textbf{Phase Band > P step:} paso de esa rejilla.
-        \item \textbf{Amplitude Band > Fq A1} y \textbf{Fq A2:} extremos de la rejilla de frecuencias de amplitud.
-        \item \textbf{Amplitude Band > A step:} paso de esa rejilla.
-        \item \textbf{Bot\'on Generate:} ejecuta el c\'alculo.
+        \item \textbf{\textit{Sample frequency}:} frecuencia de remuestreo, en hercios.
+        \item \textbf{\textit{Trial}:} selector del \textit{trial} analizado, con los botones \textbf{\guilsinglleft} y \textbf{\guilsinglright} y el total disponible.
+        \item \textbf{\textit{Phase Band} > \textit{Fq P1}} y \textbf{\textit{Fq P2}:} extremos de la rejilla de frecuencias de fase.
+        \item \textbf{\textit{Phase Band} > \textit{P step}:} paso de esa rejilla.
+        \item \textbf{\textit{Amplitude Band} > \textit{Fq A1}} y \textbf{\textit{Fq A2}:} extremos de la rejilla de frecuencias de amplitud.
+        \item \textbf{\textit{Amplitude Band} > \textit{A step}:} paso de esa rejilla.
+        \item \textbf{Bot\'on \textit{Generate}:} ejecuta el c\'alculo.
     \end{enumerate}
 
     \capturaPendiente{7cm}
-    {\textit{Plugin} \textbf{Modulation Index} con el mapa calculado.}
-    {(1) el campo \textbf{Sample frequency}; (2) el selector de \textbf{Trial}; (3) la secci\'on \textbf{Phase Band} con \textbf{Fq P1}, \textbf{Fq P2} y \textbf{P step}; (4) la secci\'on \textbf{Amplitude Band} con \textbf{Fq A1}, \textbf{Fq A2} y \textbf{A step}; (5) el bot\'on \textbf{Generate}; (6) el mapa del \'indice de modulaci\'on, con la frecuencia de fase en un eje y la de amplitud en el otro; (7) la escala de color.}
-    {\textit{Plugin} \textbf{Modulation Index}}
+    {\textit{Plugin} \textbf{\textit{Modulation Index}} con el mapa calculado.}
+    {(1) el campo \textbf{\textit{Sample frequency}}; (2) el selector de \textbf{\textit{Trial}}; (3) la secci\'on \textbf{\textit{Phase Band}} con \textbf{\textit{Fq P1}}, \textbf{\textit{Fq P2}} y \textbf{\textit{P step}}; (4) la secci\'on \textbf{\textit{Amplitude Band}} con \textbf{\textit{Fq A1}}, \textbf{\textit{Fq A2}} y \textbf{\textit{A step}}; (5) el bot\'on \textbf{\textit{Generate}}; (6) el mapa del \'indice de modulaci\'on, con la frecuencia de fase en un eje y la de amplitud en el otro; (7) la escala de color.}
+    {\textit{Plugin} \textbf{\textit{Modulation Index}}}
     {fig:mu_modulation_index}
 
-    \aviso{Sobre el coste del c\'alculo.}{El n\'umero de pares que se eval\'uan es el producto del n\'umero de pasos de las dos rejillas. Reducir \textbf{P step} y \textbf{A step} multiplica el tiempo de c\'alculo muy r\'apidamente. Conviene empezar con pasos amplios para localizar la regi\'on de inter\'es y refinarlos despu\'es solo en esa regi\'on. El c\'alculo puede interrumpirse en cualquier momento con el bot\'on \textbf{Cancelar} de la barra de progreso.}
+    \aviso{Sobre el coste del c\'alculo.}{El n\'umero de pares que se eval\'uan es el producto del n\'umero de pasos de las dos rejillas. Reducir \textbf{\textit{P step}} y \textbf{\textit{A step}} multiplica el tiempo de c\'alculo muy r\'apidamente. Conviene empezar con pasos amplios para localizar la regi\'on de inter\'es y refinarlos despu\'es solo en esa regi\'on. El c\'alculo puede interrumpirse en cualquier momento con el bot\'on \textbf{Cancelar} de la barra de progreso.}
 
     \subsection{Wavelet}
-    El \textit{plugin} \textbf{Wavelet} calcula la transformada \textit{wavelet} continua y produce un escalograma: un mapa de la energ\'ia de la se\~nal en funci\'on del tiempo y de la frecuencia.
+    El \textit{plugin} \textbf{\textit{Wavelet}} calcula la transformada \textit{wavelet} continua y produce un escalograma: un mapa de la energ\'ia de la se\~nal en funci\'on del tiempo y de la frecuencia.
 
     \subsubsection*{Componentes}
     \begin{enumerate}
-        \item \textbf{Sample density:} frecuencia de remuestreo, en hercios.
-        \item \textbf{Range > Low} y \textbf{High:} extremos del eje de frecuencias.
-        \item \textbf{Wavelet > Cycles:} n\'umero de ciclos de la \textit{wavelet}. M\'as ciclos dan mejor resoluci\'on en frecuencia y peor en tiempo; menos ciclos, lo contrario.
-        \item \textbf{Scalogram > Normalize:} casilla que activa la normalizaci\'on, y desplegable \textbf{Type} con los m\'etodos \textbf{Z-Score}, \textbf{Percent change}, \textbf{Relative power} y \textbf{Min-Max}. El desplegable permanece inactivo mientras la casilla no est\'e marcada.
-        \item \textbf{Scalogram > Scale:} casilla que activa la escala logar\'itmica del eje de frecuencias, con la opci\'on \textbf{Log}.
-        \item \textbf{Bot\'on Generate:} ejecuta el c\'alculo.
+        \item \textbf{\textit{Sample density}:} frecuencia de remuestreo, en hercios.
+        \item \textbf{\textit{Range} > \textit{Low}} y \textbf{\textit{High}:} extremos del eje de frecuencias.
+        \item \textbf{\textit{Trial to use}:} lista de los \textit{trials} v\'alidos en la que se marca el \'unico \textit{trial} que se analiza; al marcar uno se desmarca el anterior.
+        \item \textbf{\textit{Wavelet} > \textit{Cycles}:} n\'umero de ciclos de la \textit{wavelet}. M\'as ciclos dan mejor resoluci\'on en frecuencia y peor en tiempo; menos ciclos, lo contrario.
+        \item \textbf{\textit{Scalogram} > \textit{Normalize}:} casilla que activa la normalizaci\'on, y desplegable \textbf{\textit{Type}} con los m\'etodos \textbf{\textit{Z-Score}}, \textbf{\textit{Percent change}}, \textbf{\textit{Relative power}} y \textbf{\textit{Min-Max}}. El desplegable permanece inactivo mientras la casilla no est\'e marcada.
+        \item \textbf{\textit{Scalogram} > \textit{Scale}:} casilla que activa la escala logar\'itmica del eje de frecuencias, con la opci\'on \textbf{\textit{Log}}.
+        \item \textbf{Bot\'on \textit{Generate}:} ejecuta el c\'alculo.
     \end{enumerate}
 
     \capturaPendiente{7cm}
-    {\textit{Plugin} \textbf{Wavelet} con el escalograma calculado y la normalizaci\'on activada.}
-    {(1) el campo \textbf{Sample density}; (2) la secci\'on \textbf{Range}; (3) el campo \textbf{Cycles}; (4) la casilla \textbf{Normalize} y su desplegable \textbf{Type}; (5) la casilla \textbf{Scale} con la opci\'on \textbf{Log}; (6) el bot\'on \textbf{Generate}; (7) el escalograma; (8) la escala de color.}
-    {\textit{Plugin} \textbf{Wavelet}}
+    {\textit{Plugin} \textbf{\textit{Wavelet}} con el escalograma calculado y la normalizaci\'on activada.}
+    {(1) el campo \textbf{\textit{Sample density}}; (2) la secci\'on \textbf{\textit{Range}}; (3) el campo \textbf{\textit{Cycles}}; (4) la casilla \textbf{\textit{Normalize}} y su desplegable \textbf{\textit{Type}}; (5) la casilla \textbf{\textit{Scale}} con la opci\'on \textbf{\textit{Log}}; (6) el bot\'on \textbf{\textit{Generate}}; (7) el escalograma; (8) la escala de color; (9) el selector \textbf{\textit{Trial to use}}.}
+    {\textit{Plugin} \textbf{\textit{Wavelet}}}
     {fig:mu_wavelet}
 
     \subsection{Wavelet Average}
-    El \textit{plugin} \textbf{Wavelet Average} calcula la transformada \textit{wavelet} de cada \textit{trial} y promedia los escalogramas, produciendo un mapa tiempo--frecuencia agregado. Sus par\'ametros son id\'enticos a los de \textbf{Wavelet}.
+    El \textit{plugin} \textbf{\textit{Wavelet Average}} calcula la transformada \textit{wavelet} de cada \textit{trial} y promedia los escalogramas, produciendo un mapa tiempo--frecuencia agregado. Sus par\'ametros son los de \textbf{\textit{Wavelet}}, salvo que, en lugar de \textbf{\textit{Trial to use}}, dispone del selector \textbf{\textit{Trials to use}} descrito en \textbf{\textit{FFT Average}}, para elegir los \textit{trials} que entran en el promedio.
 
     Por tratarse de un c\'alculo que se repite para cada \textit{trial}, es uno de los an\'alisis m\'as costosos del sistema. La barra de progreso indica el \textit{trial} que se est\'a procesando y permite cancelar.
 
     \capturaPendiente{7cm}
-    {\textit{Plugin} \textbf{Wavelet Average} con el mapa promedio calculado.}
-    {(1) los par\'ametros, id\'enticos a los de \textbf{Wavelet}; (2) el bot\'on \textbf{Generate}; (3) el mapa tiempo--frecuencia promedio; (4) la escala de color; (5) el aviso con el n\'umero de \textit{trials} promediados.}
-    {\textit{Plugin} \textbf{Wavelet Average}}
+    {\textit{Plugin} \textbf{\textit{Wavelet Average}} con el mapa promedio calculado.}
+    {(1) los par\'ametros, iguales a los de \textbf{\textit{Wavelet}}, y el selector \textbf{\textit{Trials to use}}; (2) el bot\'on \textbf{\textit{Generate}}; (3) el mapa tiempo--frecuencia promedio; (4) la escala de color; (5) el aviso con el n\'umero de \textit{trials} promediados.}
+    {\textit{Plugin} \textbf{\textit{Wavelet Average}}}
     {fig:mu_wavelet_average}
 
 \clearpage
@@ -1101,38 +1100,38 @@ La subcategor\'ia \textbf{Time-Frequency} re\'une los an\'alisis que describen c
 \section{An\'alisis de conectividad}
 
     \subsection{PPC}
-    El \textit{plugin} \textbf{PPC} (\emph{Phase-Phase Coupling}) mide con qu\'e constancia se mantiene la diferencia de fase entre dos canales, y presenta el resultado como un mapa de frecuencia frente a tiempo. Es la herramienta del sistema para estudiar la coordinaci\'on entre dos registros.
+    El \textit{plugin} \textbf{PPC} (\emph{Pairwise Phase Consistency}, consistencia de fase por pares) mide con qu\'e constancia se mantiene la diferencia de fase entre dos canales, y presenta el resultado como un mapa de frecuencia frente a tiempo. Es la herramienta del sistema para estudiar la coordinaci\'on entre dos registros.
 
     \subsubsection*{Componentes}
     \begin{enumerate}
-        \item \textbf{Channel 1:} primer canal del par. Solo se listan los canales que ya tienen \textit{trials}.
-        \item \textbf{Channel 2:} segundo canal del par. Debe ser distinto del primero y sus \textit{trials} deben estar cortados con los mismos par\'ametros.
-        \item \textbf{Sample frequency (Hz):} frecuencia a la que se remuestrea la se\~nal antes del an\'alisis.
-        \item \textbf{F min (Hz):} frecuencia m\'as baja del mapa.
-        \item \textbf{F max (Hz):} frecuencia m\'as alta del mapa. No puede superar la mitad de la frecuencia de muestreo.
-        \item \textbf{Minimum window (s):} ventana de an\'alisis m\'as corta. Cada frecuencia emplea su propia ventana, nunca m\'as corta que esta.
-        \item \textbf{Gaussian cycles:} ciclos de la \textit{wavelet} de Gabor. M\'as ciclos dan una resoluci\'on m\'as n\'itida en frecuencia y m\'as difusa en tiempo.
-        \item \textbf{Bot\'on Generate:} ejecuta el c\'alculo. Mientras dura, el bot\'on muestra el texto \textbf{Computing\ldots}
+        \item \textbf{\textit{Channel 1}:} primer canal del par. Solo se listan los canales que ya tienen \textit{trials}.
+        \item \textbf{\textit{Channel 2}:} segundo canal del par. Debe ser distinto del primero y sus \textit{trials} deben estar cortados con los mismos par\'ametros.
+        \item \textbf{\textit{Sample frequency (Hz)}:} frecuencia a la que se remuestrea la se\~nal antes del an\'alisis.
+        \item \textbf{\textit{F min (Hz)}:} frecuencia m\'as baja del mapa.
+        \item \textbf{\textit{F max (Hz)}:} frecuencia m\'as alta del mapa. No puede superar la mitad de la frecuencia de muestreo.
+        \item \textbf{\textit{Minimum window (s)}:} ventana de an\'alisis m\'as corta. Cada frecuencia emplea su propia ventana, nunca m\'as corta que esta.
+        \item \textbf{\textit{Gaussian cycles}:} ciclos de la \textit{wavelet} de Gabor. M\'as ciclos dan una resoluci\'on m\'as n\'itida en frecuencia y m\'as difusa en tiempo.
+        \item \textbf{Bot\'on \textit{Generate}:} ejecuta el c\'alculo. Mientras dura, el bot\'on muestra el texto \textbf{\textit{Computing\ldots}}
     \end{enumerate}
 
     \subsubsection*{C\'omo calcularlo}
     \begin{enumerate}
         \item Genere los \textit{trials} del primer canal.
-        \item Cambie el canal activo al segundo canal y genere sus \textit{trials} con los mismos par\'ametros.
-        \item Abra \textbf{Analysis > PPC}.
-        \item Elija los dos canales en \textbf{Channel 1} y \textbf{Channel 2}.
+        \item Genere los \textit{trials} del segundo canal con los mismos par\'ametros. Los del primero se conservan, porque cada canal mantiene su propio conjunto.
+        \item Abra \textbf{\textit{Analysis} > PPC}.
+        \item Elija los dos canales en \textbf{\textit{Channel 1}} y \textbf{\textit{Channel 2}}.
         \item Ajuste la frecuencia de remuestreo, el rango de frecuencias, la ventana m\'inima y los ciclos de la gaussiana.
-        \item Pulse \textbf{Generate}.
+        \item Pulse \textbf{\textit{Generate}}.
     \end{enumerate}
 
     \capturaPendiente{7cm}
-    {\textit{Plugin} \textbf{PPC} con el mapa de acoplamiento fase-fase calculado para un par de canales.}
-    {(1) el desplegable \textbf{Channel 1}; (2) el desplegable \textbf{Channel 2}; (3) el campo \textbf{Sample frequency (Hz)}; (4) los campos \textbf{F min (Hz)} y \textbf{F max (Hz)}; (5) el campo \textbf{Minimum window (s)}; (6) el campo \textbf{Gaussian cycles}; (7) el bot\'on \textbf{Generate}; (8) el mapa de frecuencia frente a tiempo; (9) las celdas en blanco, que corresponden a los valores que no se pueden medir; (10) la escala de color.}
+    {\textit{Plugin} \textbf{PPC} con el mapa de consistencia de fase calculado para un par de canales.}
+    {(1) el desplegable \textbf{\textit{Channel 1}}; (2) el desplegable \textbf{\textit{Channel 2}}; (3) el campo \textbf{\textit{Sample frequency (Hz)}}; (4) los campos \textbf{\textit{F min (Hz)}} y \textbf{\textit{F max (Hz)}}; (5) el campo \textbf{\textit{Minimum window (s)}}; (6) el campo \textbf{\textit{Gaussian cycles}}; (7) el bot\'on \textbf{\textit{Generate}}; (8) el mapa de frecuencia frente a tiempo; (9) las celdas en blanco, que corresponden a los valores que no se pueden medir; (10) la escala de color.}
     {\textit{Plugin} \textbf{PPC}}
     {fig:mu_ppc}
 
     \subsubsection*{C\'omo interpretar las celdas en blanco}
-    El mapa de \textbf{PPC} deja \textbf{en blanco las celdas que no se pueden medir} con los datos disponibles, en lugar de rellenarlas con un valor. Una regi\'on en blanco no indica un fallo del c\'alculo ni ausencia de acoplamiento: indica que, en esa combinaci\'on de frecuencia y tiempo, la ventana necesaria no cabe dentro de los \textit{trials} o no hay suficientes muestras independientes para estimar la consistencia. Para reducir esas regiones se puede alargar la ventana de los \textit{trials} en \textbf{Trials}, aumentar el n\'umero de \textit{trials} o elevar la frecuencia m\'inima del mapa.
+    El mapa de \textbf{PPC} deja \textbf{en blanco las celdas que no se pueden medir} con los datos disponibles, en lugar de rellenarlas con un valor. Una regi\'on en blanco no indica un fallo del c\'alculo ni ausencia de acoplamiento: indica que, en esa combinaci\'on de frecuencia y tiempo, la ventana necesaria no cabe dentro de los \textit{trials} o no hay suficientes muestras independientes para estimar la consistencia. Para reducir esas regiones se puede alargar la ventana de los \textit{trials} en \textbf{\textit{Trials}}, aumentar el n\'umero de \textit{trials} o elevar la frecuencia m\'inima del mapa.
 
     \aviso{Sobre la comparaci\'on con otras implementaciones.}{\textbf{PPC} no calcula el \emph{phase-locking value} cl\'asico, sino la consistencia de fase por pares sobre las muestras efectivamente independientes. La diferencia es relevante al comparar resultados con otras herramientas: el \emph{phase-locking value} tiene un sesgo que hace que las frecuencias bajas aparezcan como perfectamente acopladas con independencia de los datos, y \textbf{PPC} corrige precisamente eso. Un mapa de \textbf{PPC} con valores moderados a baja frecuencia no es, por tanto, un resultado peor, sino un resultado sin ese sesgo.}
 
@@ -1152,36 +1151,36 @@ GammaLab permite tomar medidas cuantitativas directamente sobre cualquier gr\'af
     \hline
     \textbf{Entrada} & \textbf{Funci\'on} \\
     \hline
-    \textbf{Zoom} & Submen\'u con \textbf{Horizontal (X)}, \textbf{Vertical (Y)}, \textbf{Both axes (X+Y)} y \textbf{Reset view}. Determina en qu\'e direcci\'on act\'ua el acercamiento con la rueda del rat\'on, y permite volver a la vista completa. \\
+    \textbf{\textit{Zoom}} & Submen\'u con \textbf{\textit{Horizontal (X)}}, \textbf{Vertical (Y)}, \textbf{Both axes (X+Y)} y \textbf{\textit{Reset view}}. Determina en qu\'e direcci\'on act\'ua el acercamiento con la rueda del rat\'on, y permite volver a la vista completa. \\
     \hline
-    \textbf{Measurements} & Submen\'u con las herramientas de medida y su gesti\'on, descrito a continuaci\'on. \\
+    \textbf{\textit{Measurements}} & Submen\'u con las herramientas de medida y su gesti\'on, descrito a continuaci\'on. \\
     \hline
-    \textbf{Export as image} & Submen\'u con los formatos \texttt{png}, \texttt{jpg}, \texttt{jpeg}, \texttt{bmp}, \texttt{tiff} y \texttt{emf (vector)}. \\
+    \textbf{\textit{Export as image}} & Submen\'u con los formatos \textit{png}, \textit{jpg}, \textit{jpeg}, \textit{bmp}, \textit{tiff} y \textit{emf (vector)}. \\
     \hline
-    \textbf{Export table} & Submen\'u con los formatos \texttt{csv}, \texttt{json} y \texttt{xlsx}, que exporta los datos num\'ericos que hay detr\'as de la gr\'afica. \\
+    \textbf{\textit{Export table}} & Submen\'u con los formatos \textit{csv}, \textit{json} y \textit{xlsx}, que exporta los datos num\'ericos que hay detr\'as de la gr\'afica. \\
     \hline
     \end{tabularx}
     \captionof{table}{Bloques del men\'u contextual de las gr\'aficas}
     \label{tab:mu_menu_contextual}
     \end{center}
 
-    El submen\'u \textbf{Measurements} contiene:
+    El submen\'u \textbf{\textit{Measurements}} contiene:
 
     \begin{enumerate}
-        \item \textbf{Slope (2 points):} inicia una medida de pendiente entre dos puntos.
-        \item \textbf{Amplitude (2 points):} inicia una medida de amplitud sobre el intervalo entre dos puntos.
-        \item \textbf{Slope (all trials):} inicia una medida de pendiente que se aplica al mismo intervalo en todos los \textit{trials}.
-        \item \textbf{Cancel measurement (Esc):} cancela la medida en curso. Tambi\'en responde a la tecla \textbf{Esc}.
-        \item \textbf{Show/Hide all lines:} muestra u oculta las l\'ineas de todas las medidas dibujadas sobre la gr\'afica.
-        \item \textbf{Delete last measurement:} elimina la \'ultima medida tomada.
-        \item \textbf{Delete ALL measurements:} elimina todas las medidas.
+        \item \textbf{\textit{Slope (2 points)}:} inicia una medida de pendiente entre dos puntos.
+        \item \textbf{\textit{Amplitude (2 points)}:} inicia una medida de amplitud sobre el intervalo entre dos puntos.
+        \item \textbf{\textit{Slope (all trials)}:} inicia una medida de pendiente que se aplica al mismo intervalo en todos los \textit{trials}.
+        \item \textbf{\textit{Cancel measurement (Esc)}:} cancela la medida en curso. Tambi\'en responde a la tecla \textbf{Esc}.
+        \item \textbf{\textit{Show/Hide all lines}:} muestra u oculta las l\'ineas de todas las medidas dibujadas sobre la gr\'afica.
+        \item \textbf{\textit{Delete last measurement}:} elimina la \'ultima medida tomada.
+        \item \textbf{\textit{Delete ALL measurements}:} elimina todas las medidas.
     \end{enumerate}
 
     Las tres primeras entradas permanecen inactivas mientras no haya una gr\'afica sobre la que medir o mientras haya otra medida en curso, de modo que no es posible iniciar dos medidas a la vez.
 
     \capturaPendiente{7cm}
-    {Men\'u contextual abierto con el bot\'on derecho sobre una gr\'afica, con el submen\'u \textbf{Measurements} desplegado.}
-    {(1) el submen\'u \textbf{Zoom} con sus cuatro opciones; (2) el submen\'u \textbf{Measurements} desplegado; (3) las entradas \textbf{Slope (2 points)} y \textbf{Amplitude (2 points)}; (4) la entrada \textbf{Slope (all trials)}; (5) la entrada \textbf{Cancel measurement (Esc)}; (6) las entradas de borrado; (7) los submen\'us \textbf{Export as image} y \textbf{Export table}.}
+    {Men\'u contextual abierto con el bot\'on derecho sobre una gr\'afica, con el submen\'u \textbf{\textit{Measurements}} desplegado.}
+    {(1) el submen\'u \textbf{\textit{Zoom}} con sus cuatro opciones; (2) el submen\'u \textbf{\textit{Measurements}} desplegado; (3) las entradas \textbf{\textit{Slope (2 points)}} y \textbf{\textit{Amplitude (2 points)}}; (4) la entrada \textbf{\textit{Slope (all trials)}}; (5) la entrada \textbf{\textit{Cancel measurement (Esc)}}; (6) las entradas de borrado; (7) los submen\'us \textbf{\textit{Export as image}} y \textbf{\textit{Export table}}.}
     {Men\'u contextual de una gr\'afica}
     {fig:mu_menu_grafica}
 
@@ -1190,41 +1189,41 @@ GammaLab permite tomar medidas cuantitativas directamente sobre cualquier gr\'af
 
     \begin{enumerate}
         \item Abra el \textit{plugin} cuya gr\'afica desea medir y calcule el resultado.
-        \item Pulse el bot\'on derecho sobre la gr\'afica y elija \textbf{Measurements > Slope (2 points)} o \textbf{Measurements > Amplitude (2 points)}.
-        \item Sit\'ue el cursor sobre el primer punto. La lectura \texttt{X = \ldots\ Y = \ldots} permite comprobar la posici\'on exacta antes de hacer clic.
+        \item Pulse el bot\'on derecho sobre la gr\'afica y elija \textbf{\textit{Measurements} > \textit{Slope (2 points)}} o \textbf{\textit{Measurements} > \textit{Amplitude (2 points)}}.
+        \item Sit\'ue el cursor sobre el primer punto. La lectura \textit{X = \ldots\ Y = \ldots} permite comprobar la posici\'on exacta antes de hacer clic.
         \item Haga clic para fijar el primer punto.
         \item Repita la operaci\'on con el segundo punto.
-        \item La medida se dibuja sobre la gr\'afica y su fila aparece en la pesta\~na correspondiente del panel \textbf{Results}.
+        \item La medida se dibuja sobre la gr\'afica y su fila aparece en la pesta\~na correspondiente del panel \textbf{\textit{Results}}.
     \end{enumerate}
 
-    Si se desea anular la operaci\'on tras haber marcado el primer punto, basta pulsar \textbf{Esc} o elegir \textbf{Cancel measurement} en el men\'u contextual.
+    Si se desea anular la operaci\'on tras haber marcado el primer punto, basta pulsar \textbf{Esc} o elegir \textbf{\textit{Cancel measurement}} en el men\'u contextual.
 
     \capturaPendiente{6.5cm}
     {Medida de pendiente en curso sobre una gr\'afica, con el primer punto ya fijado.}
-    {(1) el primer punto marcado; (2) la lectura \texttt{X = \ldots\ Y = \ldots} de la posici\'on del cursor; (3) la l\'inea provisional de la medida; (4) el panel \textbf{Results} con la fila de una medida anterior.}
+    {(1) el primer punto marcado; (2) la lectura \textit{X = \ldots\ Y = \ldots} de la posici\'on del cursor; (3) la l\'inea provisional de la medida; (4) el panel \textbf{\textit{Results}} con la fila de una medida anterior.}
     {Medida de pendiente en curso}
     {fig:mu_medida_en_curso}
 
     \subsection{La variante Slope (all trials)}
-    La entrada \textbf{Slope (all trials)} toma los dos puntos una sola vez y aplica el mismo intervalo temporal a todos los \textit{trials}, generando una medida de pendiente por cada uno. Sirve para estudiar c\'omo var\'ia la pendiente de un mismo tramo a lo largo del registro, sin necesidad de repetir la medida \textit{trial} por \textit{trial}. Las filas resultantes se distinguen en la tabla por la columna \textbf{Graph}, que indica a qu\'e \textit{trial} corresponde cada una.
+    La entrada \textbf{\textit{Slope (all trials)}} toma los dos puntos una sola vez y aplica el mismo intervalo temporal a todos los \textit{trials}, generando una medida de pendiente por cada uno. Sirve para estudiar c\'omo var\'ia la pendiente de un mismo tramo a lo largo del registro, sin necesidad de repetir la medida \textit{trial} por \textit{trial}. Las filas resultantes se distinguen en la tabla por la columna \textbf{\textit{Graph}}, que indica a qu\'e \textit{trial} corresponde cada una.
 
     \subsection{Controles de medidas en la cinta Home}
-    La secci\'on \textbf{Home} de la cinta duplica, de forma m\'as accesible, los controles de gesti\'on de las medidas:
+    La secci\'on \textbf{\textit{Home}} de la cinta duplica, de forma m\'as accesible, los controles de gesti\'on de las medidas:
 
     \begin{enumerate}
-        \item \textbf{Bot\'on de borrado:} despliega las acciones \textbf{delete last} y \textbf{delete all}.
-        \item \textbf{Bot\'on de visibilidad:} despliega las acciones \textbf{Show all} y \textbf{Hide all}, que muestran u ocultan las l\'ineas de todas las medidas.
-        \item \textbf{Control Zoom:} abre un peque\~no panel con el porcentaje de acercamiento actual, inicialmente \textbf{100\%}, y los controles para aumentarlo, reducirlo y restaurarlo. Act\'ua sobre la \'ultima gr\'afica visitada; si no hay ninguna, GammaLab avisa de que primero debe abrirse una vista con gr\'aficas.
+        \item \textbf{Bot\'on de borrado:} despliega las acciones \textbf{\textit{delete last}} y \textbf{\textit{delete all}}.
+        \item \textbf{Bot\'on de visibilidad:} despliega las acciones \textbf{\textit{Show all}} y \textbf{\textit{Hide all}}, que muestran u ocultan las l\'ineas de todas las medidas.
+        \item \textbf{Control \textit{Zoom}:} abre un peque\~no panel con el porcentaje de acercamiento actual, inicialmente \textbf{100\%}, y los controles para aumentarlo, reducirlo y restaurarlo. Act\'ua sobre la \'ultima gr\'afica visitada; si no hay ninguna, GammaLab avisa de que primero debe abrirse una vista con gr\'aficas.
     \end{enumerate}
 
     \capturaPendiente{5.5cm}
-    {Secci\'on \textbf{Home} de la cinta con el panel de \textbf{Zoom} abierto y el desplegable de borrado visible.}
-    {(1) los botones \textbf{Slope Results} y \textbf{Amplitude Results} del grupo \textbf{Measurements}; (2) el desplegable con \textbf{delete last} y \textbf{delete all}; (3) el desplegable con \textbf{Show all} y \textbf{Hide all}; (4) el grupo \textbf{Zoom}; (5) el campo con el porcentaje actual y los controles de aumento, reducci\'on y restauraci\'on.}
-    {Controles de medidas y de \textbf{Zoom} en la cinta \textbf{Home}}
+    {Secci\'on \textbf{\textit{Home}} de la cinta con el panel de \textbf{\textit{Zoom}} abierto y el desplegable de borrado visible.}
+    {(1) los botones \textbf{\textit{Slope Results}} y \textbf{\textit{Amplitude Results}} del grupo \textbf{\textit{Measurements}}; (2) el desplegable con \textbf{\textit{delete last}} y \textbf{\textit{delete all}}; (3) el desplegable con \textbf{\textit{Show all}} y \textbf{\textit{Hide all}}; (4) el grupo \textbf{\textit{Zoom}}; (5) el campo con el porcentaje actual y los controles de aumento, reducci\'on y restauraci\'on.}
+    {Controles de medidas y de \textbf{\textit{Zoom}} en la cinta \textbf{\textit{Home}}}
     {fig:mu_home_zoom}
 
     \subsection{Tabla de resultados: Slope}
-    La pesta\~na \textbf{Slope} del panel \textbf{Results}, accesible tambi\'en desde el bot\'on \textbf{Slope Results} de la cinta \textbf{Home}, contiene una fila por cada medida de pendiente, con las columnas de la Tabla~\ref{tab:mu_columnas_slope}.
+    La pesta\~na \textbf{\textit{Slope}} del panel \textbf{\textit{Results}}, accesible tambi\'en desde el bot\'on \textbf{\textit{Slope Results}} de la cinta \textbf{\textit{Home}}, contiene una fila por cada medida de pendiente, con las columnas de la Tabla~\ref{tab:mu_columnas_slope}.
 
     \begin{center}
     \small
@@ -1234,9 +1233,9 @@ GammaLab permite tomar medidas cuantitativas directamente sobre cualquier gr\'af
     \hline
     \textbf{ID} & Identificador \'unico de la medida. \\
     \hline
-    \textbf{Channel} & Canal sobre el que se tom\'o la medida. \\
+    \textbf{\textit{Channel}} & Canal sobre el que se tom\'o la medida. \\
     \hline
-    \textbf{Graph} & Gr\'afica concreta, por ejemplo el \textit{trial} medido. \\
+    \textbf{\textit{Graph}} & Gr\'afica concreta, por ejemplo el \textit{trial} medido. \\
     \hline
     \textbf{Point 1 (x, y)} & Coordenadas del primer punto. \\
     \hline
@@ -1246,25 +1245,25 @@ GammaLab permite tomar medidas cuantitativas directamente sobre cualquier gr\'af
     \hline
     $\Delta$\textbf{y} & Diferencia entre las ordenadas de los dos puntos. \\
     \hline
-    \textbf{Slope (m)} & Pendiente del segmento, es decir $\Delta y / \Delta x$. \\
+    \textbf{\textit{Slope (m)}} & Pendiente del segmento, es decir $\Delta y / \Delta x$. \\
     \hline
-    \textbf{Distance} & Distancia entre los dos puntos. \\
+    \textbf{\textit{Distance}} & Distancia entre los dos puntos. \\
     \hline
-    \textbf{Timestamp} & Fecha y hora en que se tom\'o la medida. \\
+    \textbf{\textit{Timestamp}} & Fecha y hora en que se tom\'o la medida. \\
     \hline
     \end{tabularx}
-    \captionof{table}{Columnas de la tabla \textbf{Slope Results}}
+    \captionof{table}{Columnas de la tabla \textbf{\textit{Slope Results}}}
     \label{tab:mu_columnas_slope}
     \end{center}
 
     \capturaPendiente{6cm}
-    {Tabla \textbf{Slope Results} con varias medidas tomadas sobre distintos \textit{trials}.}
-    {(1) la pesta\~na \textbf{Slope} activa; (2) las columnas \textbf{Channel} y \textbf{Graph}; (3) la columna \textbf{Slope (m)}; (4) una fila generada por \textbf{Slope (all trials)}; (5) el bot\'on \textbf{\textbullet\textbullet\textbullet} con las opciones de exportaci\'on.}
-    {Tabla de resultados \textbf{Slope}}
+    {Tabla \textbf{\textit{Slope Results}} con varias medidas tomadas sobre distintos \textit{trials}.}
+    {(1) la pesta\~na \textbf{\textit{Slope}} activa; (2) las columnas \textbf{\textit{Channel}} y \textbf{\textit{Graph}}; (3) la columna \textbf{\textit{Slope (m)}}; (4) una fila generada por \textbf{\textit{Slope (all trials)}}; (5) el bot\'on \textbf{\textbullet\textbullet\textbullet} con las opciones de exportaci\'on.}
+    {Tabla de resultados \textbf{\textit{Slope}}}
     {fig:mu_tabla_slope}
 
     \subsection{Tabla de resultados: Amplitude}
-    La pesta\~na \textbf{Amplitude} recoge las medidas de amplitud, con las columnas de la Tabla~\ref{tab:mu_columnas_amplitude}. A diferencia de la pendiente, que se calcula entre los dos puntos marcados, la amplitud se obtiene recorriendo el intervalo comprendido entre ellos y localizando su m\'inimo y su m\'aximo.
+    La pesta\~na \textbf{\textit{Amplitude}} recoge las medidas de amplitud, con las columnas de la Tabla~\ref{tab:mu_columnas_amplitude}. A diferencia de la pendiente, que se calcula entre los dos puntos marcados, la amplitud se obtiene recorriendo el intervalo comprendido entre ellos y localizando su m\'inimo y su m\'aximo.
 
     \begin{center}
     \small
@@ -1274,36 +1273,36 @@ GammaLab permite tomar medidas cuantitativas directamente sobre cualquier gr\'af
     \hline
     \textbf{ID} & Identificador \'unico de la medida. \\
     \hline
-    \textbf{Channel} & Canal sobre el que se tom\'o la medida. \\
+    \textbf{\textit{Channel}} & Canal sobre el que se tom\'o la medida. \\
     \hline
-    \textbf{Graph} & Gr\'afica concreta, por ejemplo el \textit{trial} medido. \\
+    \textbf{\textit{Graph}} & Gr\'afica concreta, por ejemplo el \textit{trial} medido. \\
     \hline
     \textbf{Point 1 (x, y)} y \textbf{Point 2 (x, y)} & Coordenadas de los dos puntos marcados. \\
     \hline
-    \textbf{Window start (x1)} y \textbf{Window end (x2)} & Extremos del intervalo analizado. \\
+    \textbf{\textit{Window start (x1)}} y \textbf{\textit{Window end (x2)}} & Extremos del intervalo analizado. \\
     \hline
-    \textbf{Samples (N)} & N\'umero de muestras comprendidas en el intervalo. \\
+    \textbf{\textit{Samples (N)}} & N\'umero de muestras comprendidas en el intervalo. \\
     \hline
-    \textbf{Min value (Ymin)} y \textbf{Max value (Ymax)} & Valores m\'inimo y m\'aximo encontrados. \\
+    \textbf{\textit{Min value (Ymin)}} y \textbf{\textit{Max value (Ymax)}} & Valores m\'inimo y m\'aximo encontrados. \\
     \hline
-    \textbf{Amplitude (p-p)} & Amplitud pico a pico, es decir la diferencia entre el m\'aximo y el m\'inimo. \\
+    \textbf{\textit{Amplitude (p-p)}} & Amplitud pico a pico, es decir la diferencia entre el m\'aximo y el m\'inimo. \\
     \hline
-    \textbf{x at min} y \textbf{x at max} & Instantes en que se alcanzan el m\'inimo y el m\'aximo. \\
+    \textbf{\textit{x at min}} y \textbf{\textit{x at max}} & Instantes en que se alcanzan el m\'inimo y el m\'aximo. \\
     \hline
-    \textbf{Timestamp} & Fecha y hora en que se tom\'o la medida. \\
+    \textbf{\textit{Timestamp}} & Fecha y hora en que se tom\'o la medida. \\
     \hline
     \end{tabularx}
-    \captionof{table}{Columnas de la tabla \textbf{Amplitude Results}}
+    \captionof{table}{Columnas de la tabla \textbf{\textit{Amplitude Results}}}
     \label{tab:mu_columnas_amplitude}
     \end{center}
 
     \capturaPendiente{6cm}
-    {Tabla \textbf{Amplitude Results} con varias medidas tomadas.}
-    {(1) la pesta\~na \textbf{Amplitude} activa; (2) las columnas \textbf{Window start (x1)} y \textbf{Window end (x2)}; (3) la columna \textbf{Samples (N)}; (4) la columna \textbf{Amplitude (p-p)}; (5) las columnas \textbf{x at min} y \textbf{x at max}.}
-    {Tabla de resultados \textbf{Amplitude}}
+    {Tabla \textbf{\textit{Amplitude Results}} con varias medidas tomadas.}
+    {(1) la pesta\~na \textbf{\textit{Amplitude}} activa; (2) las columnas \textbf{\textit{Window start (x1)}} y \textbf{\textit{Window end (x2)}}; (3) la columna \textbf{\textit{Samples (N)}}; (4) la columna \textbf{\textit{Amplitude (p-p)}}; (5) las columnas \textbf{\textit{x at min}} y \textbf{\textit{x at max}}.}
+    {Tabla de resultados \textbf{\textit{Amplitude}}}
     {fig:mu_tabla_amplitude}
 
-    \aviso{Las medidas se guardan con el proyecto.}{Todas las medidas de pendiente y de amplitud se escriben en el archivo \texttt{.glab} y se restauran al abrir el proyecto, con su identificador, su canal, su gr\'afica y su marca de tiempo. No es necesario exportarlas para conservarlas: la exportaci\'on sirve para llevarlas a otra herramienta, no para no perderlas.}
+    \aviso{Las medidas se guardan con el proyecto.}{Todas las medidas de pendiente y de amplitud se escriben en el archivo \textit{.glab} y se restauran al abrir el proyecto, con su identificador, su canal, su gr\'afica y su marca de tiempo. No es necesario exportarlas para conservarlas: la exportaci\'on sirve para llevarlas a otra herramienta, no para no perderlas.}
 
 \clearpage
 
@@ -1312,7 +1311,7 @@ GammaLab permite tomar medidas cuantitativas directamente sobre cualquier gr\'af
 GammaLab ofrece dos v\'ias de exportaci\'on: la de gr\'aficas, como im\'agenes, y la de datos, como tablas.
 
     \subsection{Exportaci\'on de im\'agenes}
-    Desde el men\'u contextual de cualquier gr\'afica, el submen\'u \textbf{Export as image} ofrece los formatos de la Tabla~\ref{tab:mu_formatos_imagen}.
+    Desde el men\'u contextual de cualquier gr\'afica, el submen\'u \textbf{\textit{Export as image}} ofrece los formatos de la Tabla~\ref{tab:mu_formatos_imagen}.
 
     \begin{center}
     \small
@@ -1320,15 +1319,15 @@ GammaLab ofrece dos v\'ias de exportaci\'on: la de gr\'aficas, como im\'agenes, 
     \hline
     \textbf{Formato} & \textbf{Tipo} & \textbf{Uso recomendado} \\
     \hline
-    \texttt{png} & Mapa de bits & Formato general, sin p\'erdida. Es la opci\'on por defecto para documentos y presentaciones. \\
+    \textit{png} & Mapa de bits & Formato general, sin p\'erdida. Es la opci\'on por defecto para documentos y presentaciones. \\
     \hline
-    \texttt{jpg}, \texttt{jpeg} & Mapa de bits & Archivos m\'as peque\~nos, con p\'erdida. No recomendable para gr\'aficas con l\'ineas finas o texto. \\
+    \textit{jpg}, \textit{jpeg} & Mapa de bits & Archivos m\'as peque\~nos, con p\'erdida. No recomendable para gr\'aficas con l\'ineas finas o texto. \\
     \hline
-    \texttt{bmp} & Mapa de bits & Sin compresi\'on; produce archivos grandes. \\
+    \textit{bmp} & Mapa de bits & Sin compresi\'on; produce archivos grandes. \\
     \hline
-    \texttt{tiff} & Mapa de bits & Formato habitual en publicaciones cient\'ificas que exigen imagen sin p\'erdida. \\
+    \textit{tiff} & Mapa de bits & Formato habitual en publicaciones cient\'ificas que exigen imagen sin p\'erdida. \\
     \hline
-    \texttt{emf} & Vectorial & Formato vectorial de Windows. Permite ampliar la gr\'afica sin p\'erdida de nitidez y editarla en herramientas de ofim\'atica. Es la opci\'on preferible para figuras de art\'iculos y de la memoria. \\
+    \textit{emf} & Vectorial & Formato vectorial de Windows. Permite ampliar la gr\'afica sin p\'erdida de nitidez y editarla en herramientas de ofim\'atica. Es la opci\'on preferible para figuras de art\'iculos y de la memoria. \\
     \hline
     \end{tabularx}
     \captionof{table}{Formatos de exportaci\'on de im\'agenes}
@@ -1338,31 +1337,31 @@ GammaLab ofrece dos v\'ias de exportaci\'on: la de gr\'aficas, como im\'agenes, 
     \subsubsection*{C\'omo exportar una gr\'afica}
     \begin{enumerate}
         \item Pulse el bot\'on derecho sobre la gr\'afica que desea exportar.
-        \item Elija \textbf{Export as image} y el formato deseado.
+        \item Elija \textbf{\textit{Export as image}} y el formato deseado.
         \item Indique la carpeta y el nombre del archivo.
         \item Confirme.
     \end{enumerate}
 
     \capturaPendiente{6cm}
-    {Men\'u contextual con el submen\'u \textbf{Export as image} desplegado.}
-    {(1) la entrada \textbf{Export as image}; (2) los formatos de mapa de bits \texttt{png}, \texttt{jpg}, \texttt{jpeg}, \texttt{bmp} y \texttt{tiff}; (3) la entrada \texttt{emf (vector)}; (4) la gr\'afica que se va a exportar.}
+    {Men\'u contextual con el submen\'u \textbf{\textit{Export as image}} desplegado.}
+    {(1) la entrada \textbf{\textit{Export as image}}; (2) los formatos de mapa de bits \textit{png}, \textit{jpg}, \textit{jpeg}, \textit{bmp} y \textit{tiff}; (3) la entrada \textit{emf (vector)}; (4) la gr\'afica que se va a exportar.}
     {Exportaci\'on de una gr\'afica como imagen}
     {fig:mu_export_imagen}
 
     \subsection{Exportaci\'on de tablas}
-    El submen\'u \textbf{Export table} del men\'u contextual exporta los datos num\'ericos que hay detr\'as de la gr\'afica, en tres formatos:
+    El submen\'u \textbf{\textit{Export table}} del men\'u contextual exporta los datos num\'ericos que hay detr\'as de la gr\'afica, en tres formatos:
 
     \begin{itemize}
-        \item \texttt{csv}, valores separados por comas, legible por cualquier hoja de c\'alculo y por los entornos de an\'alisis estad\'istico.
-        \item \texttt{json}, estructurado, apropiado para el procesamiento posterior mediante programaci\'on.
-        \item \texttt{xlsx}, libro de Excel.
+        \item \textit{csv}, valores separados por comas, legible por cualquier hoja de c\'alculo y por los entornos de an\'alisis estad\'istico.
+        \item \textit{json}, estructurado, apropiado para el procesamiento posterior mediante programaci\'on.
+        \item \textit{xlsx}, libro de Excel.
     \end{itemize}
 
-    Las tablas de medidas disponen adem\'as de su propia exportaci\'on, desde el bot\'on \textbf{\textbullet\textbullet\textbullet} del panel \textbf{Results}, con las opciones \textbf{Export CSV} y \textbf{Export Excel (.xlsx)}. Esta exportaci\'on act\'ua sobre la pesta\~na activa: si est\'a seleccionada \textbf{Slope}, exporta las pendientes, y si est\'a seleccionada \textbf{Amplitude}, las amplitudes.
+    Las tablas de medidas disponen adem\'as de su propia exportaci\'on, desde el bot\'on \textbf{\textbullet\textbullet\textbullet} del panel \textbf{\textit{Results}}, con las opciones \textbf{\textit{Export CSV}} y \textbf{\textit{Export Excel (.xlsx)}}. Esta exportaci\'on act\'ua sobre la pesta\~na activa: si est\'a seleccionada \textbf{\textit{Slope}}, exporta las pendientes, y si est\'a seleccionada \textbf{\textit{Amplitude}}, las amplitudes.
 
     \capturaPendiente{6cm}
-    {Exportaci\'on de la tabla de medidas desde el panel \textbf{Results}.}
-    {(1) la pesta\~na activa, que determina qu\'e tabla se exporta; (2) el bot\'on \textbf{\textbullet\textbullet\textbullet}; (3) la opci\'on \textbf{Export CSV}; (4) la opci\'on \textbf{Export Excel (.xlsx)}.}
+    {Exportaci\'on de la tabla de medidas desde el panel \textbf{\textit{Results}}.}
+    {(1) la pesta\~na activa, que determina qu\'e tabla se exporta; (2) el bot\'on \textbf{\textbullet\textbullet\textbullet}; (3) la opci\'on \textbf{\textit{Export CSV}}; (4) la opci\'on \textbf{\textit{Export Excel (.xlsx)}}.}
     {Exportaci\'on de las tablas de medidas}
     {fig:mu_export_tabla}
 
@@ -1386,29 +1385,27 @@ Esta secci\'on recoge las situaciones que un usuario encuentra con m\'as frecuen
 \endhead
 \hline
 \endfoot
-Un \textit{plugin} de an\'alisis avisa de que no hay \textit{trials} & El an\'alisis requiere \textit{trials} y todav\'ia no se han generado para el canal activo & Abra \textbf{Preprocessing > Trials} y genere los \textit{trials} del canal activo \\
+Un \textit{plugin} de an\'alisis avisa de que no hay \textit{trials} & El an\'alisis requiere \textit{trials} y todav\'ia no se han generado & Abra \textbf{\textit{Preprocessing} > \textit{Trials}} y genere los \textit{trials} del canal que desea analizar \\
 \hline
 Un aviso de advertencia permanece en pantalla & Las advertencias y los errores no se cierran solos, a prop\'osito, para que no pasen inadvertidos & Use el bot\'on de cierre de la tarjeta \\
 \hline
-\textbf{Generate} no detecta ning\'un est\'imulo & El \textbf{Threshold} es demasiado alto, o el \textbf{Stim Channel} no es el correcto & Compruebe la amplitud de las marcas con la lectura del cursor y ajuste el umbral; verifique el canal de est\'imulo \\
+\textbf{\textit{Generate}} no detecta ning\'un est\'imulo & El \textbf{\textit{Threshold}} es demasiado alto, o el \textbf{\textit{Stim Channel}} no es el correcto & Compruebe la amplitud de las marcas con la lectura del cursor y ajuste el umbral; verifique el canal de est\'imulo \\
 \hline
-El filtro devuelve un error de frecuencias de corte & \textbf{Low} no es mayor que cero, \textbf{High} iguala o supera la mitad de la frecuencia de muestreo, o \textbf{Low} no es menor que \textbf{High} & Corrija las frecuencias dentro de esos l\'imites \\
-\hline
-El filtro falla al elegir \textbf{Chebyshev} o \textbf{Elliptic} & Solo est\'a implementado \textbf{Butterworth} & Seleccione \textbf{Butterworth} \\
+El filtro devuelve un error de frecuencias de corte & \textbf{\textit{Low}} no es mayor que cero, \textbf{\textit{High}} iguala o supera la mitad de la frecuencia de muestreo, o \textbf{\textit{Low}} no es menor que \textbf{\textit{High}} & Corrija las frecuencias dentro de esos l\'imites \\
 \hline
 El modo entre canales avisa de que los \textit{trials} no est\'an alineados & Los \textit{trials} de los dos canales tienen distinto n\'umero de muestras o de \textit{trials} & Vuelva a cortar los \textit{trials} de los dos canales con los mismos par\'ametros, cambiando solo el canal \\
 \hline
-El modo entre canales pide un canal de amplitud y no hay ninguno & La se\~nal tiene un solo canal, o solo un canal tiene \textit{trials} & Genere \textit{trials} en un segundo canal, o emplee \textbf{PAC Psel} \\
+El modo entre canales pide un canal de amplitud y no hay ninguno & La se\~nal tiene un solo canal, o solo un canal tiene \textit{trials} & Genere \textit{trials} en un segundo canal, o emplee \textbf{\textit{PAC Psel}} \\
 \hline
-Un c\'alculo tarda demasiado & \textbf{Modulation Index} con pasos muy finos, o \textbf{Wavelet Average} con muchos \textit{trials} & Pulse \textbf{Cancelar} en la barra de progreso y reduzca la carga: pasos m\'as amplios, menos \textit{trials} o menor frecuencia de remuestreo \\
+Un c\'alculo tarda demasiado & \textbf{\textit{Modulation Index}} con pasos muy finos, o \textbf{\textit{Wavelet Average}} con muchos \textit{trials} & Pulse \textbf{Cancelar} en la barra de progreso y reduzca la carga: pasos m\'as amplios, menos \textit{trials} o menor frecuencia de remuestreo \\
 \hline
 El mapa de \textbf{PPC} tiene regiones en blanco & En esa combinaci\'on de frecuencia y tiempo no hay datos suficientes para medir & Alargue la ventana de los \textit{trials}, aumente su n\'umero o eleve la frecuencia m\'inima del mapa \\
 \hline
-El \textbf{Zoom} de la cinta avisa de que hay que abrir primero una vista con gr\'aficas & No se ha visitado ninguna gr\'afica en esta sesi\'on & Abra un \textit{plugin} con gr\'aficas y vuelva a intentarlo \\
+El \textbf{\textit{Zoom}} de la cinta avisa de que hay que abrir primero una vista con gr\'aficas & No se ha visitado ninguna gr\'afica en esta sesi\'on & Abra un \textit{plugin} con gr\'aficas y vuelva a intentarlo \\
 \hline
-El panel \textbf{Explorer} dice que no hay proyecto abierto & El explorador muestra la carpeta del proyecto, y todav\'ia no hay ninguno & Guarde el trabajo con \textbf{File > Save as}, o abra un proyecto existente \\
+El panel \textbf{\textit{Explorer}} dice que no hay proyecto abierto & El explorador muestra la carpeta del proyecto, y todav\'ia no hay ninguno & Guarde el trabajo con \textbf{\textit{File} > \textit{Save as}}, o abra un proyecto existente \\
 \hline
-Al cerrar aparece un di\'alogo con \textbf{Save}, \textbf{Don't Save} y \textbf{Cancel} & Hay cambios que no se han escrito en el archivo \texttt{.glab} & Elija \textbf{Save} para conservarlos, \textbf{Don't Save} para descartarlos o \textbf{Cancel} para volver atr\'as \\
+Al cerrar aparece un di\'alogo con \textbf{\textit{Save}}, \textbf{\textit{Don't Save}} y \textbf{\textit{Cancel}} & Hay cambios que no se han escrito en el archivo \textit{.glab} & Elija \textbf{\textit{Save}} para conservarlos, \textbf{\textit{Don't Save}} para descartarlos o \textbf{\textit{Cancel}} para volver atr\'as \\
 \hline
 \end{longtable}
 \end{center}
@@ -1417,18 +1414,18 @@ Al cerrar aparece un di\'alogo con \textbf{Save}, \textbf{Don't Save} y \textbf{
 
 \section{Recursos y documentaci\'on complementaria}
 
-El icono de ayuda de la barra lateral, o el bot\'on \textbf{Help}, abre la pantalla \textbf{Resources and Documentation}, que re\'une los enlaces al material de apoyo del proyecto:
+El icono \textbf{\textit{Help}} de la barra lateral abre la pantalla de ayuda. Su parte izquierda muestra este manual de usuario en un visor de PDF integrado, de modo que puede consultarse sin salir de la aplicaci\'on. La parte derecha, con el t\'itulo \textbf{\textit{Resources and Documentation}}, re\'une los enlaces al material de apoyo del proyecto:
 
 \begin{enumerate}
-    \item \textbf{Official project repository:} repositorio oficial, donde se publican las versiones y se registran las incidencias.
-    \item \textbf{Project documentation:} documentaci\'on del proyecto, que incluye el SRS, el SAD, el SDD, el TD y este manual.
-    \item \textbf{Tutorial videos and guides:} material audiovisual y gu\'ias de uso.
-    \item \textbf{Download Gamma Lab:} descarga de la \'ultima versi\'on publicada.
+    \item \textbf{\textit{Official project repository}:} repositorio oficial, donde se publican las versiones y se registran las incidencias.
+    \item \textbf{\textit{Project documentation}:} documentaci\'on del proyecto, que incluye el SRS, el SAD, el SDD, el TD y este manual.
+    \item \textbf{\textit{Tutorial videos and guides}:} material audiovisual y gu\'ias de uso.
+    \item \textbf{\textit{Download Gamma Lab}:} descarga de la \'ultima versi\'on publicada.
 \end{enumerate}
 
 \capturaPendiente{6cm}
-{Pantalla \textbf{Resources and Documentation}, abierta desde el icono de ayuda.}
-{(1) el icono de ayuda de la barra lateral; (2) el t\'itulo \textbf{Resources and Documentation}; (3) el enlace \textbf{Official project repository}; (4) el enlace \textbf{Project documentation}; (5) el enlace \textbf{Tutorial videos and guides}; (6) el enlace \textbf{Download Gamma Lab}.}
+{Pantalla \textbf{\textit{Resources and Documentation}}, abierta desde el icono de ayuda.}
+{(1) el icono de ayuda de la barra lateral; (2) el t\'itulo \textbf{\textit{Resources and Documentation}}; (3) el enlace \textbf{\textit{Official project repository}}; (4) el enlace \textbf{\textit{Project documentation}}; (5) el enlace \textbf{\textit{Tutorial videos and guides}}; (6) el enlace \textbf{\textit{Download Gamma Lab}}; (7) el visor del manual en la parte izquierda.}
 {Pantalla de recursos y documentaci\'on}
 {fig:mu_help}
 
@@ -1446,7 +1443,7 @@ El icono de ayuda de la barra lateral, o el bot\'on \textbf{Help}, abre la panta
 \hline
 \textbf{SDD} & Documento de dise\~no. Detalla los algoritmos y las clases que est\'an detr\'as de cada \textit{plugin}. Es la referencia para quien necesite saber c\'omo se calcula un resultado, y no solo c\'omo pedirlo. \\
 \hline
-\textbf{TD} & Documento t\'ecnico. Re\'une las decisiones de implementaci\'on y las pruebas. \\
+\textbf{TD} & Documento de pruebas (\emph{Test Document}). Re\'une las pruebas de aceptaci\'on con las que se verific\'o cada requisito. \\
 \hline
 \end{tabularx}
 \captionof{table}{Documentos relacionados con este manual}
@@ -1462,17 +1459,17 @@ El icono de ayuda de la barra lateral, o el bot\'on \textbf{Help}, abre la panta
 El siguiente recorrido re\'une, en orden, los pasos de un an\'alisis completo. Sirve de lista de comprobaci\'on para el usuario que ya conoce la aplicaci\'on.
 
 \begin{enumerate}
-    \item \textbf{Cargar la se\~nal.} \textbf{File > Open signal} y seleccionar un archivo ABF, EDF o MAT.
-    \item \textbf{Elegir el canal activo} en el listado de canales del panel lateral.
-    \item \textbf{Generar los \textit{trials}.} \textbf{Preprocessing > Trials}: canal, canal de est\'imulo, umbral, n\'umero de est\'imulos, ventana temporal, tiempo entre est\'imulos y modo de cierre. Pulsar \textbf{Generate}.
-    \item \textbf{Revisar los \textit{trials}} con \textbf{Previous} y \textbf{Next}, y descartar los defectuosos con \textbf{Discard}.
-    \item \textbf{Corregir artefactos}, si los hay. \textbf{Preprocessing > Remove Artifact}.
-    \item \textbf{Filtrar}, si procede. \textbf{Preprocessing > Filter}: comprobar con \textbf{Preview} y aplicar con \textbf{Filter}.
-    \item \textbf{Guardar el proyecto.} \textbf{File > Save as}. A partir de aqu\'i, \textbf{File > Save} basta.
-    \item \textbf{Ejecutar los an\'alisis} en la secci\'on \textbf{Analysis}, empezando por los m\'as r\'apidos y dejando para el final los costosos, como \textbf{Modulation Index} y \textbf{Wavelet Average}.
-    \item \textbf{Tomar las medidas} sobre las gr\'aficas, con el bot\'on derecho y el submen\'u \textbf{Measurements}.
-    \item \textbf{Consultar las tablas} en el panel \textbf{Results}, pesta\~nas \textbf{Slope} y \textbf{Amplitude}.
-    \item \textbf{Exportar} las gr\'aficas, preferentemente en \texttt{emf} o \texttt{png}, y las tablas en \texttt{csv} o \texttt{xlsx}.
+    \item \textbf{Cargar la se\~nal.} \textbf{\textit{File} > \textit{Open signal}} y seleccionar un archivo ABF, EDF o MAT.
+    \item \textbf{Elegir los canales visibles} marcando sus casillas en el listado del panel lateral (como m\'aximo tres).
+    \item \textbf{Generar los \textit{trials}.} \textbf{\textit{Preprocessing} > \textit{Trials}}: canal, canal de est\'imulo, umbral, n\'umero de est\'imulos, ventana temporal, tiempo entre est\'imulos y modo de cierre. Pulsar \textbf{\textit{Generate}}.
+    \item \textbf{Revisar los \textit{trials}} con \textbf{\textit{Previous}} y \textbf{\textit{Next}}, y descartar los defectuosos con \textbf{\textit{Discard}}.
+    \item \textbf{Corregir artefactos}, si los hay. \textbf{\textit{Preprocessing} > \textit{Remove Artifact}}.
+    \item \textbf{Filtrar}, si procede. \textbf{\textit{Preprocessing} > \textit{Filter}}: comprobar con \textbf{\textit{Preview}} y aplicar con \textbf{\textit{Filter}}.
+    \item \textbf{Guardar el proyecto.} \textbf{\textit{File} > \textit{Save as}}. A partir de aqu\'i, \textbf{\textit{File} > \textit{Save}} basta.
+    \item \textbf{Ejecutar los an\'alisis} en la secci\'on \textbf{\textit{Analysis}}, empezando por los m\'as r\'apidos y dejando para el final los costosos, como \textbf{\textit{Modulation Index}} y \textbf{\textit{Wavelet Average}}.
+    \item \textbf{Tomar las medidas} sobre las gr\'aficas, con el bot\'on derecho y el submen\'u \textbf{\textit{Measurements}}.
+    \item \textbf{Consultar las tablas} en el panel \textbf{\textit{Results}}, pesta\~nas \textbf{\textit{Slope}} y \textbf{\textit{Amplitude}}.
+    \item \textbf{Exportar} las gr\'aficas, preferentemente en \textit{emf} o \textit{png}, y las tablas en \textit{csv} o \textit{xlsx}.
     \item \textbf{Guardar de nuevo el proyecto} para conservar los par\'ametros de los an\'alisis y las medidas.
 \end{enumerate}
 
@@ -1496,25 +1493,25 @@ La Tabla~\ref{tab:mu_requisitos_trials} resume qu\'e necesita cada \textit{plugi
 \endfoot
 Open Signal & File & Ninguno \\
 \hline
-Trials & Preprocessing & Una se\~nal cargada y un canal activo \\
+Trials & Preprocessing & Una se\~nal cargada \\
 \hline
 Remove Artifact & Preprocessing & \textit{Trials} generados \\
 \hline
-Filter & Preprocessing & Una se\~nal cargada; para aplicarlo a los \textit{trials}, \textit{trials} generados \\
+Filter & Preprocessing & \textit{Trials} generados \\
 \hline
 Average & Analysis / Time & \textit{Trials} generados \\
 \hline
 Event Related Potential & Analysis / Time & \textit{Trials} generados \\
 \hline
-FFT & Analysis / Frequency & Una se\~nal cargada \\
+FFT & Analysis / Frequency & \textit{Trials} generados \\
 \hline
 FFT Average & Analysis / Frequency & \textit{Trials} generados \\
 \hline
-PSD & Analysis / Frequency & Una se\~nal cargada; \textit{trials} generados en los modos que los emplean \\
+PSD & Analysis / Frequency & \textit{Trials} generados \\
 \hline
 PSD Average & Analysis / Frequency & \textit{Trials} generados \\
 \hline
-Relative PSD & Analysis / Frequency & Una se\~nal cargada \\
+Relative PSD & Analysis / Frequency & \textit{Trials} generados \\
 \hline
 PAC & Analysis / Time-Frequency & \textit{Trials} generados \\
 \hline
@@ -1522,7 +1519,7 @@ PAC Psel inter-canal & Analysis / Time-Frequency & \textit{Trials} generados en 
 \hline
 Modulation Index & Analysis / Time-Frequency & \textit{Trials} generados \\
 \hline
-Wavelet & Analysis / Time-Frequency & Una se\~nal cargada \\
+Wavelet & Analysis / Time-Frequency & \textit{Trials} generados \\
 \hline
 Wavelet Average & Analysis / Time-Frequency & \textit{Trials} generados \\
 \hline
@@ -1543,8 +1540,8 @@ Las figuras de este manual est\'an reservadas con recuadros que indican qu\'e pa
     \item Ejecute GammaLab y reproduzca la situaci\'on descrita en el campo \textbf{Pantalla} del recuadro.
     \item Capture la ventana completa, salvo cuando el recuadro pida expresamente un detalle.
     \item Rotule sobre la imagen los n\'umeros indicados en el campo \textbf{Debe se\~nalarse}, en el mismo orden, con c\'irculos o flechas numerados. Esos n\'umeros son los mismos que los de la lista de \emph{Componentes} de la secci\'on, de modo que el texto y la imagen se leen juntos.
-    \item Guarde la imagen en esta misma carpeta, en formato \texttt{png}.
-    \item Sustituya en el archivo \texttt{main.tex} la l\'inea \verb|\capturaPendiente{...}| por el bloque de figura habitual, conservando el mismo pie y la misma etiqueta:
+    \item Guarde la imagen en esta misma carpeta, en formato \textit{png}.
+    \item Sustituya en el archivo \textit{main.tex} la l\'inea \verb|\capturaPendiente{...}| por el bloque de figura habitual, conservando el mismo pie y la misma etiqueta:
 \end{enumerate}
 
 \begin{center}

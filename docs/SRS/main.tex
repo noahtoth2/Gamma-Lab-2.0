@@ -173,7 +173,7 @@ Además, el equipo de investigación reportó la necesidad de contar con un cont
 El alcance de GammaLab v2.0 lo definen los límites funcionales, técnicos y operativos del sistema, asegurando la entrega de un software robusto y enfocado en el entorno de investigación. 
 
 % Descripción del producto ------------------
-GammaLab v2.0 se define como una aplicación de escritorio standalone, lo que significa que es local y funcional sin acceso a internet. Desarrollada en el lenguaje Python bajo el framework PyQt5 y librerías de visualización científicas VTK. El sistema está diseñado específicamente para interactuar con archivos de señales electroencefalográficas (EEG) en formatos estándar como ABF, EDF, BDF y MAT. Su arquitectura está diseñada para investigadores y estudiantes del Laboratorio de Electrofisiología de la Universidad Nacional de Colombia, permitiéndoles ejecutar análisis avanzados sin requerir conocimientos en programación, ni fragmentando su flujo de trabajo en diferentes herramientas durante sus análisis.
+GammaLab v2.0 se define como una aplicación de escritorio standalone, lo que significa que es local y funcional sin acceso a internet. Desarrollada en el lenguaje Python bajo el framework PyQt5 y librerías de visualización científicas VTK. El sistema está diseñado específicamente para interactuar con archivos de señales electroencefalográficas (EEG) en los formatos ABF, EDF y MAT. Su arquitectura está diseñada para investigadores y estudiantes del Laboratorio de Electrofisiología de la Universidad Nacional de Colombia, permitiéndoles ejecutar análisis avanzados sin requerir conocimientos en programación, ni fragmentando su flujo de trabajo en diferentes herramientas durante sus análisis.
 % Funcionalideades ------------------
 Con el fin de cerrar las brechas observadas de la primera iteración del software, la visión de esta segunda iteración se definirá por medio de las siguientes funciones:
 
@@ -251,8 +251,6 @@ El desarrollo de esta evolución funcional y arquitectónica aporta tres aspecto
 
 \textbf{EDF} & European Data Format. \\ \hline
 
-\textbf{BDF} & BioSemi Data Format. \\ \hline
-
 \textbf{MAT} & Formato de archivo de MATLAB. \\ \hline
 
 \textbf{RAM} & Random Access Memory. \\ \hline
@@ -286,13 +284,13 @@ El desarrollo de esta evolución funcional y arquitectónica aporta tres aspecto
 \begin{thebibliography}{99}
 
 \bibitem{ref1}
-Microsoft Corporation, ``Windows -- product family overview,'' Available: \url{https://www.microsoft.com/windows}. Accessed: 2025.
+Microsoft Corporation, ``Windows: product family overview,'' Available: \url{https://www.microsoft.com/windows}. Accessed: 2025.
 
 \bibitem{ref2}
-Python Software Foundation, ``The Python tutorial --- Python 3.11 documentation,'' 2023. Available: \url{https://docs.python.org/3/tutorial/index.html}. Accessed: 2025.
+Python Software Foundation, ``The Python tutorial: Python 3.11 documentation,'' 2023. Available: \url{https://docs.python.org/3/tutorial/index.html}. Accessed: 2025.
 
 \bibitem{ref3}
-Riverbank Computing, ``PyQt --- Python bindings for Qt,'' 2025. Available: \url{https://www.riverbankcomputing.com/software/pyqt/}. Accessed: 2025.
+Riverbank Computing, ``PyQt: Python bindings for Qt,'' 2025. Available: \url{https://www.riverbankcomputing.com/software/pyqt/}. Accessed: 2025.
 
 \bibitem{ref4}
 Kitware, ``The Visualization Toolkit (VTK),'' 2025. Available: \url{https://vtk.org/}. Accessed: 2025.
@@ -301,10 +299,10 @@ Kitware, ``The Visualization Toolkit (VTK),'' 2025. Available: \url{https://vtk.
 NumPy Developers, ``NumPy documentation,'' 2025. Available: \url{https://numpy.org/doc/stable/}. Accessed: 2025.
 
 \bibitem{ref6}
-SciPy Community, ``SciPy --- fundamental algorithms for scientific computing in Python,'' 2025. Available: \url{https://scipy.org/}. Accessed: 2025.
+SciPy Community, ``SciPy: fundamental algorithms for scientific computing in Python,'' 2025. Available: \url{https://scipy.org/}. Accessed: 2025.
 
 \bibitem{ref7}
-The pandas Development Team, ``pandas --- Python data analysis library,'' 2025. Available: \url{https://pandas.pydata.org/}. Accessed: 2025.
+The pandas Development Team, ``pandas: Python data analysis library,'' 2025. Available: \url{https://pandas.pydata.org/}. Accessed: 2025.
 
 \bibitem{ref8}
 G. R. Lee, R. Gommers, F. Wasilewski, K. Wohlfahrt, and A. O'Leary, ``PyWavelets: A Python package for wavelet analysis,'' \textit{Journal of Open Source Software}, vol. 4, no. 36, p. 1237, 2019. Available: \url{https://doi.org/10.21105/joss.01237}.
@@ -316,7 +314,7 @@ S. W. Harden, ``pyabf 2.3.5,'' 2022. Available: \url{https://pypi.org/project/py
 Teunis van Beelen, ``pyEDFlib,'' 2025. Available: \url{https://pypi.org/project/pyEDFlib/}. Accessed: 2025.
 
 \bibitem{ref11}
-Python Software Foundation, ``threading --- Thread-based parallelism,'' Python 3 documentation. Available: \url{https://docs.python.org/3/library/threading.html}.
+Python Software Foundation, ``threading: Thread-based parallelism,'' Python 3 documentation. Available: \url{https://docs.python.org/3/library/threading.html}.
 
 \bibitem{ref12}
 The Qt Company, ``QThread Class,'' Qt 5 documentation. Available: \url{https://doc.qt.io/qt-5/qthread.html}.
@@ -413,7 +411,7 @@ técnicas:
 
     \item \textbf{Interfaz de entrada de archivos EEG.} Permite al usuario
     seleccionar y cargar archivos de señales adquiridos externamente en los
-    formatos \texttt{.abf}, \texttt{.edf}, \texttt{.bdf} y \texttt{.mat},
+    formatos \texttt{.abf}, \texttt{.edf} y \texttt{.mat},
     mediante el selector de archivos nativo de Windows.
 
 \end{itemize}
@@ -574,7 +572,7 @@ operaciones principales:
 \begin{itemize}
 
     \item \textbf{Cargar señal.} Seleccionar y cargar archivos de señal en
-    formatos \texttt{.abf}, \texttt{.edf}, \texttt{.bdf} y \texttt{.mat}.
+    formatos \texttt{.abf}, \texttt{.edf} y \texttt{.mat}.
 
     \item \textbf{Preprocesamiento.} Dividir la señal en trials, eliminar
     artefactos de estimulación y aplicar filtros como Butterworth.
@@ -945,8 +943,8 @@ aplicación ejecutable localmente en Windows; alternativamente puede
 ejecutarse directamente desde el código fuente del repositorio oficial.
 
 El procesamiento de señales utiliza NumPy, SciPy y PyWavelets. La interfaz
-gráfica se construye con PyQt5 y los componentes Qt. Los formatos de entrada soportados son \texttt{.abf}, \texttt{.edf},
-\texttt{.bdf} y \texttt{.mat}.
+gráfica se construye con PyQt5 y los componentes Qt. Los formatos de entrada soportados son \texttt{.abf}, \texttt{.edf} y
+\texttt{.mat}.
 
 La ejecución de tareas en segundo plano del Kernel se implementa con hilos
 (\textit{QThread} de Qt y el módulo \texttt{threading} de la biblioteca
@@ -1050,7 +1048,7 @@ recuperación de información experimental.
 
 \end{tabularx}
 
-\caption{Entidad de dominio -- DataStore}
+\caption{Entidad de dominio: DataStore}
 \label{tab:datastore}
 
 \end{table}
@@ -1094,7 +1092,7 @@ preprocesamiento y análisis.
 
 \end{tabularx}
 
-\caption{Entidad de dominio -- SignalDataset}
+\caption{Entidad de dominio: SignalDataset}
 \label{tab:signaldataset}
 
 \end{table}
@@ -1136,7 +1134,7 @@ acoplamiento entre frecuencias.
 
 \end{tabularx}
 
-\caption{Entidad de dominio -- TrialDataset}
+\caption{Entidad de dominio: TrialDataset}
 \label{tab:trialdataset}
 
 \end{table}
@@ -1189,7 +1187,7 @@ en sesiones futuras.
 
 \end{tabularx}
 
-\caption{Entidad de dominio -- CouplingResult}
+\caption{Entidad de dominio: CouplingResult}
 \label{tab:couplingresult}
 
 \end{table}
@@ -1231,7 +1229,7 @@ de proyectos experimentales dentro del sistema.
 
 \end{tabularx}
 
-\caption{Entidad de dominio -- ProjectSession}
+\caption{Entidad de dominio: ProjectSession}
 \label{tab:projectsession}
 
 \end{table}
@@ -1253,8 +1251,7 @@ Windows 10 o superiores en arquitectura de 64 bits.
 sistema de archivos local.
 
 \item Los archivos EEG utilizados estarán en formatos compatibles soportados
-por la plataforma (\texttt{.abf}, \texttt{.edf}, \texttt{.bdf} y
-\texttt{.mat}).
+por la plataforma (\texttt{.abf}, \texttt{.edf} y \texttt{.mat}).
 
 \item Las señales utilizadas para el análisis PAC tendrán al menos un trial
 válido.
@@ -1339,19 +1336,19 @@ Los requerimientos funcionales se identifican mediante el prefijo FR-XX-YY, dond
 A partir de esta clasificación, los requerimientos funcionales se organizan en cuatro áreas:
 
 \begin{itemize}
-    \item \textbf{IO} -- Entrada/Salida: agrupa los requerimientos relacionados con la carga y persistencia de señales, así como el guardado y la apertura de proyectos, consolidando el manejo de datos como base funcional de la herramienta.
-    \item \textbf{UI} -- Interacción general: agrupa los requerimientos orientados a mejorar la experiencia de usuario, la edición de la señal y la gestión de trials.
-    \item \textbf{WV} -- Wavelet/Escalograma: agrupa los requerimientos que expanden y ajustan las capacidades de esta representación tiempo-frecuencia.
-    \item \textbf{PAC} -- Acoplamiento fase-amplitud: agrupa los requerimientos del nuevo módulo de análisis incorporado en esta iteración, e incluye tanto el acoplamiento intra-canal como el inter-canal y la coherencia de fase.
+    \item \textbf{IO}: Entrada/Salida: agrupa los requerimientos relacionados con la carga y persistencia de señales, así como el guardado y la apertura de proyectos, consolidando el manejo de datos como base funcional de la herramienta.
+    \item \textbf{UI}: Interacción general: agrupa los requerimientos orientados a mejorar la experiencia de usuario, la edición de la señal y la gestión de trials.
+    \item \textbf{WV}: Wavelet/Escalograma: agrupa los requerimientos que expanden y ajustan las capacidades de esta representación tiempo-frecuencia.
+    \item \textbf{PAC}: Acoplamiento fase-amplitud: agrupa los requerimientos del nuevo módulo de análisis incorporado en esta iteración, e incluye tanto el acoplamiento intra-canal como el inter-canal y la coherencia de fase.
 \end{itemize}
 
 Los requerimientos no funcionales se identifican mediante el prefijo \textbf{NFR-X-YY}, donde \textit{X} corresponde a la categoría del modelo FURPS+ y \textit{YY} es el número consecutivo dentro de dicha categoría. Estos requisitos concentran, en particular, los lineamientos orientados a la estabilización y el fortalecimiento arquitectónico de la herramienta. Se identificaron requisitos en cuatro de las categorías del modelo:
 
 \begin{itemize}
-    \item \textbf{U} -- Usabilidad
-    \item \textbf{P} -- Rendimiento (Performance)
-    \item \textbf{R} -- Confiabilidad (Reliability)
-    \item \textbf{S} -- Soporte (Supportability)
+    \item \textbf{U}: Usabilidad
+    \item \textbf{P}: Rendimiento (Performance)
+    \item \textbf{R}: Confiabilidad (Reliability)
+    \item \textbf{S}: Soporte (Supportability)
 \end{itemize}
 
 \subsection{Requerimientos Funcionales}
@@ -1363,7 +1360,7 @@ También se identificaron limitaciones en la continuidad del trabajo y el aprove
 A partir de este diagnóstico se definieron los requerimientos funcionales de Gamma Lab 2.0, mediante la traducción de las dificultades observadas y las necesidades expresadas por los investigadores en especificaciones sobre el comportamiento esperado del sistema. Las tablas siguientes presentan estos requerimientos de manera individual, agrupados por los modulos definidos en la sección de nomenclatura \ref{sec:Nomenclatura de Requerimientos}.
 
 
-\subsubsection{Módulo IO -- Entrada/Salida}
+\subsubsection{Módulo IO: Entrada/Salida}
 
 \begin{longtable}{|p{2.5cm}|p{2.5cm}|p{11cm}|}
 \hline
@@ -1394,7 +1391,7 @@ FR-IO-07 & R28 & El sistema debe asignar un nombre de exportación en el que se 
 \captionof{table}{Requerimientos funcionales del módulo IO}
 \label{tab:fr-io}
 
-\subsubsection{Módulo UI -- Interacción general}
+\subsubsection{Módulo UI: Interacción general}
 
 \begin{longtable}{|p{2.5cm}|p{2.5cm}|p{11cm}|}
 \hline
@@ -1441,7 +1438,7 @@ FR-UI-15 & R68 & El sistema debe identificar cada conjunto de trials por la pare
 \captionof{table}{Requerimientos funcionales del módulo UI}
 \label{tab:fr-ui}
 
-\subsubsection{Módulo WV -- Wavelet/Escalograma}
+\subsubsection{Módulo WV: Wavelet/Escalograma}
 
 \begin{longtable}{|p{2.5cm}|p{2.5cm}|p{11cm}|}
 \hline
@@ -1464,7 +1461,7 @@ FR-WV-03 & R35 & El sistema debe exportar wavelet en EMF \\
 \captionof{table}{Requerimientos funcionales del módulo WV}
 \label{tab:fr-wv}
 
-\subsubsection{Módulo PAC -- Acoplamiento fase-amplitud}
+\subsubsection{Módulo PAC: Acoplamiento fase-amplitud}
 
 \begin{longtable}{|p{2.5cm}|p{2.5cm}|p{11cm}|}
 \hline
@@ -1530,7 +1527,7 @@ Adicionalmente, la ausencia de mecanismos adecuados para gestionar los fallos y 
 A partir de este diagnóstico se definieron los requerimientos no funcionales de Gamma Lab 2.0, que traducen los hallazgos de la revisión técnica en condiciones verificables para su implementación. Los requerimientos se presentan en el orden de los módulos establecido en la sección de nomenclatura \ref{sec:Nomenclatura de Requerimientos}.
 
 
-\subsubsection{Categoría U -- Usabilidad}
+\subsubsection{Categoría U: Usabilidad}
 
 \begin{longtable}{|p{2.5cm}|p{2.5cm}|p{11cm}|}
 \hline
@@ -1565,7 +1562,7 @@ NFR-U-09 & R44 & El sistema debe mostrar una pantalla de inicio mientras carga l
 \captionof{table}{Requerimientos no funcionales de la categoría Usabilidad}
 \label{tab:nfr-u}
 
-\subsubsection{Categoría P -- Rendimiento}
+\subsubsection{Categoría P: Rendimiento}
 
 \begin{longtable}{|p{2.5cm}|p{2.5cm}|p{11cm}|}
 \hline
@@ -1616,7 +1613,7 @@ NFR-P-17 & R81 & El sistema debe quedar listo para usarse en un tiempo máximo d
 \captionof{table}{Requerimientos no funcionales de la categoría Rendimiento}
 \label{tab:nfr-p}
 
-\subsubsection{Categoría R -- Confiabilidad}
+\subsubsection{Categoría R: Confiabilidad}
 
 \begin{longtable}{|p{2.5cm}|p{2.5cm}|p{11cm}|}
 \hline
@@ -1643,7 +1640,7 @@ NFR-R-05 & R79 & El sistema no debe modificar la señal cargada ni los trials or
 \captionof{table}{Requerimientos no funcionales de la categoría Confiabilidad}
 \label{tab:nfr-r}
 
-\subsubsection{Categoría S -- Soporte}
+\subsubsection{Categoría S: Soporte}
 
 \begin{longtable}{|p{2.5cm}|p{2.5cm}|p{11cm}|}
 \hline
@@ -1878,27 +1875,27 @@ X|
 \\ \hline
 
 \rowcolor{lightgray2}
-Módulo IO -- Entrada/Salida &
+Módulo IO: Entrada/Salida &
 Carga de cada formato soportado y reapertura de proyectos guardados, comprobando
 que la señal restaurada coincide con la original y que la sesión recupera los
 \textit{trials}, los descartes y los análisis previos. Se ejecuta sobre archivos
 reales del laboratorio, con aprobación explícita del cliente.
 \\ \hline
 
-Módulo UI -- Interacción general &
+Módulo UI: Interacción general &
 Recorrido guiado de las operaciones de edición de la señal y de gestión de
 \textit{trials} sobre datos reales, verificando con el cliente que cada acción
 produce el resultado esperado y que es reversible.
 \\ \hline
 
 \rowcolor{lightgray2}
-Módulo WV -- Wavelet/Escalograma &
+Módulo WV: Wavelet/Escalograma &
 Comparación del escalograma contra resultados de referencia calculados con los
 mismos parámetros, evaluada por correlación, más revisión visual del cliente sobre
 señales de comportamiento conocido.
 \\ \hline
 
-Módulo PAC -- Acoplamiento fase-amplitud &
+Módulo PAC: Acoplamiento fase-amplitud &
 Validación del comodulograma contra resultados de referencia conocidos y revisión
 de la gráfica por parte del cliente, cubriendo el acoplamiento intra-canal, el
 inter-canal y la coherencia de fase.
@@ -1908,27 +1905,27 @@ inter-canal y la coherencia de fase.
 \\ \hline
 
 \rowcolor{lightgray2}
-Categoría U -- Usabilidad &
+Categoría U: Usabilidad &
 Pruebas de usabilidad con investigadores del laboratorio, en sesiones guiadas y no
 guiadas, observando si completan las tareas sin asistencia y recogiendo su
 valoración de los mensajes, los iconos y la retroalimentación de progreso.
 \\ \hline
 
-Categoría P -- Rendimiento &
+Categoría P: Rendimiento &
 Medición instrumentada de tiempos de ejecución y de consumo de memoria frente a los
 umbrales que fija cada requisito, sobre el hardware de referencia y con señales del
 laboratorio. Los resultados se contrastan contra la línea base de GammaLab~1.0.
 \\ \hline
 
 \rowcolor{lightgray2}
-Categoría R -- Confiabilidad &
-Pruebas automatizadas de los caminos críticos —cancelación de un análisis, cierre
-del proyecto a mitad de un cómputo y cambio de módulo con tareas en curso—,
+Categoría R: Confiabilidad &
+Pruebas automatizadas de los caminos críticos (cancelación de un análisis, cierre
+del proyecto a mitad de un cómputo y cambio de módulo con tareas en curso),
 verificando que no queden hilos trabajadores activos, detectores de eventos
 registrados ni datos derivados inconsistentes.
 \\ \hline
 
-Categoría S -- Soporte &
+Categoría S: Soporte &
 Revisión de la arquitectura y prueba de extensión: incorporar un módulo de análisis
 nuevo registrándolo en el núcleo y comprobar que no exige modificar el núcleo ni los
 demás módulos. Se verifica además la instalación del ejecutable y el registro de la

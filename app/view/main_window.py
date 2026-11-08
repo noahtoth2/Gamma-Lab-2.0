@@ -904,10 +904,10 @@ class MainWindow(QMainWindow):
         file_menu = QMenu(self.ui.btn_file)
 
         act_open_signal = QAction("Open signal", self)
-        act_open_project = QAction("Open proyect", self)
+         act_open_project = QAction("Open project", self)
         act_save = QAction("Save", self)
         act_save_as = QAction("Save as", self)
-        act_close_project = QAction("Close proyect", self)
+        act_close_project = QAction("Close project", self)
         act_exit = QAction("Exit", self)
 
         act_open_signal.triggered.connect(self.on_open_signal_clicked)

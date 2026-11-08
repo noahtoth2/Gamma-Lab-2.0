@@ -79,7 +79,7 @@
 \newcommand{\leyendaGrado}{MEMORIA DE PROYECTO DE GRADO REALIZADO PARA CUMPLIR UNO DE
 LOS REQUISITOS PARA EL TÍTULO EN INGENIERÍA DE SISTEMAS}
 
-\newcommand{\director}{Ing. Cecile Eugine Gauthier Umaña}
+\newcommand{\director}{Ing. Cécile Gauthier Umaña}
 \newcommand{\juradoUno}{Ing. Nombre del Primer Jurado}
 \newcommand{\juradoDos}{Ing. Nombre del Segundo Jurado}
 
@@ -466,13 +466,13 @@ El levantamiento de requerimientos para Gamma Lab 2.0 partió de las brechas ide
 Los requisitos funcionales especifican las acciones y comportamientos observables que Gamma Lab 2.0 debe ejecutar ante una entrada, evento o solicitud del usuario. Para facilitar su organización y trazabilidad, estos se agruparon en módulos de acuerdo con la capacidad que habilitan, considerando aspectos como el tipo de dato que manejan, la operación que realizan sobre la señal y el propósito que cumplen dentro del flujo de trabajo. De este proceso surgieron cuatro módulos: IO y UI, de carácter transversal y presentes a lo largo de los flujos de análisis, y WV y PAC, de carácter específico y vinculados a técnicas de análisis particulares. Esta organización refleja, a su vez, los frentes de trabajo definidos para la solución: bajo esta lógica, IO y UI buscan fortalecer la funcionalidad base y mejorar la experiencia de usuario; WV se enfoca en corregir y fortalecer el funcionamiento de una técnica ya incorporada en Gamma Lab; mientras que PAC amplía el alcance analítico de la herramienta mediante la incorporación de una nueva técnica de análisis.
 
 \begin{itemize}
-    \item \textbf{Módulo IO -- Entrada/Salida.} Opera sobre los datos que entran y salen de la herramienta: la señal en sus formatos de origen (ABF, EDF, MAT), el proyecto de trabajo (\textit{.glab}) y los resultados de los análisis. Sus operaciones son de carga, persistencia y exportación. En esa medida, IO garantiza la persistencia de los resultados y del estado del proyecto, permitiendo al usuario retomar su trabajo sin pérdida de información y disponer de sus resultados fuera de la herramienta.
+    \item \textbf{Módulo IO: Entrada/Salida.} Opera sobre los datos que entran y salen de la herramienta: la señal en sus formatos de origen (ABF, EDF, MAT), el proyecto de trabajo (\textit{.glab}) y los resultados de los análisis. Sus operaciones son de carga, persistencia y exportación. En esa medida, IO garantiza la persistencia de los resultados y del estado del proyecto, permitiendo al usuario retomar su trabajo sin pérdida de información y disponer de sus resultados fuera de la herramienta.
 
-    \item \textbf{Módulo UI -- Interacción general.} Opera sobre la señal ya cargada y los \textit{trials} derivados de ella, es decir, sobre los datos con los que el usuario interactúa directamente. Sus operaciones son de edición y navegación: recortar, ajustar el muestreo, remover artefactos, hacer \textit{zoom} y seleccionar o promediar \textit{trials}. En esa medida, UI otorga al usuario control preciso y visible sobre la señal, mejorando su experiencia de interacción con las capacidades ya existentes de la herramienta.
+    \item \textbf{Módulo UI: Interacción general.} Opera sobre la señal ya cargada y los \textit{trials} derivados de ella, es decir, sobre los datos con los que el usuario interactúa directamente. Sus operaciones son de edición y navegación: recortar, ajustar el muestreo, remover artefactos, hacer \textit{zoom} y seleccionar o promediar \textit{trials}. En esa medida, UI otorga al usuario control preciso y visible sobre la señal, mejorando su experiencia de interacción con las capacidades ya existentes de la herramienta.
 
-    \item \textbf{Módulo WV -- \textit{Wavelet}/Escalograma.} Opera sobre el resultado de una técnica ya presente en GammaLab: el escalograma generado por \textit{wavelet}. Sus operaciones son de ajuste y presentación, entre las que se incluyen elegir la escala, normalizar el resultado y exportarlo en formato vectorial, sin intervenir en el cálculo del escalograma en sí. En esa medida, WV corrige y fortalece esta técnica existente, dándole al usuario mayor control sobre su interpretación visual.
+    \item \textbf{Módulo WV: \textit{Wavelet}/Escalograma.} Opera sobre el resultado de una técnica ya presente en GammaLab: el escalograma generado por \textit{wavelet}. Sus operaciones son de ajuste y presentación, entre las que se incluyen elegir la escala, normalizar el resultado y exportarlo en formato vectorial, sin intervenir en el cálculo del escalograma en sí. En esa medida, WV corrige y fortalece esta técnica existente, dándole al usuario mayor control sobre su interpretación visual.
 
-    \item \textbf{Módulo PAC -- Acoplamiento fase-amplitud.} Opera sobre una relación nueva entre los datos de la señal: el acoplamiento entre la fase de una banda lenta y la amplitud de una banda rápida, intra e inter-canal. Sus operaciones cubren todo el ciclo del análisis, desde la selección de bandas y canales hasta el cálculo del acoplamiento, la coherencia de fase y la exportación de resultados. En esa medida, PAC amplía el alcance analítico de GammaLab mediante una técnica completamente nueva, concentrando cerca de la mitad de los requisitos funcionales de esta iteración.
+    \item \textbf{Módulo PAC: Acoplamiento fase-amplitud.} Opera sobre una relación nueva entre los datos de la señal: el acoplamiento entre la fase de una banda lenta y la amplitud de una banda rápida, intra e inter-canal. Sus operaciones cubren todo el ciclo del análisis, desde la selección de bandas y canales hasta el cálculo del acoplamiento, la coherencia de fase y la exportación de resultados. En esa medida, PAC amplía el alcance analítico de GammaLab mediante una técnica completamente nueva, concentrando cerca de la mitad de los requisitos funcionales de esta iteración.
 \end{itemize}
 
 \subsubsection{Requerimientos No Funcionales}
@@ -480,13 +480,13 @@ Los requisitos funcionales especifican las acciones y comportamientos observable
 Los requisitos no funcionales definen las condiciones de calidad que debe cumplir Gamma Lab 2.0 durante su operación. Para su clasificación se utiliza el modelo FURPS+ \cite{eeles2001}, que contempla las categorías de usabilidad (U), rendimiento (P), confiabilidad (R) y soporte (S). En esta iteración, estos requisitos se enfocan principalmente en estabilizar la arquitectura y mejorar el rendimiento del sistema, mediante la consolidación del núcleo y el orquestador de tareas. Además, complementan los objetivos orientados a la corrección de errores y al mejoramiento de la experiencia de usuario.
 
 \begin{itemize}
-    \item \textbf{U -- Usabilidad.} Agrupa los requisitos orientados a mejorar la experiencia de interacción del usuario con la herramienta: retroalimentación visual durante operaciones prolongadas, diferenciación de mensajes según su severidad, y accesibilidad de las funcionalidades desde la interfaz principal.
+    \item \textbf{U: Usabilidad.} Agrupa los requisitos orientados a mejorar la experiencia de interacción del usuario con la herramienta: retroalimentación visual durante operaciones prolongadas, diferenciación de mensajes según su severidad, y accesibilidad de las funcionalidades desde la interfaz principal.
 
-    \item \textbf{P -- Rendimiento.} Establece los tiempos máximos de respuesta y límites de consumo de recursos para las operaciones del sistema: carga de señales, cómputo de análisis, exportación de resultados y liberación de memoria tras el cierre de un proyecto o módulo.
+    \item \textbf{P: Rendimiento.} Establece los tiempos máximos de respuesta y límites de consumo de recursos para las operaciones del sistema: carga de señales, cómputo de análisis, exportación de resultados y liberación de memoria tras el cierre de un proyecto o módulo.
 
-    \item \textbf{R -- Confiabilidad.} Garantiza la integridad y consistencia del sistema durante su operación: sincronización del acceso a datos compartidos, liberación de recursos al finalizar procesos, y preservación de la señal y los \textit{trials} originales frente a cualquier operación de preprocesamiento.
+    \item \textbf{R: Confiabilidad.} Garantiza la integridad y consistencia del sistema durante su operación: sincronización del acceso a datos compartidos, liberación de recursos al finalizar procesos, y preservación de la señal y los \textit{trials} originales frente a cualquier operación de preprocesamiento.
 
-    \item \textbf{S -- Soporte.} Incluye los requisitos que sostienen la arquitectura interna de la herramienta: el registro centralizado de servicios en el núcleo, la ejecución de cómputo pesado a través del orquestador de tareas, y la incorporación de nuevos \textit{plugins} de análisis sin modificar los componentes existentes.
+    \item \textbf{S: Soporte.} Incluye los requisitos que sostienen la arquitectura interna de la herramienta: el registro centralizado de servicios en el núcleo, la ejecución de cómputo pesado a través del orquestador de tareas, y la incorporación de nuevos \textit{plugins} de análisis sin modificar los componentes existentes.
 \end{itemize}
 
 \subsection{Especificación Funcional}
@@ -529,7 +529,7 @@ El sistema opera íntegramente en inglés, tanto en la interfaz como en los mens
 
 El sistema mantiene una arquitectura modular orientada a \textit{plugins}, en la que el \textit{Kernel} orquesta la ejecución y permite incorporar nuevas capacidades sin modificar los \textit{plugins} existentes. Se desarrolla en Python 3.11--3.12 y se distribuye como aplicación ejecutable localmente en Windows, aunque también puede ejecutarse directamente desde el código fuente del repositorio oficial.
 
-El procesamiento de señales se apoya en NumPy, SciPy, MNE, TensorPAC y PyWavelets, mientras que la interfaz gráfica se construye con PySide6 y los componentes Qt; los formatos de entrada soportados son \textit{.abf}, \textit{.edf}, \textit{.bdf} y \textit{.mat}. La paralelización del \textit{Kernel}, por su parte, se implementa mediante los mecanismos de hilos y \textit{multiprocessing} incluidos en la biblioteca estándar de Python.
+El procesamiento de señales se apoya en NumPy, SciPy y PyWavelets, mientras que la interfaz gráfica se construye con PyQt5 y los componentes Qt, y la visualización con VTK; los formatos de entrada soportados son \textit{.abf}, \textit{.edf} y \textit{.mat}, leídos con pyABF, pyEDFlib, SciPy y h5py. La ejecución concurrente del \textit{Kernel}, por su parte, se implementa únicamente con hilos: un hilo trabajador de Qt (\textit{QThread}) para el servicio de tareas y, dentro de algunos cálculos, un conjunto de hilos de la biblioteca estándar de Python (\textit{ThreadPoolExecutor}). No se emplean procesos auxiliares (\textit{multiprocessing}), porque las mediciones mostraron que el costo de crearlos y de transferirles los datos superaba el del propio cálculo.
 
 \subsubsection{Restricciones de \textit{Hardware}}
 
@@ -1403,7 +1403,7 @@ J. Aru \textit{et al.}, ``Untangling cross-frequency coupling in neuroscience,''
 
 \bibitem{brainstorm} Introducción, Brainstorm. [En línea]. Disponible: \url{https://neuroimage.usc.edu/brainstorm/Introduction}.
 
-\bibitem{iso29148} ISO/IEC/IEEE 29148:2018, "Systems and software engineering --- Life cycle processes --- Requirements engineering," 2.\textsuperscript{a} ed., International Organization for Standardization / International Electrotechnical Commission / Institute of Electrical and Electronics Engineers, nov. 2018. [En línea]. Disponible: \url{https://www.iso.org/standard/72089.html}.
+\bibitem{iso29148} ISO/IEC/IEEE 29148:2018, "Systems and software engineering, Life cycle processes, Requirements engineering," 2.\textsuperscript{a} ed., International Organization for Standardization / International Electrotechnical Commission / Institute of Electrical and Electronics Engineers, nov. 2018. [En línea]. Disponible: \url{https://www.iso.org/standard/72089.html}.
 
 \bibitem{eeles2001} P. Eeles, "Capturing Architectural Requirements," Rational Software Corporation, nov. 2001. [En línea]. Disponible: \url{https://www.ibm.com/developerworks/rational/library/4706.html}.
 
@@ -1415,7 +1415,7 @@ J. Aru \textit{et al.}, ``Untangling cross-frequency coupling in neuroscience,''
 \subsection{MRCU - Matriz de Requerimientos y Casos de Uso}
 \pendiente
 
-\subsection{PMP — \textit{Project Management Plan}}
+\subsection{PMP - \textit{Project Management Plan}}
 \pendiente
 
 \subsection{SAD - \textit{Software Architecture Document}}

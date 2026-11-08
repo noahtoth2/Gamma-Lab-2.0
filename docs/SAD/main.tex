@@ -55,7 +55,7 @@
 
     \vspace{0.5cm}
     {\large \textbf{Pontificia Universidad Javeriana}}\\
-    {\large Facultad de Ingenier\'ia --- Ingenier\'ia de Sistemas}
+    {\large Facultad de Ingenier\'ia, Ingenier\'ia de Sistemas}
 
     \vspace{1.5cm}
     {\Large\bfseries\color{titleblue} Software Architecture Document}\\
@@ -68,7 +68,7 @@
 
     \begin{tabular}{@{}ll@{}}
         \textbf{Proyecto} & Plataforma de an\'alisis y visualizaci\'on de se\~nales neurofisiol\'ogicas Gamma Lab \\
-        \textbf{Documento} & Software Architecture Document --- SAD \\
+        \textbf{Documento} & Software Architecture Document (SAD) \\
         \textbf{Versi\'on} & 1.0 \\
         \textbf{Estado} & En elaboraci\'on \\
         \textbf{Fecha} & 27 de agosto de 2026 \\
@@ -76,10 +76,10 @@
 
     \vspace{2cm}
     {\bfseries Autores}\\[0.3cm]
-    Juan Felipe Romero Ortiz --- \texttt{juanromeroo@javeriana.edu.co}\\
-    Laura Juliana Garz\'on Arias --- \texttt{garzonlj@javeriana.edu.co}\\
-    Xiomara Herrera Su\'arez --- \texttt{x\_herrera@javeriana.edu.co}\\
-    Sebasti\'an Almanza Galvis --- \texttt{s.almanzag@javeriana.edu.co}
+    Juan Felipe Romero Ortiz (\texttt{juanromeroo@javeriana.edu.co})\\
+    Laura Juliana Garz\'on Arias (\texttt{garzonlj@javeriana.edu.co})\\
+    Xiomara Herrera Su\'arez (\texttt{x\_herrera@javeriana.edu.co})\\
+    Sebasti\'an Almanza Galvis (\texttt{s.almanzag@javeriana.edu.co})
 
 \end{center}
 
@@ -252,7 +252,7 @@ Estas fallas son difíciles de diagnosticar por la ausencia de observabilidad. E
 Las siguientes condiciones tecnológicas forman parte del punto de partida del sistema:
 \begin{itemize}[nosep]
     \item GammaLab está desarrollado en Python y se ejecuta sobre CPython, su intérprete de referencia.
-    \item La interfaz gráfica está construida con el \textit{framework} Qt, mediante su enlace oficial para Python, PySide6.
+    \item La interfaz gráfica está construida con el \textit{framework} Qt, mediante el enlace para Python PyQt5 (versión 5.15).
     \item La visualización de señales y resultados se realiza con la librería VTK, que utiliza OpenGL como motor de renderizado.
     \item La arquitectura base del sistema es un microkernel, en el que un núcleo central coordina un conjunto de plugins.
     \item Los plugins existentes se rigen por un contrato común de extensión, la interfaz \texttt{IPlugin}.
@@ -273,7 +273,7 @@ El sistema debe operar sobre la infraestructura con la que hoy cuenta el laborat
 Las características de los datos que procesa el sistema también condicionan su diseño:
 \begin{itemize}[nosep]
     \item El sistema trabaja exclusivamente con señales previamente registradas. No adquiere ni procesa señales EEG en tiempo real.
-    \item Las señales neurofisiológicas se reciben en formatos binarios ABF, EDF, BDF y MAT.
+    \item Las señales neurofisiológicas se reciben en los formatos ABF, EDF y MAT.
     \item Cada señal se carga completa en memoria al momento de abrirse.
     \item Los datos numéricos se representan en doble precisión (\texttt{float64}).
     \item Los registros EDF pueden contener canales con frecuencias de muestreo distintas entre sí.
@@ -390,7 +390,7 @@ Laboratorio de Electrofisiología & $\bullet$ & $\bullet$ & $\bullet$ & $\circ$ 
 Directora del proyecto (\textit{Product Owner}) & $\circ$ & $\circ$ & $\bullet$ & $\bullet$ \\
 Equipo de desarrollo & $\circ$ & $\bullet$ & $\circ$ & $\bullet$ \\
 Revisores académicos & $\circ$ & $\bullet$ & $\bullet$ & $\circ$ \\
-Comunidad científica & $\circ$ & --- & $\circ$ & $\bullet$ \\
+Comunidad científica & $\circ$ & N/A & $\circ$ & $\bullet$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -738,7 +738,7 @@ Requeriría un subsistema de adquisición y comunicación con hardware, hoy fuer
 \\[0.15cm]
 
 A-07 &
-Los archivos de señal están en un formato soportado (\texttt{.abf}, \texttt{.edf}, \texttt{.bdf} o \texttt{.mat}).
+Los archivos de señal están en un formato soportado (\texttt{.abf}, \texttt{.edf} o \texttt{.mat}).
 &
 SRS
 &
@@ -983,7 +983,7 @@ ADR-11 & Manejador global de excepciones y captura en los trabajadores con notif
 \hline
 ADR-12 & Registro estructurado con el módulo \texttt{logging} y archivo rotativo. & D15 & Mensajes con \texttt{print} en consola. & Diagnóstico posterior a un fallo sin reproducirlo. Deben reemplazarse las llamadas existentes a \texttt{print}. \\
 \hline
-ADR-13 & Python, PyQt5 y VTK como base tecnológica. & --- & Migrar a PySide6. & Base madura para cálculo y visualización científica. La licencia GPL de PyQt5 condiciona la distribución, y VTK solo puede renderizar en el hilo principal.\\
+ADR-13 & Python, PyQt5 y VTK como base tecnológica. & N/A & Migrar a PySide6. & Base madura para cálculo y visualización científica. La licencia GPL de PyQt5 condiciona la distribución, y VTK solo puede renderizar en el hilo principal.\\
 \hline
 \caption{Decisiones arquitectónicas de Gamma Lab 2.0} \label{tab:adrs} \\
 \end{longtable}
@@ -1002,6 +1002,8 @@ Por ello, la terminación forzada que exige CU-014 y el aislamiento de fallos de
 \end{itemize}
 
 El modelo tiene dos costos que el diseño debe atender. El primero es la transferencia de arreglos grandes entre procesos, que se mitiga con memoria compartida en lugar de serialización completa y con un proceso trabajador persistente que evita el costo de arranque en cada tarea. El segundo es que el resultado siempre debe volver al hilo principal, porque VTK solo puede renderizar en él. En ambos casos, la extensión no conoce el mecanismo utilizado: entrega una función de cómputo (P3) y el orquestador decide cómo ejecutarla.
+
+En cuanto a su estado de implementación, ADR-09 se encuentra implementada solo en parte: el \texttt{TaskService} ejecuta todos los cómputos en hilos y el proceso trabajador no se ha construido. La decisión de no incorporarlo todavía se apoyó en una medición: arrancar un proceso y transferirle los arreglos costó 1.486\,ms, frente a los 1.163\,ms que tarda el propio cálculo. Como las transformadas de NumPy liberan el \textit{GIL} mientras calculan, los hilos sí aprovechan varios núcleos; por ejemplo, el reparto de ensayos entre cuatro hilos en PPC acelera el cálculo entre 1,8 y 2,7 veces sin alterar el resultado. La terminación forzada y el aislamiento de fallos, que son los argumentos que sostienen el proceso trabajador, siguen pendientes y se documentan como brecha en el SDD.
 
 % ----------------------------------------------------------------------
 \subsection{Patrones aplicados}
@@ -1128,7 +1130,7 @@ Las secciones siguientes describen cada uno. La Figura \ref{fig:vistacasosuso} p
     \label{fig:vistacasosuso}
 \end{figure}
 
-La Figura \ref{fig:vistacasosuso} revela que el subsistema \textbf{N\'ucleo y Ciclo de Vida} --- en particular CU-020, el orquestador de tareas --- es el verdadero centro de gravedad arquitect\'onico: diez de los otros veintid\'os casos de uso lo incluyen expl\'icitamente. Esa centralidad se concreta a continuaci\'on en tres escenarios representativos.
+La Figura \ref{fig:vistacasosuso} revela que el subsistema \textbf{N\'ucleo y Ciclo de Vida}, en particular CU-020, el orquestador de tareas, es el verdadero centro de gravedad arquitect\'onico: diez de los otros veintid\'os casos de uso lo incluyen expl\'icitamente. Esa centralidad se concreta a continuaci\'on en tres escenarios representativos.
 
 
 \subsubsection{Subsistema Interfaz y Usabilidad}
@@ -1703,7 +1705,7 @@ Esta distribución de responsabilidades permite que los componentes colaboren si
 
 Dos hallazgos relevantes para la planificaci\'on de la implementaci\'on:
 \begin{itemize}[nosep]
-    \item Los paquetes \texttt{measure/} (Amplitude, Slope) y \texttt{faq/} (manual PDF est\'atico) existen en el c\'odigo pero \textbf{ninguno} de los 23 casos de uso los cubre --- se muestran en gris neutro para delimitar la frontera del alcance actual.
+    \item Los paquetes \texttt{measure/} (Amplitude, Slope) y \texttt{faq/} (manual PDF est\'atico) existen en el c\'odigo pero \textbf{ninguno} de los 23 casos de uso los cubre; por ello, se muestran en gris neutro para delimitar la frontera del alcance actual.
     \item \texttt{TooltipHelper} depende de los plugins de preprocesamiento y an\'alisis por igual (CU-010): su ausencia hoy no es aislada, sino transversal a $\sim$15 plugins que carecen de \textit{tooltips}, salvo dos excepciones puntuales ya presentes en \texttt{TrialsPlugin} y \texttt{RelativePSDPlugin}.
 \end{itemize}
 
@@ -1955,7 +1957,7 @@ hilo principal.
 
 \begin{table}[H]
 \centering
-\caption{Escenario de calidad 1 --- Integración de un plugin externo}
+\caption{Escenario de calidad 1: Integración de un plugin externo}
 \label{tab:escenario1}
 \begin{tabularx}{\textwidth}{|l|X|}
 \hline
@@ -1986,7 +1988,7 @@ Trazabilidad & NFR-S-05 (R77--R78) \\
 
 \begin{table}[H]
 \centering
-\caption{Escenario de calidad 2 --- Carga de señal de gran tamaño}
+\caption{Escenario de calidad 2: Carga de señal de gran tamaño}
 \label{tab:escenario2}
 \begin{tabularx}{\textwidth}{|l|X|}
 \hline
@@ -2017,7 +2019,7 @@ Trazabilidad & NFR-P-03 (R48), NFR-P-14 (R72), NFR-P-10 (R56) \\
 
 \begin{table}[H]
 \centering
-\caption{Escenario de calidad 3 --- Manejo de errores en tiempo de ejecución}
+\caption{Escenario de calidad 3: Manejo de errores en tiempo de ejecución}
 \label{tab:escenario3}
 \begin{tabularx}{\textwidth}{|l|X|}
 \hline
@@ -2048,7 +2050,7 @@ Trazabilidad & R47 \\
 
 \begin{table}[H]
 \centering
-\caption{Escenario de calidad 4 --- Exportación de datos o gráficas}
+\caption{Escenario de calidad 4: Exportación de datos o gráficas}
 \label{tab:escenario4}
 \begin{tabularx}{\textwidth}{|l|X|}
 \hline
@@ -2079,7 +2081,7 @@ Trazabilidad & NFR-P-07 (R51), NFR-P-12 (R57), NFR-S-03 (R70) \\
 
 \begin{table}[H]
 \centering
-\caption{Escenario de calidad 5 --- Operación por un usuario sin experiencia técnica}
+\caption{Escenario de calidad 5: Operación por un usuario sin experiencia técnica}
 \label{tab:escenario5}
 \begin{tabularx}{\textwidth}{|l|X|}
 \hline
@@ -2110,7 +2112,7 @@ Trazabilidad & NFR-U-07 (R42), NFR-U-08 (R43), NFR-U-05 (R10), NFR-U-09 (R44) \\
 
 \begin{table}[H]
 \centering
-\caption{Escenario de calidad 6 --- Rendimiento con múltiples señales cargadas}
+\caption{Escenario de calidad 6: Rendimiento con múltiples señales cargadas}
 \label{tab:escenario6}
 \begin{tabularx}{\textwidth}{|l|X|}
 \hline
@@ -2141,7 +2143,7 @@ Trazabilidad & NFR-P-06 (R51), NFR-P-01/P-08 (R11, R53) \\
 
 \begin{table}[H]
 \centering
-\caption{Escenario de calidad 7 --- Resiliencia ante archivos corruptos o incompatibles}
+\caption{Escenario de calidad 7: Resiliencia ante archivos corruptos o incompatibles}
 \label{tab:escenario7}
 \begin{tabularx}{\textwidth}{|l|X|}
 \hline
@@ -2172,7 +2174,7 @@ Trazabilidad & FR-IO-04  \\
 
 \begin{table}[H]
 \centering
-\caption{Escenario de calidad 8 --- Consistencia entre datos ingresados y gráficas generadas}
+\caption{Escenario de calidad 8: Consistencia entre datos ingresados y gráficas generadas}
 \label{tab:escenario8}
 \begin{tabularx}{\textwidth}{|l|X|}
 \hline
@@ -2209,15 +2211,15 @@ Trazabilidad & NFR-R-04 (R73), NFR-U-02 (R03) \\
 
     \item \textbf{Contrato de plugins (\texttt{IPlugin}).} Cambios aditivos (nuevos m\'etodos opcionales, nuevos campos con valor por defecto) no rompen compatibilidad. Cambios que alteren la firma de \texttt{initialize}, \texttt{start}, \texttt{stop}, \texttt{process} o \texttt{get\_widget} elevan la versi\'on \texttt{MAJOR} del contrato.
 
-    \item \textbf{Metadatos \texttt{properties.yml}.} Los campos requeridos (\texttt{id, name, category, subcategory, version, icon, logic\_class, ui\_class}) deben existir siempre -- exigido por \texttt{REQUIRED\_\allowbreak KEYS} en \texttt{loader.py} -- y a\~nadir campos opcionales es compatible. El campo \texttt{version} declara el \texttt{MAJOR} de \texttt{IPlugin} contra el que se escribi\'o el plugin; \texttt{discover()} rechaza el plugin si no coincide con el \texttt{MAJOR} del n\'ucleo en ejecuci\'on.
+    \item \textbf{Metadatos \texttt{properties.yml}.} Los campos requeridos (\texttt{id, name, category, subcategory, version, icon, logic\_class, ui\_class}) deben existir siempre (exigido por \texttt{REQUIRED\_\allowbreak KEYS} en \texttt{loader.py}) y a\~nadir campos opcionales es compatible siempre que se declaren antes en \texttt{PluginMeta}, porque el descriptor se convierte directamente en una instancia de esa clase y una clave desconocida impide cargar el plugin. La pol\'itica prev\'e que el campo \texttt{version} declare el \texttt{MAJOR} de \texttt{IPlugin} contra el que se escribi\'o el plugin y que \texttt{discover()} lo rechace si no coincide con el del n\'ucleo; en la implementaci\'on actual, sin embargo, \texttt{version} es la versi\'on propia del plugin y \texttt{discover()} no realiza esa comprobaci\'on (brecha de ADR-05).
 
-    \item \textbf{Formato de proyecto \texttt{.glab}.} \texttt{ProjectService} persiste el espacio de trabajo -- se\~nal activa, trials y an\'alisis -- en archivos \texttt{.glab}. Cada \texttt{.glab} embebe un \texttt{schema\_version} propio: un incremento \texttt{MINOR} se mantiene legible por versiones futuras de \texttt{ProjectService}, y un incremento \texttt{MAJOR} rechaza la apertura con un mensaje expl\'icito al usuario en vez de migrar impl\'icitamente.
+    \item \textbf{Formato de proyecto \texttt{.glab}.} \texttt{ProjectService} persiste el espacio de trabajo (se\~nal activa, trials y an\'alisis) en archivos \texttt{.glab}. Cada \texttt{.glab} embebe un \texttt{schema\_version} propio, actualmente \texttt{"1.0"}. La pol\'itica establece que un incremento \texttt{MINOR} se mantenga legible por versiones futuras de \texttt{ProjectService} y que un incremento \texttt{MAJOR} rechace la apertura con un mensaje expl\'icito al usuario en vez de migrar impl\'icitamente. Como hasta ahora solo existe la versi\'on 1.0, \texttt{ProjectService} escribe el campo pero todav\'ia no lo comprueba al abrir; la verificaci\'on deber\'a incorporarse junto con la primera versi\'on nueva del esquema.
 
     \item \textbf{Dependencias externas.} \texttt{requirements.txt} fija cada librer\'ia con versi\'on exacta (\texttt{==}), sin rangos abiertos (Tabla~\ref{tab:deps}). Actualizar VTK, SciPy, PyWavelets o NumPy exige re-ejecutar completas las suites \texttt{plugins\_\allowbreak test} y \texttt{performance\_\allowbreak test} antes de aceptar el cambio.
 
-    \item \textbf{Formatos de se\~nal externos (EDF/ABF/BDF/MAT).} La compatibilidad se ancla a la versi\'on de la librer\'ia lectora (\texttt{pyabf}, \texttt{pyedflib}), no al formato en s\'i. Un archivo no interpretable por esa versi\'on se reporta como incompatible, sin remuestreo ni heur\'isticas de recuperaci\'on impl\'icitas: un EDF con canales a distinta frecuencia de muestreo falla con un mensaje claro, en vez de intentar corregirse autom\'aticamente.
+    \item \textbf{Formatos de se\~nal externos (ABF/EDF/MAT).} La compatibilidad se ancla a la versi\'on de la librer\'ia lectora (\texttt{pyabf}, \texttt{pyedflib}, \texttt{scipy} y \texttt{h5py}), no al formato en s\'i. Un archivo no interpretable por esa versi\'on se reporta como incompatible con un mensaje que indica el motivo. Existe una \'unica correcci\'on autom\'atica: un EDF cuyos canales tienen distinta frecuencia de muestreo o distinta longitud se remuestrea por interpolaci\'on lineal a la frecuencia m\'as baja y a la duraci\'on m\'as corta. Esta correcci\'on solo se notifica mediante un mensaje en consola, no en la interfaz.
 
-    \item \textbf{Estabilidad de m\'odulos internos.} Todo renombramiento o reubicaci\'on de un m\'odulo p\'ublico de \texttt{core/} actualiza en el mismo cambio a todos sus consumidores, tests incluidos, y un flujo de CI corre \texttt{pytest} en cada \textit{push}/\textit{pull request}. Motivo: un renombramiento previo de \texttt{fileio.py} a \texttt{fileio\_\allowbreak service.py} (con \texttt{TrialDataset} movido a \texttt{core/\allowbreak model/}) rompi\'o silenciosamente los 8 archivos de \texttt{plugins\_\allowbreak test} al no actualizarse en el mismo cambio.
+    \item \textbf{Estabilidad de m\'odulos internos.} Todo renombramiento o reubicaci\'on de un m\'odulo p\'ublico de \texttt{core/} actualiza en el mismo cambio a todos sus consumidores, tests incluidos, y la suite completa de \texttt{pytest} se ejecuta antes de integrar el cambio. El repositorio no cuenta todav\'ia con un flujo de integraci\'on continua que lo haga de forma autom\'atica en cada \textit{push} o \textit{pull request}, por lo que esta verificaci\'on es hoy responsabilidad de quien integra el cambio. Motivo: un renombramiento previo de \texttt{fileio.py} a \texttt{fileio\_\allowbreak service.py} (con \texttt{TrialDataset} movido a \texttt{core/\allowbreak model/}) rompi\'o silenciosamente los 8 archivos de \texttt{plugins\_\allowbreak test} al no actualizarse en el mismo cambio.
 \end{itemize}
 
 \begin{center}
@@ -2282,19 +2284,19 @@ Agregar un plugin v\'alido y correr \texttt{plugins\_\allowbreak test} &
 $<$1\,min; 0 plugins fallan (R77--R78) \\
 \hline
 
-Rendimiento -- carga grande (Esc.~2) &
+Rendimiento: carga grande (Esc.~2) &
 Tiempo a primer render; uso de CPU &
 \texttt{performance\_\allowbreak test}; medido: 78.4\,ms (1.8\,M muestras) &
 $\leq$8\,s estr\'es, $\leq$2\,s t\'ipico; CPU $<$80\% (R48/R72/R56) \\
 \hline
 
-Confiabilidad -- errores en ejecuci\'on (Esc.~3) &
+Confiabilidad: errores en ejecuci\'on (Esc.~3) &
 \% p\'erdida de datos; tiempo del mensaje &
 Inyecci\'on de fallos dentro de \texttt{process()} &
 0\% p\'erdida; mensaje $<$2\,s; sistema operativo \\
 \hline
 
-Confiabilidad -- exportaci\'on (Esc.~4) &
+Confiabilidad: exportaci\'on (Esc.~4) &
 Tiempo de exportaci\'on; error silencioso &
 \texttt{test\_\allowbreak export.py} &
 $<$3\,s; 0\% p\'erdida; notificaci\'on clara (R51/R57/R70) \\
@@ -2306,13 +2308,13 @@ Prueba de usabilidad con usuarios reales &
 $<$5\,min; bajas consultas al manual (R42--R44) \\
 \hline
 
-Rendimiento -- m\'ultiples se\~nales (Esc.~6) &
+Rendimiento: m\'ultiples se\~nales (Esc.~6) &
 Tiempo de cambio; \% de memoria &
 Benchmark de \texttt{DataStore} &
 $<$1\,s cambio; memoria 70--75\% (R11, R51, R53) \\
 \hline
 
-Confiabilidad -- archivos corruptos (Esc.~7) &
+Confiabilidad: archivos corruptos (Esc.~7) &
 Tiempo del error; continuidad de sesi\'on &
 \texttt{test\_\allowbreak fileio\_\allowbreak abf}/\texttt{edf.py} &
 Mensaje $<$2\,s; 0\% p\'erdida previa (FR-IO-04) \\
@@ -2330,7 +2332,7 @@ Mantenibilidad &
 $\geq$80\% de cobertura \\
 \hline
 
-Rendimiento -- no regresi\'on vs.\ 1.0 &
+Rendimiento: no regresi\'on vs.\ 1.0 &
 Factor vs.\ l\'inea base &
 \texttt{compare\_\allowbreak report.py} &
 Nada empeora; render sin vectorizar mejora $\geq$10$\times$ \\
@@ -2665,15 +2667,15 @@ La Tabla~\ref{tab:traza_cu_arq} invierte la Tabla~\ref{tab:traza_diagnostico}: i
 
 CU-003 & D2, D5 & P2, P5, P7 & ADR-03, ADR-06, ADR-08 & Escenario 6 \\
 \hline
-CU-004 & D2 & P2 & ADR-03 & --- \\
+CU-004 & D2 & P2 & ADR-03 & N/A \\
 \hline
 CU-007 & D7 & P5 & ADR-06 & Escenario 8 \\
 \hline
-CU-008 & D8 & P7 & ADR-08 & --- \\
+CU-008 & D8 & P7 & ADR-08 & N/A \\
 \hline
 CU-011 & D1, D4, D14 & P1, P4, P10 & ADR-01, ADR-02, ADR-05, ADR-11 & Escenarios 1 y 3 \\
 \hline
-CU-014 & D11 & P8 & ADR-09 & --- \\
+CU-014 & D11 & P8 & ADR-09 & N/A \\
 \hline
 CU-016 & D7 & P5 & ADR-06 & Escenario 8 \\
 \hline
@@ -2683,7 +2685,7 @@ CU-020 & D9, D10, D12 & P8, P9 & ADR-09, ADR-10 & Escenario 2 \\
 \hline
 CU-021 & D5 & P5, P7 & ADR-06, ADR-08 & Escenario 6 \\
 \hline
-CU-022 & D1, D8 & P1, P7 & ADR-01, ADR-02, ADR-08 & --- \\
+CU-022 & D1, D8 & P1, P7 & ADR-01, ADR-02, ADR-08 & N/A \\
 \hline
 \caption{Decisiones arquitectónicas que sostienen cada caso de uso} \label{tab:traza_cu_arq} \\
 \end{longtable}
@@ -2711,7 +2713,7 @@ Casos de uso que declaran al menos un requerimiento & 23 de 23 & 100\,\% \\
 \hline
 Requerimientos declarados por más de un caso de uso & 26 de 81 & 32\,\% \\
 \hline
-Referencias a requerimientos inexistentes en el libro & 0 & --- \\
+Referencias a requerimientos inexistentes en el libro & 0 & N/A \\
 \hline
 \end{tabular}
 \caption{Cobertura de la trazabilidad entre requerimientos y casos de uso}
@@ -2727,7 +2729,7 @@ Dos observaciones completan el análisis. Primero, la cobertura completa signifi
 
 
 
-\subsection{Anexo A --- Relaci\'on con el SRS}
+\subsection{Anexo A: Relaci\'on con el SRS}
 
 
 En particular:
@@ -2737,7 +2739,7 @@ En particular:
 
 
 
-\subsection{Anexo B --- Relaci\'on con el SDD}
+\subsection{Anexo B: Relaci\'on con el SDD}
 
 
 Este anexo resume dicha relaci\'on:
@@ -2747,10 +2749,10 @@ Este anexo resume dicha relaci\'on:
 
 
 
-\subsection{Anexo C --- Trazabilidad global de artefactos}
+\subsection{Anexo C: Trazabilidad global de artefactos}
 
 
-\subsection{Anexo D --- Diagramas y tablas de referencia}
+\subsection{Anexo D: Diagramas y tablas de referencia}
 
 
 % ======================================================================
@@ -2758,21 +2760,21 @@ Este anexo resume dicha relaci\'on:
 
 \begin{thebibliography}{99}
 
-\bibitem{python} Python Software Foundation. \textit{Python 3 --- The Python Standard Library}. Disponible en: \url{https://docs.python.org/3/}.
+\bibitem{python} Python Software Foundation. \textit{Python 3: The Python Standard Library}. Disponible en: \url{https://docs.python.org/3/}.
 
 \bibitem{pyqt5} Riverbank Computing. \textit{PyQt5 Reference Guide}. Disponible en: \url{https://www.riverbankcomputing.com/static/Docs/PyQt5/}.
 
-\bibitem{qt5} The Qt Company. \textit{Qt 5 --- Style Sheets Reference}. Disponible en: \url{https://doc.qt.io/qt-5/stylesheet-syntax.html}.
+\bibitem{qt5} The Qt Company. \textit{Qt 5: Style Sheets Reference}. Disponible en: \url{https://doc.qt.io/qt-5/stylesheet-syntax.html}.
 
-\bibitem{vtk} Kitware, Inc. \textit{VTK --- Visualization Toolkit Documentation}. Disponible en: \url{https://vtk.org/} y \url{https://docs.vtk.org/}.
+\bibitem{vtk} Kitware, Inc. \textit{VTK: Visualization Toolkit Documentation}. Disponible en: \url{https://vtk.org/} y \url{https://docs.vtk.org/}.
 
 \bibitem{vtkchartxy} Kitware, Inc. \textit{vtkChartXY Class Reference}. Disponible en: \url{https://docs.vtk.org/en/latest/api/python/vtkmodules.vtkChartsCore.html\#vtkmodules.vtkChartsCore.vtkChartXY}.
 
 \bibitem{numpy} NumPy Developers. \textit{NumPy Documentation}. Disponible en: \url{https://numpy.org/doc/}.
 
-\bibitem{pyabf} Scott W. Harden. \textit{pyABF --- Read and Analyze ABF Files with Python}. Disponible en: \url{https://pyabf.readthedocs.io/}.
+\bibitem{pyabf} Scott W. Harden. \textit{pyABF: Read and Analyze ABF Files with Python}. Disponible en: \url{https://pyabf.readthedocs.io/}.
 
-\bibitem{pyedflib} Holger Nahrstaedt et al. \textit{pyEDFlib --- Python library to read/write EDF+/BDF+ files}. Disponible en: \url{https://pyedflib.readthedocs.io/}.
+\bibitem{pyedflib} Holger Nahrstaedt et al. \textit{pyEDFlib: Python library to read/write EDF+/BDF+ files}. Disponible en: \url{https://pyedflib.readthedocs.io/}.
 
 \bibitem{yaml} Oren Ben-Kiki, Clark Evans, Ingy d\"ot Net. \textit{YAML Ain't Markup Language (YAML) Specification}. Disponible en: \url{https://yaml.org/spec/}.
 
