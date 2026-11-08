@@ -165,7 +165,7 @@
     El alcance de este manual comprende la totalidad de las funcionalidades expuestas al usuario en GammaLab v2.0:
 
     \begin{itemize}
-        \item \textbf{Instalaci\'on y ejecuci\'on:} requisitos de \textit{hardware} y \textit{software}, instalaci\'on de Python, uso del lanzador y resoluci\'on de los problemas m\'as frecuentes.
+        \item \textbf{Instalaci\'on y ejecuci\'on:} requisitos de \textit{hardware} y \textit{software}, instalaci\'on mediante el ejecutable, ejecuci\'on alternativa desde el c\'odigo fuente y resoluci\'on de los problemas m\'as frecuentes.
         \item \textbf{Interfaz principal:} barra de t\'itulo, cinta de secciones, barra lateral, \'area de trabajo, panel de resultados, explorador del proyecto, avisos del sistema e indicador de progreso.
         \item \textbf{Gesti\'on de se\~nales y proyectos:} carga de se\~nales en formato ABF, EDF y MAT, y creaci\'on, guardado, apertura y cierre de proyectos \textit{.glab}.
         \item \textbf{Preprocesamiento:} segmentaci\'on en \textit{trials}, eliminaci\'on de artefactos y filtrado.
@@ -228,11 +228,11 @@ Memoria RAM & 8\,GB & 16\,GB \\
 \hline
 Memoria de video & 1\,GB (GPU integrada) & 2\,GB \\
 \hline
-Almacenamiento & 3\,GB libres: 1\,GB para el entorno de Python y sus dependencias y 2\,GB para se\~nales peque\~nas, archivos temporales y configuraci\'on & 20\,GB libres en disco de estado s\'olido (SSD) \\
+Almacenamiento & 3\,GB libres: unos 663\,MB para la aplicaci\'on instalada (o 1\,GB para el entorno de Python si se ejecuta desde el c\'odigo fuente) y el resto para se\~nales peque\~nas, archivos temporales y configuraci\'on & 20\,GB libres en disco de estado s\'olido (SSD) \\
 \hline
 Sistema operativo & Windows 10 de 64 bits & Windows 10 u 11 de 64 bits \\
 \hline
-Python & 3.11 & 3.11 (recomendada), 3.12 o 3.13 \\
+Python & No se requiere con el instalador; 3.11 para ejecutar desde el c\'odigo fuente & No se requiere con el instalador; 3.11 (recomendada), 3.12 o 3.13 para ejecutar desde el c\'odigo fuente \\
 \hline
 Pantalla & 1366 $\times$ 768 & 1920 $\times$ 1080 o superior \\
 \hline
@@ -247,12 +247,39 @@ Pantalla & 1366 $\times$ 768 & 1920 $\times$ 1080 o superior \\
 
 \section{Instalaci\'on y ejecuci\'on}
 
-Este apartado describe el procedimiento para instalar y ejecutar GammaLab v2.0 en sistemas Windows. El proyecto incluye un lanzador, \textit{gamma\_lab.bat}, que automatiza la verificaci\'on del entorno y la instalaci\'on de las dependencias.
+Este apartado describe c\'omo instalar y ejecutar GammaLab v2.0 en sistemas Windows. Existen dos v\'ias. La recomendada para los usuarios finales es el \textbf{instalador ejecutable}, que deja la aplicaci\'on lista para usarse sin necesidad de instalar Python ni ninguna librer\'ia. La segunda, orientada a quienes desarrollan o modifican el sistema, consiste en ejecutar GammaLab desde su c\'odigo fuente con el lanzador \textit{gamma\_lab.bat}.
 
-    \subsection{Obtenci\'on del proyecto}
-    La forma recomendada de obtener GammaLab es descargar el paquete comprimido con la \'ultima versi\'on estable desde la secci\'on \emph{Releases} del repositorio oficial del proyecto. Una vez descargado, el contenido debe descomprimirse en una carpeta sobre la que el usuario tenga permisos de escritura. Se recomienda evitar las carpetas sincronizadas con servicios en la nube, porque la escritura de los archivos del proyecto puede entrar en conflicto con la sincronizaci\'on.
+    \subsection{Instalaci\'on con el ejecutable (v\'ia recomendada)}
+    \label{sec:mu_instalador}
+    GammaLab se distribuye como un instalador para Windows de 64 bits, \textit{GammaLab-Setup-2.0.0.exe}, de unos 216\,MB, que ocupa alrededor de 663\,MB una vez instalado. La gu\'ia oficial de instalaci\'on, con el enlace de descarga vigente y una captura de pantalla de cada paso, est\'a publicada en la siguiente p\'agina, a la que debe dirigirse el usuario para realizar la instalaci\'on:
 
-    \subsection{Verificaci\'on de la versi\'on de Python}
+    \begin{center}\url{https://garzonlj.github.io/webGammaLab/}\end{center}
+
+    De forma resumida, el procedimiento que describe la gu\'ia es el siguiente:
+
+    \begin{enumerate}
+        \item \textbf{Descargar el instalador.} Abra el enlace de descarga que se indica en la p\'agina y pulse el bot\'on azul \textbf{Descargar}. Como el archivo es grande, el servicio de almacenamiento advierte que no puede analizarlo en busca de virus; pulse \textbf{Descargar de todos modos}.
+        \item \textbf{Abrir el instalador.} En el Explorador de archivos, haga doble clic sobre \textit{GammaLab-Setup-2.0.0.exe}.
+        \item \textbf{Superar el aviso de Windows.} Windows puede mostrar un aviso de protecci\'on porque el instalador no est\'a firmado digitalmente. Pulse \textbf{M\'as informaci\'on} y despu\'es \textbf{Ejecutar de todas formas}.
+        \item \textbf{Conceder permisos de administrador.} El instalador los necesita para instalar la aplicaci\'on para todos los usuarios del equipo; responda \textbf{S\'i}.
+        \item \textbf{Elegir el idioma del asistente} (espa\~nol o ingl\'es) y pulsar \textbf{Aceptar}.
+        \item \textbf{Elegir la carpeta de destino.} Por defecto es \textit{C:\textbackslash Program Files\textbackslash GammaLab}; pulse \textbf{Siguiente}.
+        \item \textbf{Confirmar la carpeta del men\'u Inicio}, llamada \textit{Gamma Lab}, y pulsar \textbf{Siguiente}.
+        \item \textbf{Decidir si se crea un acceso directo en el escritorio.} Desmarque la opci\'on si no lo desea y pulse \textbf{Siguiente}.
+        \item \textbf{Instalar.} Revise el resumen de la configuraci\'on y pulse \textbf{Instalar}. Al terminar, el asistente ofrece abrir GammaLab de inmediato.
+    \end{enumerate}
+
+    Una vez instalada, la aplicaci\'on se abre desde el acceso directo del escritorio o desde el men\'u Inicio. El instalador asocia adem\'as la extensi\'on \textit{.glab} con GammaLab, de modo que un doble clic sobre un archivo de proyecto abre la aplicaci\'on con ese proyecto cargado. Para desinstalarla, utilice la entrada de desinstalaci\'on que se crea en la carpeta \textit{Gamma Lab} del men\'u Inicio o la secci\'on de aplicaciones instaladas de la configuraci\'on de Windows.
+
+    \aviso{Sobre los avisos de seguridad.}{Los mensajes de \textbf{Descargar de todos modos} y de protecci\'on de Windows se deben a que el instalador es de gran tama\~no y no cuenta con firma digital comercial, no a que contenga c\'odigo malicioso. Descargue el instalador \'unicamente desde el enlace publicado en la gu\'ia oficial.}
+
+    \subsection{Ejecuci\'on desde el c\'odigo fuente (v\'ia alternativa)}
+    Esta v\'ia requiere tener Python instalado y est\'a pensada para quienes necesitan ejecutar o modificar el c\'odigo del sistema. El proyecto incluye un lanzador, \textit{gamma\_lab.bat}, que automatiza la verificaci\'on del entorno y la instalaci\'on de las dependencias.
+
+    \subsubsection{Obtenci\'on del c\'odigo fuente}
+    Para esta v\'ia se descarga el paquete comprimido con la \'ultima versi\'on estable desde la secci\'on \emph{Releases} del repositorio oficial del proyecto. Una vez descargado, el contenido debe descomprimirse en una carpeta sobre la que el usuario tenga permisos de escritura. Se recomienda evitar las carpetas sincronizadas con servicios en la nube, porque la escritura de los archivos del proyecto puede entrar en conflicto con la sincronizaci\'on.
+
+    \subsubsection{Verificaci\'on de la versi\'on de Python}
     Antes de proceder, verifique la versi\'on de Python instalada en el sistema abriendo una terminal y ejecutando:
 
     \begin{center}\textit{python -{}-version}\end{center}
@@ -262,7 +289,7 @@ Este apartado describe el procedimiento para instalar y ejecutar GammaLab v2.0 e
         \item Si la versi\'on es anterior a 3.11, debe instalarse una versi\'on soportada antes de continuar.
     \end{itemize}
 
-    \subsection{Instalaci\'on de Python}
+    \subsubsection{Instalaci\'on de Python}
     GammaLab requiere una versi\'on de Python compatible con las librer\'ias cient\'ificas que emplea (PyQt5, QtWebEngine, SciPy y VTK, entre otras). Instale Python desde el sitio oficial:
 
     \begin{center}\url{https://www.python.org/downloads/windows/}\end{center}
@@ -276,7 +303,7 @@ Este apartado describe el procedimiento para instalar y ejecutar GammaLab v2.0 e
 
     Verifique la instalaci\'on ejecutando nuevamente \textit{python -{}-version}.
 
-    \subsection{Ejecuci\'on con el lanzador}
+    \subsubsection{Ejecuci\'on con el lanzador}
     El proyecto incluye el lanzador \textit{gamma\_lab.bat}, que puede ejecutarse haciendo doble clic sobre \'el desde el Explorador de archivos o invoc\'andolo desde una terminal abierta en la carpeta del proyecto. El lanzador realiza autom\'aticamente las siguientes operaciones:
 
     \begin{enumerate}
@@ -288,10 +315,10 @@ Este apartado describe el procedimiento para instalar y ejecutar GammaLab v2.0 e
 
     La primera ejecuci\'on es notablemente m\'as lenta que las siguientes, porque en ella se descargan e instalan todas las dependencias.
 
-    \subsection{Creaci\'on de un acceso directo}
-    Para generar un acceso directo en el escritorio, ejecute el archivo \textit{create\_shortcut.bat}. El acceso directo se crea con el nombre y el icono oficiales del proyecto, tomados de la carpeta \textit{assets/logos}.
+    \subsubsection{Creaci\'on de un acceso directo}
+    Con esta v\'ia, para generar un acceso directo en el escritorio, ejecute el archivo \textit{create\_shortcut.bat}. El acceso directo se crea con el nombre y el icono oficiales del proyecto, tomados de la carpeta \textit{assets/logos}.
 
-    \subsection{Ejecuci\'on manual}
+    \subsubsection{Ejecuci\'on manual}
     Si se prefiere ejecutar GammaLab sin el lanzador, abra una terminal en la carpeta ra\'iz del proyecto y ejecute:
 
     \begin{center}
@@ -307,13 +334,17 @@ Este apartado describe el procedimiento para instalar y ejecutar GammaLab v2.0 e
     \hline
     \textbf{S\'intoma} & \textbf{Soluci\'on} \\
     \hline
-    \textit{Python not found}, o bien Python no se reconoce como comando & Reinstale Python asegur\'andose de activar \textbf{\textit{Add Python to PATH}} y abra una terminal nueva para que el cambio surta efecto. \\
+    Windows impide abrir el instalador con un aviso de protecci\'on & Pulse \textbf{M\'as informaci\'on} y despu\'es \textbf{Ejecutar de todas formas}. El aviso aparece porque el instalador no tiene firma digital comercial. \\
     \hline
-    \textit{ModuleNotFoundError} al arrancar & Reinstale las dependencias con \textit{python -m pip install -{}-force-reinstall -r requirements.txt} \\
+    El instalador solicita una contrase\~na de administrador que el usuario no tiene & El instalador requiere permisos de administrador porque instala la aplicaci\'on para todo el equipo. Solicite la instalaci\'on al responsable de sistemas del laboratorio. \\
     \hline
-    Falla la instalaci\'on de dependencias & Actualice \textit{pip} con \textit{python -m pip install -{}-upgrade pip} y reintente con \textit{python -m pip install -r requirements.txt} \\
+    \textit{Python not found}, o bien Python no se reconoce como comando (v\'ia alternativa) & Reinstale Python asegur\'andose de activar \textbf{\textit{Add Python to PATH}} y abra una terminal nueva para que el cambio surta efecto. \\
     \hline
-    Incompatibilidad de versiones de librer\'ias & Utilice \'unicamente versiones soportadas de Python, de la 3.11 a la 3.13. Algunas librer\'ias cient\'ificas no publican paquetes para versiones m\'as recientes. \\
+    \textit{ModuleNotFoundError} al arrancar (v\'ia alternativa) & Reinstale las dependencias con \textit{python -m pip install -{}-force-reinstall -r requirements.txt} \\
+    \hline
+    Falla la instalaci\'on de dependencias (v\'ia alternativa) & Actualice \textit{pip} con \textit{python -m pip install -{}-upgrade pip} y reintente con \textit{python -m pip install -r requirements.txt} \\
+    \hline
+    Incompatibilidad de versiones de librer\'ias (v\'ia alternativa) & Utilice \'unicamente versiones soportadas de Python, de la 3.11 a la 3.13. Algunas librer\'ias cient\'ificas no publican paquetes para versiones m\'as recientes. \\
     \hline
     La ventana se abre sin gr\'aficas o con el \'area central en blanco & Actualice el controlador de la tarjeta gr\'afica. El \'area de gr\'aficas emplea VTK, que requiere soporte de OpenGL. \\
     \hline
@@ -322,7 +353,7 @@ Este apartado describe el procedimiento para instalar y ejecutar GammaLab v2.0 e
     \label{tab:mu_problemas_instalacion}
     \end{center}
 
-    GammaLab queda correctamente instalado y operativo una vez se cumplen los requisitos anteriores y la ventana principal se abre mostrando la pantalla de bienvenida.
+    Por cualquiera de las dos v\'ias, GammaLab queda correctamente instalado y operativo cuando la ventana principal se abre mostrando la pantalla de bienvenida.
 
 \clearpage
 
