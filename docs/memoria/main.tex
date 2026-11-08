@@ -1,18 +1,4 @@
-%=====================================================================
-%  PLANTILLA DE MEMORIA DE TRABAJO DE GRADO
-%  Formato replicado de: Memoria GAMMA LAB
-%  Compilar con: pdfLaTeX  (Overleaf -> Menu -> Compiler -> pdfLaTeX)
-%---------------------------------------------------------------------
-%  INSTRUCCIONES RAPIDAS
-%  1) Suba a Overleaf las dos imagenes con estos nombres exactos:
-%         imagen_logo_universidad.png
-%         imagen_logo_gammalab.png
-%     (tambien acepta .pdf o .jpg; si no existen se dibuja un recuadro
-%      gris de reserva para que el documento compile igual)
-%  2) Edite unicamente el bloque "DATOS DEL DOCUMENTO" de abajo.
-%  3) Cada capitulo se crea con  \capitulo{TITULO}  (inicia pagina nueva).
-%     Subcapítulos con \subsection{} y \subsubsection{} (numeracion 1.1.1).
-%=====================================================================
+
 \documentclass[12pt,letterpaper,oneside]{article}
 
 %------------------------- Idioma y codificacion ---------------------
@@ -1167,16 +1153,139 @@ Para la gestión del trabajo colaborativo se adoptó la metodología Kanban, con
 De manera complementaria, el control de versiones se gestionó con Git, empleando GitHub como repositorio remoto compartido por los integrantes del equipo.
 
 \subsection{Producto}
-\pendiente
 
-\subsubsection{Funcionalidad 1}
-\pendiente
+Esta sección presenta las funcionalidades de Gamma Lab 2.0 desde la perspectiva del usuario, organizadas según los elementos de la interfaz: los paneles \textit{Explorer} y \textit{Results} de la barra lateral, el menú \textit{File} y las secciones \textit{Home}, \textit{Preprocessing} y \textit{Analysis}.
 
-\subsubsection{Funcionalidad 2}
-\pendiente
+\subsubsection{\textit{Explorer}}
 
-\subsubsection{Funcionalidad 3}
-\pendiente
+El \textit{Explorer} muestra en forma de árbol la carpeta del proyecto abierto y se actualiza al abrir, guardar, renombrar o cerrar el proyecto, como se observa en la Figura~\ref{fig:producto-explorer}. Si no hay un proyecto abierto, muestra un mensaje que indica cómo hacer que aparezca su contenido.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{producto_explorer.png}
+  \caption{Panel \textit{Explorer} de Gamma Lab 2.0}
+  \label{fig:producto-explorer}
+\end{figure}
+
+Sus funciones son las siguientes:
+
+\begin{itemize}
+  \item \textbf{Abrir archivos.} Con doble clic, el archivo se abre en el programa asociado del sistema.
+  \item \textbf{Menú contextual.} Permite renombrar, copiar, pegar, eliminar (con confirmación) y crear carpetas.
+  \item \textbf{Mover.} Los archivos se arrastran de una carpeta a otra.
+  \item \textbf{Tamaño.} El ancho se ajusta arrastrando el borde y se conserva al reabrir el panel.
+\end{itemize}
+
+Las exportaciones se guardan por defecto en la subcarpeta \textit{archivos} del proyecto.
+
+\subsubsection{\textit{Results}}
+
+\textit{Results} muestra en tablas las mediciones hechas sobre las gráficas. Se ubica debajo del área de trabajo, para ver los datos y la señal al mismo tiempo, como se observa en la Figura~\ref{fig:producto-results}. Su altura se ajusta arrastrando el borde superior.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{producto_results.png}
+  \caption{Panel \textit{Results} de Gamma Lab 2.0}
+  \label{fig:producto-results}
+\end{figure}
+
+Las mediciones se organizan en dos pestañas:
+
+\begin{itemize}
+  \item \textbf{\textit{Slope}.} Puntos medidos, $\Delta x$, $\Delta y$, pendiente, distancia y fecha.
+  \item \textbf{\textit{Amplitude}.} Ventana medida, número de muestras, mínimo, máximo, amplitud pico a pico y el instante de cada extremo.
+\end{itemize}
+
+La cabecera permite exportar la tabla activa a CSV o Excel. Las mediciones se guardan con el proyecto.
+
+\subsubsection{\textit{File}}
+
+El menú \textit{File} reúne las operaciones que afectan a toda la sesión de trabajo, como se observa en la Figura~\ref{fig:producto-file}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{producto_file.png}
+  \caption{Menú \textit{File} de Gamma Lab 2.0}
+  \label{fig:producto-file}
+\end{figure}
+
+Con \textit{Open signal} se cargan señales en formato \textit{.abf}, \textit{.edf} o \textit{.mat}, con la opción de corregir 
+la frecuencia de muestreo y elegir qué canales se ven, y con \textit{Open project} se 
+abre un proyecto \textit{.glab} que restaura el trabajo hecho. \textit{Save} y \textit{Save as}
+ guardan el proyecto en una carpeta con el archivo \textit{.glab} y una copia de la señal, 
+ mientras que \textit{Close project} y \textit{Exit} cierran el proyecto o la aplicación,
+  avisando antes si hay cálculos en curso o cambios sin guardar.
+
+\subsubsection{\textit{Home}}
+
+\textit{Home} es la sección que se muestra por defecto (Figura~\ref{fig:producto-home}). Incluye un panel de bienvenida y, en el primer uso, una guía de cinco pasos. Sus herramientas actúan sobre la última gráfica visitada.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{producto_home.png}
+  \caption{Sección \textit{Home} de Gamma Lab 2.0}
+  \label{fig:producto-home}
+\end{figure}
+
+Con \textit{Slope} se mide la pendiente entre dos puntos marcados sobre la gráfica, ya sea en el \textit{trial} visible o en todos los \textit{trials}, y con \textit{Amplitude} se mide la amplitud pico a pico dentro de una ventana definida por dos puntos. Es posible borrar la última medición o todas, y sus líneas pueden mostrarse u ocultarse sin perder los datos. Por último, \textit{Zoom} acerca, aleja o restaura la vista de la gráfica activa, y el clic derecho sobre una gráfica añade el \textit{zoom} por eje y la exportación como imagen o tabla.
+
+\subsubsection{\textit{Preprocessing}}
+
+La sección \textit{Preprocessing} prepara la señal antes del análisis (Figura~\ref{fig:producto-preprocessing}). Los cálculos se ejecutan en segundo plano y se guardan con el proyecto.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{producto_preprocessing.png}
+  \caption{Sección \textit{Preprocessing} de Gamma Lab 2.0}
+  \label{fig:producto-preprocessing}
+\end{figure}
+
+\subsubsubsection{\textit{Trials}}
+
+Divide la señal en \textit{trials} a partir de un canal de estímulo, según un umbral, el número de estímulos y una ventana de tiempo fija o que se extiende hasta el siguiente estímulo. Permite recorrer los \textit{trials} y descartarlos o volver a incluirlos.
+
+\subsubsubsection{\textit{Filter}}
+
+Aplica a los \textit{trials} un filtro pasa-banda Butterworth de fase cero, configurado por frecuencias de corte y orden. \textit{Preview} muestra el resultado sin modificar los datos, y \textit{Restore original trials} deshace el filtrado.
+
+\subsubsubsection{\textit{Remove Artifact}}
+
+Corrige artefactos en cada \textit{trial}, ya sea interpolando un intervalo o recortando desde el inicio hasta un punto. Los \textit{trials} originales pueden restaurarse.
+
+\subsubsection{\textit{Analysis}}
+
+La sección \textit{Analysis} agrupa las técnicas por dominio (Figura~\ref{fig:producto-analysis}). En todas, el usuario configura los parámetros, elige los \textit{trials} y pulsa \textit{Generate}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{producto_analysis.png}
+  \caption{Sección \textit{Analysis} de Gamma Lab 2.0}
+  \label{fig:producto-analysis}
+\end{figure}
+
+\subsubsubsection{\textit{Time}}
+
+\begin{itemize}
+  \item \textbf{\textit{Average}.} Promedio temporal de los \textit{trials} seleccionados.
+  \item \textbf{\textit{Event Related Potential}.} Superpone todos los \textit{trials} en un \textit{butterfly plot} y los muestra en un mapa de calor de \textit{trials} contra tiempo.
+\end{itemize}
+
+\subsubsubsection{\textit{Frequency}}
+
+\begin{itemize}
+  \item \textbf{FFT y FFT \textit{Average}.} Espectro de potencia de un \textit{trial} o el promedio de los \textit{trials}, en un rango de frecuencias.
+  \item \textbf{PSD y PSD \textit{Average}.} Densidad espectral de potencia por el método de Welch, con ventana, segmentación y eliminación de tendencia configurables.
+  \item \textbf{\textit{Relative} PSD.} Potencia absoluta y relativa por banda de frecuencia, presentadas en una tabla.
+\end{itemize}
+
+\subsubsubsection{\textit{Time-Frequency}}
+
+\begin{itemize}
+  \item \textbf{PAC.} Acoplamiento entre la fase de una banda lenta y la amplitud de una banda rápida, en cuatro modos: PAC, PAC \textit{Average}, PAC Psel y PAC Psel inter-canal. Muestra un mapa, un histograma y el vector medio de acoplamiento.
+  \item \textbf{\textit{Modulation Index}.} Comodulograma del índice de modulación sobre una rejilla de bandas de fase y de amplitud.
+  \item \textbf{\textit{Wavelet} y \textit{Wavelet Average}.} Escalograma tiempo-frecuencia de un \textit{trial} o el promedio de varios, con ciclos, normalización y escala configurables.
+  \item \textbf{PPC.} Consistencia de fase entre dos canales, presentada como un mapa de frecuencia contra tiempo. Deja en blanco las zonas que no se pueden medir.
+\end{itemize}
 
 %=====================================================================
 \capitulo{PRUEBAS DE DESARROLLO}
