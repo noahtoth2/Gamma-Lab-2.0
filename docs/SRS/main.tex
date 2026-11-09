@@ -20,7 +20,7 @@
 \usepackage{array}
 
 % \usepackage[a4paper,margin=2.5cm]{geometry}   <- duplicado: geometry ya se carga en la linea 6. Cargarlo dos veces con opciones distintas provocaba "Option clash for package geometry" y el documento no compilaba. Se quita esta y no la otra porque pedia a4paper, que contradice el letterpaper del documentclass; el PDF publicado es tamano carta.
-\definecolor{javBlue}{RGB}{0,57,107}
+\definecolor{titleblue}{RGB}{31,73,125}
 \definecolor{lightgray2}{RGB}{245,245,245}
 \definecolor{headergray}{RGB}{230,230,230}
 
@@ -94,20 +94,54 @@
 }
 
 % --- Inicio del Documento ---
+% Evita lineas que se salen del margen
+\setlength{\emergencystretch}{3em}
+
 \begin{document}
 
 % --- Portada ---
+% ---------------------- PORTADA ----------------------
 \begin{titlepage}
-    \centering
-    \vspace*{1cm}
-    {\Huge \textbf{GammaLab V2.0}} \\[0.5cm]
-    {\Large Pontificia Universidad Javeriana} \\[2cm]
-    \textbf{ESPECIFICACIÓN DE REQUERIMIENTOS DE SOFTWARE} \\[3cm]
-    \includegraphics[width=4cm]{logo.png} \\[2cm]
-    \textbf{Autores:} \\ Juan Felipe Romero Ortiz \\ Laura Juliana Garzón Arias \\  Xiomara Herrera Suárez \\ Sebastián Almanza Galvis \\[2cm]
-    \textbf{Fecha:} 23/05/2026 \\
-    \textbf{Versión:} v1.0
-    \vfill
+\thispagestyle{empty}
+\begin{center}
+    % Logos institucionales (reemplazar con los archivos reales)
+    \includegraphics[height=2cm]{LogoJaveriana.png}\hspace{1cm}
+    \includegraphics[height=2cm]{GammaLab2.0.png}  
+
+    \vspace{0.5cm}
+    {\large \textbf{Pontificia Universidad Javeriana}}\\
+    {\large Facultad de Ingenier\'ia, Ingenier\'ia de Sistemas}
+
+    \vspace{1.5cm}
+    {\Large\bfseries\color{titleblue} Software Requirements Specification}\\
+    {\large\bfseries SRS}
+
+    \vspace{1cm}
+    {\Huge\bfseries GammaLab v2.0}
+
+    \vspace{2cm}
+
+    \begin{tabular}{@{}ll@{}}
+        \textbf{Proyecto} & Plataforma de an\'alisis y visualizaci\'on de se\~nales neurofisiol\'ogicas Gamma Lab \\
+        \textbf{Documento} & Software Requirements Specification (SRS) \\
+        \textbf{Versi\'on} & 1.0 \\
+        \textbf{Estado} & En elaboraci\'on \\
+        \textbf{Fecha} & 27 de agosto de 2026 \\
+    \end{tabular}
+
+    \vspace{2cm}
+    {\bfseries Autores}\\[0.3cm]
+    Juan Felipe Romero Ortiz (\texttt{juanromeroo@javeriana.edu.co})\\
+    Laura Juliana Garz\'on Arias (\texttt{garzonlj@javeriana.edu.co})\\
+    Xiomara Herrera Su\'arez (\texttt{x\_herrera@javeriana.edu.co})\\
+    Sebasti\'an Almanza Galvis (\texttt{s.almanzag@javeriana.edu.co})
+
+\end{center}
+
+\vfill
+
+\noindent\textbf{Nota de uso.} Documento acad\'emico/interno del equipo de proyecto. No distribuir sin autorizaci\'on.\\
+
 \end{titlepage}
 
 % --- 1. Historial de Cambios (Página 1) ---
@@ -1017,7 +1051,7 @@ procesamiento y persistencia de datos neurofisiológicos.}
 \centering
 
 \begin{tabularx}{\textwidth}{|
->{\columncolor{lightgray2}}p{3.4cm}|
+>{\columncolor{lightgray2}}p{3.9cm}|
 Y|
 }
 
@@ -1062,7 +1096,7 @@ recuperación de información experimental.
 \centering
 
 \begin{tabularx}{\textwidth}{|
->{\columncolor{lightgray2}}p{3.4cm}|
+>{\columncolor{lightgray2}}p{3.9cm}|
 Y|
 }
 
@@ -1106,7 +1140,7 @@ preprocesamiento y análisis.
 \centering
 
 \begin{tabularx}{\textwidth}{|
->{\columncolor{lightgray2}}p{3.4cm}|
+>{\columncolor{lightgray2}}p{3.9cm}|
 Y|
 }
 
@@ -1148,7 +1182,7 @@ acoplamiento entre frecuencias.
 \centering
 
 \begin{tabularx}{\textwidth}{|
->{\columncolor{lightgray2}}p{3.4cm}|
+>{\columncolor{lightgray2}}p{3.9cm}|
 Y|
 }
 
@@ -1201,7 +1235,7 @@ en sesiones futuras.
 \centering
 
 \begin{tabularx}{\textwidth}{|
->{\columncolor{lightgray2}}p{3.4cm}|
+>{\columncolor{lightgray2}}p{3.9cm}|
 Y|
 }
 
@@ -1365,7 +1399,7 @@ A partir de este diagnóstico se definieron los requerimientos funcionales de Ga
 
 \subsubsection{Módulo IO: Entrada/Salida}
 
-\begin{longtable}{|p{2.5cm}|p{2.5cm}|p{11cm}|}
+\begin{longtable}{|p{2.5cm}|p{2.5cm}|p{10.1cm}|}
 \hline
 \rowcolor{gray!25}
 \textbf{Código} & \textbf{N° Matriz} & \textbf{Especificación} \\
@@ -1396,7 +1430,7 @@ FR-IO-07 & R28 & El sistema debe asignar un nombre de exportación en el que se 
 
 \subsubsection{Módulo UI: Interacción general}
 
-\begin{longtable}{|p{2.5cm}|p{2.5cm}|p{11cm}|}
+\begin{longtable}{|p{2.5cm}|p{2.5cm}|p{10.1cm}|}
 \hline
 \rowcolor{gray!25}
 \textbf{Código} & \textbf{N° Matriz} & \textbf{Especificación} \\
@@ -1443,7 +1477,7 @@ FR-UI-15 & R68 & El sistema debe identificar cada conjunto de trials por la pare
 
 \subsubsection{Módulo WV: Wavelet/Escalograma}
 
-\begin{longtable}{|p{2.5cm}|p{2.5cm}|p{11cm}|}
+\begin{longtable}{|p{2.5cm}|p{2.5cm}|p{10.1cm}|}
 \hline
 \rowcolor{gray!25}
 \textbf{Código} & \textbf{N° Matriz} & \textbf{Especificación} \\
@@ -1466,7 +1500,7 @@ FR-WV-03 & R35 & El sistema debe exportar wavelet en EMF \\
 
 \subsubsection{Módulo PAC: Acoplamiento fase-amplitud}
 
-\begin{longtable}{|p{2.5cm}|p{2.5cm}|p{11cm}|}
+\begin{longtable}{|p{2.5cm}|p{2.5cm}|p{10.1cm}|}
 \hline
 \rowcolor{gray!25}
 \textbf{Código} & \textbf{N° Matriz} & \textbf{Especificación} \\
@@ -1532,7 +1566,7 @@ A partir de este diagnóstico se definieron los requerimientos no funcionales de
 
 \subsubsection{Categoría U: Usabilidad}
 
-\begin{longtable}{|p{2.5cm}|p{2.5cm}|p{11cm}|}
+\begin{longtable}{|p{2.5cm}|p{2.5cm}|p{10.1cm}|}
 \hline
 \rowcolor{gray!25}
 \textbf{Código} & \textbf{N° Matriz} & \textbf{Especificación} \\
@@ -1567,7 +1601,7 @@ NFR-U-09 & R44 & El sistema debe mostrar una pantalla de inicio mientras carga l
 
 \subsubsection{Categoría P: Rendimiento}
 
-\begin{longtable}{|p{2.5cm}|p{2.5cm}|p{11cm}|}
+\begin{longtable}{|p{2.5cm}|p{2.5cm}|p{10.1cm}|}
 \hline
 \rowcolor{gray!25}
 \textbf{Código} & \textbf{N° Matriz} & \textbf{Especificación} \\
@@ -1618,7 +1652,7 @@ NFR-P-17 & R81 & El sistema debe quedar listo para usarse en un tiempo máximo d
 
 \subsubsection{Categoría R: Confiabilidad}
 
-\begin{longtable}{|p{2.5cm}|p{2.5cm}|p{11cm}|}
+\begin{longtable}{|p{2.5cm}|p{2.5cm}|p{10.1cm}|}
 \hline
 \rowcolor{gray!25}
 \textbf{Código} & \textbf{N° Matriz} & \textbf{Especificación} \\
@@ -1645,7 +1679,7 @@ NFR-R-05 & R79 & El sistema no debe modificar la señal cargada ni los trials or
 
 \subsubsection{Categoría S: Soporte}
 
-\begin{longtable}{|p{2.5cm}|p{2.5cm}|p{11cm}|}
+\begin{longtable}{|p{2.5cm}|p{2.5cm}|p{10.1cm}|}
 \hline
 \rowcolor{gray!25}
 \textbf{Código} & \textbf{N° Matriz} & \textbf{Especificación} \\

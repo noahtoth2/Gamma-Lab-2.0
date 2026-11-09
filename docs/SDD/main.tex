@@ -38,6 +38,7 @@
 \usepackage{titlesec}
 \usepackage{ragged2e}
 \usepackage{float}
+\definecolor{titleblue}{RGB}{31,73,125}
 % hyperref debe cargarse despues de float
 \usepackage[hidelinks,plainpages=false]{hyperref}
 \hypersetup{
@@ -75,9 +76,9 @@
 \newcommand{\anio}{2026}
 \newcommand{\fechaLarga}{Noviembre, 2026}
 
-% Nombres de los archivos de imagen (subalos con estos nombres)
-\newcommand{\logoUniversidad}{imagen_logo_universidad}
-\newcommand{\logoProyecto}{imagen_logo_gammalab}
+% Nombres de los archivos de imagen (sin extension)
+\newcommand{\logoUniversidad}{LogoJaveriana}
+\newcommand{\logoProyecto}{GammaLab2.0}
 %=====================================================================
 
 %------------------- Utilidades internas -----------------------------
@@ -126,22 +127,45 @@
 %---------------------------------------------------------------------
 \thispagestyle{empty}
 \begin{center}
-  \vspace*{1cm}
-  {\large \grupo}\par\vspace{1.2cm}
-  {\LARGE\bfseries \tituloProyecto}\par\vspace{0.8cm}
-  {\Large\bfseries Software Design Document (SDD)}\par\vspace{2cm}
-  \autorUno\par
-  \autorDos\par
-  \autorTres\par
-  \autorCuatro\par
-  \vfill
-  \universidad\par
-  \facultad\par
-  \programa\par
-  \ciudad\par
-  \anio\par
-  \vspace{1cm}
+    % Logos institucionales (reemplazar con los archivos reales)
+    \includegraphics[height=2cm]{LogoJaveriana.png}\hspace{1cm}
+    \includegraphics[height=2cm]{GammaLab2.0.png} 
+
+    \vspace{0.5cm}
+    {\large \textbf{Pontificia Universidad Javeriana}}\\
+    {\large Facultad de Ingenier\'ia, Ingenier\'ia de Sistemas}
+
+    \vspace{1.5cm}
+    {\Large\bfseries\color{titleblue} Software Design Document}\\
+    {\large\bfseries SDD}
+
+    \vspace{1cm}
+    {\Huge\bfseries GammaLab v2.0}
+
+    \vspace{2cm}
+
+    \begin{tabular}{@{}ll@{}}
+        \textbf{Proyecto} & Plataforma de an\'alisis y visualizaci\'on de se\~nales \\
+                          & neurofisiol\'ogicas Gamma Lab \\
+        \textbf{Documento} & Software Design Document (SDD) \\
+        \textbf{Versi\'on} & 1.0 \\
+        \textbf{Estado} & En elaboraci\'on \\
+        \textbf{Fecha} & 27 de agosto de 2026 \\
+    \end{tabular}
+
+    \vspace{2cm}
+    {\bfseries Autores}\\[0.3cm]
+    Juan Felipe Romero Ortiz (\texttt{juanromeroo@javeriana.edu.co})\\
+    Laura Juliana Garz\'on Arias (\texttt{garzonlj@javeriana.edu.co})\\
+    Xiomara Herrera Su\'arez (\texttt{x\_herrera@javeriana.edu.co})\\
+    Sebasti\'an Almanza Galvis (\texttt{s.almanzag@javeriana.edu.co})
+
 \end{center}
+
+\vfill
+
+\noindent\textbf{Nota de uso.} Documento acad\'emico/interno del equipo de proyecto. No distribuir sin autorizaci\'on.
+
 \clearpage
 
 %---------------------------------------------------------------------
@@ -149,43 +173,6 @@
 %---------------------------------------------------------------------
 \pagenumbering{roman}
 
-%------------------------ PORTADA (pagina i) -------------------------
-\begin{center}
-  {\Large\bfseries \tituloProyecto}\par
-  \vspace{0.6cm}
-  {\large\bfseries Software Design Document (SDD)}\par
-  \vspace{1.2cm}
-
-  {\bfseries Autores:}\par
-  \vspace{0.4cm}
-  \autorUno\ (\texttt{juanromeroo@javeriana.edu.co})\par
-  \autorDos\ (\texttt{garzonlj@javeriana.edu.co})\par
-  \autorTres\ (\texttt{s.almanzag@javeriana.edu.co})\par
-  \autorCuatro\ (\texttt{x\_herrera@javeriana.edu.co})\par
-  \vspace{1.2cm}
-
-  \begin{tabular}{@{}ll@{}}
-    \textbf{Proyecto} & Plataforma de análisis y visualización de señales \\
-                      & neurofisiológicas Gamma Lab \\
-    \textbf{Documento} & Software Design Document (SDD) \\
-    \textbf{Versión} & 2.0 \\
-    \textbf{Estado} & En elaboración \\
-    \textbf{Fecha} & 27 de agosto de 2026 \\
-  \end{tabular}
-  \vspace{1.4cm}
-
-  \universidad\par\vspace{0.5cm}
-  \facultad\par\vspace{0.5cm}
-  \programa\par\vspace{0.5cm}
-  \ciudad\par\vspace{0.5cm}
-  \fechaLarga\par
-\end{center}
-
-\vfill
-\noindent\textbf{Nota de uso.} Documento académico/interno del equipo de proyecto. No distribuir sin autorización.
-
-\noindent\textbf{Trazabilidad.} Este SDD detalla la implementación técnica, estructura modular y diseño funcional de Gamma Lab, en coherencia con el SAD y el SRS previamente definidos.
-\clearpage
 
 %------------------------ TABLA DE CONTENIDO -------------------------
 \tableofcontents

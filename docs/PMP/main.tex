@@ -1,5 +1,7 @@
 \documentclass{article}
+\usepackage[margin=2.5cm]{geometry}
 \usepackage{graphicx} % Required for inserting images
+\usepackage{xcolor}
 \usepackage{indentfirst}
 \usepackage{array}
 \usepackage{tabularx}
@@ -7,15 +9,20 @@
 \usepackage{enumitem}
 \usepackage{float}
 \usepackage[spanish,es-tabla]{babel}
-\usepackage{hyperref}
 \usepackage{longtable}
+\usepackage{hyperref}
+\definecolor{titleblue}{RGB}{31,73,125}
 
 
 \setlength{\parskip}{6pt}        % espacio entre párrafos
+\raggedbottom
 
 \title{PMP}
 \author{GammaLab 2.0}
 \date{May 2026}
+% Evita lineas que se salen del margen
+\setlength{\emergencystretch}{3em}
+
 \begin{document}
 
 \thispagestyle{empty}
@@ -26,92 +33,46 @@
 % ============================================================================
 
 \begin{titlepage}
-    
-    \thispagestyle{empty}
-    
-    \vspace*{1cm}
-    
-    % ENCABEZADO
-    \begin{center}
-        \textbf{\large PONTIFICIA UNIVERSIDAD JAVERIANA}
-        
-        \vspace{0.2cm}
-        
-        \normalsize Facultad de Ingeniería
-        
-        \vspace{1cm}
-        
-        \rule{0.8\textwidth}{1pt}
-    \end{center}
-    
-    % ESPACIO
-    \vspace{2.5cm}
-    
-    % CONTENIDO PRINCIPAL
-    \begin{center}
-        \textbf{\large PROPUESTA DE PROYECTO DE GRADO}
-        
-        \vspace{2cm}
-        
-        {\fontsize{44}{48}\selectfont \textbf{GammaLab 2.0}}
-        
-        \vspace{1.5cm}
-        
-        \large Análisis y procesamiento
-        
-        de Señales Electroencefalográficas
-        
-        \vspace{1.5cm}
-        
-        \normalsize Una herramienta de código abierto para investigadores \\
-        en análisis de señales neurofisiológicas
-    \end{center}
-    
-    % ESPACIO INTERMEDIO
-    \vspace{2.5cm}
-    
-    % ESTUDIANTES
-    \begin{center}
-        \textbf{\large ESTUDIANTES}
-        
-        \vspace{0.8cm}
-        
-        \normalsize
-        Juan Felipe Romero Ortiz \\[0.3cm]
-        Laura Juliana Garzón Arias \\[0.3cm]
-        Xiomara Herrera Suárez \\[0.3cm]
-        Sebastian Almanza Galvis
-        
-        \vspace{1.8cm}
-        
-        \textbf{\large DIRECTORA}
-        
-        \vspace{0.8cm}
-        
-        \normalsize Cécile Gauthier Umaña
-    \end{center}
-    
-    % ESPACIADOR
-    \vfill
-    
-    % PIE DE PÁGINA
-    \begin{center}
-        \rule{0.8\textwidth}{1pt}
-        
-        \vspace{0.8cm}
-        
-        \textbf{\large INFORMACIÓN DEL PROYECTO}
-        
-        \vspace{0.4cm}
-        
-        \normalsize
-        Objetivo: Extender las capacidades de análisis de señales EEG \\
-        e incorporar una arquitectura escalable y mejora de interfaz \\[0.3cm]
-        Bogotá, D.C., 2026
-    \end{center}
-    
-    \newpage
-    
+\thispagestyle{empty}
+\begin{center}
+    % Logos institucionales (reemplazar con los archivos reales)
+    \includegraphics[height=2cm]{LogoJaveriana.png}\hspace{1cm}
+    \includegraphics[height=2cm]{GammaLab2.0.png} 
+
+    \vspace{0.5cm}
+    {\large \textbf{Pontificia Universidad Javeriana}}\\
+    {\large Facultad de Ingenier\'ia, Ingenier\'ia de Sistemas}
+
+    \vspace{1.5cm}
+    {\Large\bfseries\color{titleblue} Project Management Plan}\\
+    {\large\bfseries PMP}
+
+    \vspace{1cm}
+    {\Huge\bfseries GammaLab v2.0}
+
+    \vspace{2cm}
+
+    \begin{tabular}{@{}ll@{}}
+        \textbf{Proyecto} & Plataforma de an\'alisis y visualizaci\'on de se\~nales neurofisiol\'ogicas Gamma Lab \\
+        \textbf{Documento} & Project Management Plan (PMP) \\
+        \textbf{Versi\'on} & 1.0 \\
+        \textbf{Estado} & En elaboraci\'on \\
+        \textbf{Fecha} & 27 de agosto de 2026 \\
+    \end{tabular}
+
+    \vspace{2cm}
+    {\bfseries Autores}\\[0.3cm]
+    Juan Felipe Romero Ortiz (\texttt{juanromeroo@javeriana.edu.co})\\
+    Laura Juliana Garz\'on Arias (\texttt{garzonlj@javeriana.edu.co})\\
+    Xiomara Herrera Su\'arez (\texttt{x\_herrera@javeriana.edu.co})\\
+    Sebasti\'an Almanza Galvis (\texttt{s.almanzag@javeriana.edu.co})
+
+\end{center}
+
+\vfill
+
+\noindent\textbf{Nota de uso.} Documento acad\'emico/interno del equipo de proyecto. No distribuir sin autorizaci\'on.
+
 \end{titlepage}
 
 \newpage
@@ -394,7 +355,7 @@ Con base en la revisión anterior, la siguiente tabla sintetiza las característ
 \begin{table}[h!]
 \centering
 \resizebox{\textwidth}{!}{
-\begin{tabular}{|p{3cm}|p{2.2cm}|p{2.2cm}|p{2.2cm}|p{2.2cm}|p{2.2cm}|}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3cm}|>{\raggedright\arraybackslash}p{2.2cm}|>{\raggedright\arraybackslash}p{2.2cm}|>{\raggedright\arraybackslash}p{2.2cm}|>{\raggedright\arraybackslash}p{2.2cm}|>{\raggedright\arraybackslash}p{2.2cm}|}
 \hline
 \textbf{Criterio} & \textbf{Cascada} & \textbf{Modelo V} & \textbf{Incremental} & \textbf{Espiral} & \textbf{Scrum} \\
 \hline
@@ -1099,7 +1060,7 @@ final. Las actividades clave serán:
 
 \subsection{Entrega del Producto}
 
-La entrega de GammaLab 2.0 alcliente se realizará durante la semana 17 del calendario
+La entrega de GammaLab 2.0 al cliente se realizará durante la semana 17 del calendario
 académico Javeriana 2026-30, correspondiente al cierre de la Fase~4 según el
 calendario del proyecto. Se entregará el código fuente, los manuales
 técnicos y las guías de usuario. El equipo de desarrollo será responsable

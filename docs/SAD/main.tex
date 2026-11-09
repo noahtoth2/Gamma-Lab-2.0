@@ -6,7 +6,7 @@
 \usepackage[spanish,es-tabla]{babel}
 \usepackage{graphicx}
 \usepackage{geometry}
-\geometry{margin=2.5cm}
+\geometry{margin=2.5cm, headheight=14pt}
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{array}
@@ -43,6 +43,10 @@
 \setlength{\parskip}{6pt}
 
 % ======================= DOCUMENTO =======================
+% Evita lineas que se salen del margen
+\setlength{\emergencystretch}{3em}
+\DeclareRobustCommand{\_}{\textunderscore\allowbreak}
+
 \begin{document}
 
 % ---------------------- PORTADA ----------------------
@@ -50,8 +54,8 @@
 \thispagestyle{empty}
 \begin{center}
     % Logos institucionales (reemplazar con los archivos reales)
-   %  \includegraphics[height=2cm]{logo_javeriana.png}\hspace{1cm}
-    % \includegraphics[height=2cm]{logo_gammalab.png} 
+    \includegraphics[height=2cm]{LogoJaveriana.png}\hspace{1cm}
+    \includegraphics[height=2cm]{GammaLab2.0.png} 
 
     \vspace{0.5cm}
     {\large \textbf{Pontificia Universidad Javeriana}}\\
@@ -1488,7 +1492,7 @@ La Tabla~\ref{tab:relaciones_logica} resume las relaciones entre los elementos d
 \centering
 \caption{Relaciones estructurales de la vista lógica.}
 \label{tab:relaciones_logica}
-\begin{tabularx}{\linewidth}{@{}p{3.6cm}p{2.4cm}p{3.6cm}X@{}}
+\begin{tabularx}{\linewidth}{@{}p{4.4cm}p{2.6cm}p{3.3cm}X@{}}
 \toprule
 \textbf{Origen} & \textbf{Tipo} & \textbf{Destino} & \textbf{Descripción} \\
 \midrule
@@ -2191,7 +2195,7 @@ Trazabilidad & NFR-R-04 (R73), NFR-U-02 (R03) \\
 
     \item \textbf{Contrato de plugins (\texttt{IPlugin}).} Cambios aditivos (nuevos m\'etodos opcionales, nuevos campos con valor por defecto) no rompen compatibilidad. Cambios que alteren la firma de \texttt{initialize}, \texttt{start}, \texttt{stop}, \texttt{process} o \texttt{get\_widget} elevan la versi\'on \texttt{MAJOR} del contrato.
 
-    \item \textbf{Metadatos \texttt{properties.yml}.} Los campos requeridos (\texttt{id, name, category, subcategory, version, icon, logic\_class, ui\_class}) deben existir siempre (exigido por \texttt{REQUIRED\_\allowbreak KEYS} en \texttt{loader.py}) y a\~nadir campos opcionales es compatible siempre que se declaren antes en \texttt{PluginMeta}, porque el descriptor se convierte directamente en una instancia de esa clase y una clave desconocida impide cargar el plugin. La pol\'itica prev\'e que el campo \texttt{version} declare el \texttt{MAJOR} de \texttt{IPlugin} contra el que se escribi\'o el plugin y que \texttt{discover()} lo rechace si no coincide con el del n\'ucleo; en la implementaci\'on actual, sin embargo, \texttt{version} es la versi\'on propia del plugin y \texttt{discover()} no realiza esa comprobaci\'on (brecha de ADR-05).
+    \item \textbf{Metadatos \texttt{properties.yml}.} Los campos requeridos (\texttt{id}, \texttt{name}, \texttt{category}, \texttt{subcategory}, \texttt{version}, \texttt{icon}, \texttt{logic\_class}, \texttt{ui\_class}) deben existir siempre (exigido por \texttt{REQUIRED\_\allowbreak KEYS} en \texttt{loader.py}) y a\~nadir campos opcionales es compatible siempre que se declaren antes en \texttt{PluginMeta}, porque el descriptor se convierte directamente en una instancia de esa clase y una clave desconocida impide cargar el plugin. La pol\'itica prev\'e que el campo \texttt{version} declare el \texttt{MAJOR} de \texttt{IPlugin} contra el que se escribi\'o el plugin y que \texttt{discover()} lo rechace si no coincide con el del n\'ucleo; en la implementaci\'on actual, sin embargo, \texttt{version} es la versi\'on propia del plugin y \texttt{discover()} no realiza esa comprobaci\'on (brecha de ADR-05).
 
     \item \textbf{Formato de proyecto \texttt{.glab}.} \texttt{ProjectService} persiste el espacio de trabajo (se\~nal activa, trials y an\'alisis) en archivos \texttt{.glab}. Cada \texttt{.glab} embebe un \texttt{schema\_version} propio, actualmente \texttt{"1.0"}. La pol\'itica establece que un incremento \texttt{MINOR} se mantenga legible por versiones futuras de \texttt{ProjectService} y que un incremento \texttt{MAJOR} rechace la apertura con un mensaje expl\'icito al usuario en vez de migrar impl\'icitamente. Como hasta ahora solo existe la versi\'on 1.0, \texttt{ProjectService} escribe el campo pero todav\'ia no lo comprueba al abrir; la verificaci\'on deber\'a incorporarse junto con la primera versi\'on nueva del esquema.
 
