@@ -422,7 +422,7 @@ A continuación, se presentan cuatro herramientas ya existentes para el análisi
 
 
 \subsubsection{Alternativa 4}
-\textbf{BOARD-FTD-PACC} es una interfaz gráfica de usuario desarrollada en MATLAB, diseñada para la visualización, cuantificación y análisis de registros neurofisiológicos. Proporciona herramientas personalizables orientadas al análisis de la actividad postsináptica y de datos oscilatorios neuronales complejos, principalmente mediante análisis cruzado de frecuencias \cite{gauthier2023}. Al ser el antecedente directo sobre el que se validó Gamma Lab 1.0, constituyó la base conceptual del proyecto; no obstante, su dependencia de una licencia de MATLAB y su interfaz poco intuitiva restringen su adopción en entornos con recursos limitados.
+\textbf{BOARD-FTD-PACC} es una interfaz gráfica de usuario desarrollada en MATLAB, diseñada para la visualización, cuantificación y análisis de registros neurofisiológicos \cite{gauthier2023}. Proporciona herramientas personalizables orientadas al análisis de la actividad postsináptica y de datos oscilatorios neuronales complejos, principalmente mediante análisis cruzado de frecuencias \cite{gauthier2023}. Al ser el antecedente directo sobre el que se validó Gamma Lab 1.0, constituyó la base conceptual del proyecto; no obstante, su dependencia de una licencia de MATLAB y su interfaz poco intuitiva restringen su adopción en entornos con recursos limitados.
 
 
 \subsection{Comparación de alternativas}
@@ -453,7 +453,7 @@ Conocimientos en programación & Alto & Bajo & Alto & Bajo & Bajo \\
 \label{tab:comparacion_alternativas}
 \end{table}
 
-Como se evidencia en la Tabla~\ref{tab:comparacion_alternativas}, Gamma Lab 2.0 consolida las ventajas de su versión anterior e incorpora mejoras clave frente a las alternativas existentes. Es la única alternativa completamente gratuita que además no requiere conocimientos avanzados de programación, eliminando así las dos barreras de acceso más comunes en laboratorios con recursos limitados. Gamma Lab 2.0 combina accesibilidad económica con una interfaz gráfica intuitiva, reduciendo significativamente la curva de aprendizaje para nuevos investigadores. BOARD-FTD-PACC, al ser el predecesor directo de Gamma Lab, sirvió como base conceptual del proyecto, pero requiere licencia de MATLAB, lo que limita su adopción en entornos con presupuestos restringidos, además de contar con una interfaz poco intuitiva que dificulta su uso para personas sin conocimientos en programación. Gamma Lab 2.0 aporta así al ecosistema de ciencia abierta una alternativa libre, accesible y personalizable para el análisis de señales neurofisiológicas, eliminando la barrera de los conocimientos en programación sin comprometer la profundidad analítica del \textit{software}.
+Como se evidencia en la Tabla~\ref{tab:comparacion_alternativas}, Gamma Lab 2.0 consolida las ventajas de su versión anterior e incorpora mejoras clave frente a las alternativas existentes. Es la única alternativa completamente gratuita que además no requiere conocimientos avanzados de programación, eliminando así las dos barreras de acceso más comunes en laboratorios con recursos limitados. Gamma Lab 2.0 combina accesibilidad económica con una interfaz gráfica intuitiva, reduciendo significativamente la curva de aprendizaje para nuevos investigadores. BOARD-FTD-PACC \cite{gauthier2023}, al ser el predecesor directo de Gamma Lab, sirvió como base conceptual del proyecto, pero requiere licencia de MATLAB, lo que limita su adopción en entornos con presupuestos restringidos, además de contar con una interfaz poco intuitiva que dificulta su uso para personas sin conocimientos en programación. Gamma Lab 2.0 aporta así al ecosistema de ciencia abierta una alternativa libre, accesible y personalizable para el análisis de señales neurofisiológicas, eliminando la barrera de los conocimientos en programación sin comprometer la profundidad analítica del \textit{software}.
 
 %=====================================================================
 \capitulo{ANÁLISIS DEL PROBLEMA}
@@ -816,7 +816,7 @@ Esta sección presenta el diseño de la ampliación del alcance analítico de Ga
 
 \subsubsubsection{Técnicas incorporadas}
 
-La ampliación agrega tres módulos al Subsistema de Análisis: PAC (\textit{phase-amplitude coupling}), que reúne cuatro modos de cálculo; el índice de modulación; y PPC (\textit{phase-phase coupling}), que evalúa el acoplamiento de fase entre dos canales. Todos parten de análisis disponibles en el sistema de referencia BOARD-FTD-PACC \cite{gauthier2023} y dan respuesta a los requerimientos del módulo PAC planteados en el análisis del problema. La Tabla~\ref{tab:tecnicas} resume la pregunta que responde cada técnica.
+La ampliación agrega tres módulos al Subsistema de Análisis: PAC (\textit{phase-amplitude coupling}), que reúne cuatro modos de cálculo; el índice de modulación; y PPC (\textit{phase-phase coupling}), que evalúa el acoplamiento de fase entre dos canales. Todos parten de análisis disponibles en el sistema de referencia BOARD-FTD-PACC, desarrollado por Gauthier-Umaña y colaboradores \cite{gauthier2023}, y dan respuesta a los requerimientos del módulo PAC planteados en el análisis del problema. Por consiguiente, la Tabla~\ref{tab:tecnicas} resume qué recibe cada técnica y qué entrega, para distinguir de un vistazo cuál conviene según los datos disponibles y el resultado que se busca.
 
 \begin{table}[H]
   \centering
@@ -825,15 +825,15 @@ La ampliación agrega tres módulos al Subsistema de Análisis: PAC (\textit{pha
   \vspace{4pt}
   \small\setstretch{1}
   \renewcommand{\arraystretch}{1.15}
-  \begin{tabular}{|>{\raggedright\arraybackslash}p{2.4cm}|>{\raggedright\arraybackslash}p{5.0cm}|>{\raggedright\arraybackslash}p{2.3cm}|>{\raggedright\arraybackslash}p{4.1cm}|}
+  \begin{tabular}{|>{\raggedright\arraybackslash}p{2.6cm}|>{\raggedright\arraybackslash}p{6.6cm}|>{\raggedright\arraybackslash}p{5.0cm}|}
     \hline
-    \textbf{Técnica} & \textbf{Pregunta que responde} & \textbf{\textit{Trials} que usa} & \textbf{Salida principal} \\ \hline
-    PAC & ¿En qué punto del ciclo lento aumenta la energía rápida de un \textit{trial}? & Uno, elegido por el usuario & Mapa fase-frecuencia, histograma de fase, vector medio y cuatro señales \\ \hline
-    PAC \textit{Average} & ¿Se mantiene ese patrón sobre el conjunto de \textit{trials}? & Todos los válidos & Mapa, histograma y vector medio \\ \hline
-    PAC Psel & ¿Cómo se comporta la actividad rápida alrededor de los ciclos completos del ritmo lento? & Todos, concatenados & Trece paneles con ciclos superpuestos, promedios, mapas y vectores \\ \hline
-    PAC Psel inter-canal & ¿El ritmo lento de un canal organiza la actividad rápida de otro? & Todos, de dos canales & Los mismos paneles de PAC Psel \\ \hline
-    Índice de modulación & ¿Qué pares de bandas de fase y de amplitud están acoplados? & Uno, elegido por el usuario & Comodulograma \\ \hline
-    PPC & ¿La diferencia de fase entre dos canales se mantiene estable? ¿En qué frecuencia y en qué momento? & Todos, emparejados entre canales & Mapa frecuencia-tiempo \\ \hline
+    \textbf{Técnica} & \textbf{Entradas} & \textbf{Salida principal} \\ \hline
+    PAC & Un \textit{trial} del canal activo, la banda de fase, el rango de amplitud y la densidad de muestreo & Mapa fase-frecuencia, histograma de fase, vector medio y cuatro señales \\ \hline
+    PAC \textit{Average} & Todos los \textit{trials} válidos del canal activo y los mismos parámetros de PAC & Mapa, histograma y vector medio \\ \hline
+    PAC Psel & Todos los \textit{trials} válidos del canal activo, concatenados, y los mismos parámetros de PAC & Trece paneles con ciclos superpuestos, promedios, mapas y vectores \\ \hline
+    PAC Psel inter-canal & Los \textit{trials} de dos canales con el mismo corte, donde el activo aporta la fase y el elegido la amplitud, y los mismos parámetros de PAC & Los mismos paneles de PAC Psel \\ \hline
+    Índice de modulación & Un \textit{trial} del canal activo, los rangos de fase y de amplitud con sus pasos, y la densidad de muestreo & Comodulograma \\ \hline
+    PPC & Los \textit{trials} de dos canales con el mismo corte, el rango de frecuencias, la ventana mínima, los ciclos de la \textit{wavelet} y la densidad de muestreo & Mapa frecuencia-tiempo \\ \hline
   \end{tabular}
 \end{table}
 
@@ -845,7 +845,7 @@ Cinco criterios orientaron las decisiones de este diseño:
   \item \textbf{Un módulo por técnica.} PAC, PAC \textit{Average} y PAC Psel comparten parámetros, por lo que son modos de un mismo módulo. El índice de modulación usa otro algoritmo y PPC mide otra relación, de modo que cada uno es un módulo independiente.
   \item \textbf{Cálculo separado de la presentación.} Cada módulo distingue dos responsabilidades: realizar el análisis y atender al usuario. El cálculo recibe datos y parámetros y entrega un resultado, sin conocer la interfaz ni las gráficas. Así puede ejecutarse en segundo plano y verificarse de forma independiente.
   \item \textbf{Lo compartido se ubica en el núcleo.} Un componente de cálculo que necesitan dos módulos pasa al núcleo, y el que necesita uno solo permanece en ese módulo.
-  \item \textbf{Paridad con la referencia y diferencias justificadas.} El diseño busca reproducir el cálculo de BOARD-FTD-PACC, salvo cuando hacerlo conduciría a un resultado engañoso. Esas diferencias son deliberadas y se recogen en la Sección~\ref{sec:diferencias}.
+  \item \textbf{Paridad con la referencia y diferencias justificadas.} El diseño busca reproducir el cálculo de BOARD-FTD-PACC \cite{gauthier2023}, salvo cuando hacerlo conduciría a un resultado engañoso. Esas diferencias son deliberadas y se recogen en la Sección~\ref{sec:diferencias}.
   \item \textbf{Ningún resultado dudoso sin advertencia.} Lo que no se puede medir queda sin valor en lugar de mostrar un número, y un parámetro imposible se rechaza con un mensaje en lugar de ajustarse en silencio.
 \end{itemize}
 
@@ -985,11 +985,11 @@ La cancelación es cooperativa: el cálculo la consulta entre etapas y entre \te
 \subsubsubsection{Diferencias deliberadas con la referencia}
 \phantomsection\label{sec:diferencias}
 
-La Tabla~\ref{tab:diferencias} recoge los puntos en que el diseño se aparta de BOARD-FTD-PACC. En todos ellos, replicar la referencia habría producido un resultado engañoso o la interrupción del análisis.
+Como el diseño toma BOARD-FTD-PACC \cite{gauthier2023} como referencia, la Tabla~\ref{tab:diferencias} reúne los puntos en que se aparta de ella a propósito, para que quien compare resultados entre ambas herramientas sepa dónde y por qué no coinciden. En todos ellos, replicar la referencia habría producido un resultado engañoso o la interrupción del análisis.
 
 \begin{table}[!htb]
   \centering
-  \caption{Diferencias deliberadas con BOARD-FTD-PACC}
+  \caption{Diferencias deliberadas con BOARD-FTD-PACC \cite{gauthier2023}}
   \label{tab:diferencias}
   \vspace{4pt}
   \small\setstretch{1}
@@ -1016,7 +1016,7 @@ Para exportar, cada módulo define las tablas de su resultado y el servicio de e
 
 \subsubsubsection{Control de entradas y avisos}
 
-La Tabla~\ref{tab:controles} resume cómo responde cada módulo ante datos o parámetros que comprometen el resultado. Los errores que detienen el cálculo se muestran en un diálogo. Las advertencias sobre un resultado ya calculado no interrumpen al usuario: PPC las muestra bajo la gráfica y el índice de modulación las deja en el registro de la aplicación.
+Algunos datos o parámetros permitirían calcular un resultado engañoso sin que el usuario lo note; la Tabla~\ref{tab:controles} reúne esas condiciones y la respuesta de cada módulo, para mostrar que ninguna pasa en silencio. Los errores que detienen el cálculo se muestran en un diálogo. Las advertencias sobre un resultado ya calculado no interrumpen al usuario: PPC las muestra bajo la gráfica y el índice de modulación las deja en el registro de la aplicación.
 
 \begin{table}[!htb]
   \centering
