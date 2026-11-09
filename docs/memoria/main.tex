@@ -812,7 +812,7 @@ En la Figura~\ref{fig:sdd_diagrama_guardar_proyecto} se observa el flujo de guar
 
 \subsubsection{Análisis de señales}
 
-Esta sección presenta el diseño de la ampliación del alcance analítico de Gamma Lab 2.0, es decir, de los módulos que permiten estudiar el acoplamiento entre ritmos de distinta frecuencia y la sincronización de fase entre canales. Los demás frentes de la solución solo se mencionan cuando estos módulos dependen de ellos.
+Gamma Lab 1.0 \cite{asencio2025} reunió los análisis fundamentales del procesamiento de señales electrofisiológicas: el promedio y los potenciales relacionados con eventos en el dominio del tiempo, la FFT y la densidad espectral de potencia en el de la frecuencia, y la transformada \textit{wavelet} en el de tiempo-frecuencia. Estos análisis describen cada ritmo por separado; indican cuánta actividad hay en una banda y en qué momento aparece, pero no si un ritmo depende de otro. Gamma Lab 2.0 incorpora dos análisis especializados de acoplamiento que la versión anterior no ofrecía: el acoplamiento fase-amplitud (PAC), que mide si la fase de un ritmo lento organiza la amplitud de uno rápido \cite{canolty2006}, y el acoplamiento fase-fase (PPC), que mide si dos canales mantienen una relación de fase estable \cite{vinck2010}. En el sistema de referencia, estos análisis dependen de una licencia de MATLAB \cite{gauthier2023}; en Gamma Lab 2.0 quedan disponibles junto a los análisis que ya tenía la herramienta.
 
 \subsubsubsection{Técnicas incorporadas}
 
