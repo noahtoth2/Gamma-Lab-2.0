@@ -722,6 +722,14 @@ La interacción con el entorno se realiza a través del sistema de archivos, que
   \label{fig:diagrama-clases}
 \end{figure}
 
+La estructura lógica de Gamma Lab 2.0 se organiza en seis grupos de componentes: núcleo, servicios del sistema, presentación, contrato de extensión, extensiones y modelo de datos. El núcleo, representado por \texttt{Kernel}, centraliza el registro y acceso a los servicios y administra las extensiones mediante \texttt{PluginManager}, encargado de descubrirlas y cargarlas. Esta organización permite que los módulos funcionales accedan a las capacidades comunes de la aplicación a través de un punto central de coordinación.
+
+Los servicios del sistema proporcionan las operaciones necesarias para el funcionamiento de los demás componentes. \texttt{SettingsService} administra la configuración, \texttt{FileIOService} centraliza la lectura de señales en distintos formatos y \texttt{ExportService} permite generar archivos de imagen y resultados tabulares. Por su parte, \texttt{ProjectService} gestiona el almacenamiento y la recuperación de los proyectos, mientras que \texttt{DataStore} mantiene el estado compartido de la sesión. La ejecución de las operaciones de procesamiento se coordina mediante \texttt{TaskOrchestrator}, que recibe las solicitudes de las extensiones, administra su ejecución y publica los resultados en el almacén de datos de forma sincronizada.
+
+La presentación se organiza alrededor de \texttt{MainWindow}, que constituye la interfaz principal para la navegación entre las funcionalidades y la gestión de los proyectos. Estas funcionalidades se implementan mediante extensiones (\textit{plugins}), que cumplen el contrato definido por \texttt{IPlugin}. Esta interfaz establece las operaciones comunes para integrar cada módulo con el sistema, proporcionar su componente gráfico, ejecutar sus procesos y acceder a los datos de trabajo. En conjunto, las extensiones permiten gestionar las señales electrofisiológicas y realizar operaciones de procesamiento, segmentación y análisis sobre ellas.
+
+Finalmente, el modelo de datos define las estructuras utilizadas por los componentes para representar y compartir la información. \texttt{SignalDataset} contiene las señales electrofisiológicas multicanal, mientras que \texttt{TrialDataset} representa su organización en ensayos. Ambas estructuras constituyen los datos de trabajo sobre los que operan las extensiones. A su vez, \texttt{ProjectData} reúne la información necesaria para conservar y restaurar un proyecto, incluyendo los datos de origen, las mediciones, la segmentación y el estado de los análisis. De esta manera, los servicios, las extensiones y la interfaz trabajan sobre una representación común de la información.
+
 \subsection{Diseño detallado}
 
 \subsubsection{Estructura del sistema}
