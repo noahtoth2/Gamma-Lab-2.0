@@ -129,7 +129,7 @@
 \begin{center}
     % Logos institucionales (reemplazar con los archivos reales)
     \includegraphics[height=2cm]{LogoJaveriana.png}\hspace{1cm}
-    \includegraphics[height=2cm]{GammaLab2.0.png} 
+    \includegraphics[height=2cm]{GammaLab2.0.png}
 
     \vspace{0.5cm}
     {\large \textbf{Pontificia Universidad Javeriana}}\\
@@ -222,7 +222,6 @@ Esta secci\'on consolida la arquitectura de GammaLab 2.0 desde la perspectiva de
 A continuaci\'on, se desarrollan las vistas espec\'ificas que articulan la arquitectura hacia el dise\~no e implementaci\'on del sistema.
 
 \subsection{Vista L\'ogica}
-\subsubsection{Prop\'osito}
 
 La vista l\'ogica describe los componentes m\'as importantes del sistema sin detallar a profundidad su instalaci\'on en hardware. Su objetivo es proporcionar una representaci\'on clara de c\'omo se organizan las responsabilidades y c\'omo interact\'uan los m\'odulos fundamentales de GammaLab 2.0.
 
@@ -238,7 +237,6 @@ La Figura~\ref{fig:sdd_vista_logica} ilustra los principales componentes del \te
 \begin{center}
 \small
 \begin{longtable}{|p{0.18\textwidth}|p{0.36\textwidth}|p{0.36\textwidth}|}
-\caption{Descripci\'on de componentes de la Vista L\'ogica} \label{tab:sdd_componentes_logica} \\
 \hline
 \textbf{Componente} & \textbf{Descripci\'on} & \textbf{Relaciones / Dependencias} \\
 \hline
@@ -249,6 +247,9 @@ La Figura~\ref{fig:sdd_vista_logica} ilustra los principales componentes del \te
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Descripci\'on de componentes de la Vista L\'ogica} \label{tab:sdd_componentes_logica} \\
+\endlastfoot
 
 \textbf{\textit{Kernel}} (n\'ucleo) & Orquestador central de la aplicaci\'on: administra el registro de \textit{plugins} y servicios, coordina la ejecuci\'on y media la comunicaci\'on entre m\'odulos. & Provee \textit{register\_\allowbreak service()}/\textit{get\_\allowbreak service()} y \textit{register\_\allowbreak plugin()}; es consumido por \textit{MainWindow} y por todos los \textit{plugins}. \\
 \hline
@@ -304,7 +305,6 @@ La Figura~\ref{fig:sdd_vista_logica} ilustra los principales componentes del \te
 El \textit{Kernel} centraliza el registro y consumo de servicios mediante \textit{register\_\allowbreak service()}/\allowbreak\textit{get\_\allowbreak service()}; el \textit{DataStore} soporta la comunicaci\'on entre m\'odulos mediante claves can\'onicas. El c\'odigo se organiza en paquetes correspondientes a estas mismas responsabilidades (\textit{io}, \textit{pre\-processing}, \textit{analysis}, \textit{measure}), lo que mantiene la correspondencia entre el dise\~no l\'ogico y la implementaci\'on.
 
 \subsection{Vista F\'isica}
-\subsubsection{Prop\'osito}
 
 La vista f\'isica representa c\'omo se despliega y ejecuta GammaLab 2.0. Presenta los componentes f\'isicos m\'as importantes del sistema, sobre los cuales se instalan los componentes de \textit{software}.
 
@@ -364,13 +364,12 @@ Las versiones ancladas para las librer\'ias utilizadas, tal como se fijan en \te
 \end{itemize}
 
 \subsection{Vista de Procesos}
-\subsubsection{Prop\'osito}
 
 La vista de procesos describe el comportamiento din\'amico del sistema completo como un \'unico flujo maestro de sesi\'on, construido a partir de las cadenas de precondici\'on entre los casos de uso del sistema (p.\,ej.\ generar \textit{trials} exige una se\~nal previamente cargada).
 
-\begin{figure}[htbp]
+\begin{figure}[H]
     \centering
-    \includegraphics[width=0.95\linewidth]{diagrama_actividad_sistema_completo.png}
+    \includegraphics[width=0.95\linewidth,height=0.8\textheight,keepaspectratio]{diagrama_actividad_sistema_completo.png}
     \caption{Flujo maestro de sesi\'on de GammaLab 2.0, con carriles Investigador/Sistema.}
     \label{fig:sdd_vista_procesos}
 \end{figure}
@@ -403,7 +402,6 @@ El código se organiza en cuatro paquetes de primer nivel. La Tabla~\ref{tab:sdd
 \begin{center}
 \small
 \begin{longtable}{|p{0.20\textwidth}|p{0.34\textwidth}|p{0.36\textwidth}|}
-\caption{Paquetes de primer nivel y componentes que alojan} \label{tab:sdd_paquetes} \\
 \hline
 \textbf{Paquete} & \textbf{Contenido} & \textbf{Componentes del SAD} \\
 \hline
@@ -414,6 +412,9 @@ El código se organiza en cuatro paquetes de primer nivel. La Tabla~\ref{tab:sdd
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Paquetes de primer nivel y componentes que alojan} \label{tab:sdd_paquetes} \\
+\endlastfoot
 
 \textit{core/} & Núcleo, contrato de extensión, servicios compartidos, modelos de datos y algoritmos que cruzan fronteras de extensión. & \textit{Kernel}, \textit{PluginManager}, IPlugin, \textit{DataStore}, \textit{FileIOService}, \textit{ExportService}, \textit{MeasurementService}, \textit{SettingsService}, \textit{ProjectService}, \textit{TaskService}. \\
 \hline
@@ -447,7 +448,6 @@ Dentro de \textit{core/} la división es por responsabilidad: \textit{core/kerne
 \begin{center}
 \small
 \begin{longtable}{|p{0.09\textwidth}|p{0.07\textwidth}|p{0.36\textwidth}|p{0.14\textwidth}|p{0.18\textwidth}|}
-\caption{Correspondencia entre ADR, principio y sección del SDD} \label{tab:sdd_traza_adr} \\
 \hline
 \textbf{ADR} & \textbf{Princ.} & \textbf{Decisión} & \textbf{Sección} & \textbf{Estado} \\
 \hline
@@ -458,6 +458,9 @@ Dentro de \textit{core/} la división es por responsabilidad: \textit{core/kerne
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Correspondencia entre ADR, principio y sección del SDD} \label{tab:sdd_traza_adr} \\
+\endlastfoot
 
 ADR-01 & P1 & Estilo microkernel con núcleo propio & 2.4.1, 2.4.2 & Implementada \\
 \hline
@@ -514,7 +517,6 @@ ADR-13 & N/A & Python, PyQt5 y VTK como base & 2.2 & Implementada \\
 \begin{center}
 \small
 \begin{longtable}{|p{0.22\textwidth}|p{0.26\textwidth}|p{0.42\textwidth}|}
-\caption{Claves del registro de servicios del \textit{Kernel}} \label{tab:sdd_claves_servicios} \\
 \hline
 \textbf{Clave} & \textbf{Servicio} & \textbf{Dónde se registra} \\
 \hline
@@ -525,6 +527,9 @@ ADR-13 & N/A & Python, PyQt5 y VTK como base & 2.2 & Implementada \\
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Claves del registro de servicios del \textit{Kernel}} \label{tab:sdd_claves_servicios} \\
+\endlastfoot
 \textit{"DataStore"} & \textit{DataStore} & \textit{main.py}, al arrancar. \\
 \hline
 \textit{"FileIO"} & \textit{FileIOService} & \textit{main.py}, al arrancar. \\
@@ -553,7 +558,6 @@ ADR-13 & N/A & Python, PyQt5 y VTK como base & 2.2 & Implementada \\
 \begin{center}
 \small
 \begin{longtable}{|p{0.26\textwidth}|p{0.30\textwidth}|p{0.34\textwidth}|}
-\caption{Eventos publicados en el canal del \textit{Kernel}} \label{tab:sdd_eventos} \\
 \hline
 \textbf{Tópico} & \textbf{Carga útil} & \textbf{Significado} \\
 \hline
@@ -564,6 +568,9 @@ ADR-13 & N/A & Python, PyQt5 y VTK como base & 2.2 & Implementada \\
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Eventos publicados en el canal del \textit{Kernel}} \label{tab:sdd_eventos} \\
+\endlastfoot
 
 \textit{signal\_added} & \textit{\{"key": nombre\}} & Se cargó una señal nueva. Lo emiten la extensión \textit{Open Signal} y \textit{ProjectService} al abrir un proyecto. \\
 \hline
@@ -662,7 +669,6 @@ handle.cancelled.connect(partial(self._on_cancelled, handle))
 \begin{center}
 \small
 \begin{longtable}{|p{0.14\textwidth}|p{0.26\textwidth}|p{0.50\textwidth}|}
-\caption{Severidades y tratamiento} \label{tab:sdd_severidades} \\
 \hline
 \textbf{Severidad} & \textbf{Canal} & \textbf{Cuándo se usa} \\
 \hline
@@ -673,6 +679,9 @@ handle.cancelled.connect(partial(self._on_cancelled, handle))
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Severidades y tratamiento} \label{tab:sdd_severidades} \\
+\endlastfoot
 
 Error & Diálogo modal (\textit{alerts.error}) & El usuario pidió algo que no se puede hacer y tiene que enterarse: un archivo ilegible, un parámetro fuera de rango, dos canales no alineados. Interrumpe. \\
 \hline
@@ -705,7 +714,6 @@ Informativo & Registro y barra de estado & Avance de una tarea, resultado de una
 \begin{center}
 \small
 \begin{longtable}{|p{0.26\textwidth}|p{0.14\textwidth}|p{0.50\textwidth}|}
-\caption{Contrato \textit{IPlugin}} \label{tab:sdd_iplugin} \\
 \hline
 \textbf{Método} & \textbf{Origen} & \textbf{Responsabilidad} \\
 \hline
@@ -716,6 +724,9 @@ Informativo & Registro y barra de estado & Avance de una tarea, resultado de una
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Contrato \textit{IPlugin}} \label{tab:sdd_iplugin} \\
+\endlastfoot
 
 \textit{initialize(kernel)} & Heredado & Guardar la referencia al \textit{Kernel}. Se llama al registrar. \\
 \hline
@@ -738,7 +749,6 @@ Informativo & Registro y barra de estado & Avance de una tarea, resultado de una
 \begin{center}
 \small
 \begin{longtable}{|p{0.24\textwidth}|p{0.16\textwidth}|p{0.50\textwidth}|}
-\caption{Claves opcionales del descriptor \textit{properties.yml}} \label{tab:sdd_claves_opcionales} \\
 \hline
 \textbf{Clave} & \textbf{Valor por defecto} & \textbf{Uso} \\
 \hline
@@ -749,6 +759,9 @@ Informativo & Registro y barra de estado & Avance de una tarea, resultado de una
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Claves opcionales del descriptor \textit{properties.yml}} \label{tab:sdd_claves_opcionales} \\
+\endlastfoot
 \textit{description} & Vacía & Texto de la ayuda emergente del botón. \\
 \hline
 \textit{saves\_analysis} & \textit{false} & Indica que los parámetros de la extensión se guardan en el archivo de proyecto (Sección~\ref{sec:sdd_glab}). \\
@@ -820,7 +833,6 @@ En un experimento electrofisiológico se aplican estímulos repetidos y se regis
 \begin{center}
 \small
 \begin{longtable}{|p{0.40\textwidth}|p{0.50\textwidth}|}
-\caption{Campos de \textit{TrialDataset}} \label{tab:sdd_trialdataset} \\
 \hline
 \textbf{Campo} & \textbf{Contenido} \\
 \hline
@@ -831,6 +843,9 @@ En un experimento electrofisiológico se aplican estímulos repetidos y se regis
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Campos de \textit{TrialDataset}} \label{tab:sdd_trialdataset} \\
+\endlastfoot
 \textit{source}, \textit{channel\_index}, \textit{channel\_name}, \textit{unit} & Archivo de origen, canal recortado y su unidad. \\
 \hline
 \textit{sampling\_rate} & Frecuencia de muestreo (Hz). \\
@@ -863,7 +878,6 @@ Los \textit{trials} se guardan en estructuras privadas, que solo se modifican co
 \begin{center}
 \small
 \begin{longtable}{|p{0.28\textwidth}|p{0.62\textwidth}|}
-\caption{Estructuras de \textit{trials} en \textit{SignalDataset}} \label{tab:sdd_signal_estructuras} \\
 \hline
 \textbf{Estructura} & \textbf{Contenido} \\
 \hline
@@ -874,6 +888,9 @@ Los \textit{trials} se guardan en estructuras privadas, que solo se modifican co
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Estructuras de \textit{trials} en \textit{SignalDataset}} \label{tab:sdd_signal_estructuras} \\
+\endlastfoot
 Conjuntos originales & Los \textit{TrialDataset} recortados, en orden de generación. \\
 \hline
 Descartes & Por (archivo, canal), los índices de los \textit{trials} excluidos. \\
@@ -908,7 +925,6 @@ El almacén no impone un esquema y acepta cualquier clave. Las que usa el sistem
 \begin{center}
 \small
 \begin{longtable}{|p{0.40\textwidth}|p{0.50\textwidth}|}
-\caption{Claves usadas en el \textit{DataStore}} \label{tab:sdd_claves} \\
 \hline
 \textbf{Clave} & \textbf{Valor} \\
 \hline
@@ -919,6 +935,9 @@ El almacén no impone un esquema y acepta cualquier clave. Las que usa el sistem
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Claves usadas en el \textit{DataStore}} \label{tab:sdd_claves} \\
+\endlastfoot
 Nombre del archivo (p.\,ej. \textit{23n09000.abf}) & La señal (\textit{SignalDataset}). \\
 \hline
 \textit{active\_signal} & Clave de la señal activa. \\
@@ -945,7 +964,6 @@ El manifiesto no contiene matrices de datos. Guarda la información necesaria pa
 \begin{center}
 \small
 \begin{longtable}{|p{0.28\textwidth}|p{0.62\textwidth}|}
-\caption{Campos del manifiesto \textit{.glab}} \label{tab:sdd_glab} \\
 \hline
 \textbf{Campo} & \textbf{Contenido} \\
 \hline
@@ -956,6 +974,9 @@ El manifiesto no contiene matrices de datos. Guarda la información necesaria pa
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Campos del manifiesto \textit{.glab}} \label{tab:sdd_glab} \\
+\endlastfoot
 \textit{schema\_version} & Versión del formato (\textit{"1.0"}). \\
 \hline
 \textit{project\_name}, \textit{saved\_at} & Nombre del proyecto y fecha del guardado. \\
@@ -1003,7 +1024,6 @@ El servicio se crea una sola vez, en el registro de servicios compartidos del n�
 \begin{center}
 \small
 \begin{longtable}{|p{0.28\textwidth}|p{0.62\textwidth}|}
-\caption{Preferencias guardadas por \textit{SettingsService}} \label{tab:sdd_settings} \\
 \hline
 \textbf{Clave} & \textbf{Contenido} \\
 \hline
@@ -1014,6 +1034,9 @@ El servicio se crea una sola vez, en el registro de servicios compartidos del n�
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Preferencias guardadas por \textit{SettingsService}} \label{tab:sdd_settings} \\
+\endlastfoot
 \textit{last\_open\_dir} & Última carpeta desde la que se cargó una señal. \\
 \hline
 \textit{last\_project\_dir} & Última carpeta desde la que se abrió un proyecto. \\
@@ -1036,7 +1059,6 @@ El servicio no escribe en el \textit{DataStore} ni usa la interfaz gráfica, por
 \begin{center}
 \small
 \begin{longtable}{|p{0.13\textwidth}|p{0.12\textwidth}|p{0.65\textwidth}|}
-\caption{Interpretación de los formatos de archivo} \label{tab:sdd_formatos} \\
 \hline
 \textbf{Formato} & \textbf{Biblioteca} & \textbf{Interpretación} \\
 \hline
@@ -1047,6 +1069,9 @@ El servicio no escribe en el \textit{DataStore} ni usa la interfaz gráfica, por
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Interpretación de los formatos de archivo} \label{tab:sdd_formatos} \\
+\endlastfoot
 ABF & pyabf & Si el archivo tiene varios barridos (\textit{sweeps}), se toma el primero de cada canal. Todos los canales deben tener el mismo número de muestras. La frecuencia de muestreo, los nombres y las unidades se leen del encabezado. \\
 \hline
 EDF & pyedflib & Primero se lee el encabezado de cada canal. Si todos comparten frecuencia y longitud, se leen directamente; si no, se remuestrean por interpolación lineal a la frecuencia más baja y a la duración más corta. Los canales sin nombre o sin unidad reciben valores por defecto. \\
@@ -1069,7 +1094,6 @@ Una medición avanza por tres estados: en reposo, esperando el primer punto y es
 \begin{center}
 \small
 \begin{longtable}{|p{0.28\textwidth}|p{0.62\textwidth}|}
-\caption{Tipos de medición} \label{tab:sdd_mediciones} \\
 \hline
 \textbf{Tipo} & \textbf{Resultado} \\
 \hline
@@ -1080,6 +1104,9 @@ Una medición avanza por tres estados: en reposo, esperando el primer punto y es
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Tipos de medición} \label{tab:sdd_mediciones} \\
+\endlastfoot
 Pendiente & Pendiente entre los dos puntos, sus diferencias en X y en Y, y la distancia entre ellos. \\
 \hline
 Amplitud & Amplitud pico a pico dentro de la ventana definida por los dos puntos, con el máximo, el mínimo y sus posiciones. \\
@@ -1102,7 +1129,6 @@ La exportación de imágenes captura la ventana de la gráfica y la escribe como
 \begin{center}
 \small
 \begin{longtable}{|p{0.24\textwidth}|p{0.50\textwidth}|p{0.16\textwidth}|}
-\caption{Exportación de tablas} \label{tab:sdd_export_tablas} \\
 \hline
 \textbf{Qué se exporta} & \textbf{Origen} & \textbf{Formatos} \\
 \hline
@@ -1113,6 +1139,9 @@ La exportación de imágenes captura la ventana de la gráfica y la escribe como
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Exportación de tablas} \label{tab:sdd_export_tablas} \\
+\endlastfoot
 Datos de una gráfica & Menú contextual de la gráfica. Se exportan todas las series con sus datos completos, no la versión reducida que se dibuja en pantalla. & CSV, XLSX, JSON \\
 \hline
 Resultados con varias tablas (\textit{Wavelet}, PAC, índice de modulación, PPC) & El \textit{plugin} arma las tablas (parámetros, resumen, matrices) y el servicio las escribe: en CSV una tras otra, en XLSX una hoja por tabla y en JSON una lista por tabla. & CSV, XLSX, JSON \\
@@ -1137,7 +1166,6 @@ Guardar y abrir se dividen en pasos, porque una parte requiere la interfaz y otr
 \begin{center}
 \small
 \begin{longtable}{|p{0.12\textwidth}|p{0.62\textwidth}|p{0.16\textwidth}|}
-\caption{Pasos de las operaciones de proyecto} \label{tab:sdd_project_pasos} \\
 \hline
 \textbf{Operación} & \textbf{Paso} & \textbf{Hilo} \\
 \hline
@@ -1148,6 +1176,9 @@ Guardar y abrir se dividen en pasos, porque una parte requiere la interfaz y otr
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Pasos de las operaciones de proyecto} \label{tab:sdd_project_pasos} \\
+\endlastfoot
 Guardar & 1. Decidir el destino. La primera vez se pide una carpeta; se rechazan la raíz del disco y las carpetas del sistema (Escritorio, Documentos, Descargas, Imágenes, Música, Videos y la carpeta del usuario). & Interfaz \\
 \cline{2-3}
  & 2. Copiar el archivo de señal a la carpeta, en bloques de 8\,MB, con progreso y posibilidad de cancelar. & Trabajador \\
@@ -1191,7 +1222,6 @@ Las gráficas de GammaLab se dibujan con VTK dentro de \textit{widgets} de Qt. C
 \begin{center}
 \small
 \begin{longtable}{|p{0.30\textwidth}|p{0.60\textwidth}|}
-\caption{Utilidades de integración Qt/VTK} \label{tab:sdd_qtvtk} \\
 \hline
 \textbf{Módulo} & \textbf{Función} \\
 \hline
@@ -1202,6 +1232,9 @@ Las gráficas de GammaLab se dibujan con VTK dentro de \textit{widgets} de Qt. C
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Utilidades de integración Qt/VTK} \label{tab:sdd_qtvtk} \\
+\endlastfoot
 \textit{vtk\_temporizador} & Agrega una comprobación al temporizador interno del \textit{widget} VTK de Qt, para que no actúe sobre un \textit{widget} oculto o destruido. \\
 \hline
 \textit{adapters} & Convierte una señal o una matriz de \textit{trials} en la tabla de columnas que VTK usa para dibujar. \\
@@ -1232,7 +1265,6 @@ Los mensajes al usuario se emiten a través de \textit{PluginAlerts} (Sección~\
 \begin{center}
 \small
 \begin{longtable}{|p{0.20\textwidth}|p{0.70\textwidth}|}
-\caption{Presentación de los mensajes por severidad} \label{tab:sdd_retro} \\
 \hline
 \textbf{Severidad} & \textbf{Presentación} \\
 \hline
@@ -1243,6 +1275,9 @@ Los mensajes al usuario se emiten a través de \textit{PluginAlerts} (Sección~\
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Presentación de los mensajes por severidad} \label{tab:sdd_retro} \\
+\endlastfoot
 Información & Tarjeta azul no modal que se cierra sola a los pocos segundos. \\
 \hline
 Advertencia & Tarjeta ámbar no modal que permanece hasta que el usuario la cierra. \\
@@ -1265,7 +1300,6 @@ El avance de las tareas lo muestra \textit{TaskProgressBar} (\textit{core/utils/
 \begin{center}
 \small
 \begin{longtable}{|p{0.20\textwidth}|p{0.48\textwidth}|p{0.22\textwidth}|}
-\caption{Contenido del menú contextual de las gráficas} \label{tab:sdd_contextmenu} \\
 \hline
 \textbf{Submenú} & \textbf{Acciones} & \textbf{Delega en} \\
 \hline
@@ -1276,6 +1310,9 @@ El avance de las tareas lo muestra \textit{TaskProgressBar} (\textit{core/utils/
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Contenido del menú contextual de las gráficas} \label{tab:sdd_contextmenu} \\
+\endlastfoot
 \textit{Zoom} & \textit{Zoom} horizontal, vertical o en ambos ejes; restablecer la vista. & El propio menú \\
 \hline
 \textit{Measurements} & Pendiente, amplitud, pendiente en todos los \textit{trials}; cancelar; mostrar u ocultar trazos; eliminar la última medición o todas. & \textit{Measurement\-Service} \\
@@ -1298,7 +1335,6 @@ Además del menú, el componente configura el \textit{zoom} con la rueda del rat
 \begin{center}
 \small
 \begin{longtable}{|p{0.20\textwidth}|p{0.70\textwidth}|}
-\caption{Responsabilidades de \textit{MainWindow}} \label{tab:sdd_mainwindow} \\
 \hline
 \textbf{Grupo} & \textbf{Responsabilidad} \\
 \hline
@@ -1309,6 +1345,9 @@ Además del menú, el componente configura el \textit{zoom} con la rueda del rat
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Responsabilidades de \textit{MainWindow}} \label{tab:sdd_mainwindow} \\
+\endlastfoot
 Navegación & Secciones \textit{Home}, \textit{Preprocessing} y \textit{Analysis}; los botones de cada sección se agrupan por subcategoría y se ordenan según el \textit{properties.yml} de cada extensión. Incluye una barra de búsqueda con autocompletado sobre los nombres de las extensiones. \\
 \hline
 Área de trabajo & Muestra la vista de la extensión seleccionada y administra el cambio entre módulos. \\
@@ -1679,7 +1718,6 @@ La Tabla~\ref{tab:sdd_req_fr} recoge los 45 requisitos funcionales cubiertos y l
 \footnotesize
 \setlength{\tabcolsep}{3pt}
 \begin{longtable}{|>{\raggedright\arraybackslash}p{2.0cm}|>{\raggedright\arraybackslash}p{6.4cm}|>{\raggedright\arraybackslash}p{6.2cm}|}
-\caption{Requisitos funcionales cubiertos} \label{tab:sdd_req_fr} \\
 \hline
 \textbf{Requisito} & \textbf{Cómo se cubrió} & \textbf{Verificación} \\
 \hline
@@ -1690,6 +1728,7 @@ La Tabla~\ref{tab:sdd_req_fr} recoge los 45 requisitos funcionales cubiertos y l
 \endhead
 \hline
 \endfoot
+\caption{Requisitos funcionales cubiertos} \label{tab:sdd_req_fr} \\
 \endlastfoot
 
 \textbf{FR-IO-01}\newline R08 & \textbf{Persistir la señal cargada.} “\textit{DataStore}” conserva la señal como señal activa de la sesión y “\textit{FileIOService}” la lee sin duplicarla en memoria. & Pruebas automáticas del almacén de datos y de la lectura sin duplicación (“\textit{test\_dataset}”, “\textit{test\_fileio\_sin\_duplicar}”). \\
@@ -1789,7 +1828,6 @@ La Tabla~\ref{tab:sdd_req_fr} recoge los 45 requisitos funcionales cubiertos y l
 \footnotesize
 \setlength{\tabcolsep}{3pt}
 \begin{longtable}{|>{\raggedright\arraybackslash}p{2.0cm}|>{\raggedright\arraybackslash}p{6.4cm}|>{\raggedright\arraybackslash}p{6.2cm}|}
-\caption{Requisitos no funcionales cubiertos} \label{tab:sdd_req_nfr} \\
 \hline
 \textbf{Requisito} & \textbf{Cómo se cubrió} & \textbf{Verificación} \\
 \hline
@@ -1800,6 +1838,7 @@ La Tabla~\ref{tab:sdd_req_fr} recoge los 45 requisitos funcionales cubiertos y l
 \endhead
 \hline
 \endfoot
+\caption{Requisitos no funcionales cubiertos} \label{tab:sdd_req_nfr} \\
 \endlastfoot
 
 \textbf{NFR-U-01}\newline R02 & \textbf{Diferenciar información, aviso y error.} “\textit{PluginAlerts}” ofrece tres niveles de severidad y cada situación usa el que le corresponde; la información y los avisos no interrumpen al usuario. & Pruebas automáticas de los niveles de mensaje (“\textit{test\_niveles\_de\_mensaje}”, “\textit{test\_indicadores\_ui}”). \\
@@ -1886,7 +1925,6 @@ La Tabla~\ref{tab:sdd_cu} recoge los 23 casos de uso cubiertos, con los componen
 \footnotesize
 \setlength{\tabcolsep}{3pt}
 \begin{longtable}{|>{\raggedright\arraybackslash}p{2.7cm}|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}p{5.6cm}|>{\raggedright\arraybackslash}p{3.1cm}|}
-\caption{Casos de uso cubiertos} \label{tab:sdd_cu} \\
 \hline
 \textbf{Caso de uso} & \textbf{Componentes} & \textbf{Cómo se cubre} & \textbf{Verificación} \\
 \hline
@@ -1897,6 +1935,7 @@ La Tabla~\ref{tab:sdd_cu} recoge los 23 casos de uso cubiertos, con los componen
 \endhead
 \hline
 \endfoot
+\caption{Casos de uso cubiertos} \label{tab:sdd_cu} \\
 \endlastfoot
 
 \textbf{CU-001}\newline PAC de un canal & “\textit{PAC}”, “\textit{TaskService}”, “\textit{VTKContextMenu}”, “\textit{ExportService}” & 1) El botón de la cinta muestra la extensión. 2) Al crear, la extensión lee los parámetros y los \textit{trials} activos. 3) El servicio de tareas ejecuta el cálculo en un hilo de trabajo. 4) El resultado llega al hilo de la interfaz, que dibuja los gráficos y actualiza el menú contextual. & Requisitos R02, R13 a R23, R75. Pruebas principales: “\textit{test\_pac\_core}”, “\textit{test\_pac\_grados}”, “\textit{test\_export}”. \\
