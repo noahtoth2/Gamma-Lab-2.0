@@ -491,7 +491,13 @@ class ProjectService:
                     widget.setVisible(False)
                 setter = getattr(plugin, "apply_analysis_params", None)
                 if callable(setter):
-                    setter(params)
+                    # Lo que el plugin recalcule ahora es lo guardado, no un cambio:
+                    # mientras dura, sus resultados no marcan el proyecto (IPlugin).
+                    plugin._restaurando_proyecto = True
+                    try:
+                        setter(params)
+                    finally:
+                        plugin._restaurando_proyecto = False
             except Exception as e:
                 print(f"[ProjectService] Could not restore analysis '{name}':", e)
 

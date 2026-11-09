@@ -12,6 +12,7 @@ from core.utils.vtk_context_menu import VTKContextMenu
 from plugins.analysis.frequency.psd.psd_plugin_ui import Ui_Psd
 from core.utils.adapters import trials_matrix_to_vtk_table
 from core.utils.trial_labels import trials_used
+from core.utils.unidades import etiqueta_psd
 from functools import partial
 from core.utils.submuestreo import agregar_columna
 
@@ -420,6 +421,7 @@ class Psd_plugin(IPlugin):
         fs = float(getattr(td, "sampling_rate", 0.0))
         X = np.asarray(getattr(td, "trials", None), dtype=np.float64) # (Ns, T)
         ch = getattr(td, "channel_name", "")
+        self._unidad_psd = getattr(td, "unit", "") or ""      # para el rótulo del eje
         if X is None or X.ndim != 2 or fs <= 0:
             self._log("Invalid TrialDataset (fs<=0 or trials not 2D).")
             return None, None, None
@@ -469,7 +471,7 @@ class Psd_plugin(IPlugin):
         ax_l = self.chart.GetAxis(vtk.vtkAxis.LEFT)
         ax_b.SetGridVisible(True); ax_l.SetGridVisible(True)
         ax_b.SetTitle("Frequency (Hz)")
-        ax_l.SetTitle("PSD (V^2/Hz)")
+        ax_l.SetTitle(etiqueta_psd(getattr(self, "_unidad_psd", "")))   # antes «V^2/Hz» fijo
         
         # Auto-fit Y axis to avoid clipping peaks
         if power_v.size > 0:

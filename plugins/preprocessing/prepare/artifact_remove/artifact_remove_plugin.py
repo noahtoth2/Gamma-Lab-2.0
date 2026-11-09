@@ -303,7 +303,9 @@ class ArtifactRemovePlugin(IPlugin):
                 raise ValueError("El punto A no puede estar vacío.")
             point_a = self._parse_point(point_a_str, "A")
 
-            point_b = 0.0
+            # None = sin B («Cut From The Start»). No se usa 0.0 para eso: B = 0 es un
+            # punto válido de «Blank Interval», p. ej. para anular [-0,05; 0].
+            point_b = None
             if mode == 'interpolate' or mode_text == "Blank Interval":  # interval operations require B
                 point_b_str = self.ui.point_b.text().strip()
                 if not point_b_str:

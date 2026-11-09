@@ -356,13 +356,13 @@ def test_los_avisos_se_registran_sin_abrir_dialogos(listo):
     p.alerts.warning = lambda m: dialogos.append(m)
     p.alerts.error = lambda m: dialogos.append(m)
 
-    p.ui.lowFrequencySpinBox.setValue(5.0)   # deja mucho mapa en blanco
+    p.ui.lowFrequencySpinBox.setValue(1.0)   # en trials de 2 s, poco respaldo abajo
     p.on_create_ppc()
     assert esperar(lambda: p._ultimo is not None)
 
-    # Con el modo de bordes por omisión el mapa sale lleno, así que el aviso
-    # que toca es el de que los extremos se calcularon con menos muestras.
-    assert any("n_por_celda" in r for r in registrado)
+    avisos = cp.avisos(p._ultimo["resultado"])
+    assert avisos, "la corrida tenía que dejar algún aviso"
+    assert all(any(a in r for r in registrado) for a in avisos)
     assert dialogos == []
 
 

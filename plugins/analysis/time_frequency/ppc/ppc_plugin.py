@@ -20,7 +20,7 @@ from PyQt5.QtWidgets import QLabel, QVBoxLayout, QWidget
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from vtkmodules.util import numpy_support
 
-from core.filters.trials import cut_trials_single_channel
+from core.filters.trials import canal_sin_senal, cut_trials_single_channel
 from core.plugins.interfaces import IPlugin
 from core.utils.emf_writer import anotar_mapa
 from core.utils.trial_labels import trials_used
@@ -164,8 +164,10 @@ class Ppc_plugin(IPlugin):
         """Ya en el hilo de la interfaz: registra los trials recortados y retoma el cálculo."""
         if senal is not self.get_active_signal(silent=True):
             return
+        # Sin cambiar el canal activo: el usuario no cortó este canal, lo cortó PPC
+        # para poder calcular, y los análisis de un canal deben seguir en el suyo.
         for td in tds:
-            senal.add_trial_dataset(td)
+            senal.add_trial_dataset(td, activar=False)
         self._reintento_corte = True
         self._restaurando = self._corrida_restaura
         self.on_create_ppc()
@@ -201,7 +203,7 @@ class Ppc_plugin(IPlugin):
             params = dict(receta, channel=nombres.index(canal))
             td = cut_trials_single_channel(ds=senal, **params, debug=False)
             td.metadata["generation_params"] = params
-            senal.add_trial_dataset(td)
+            senal.add_trial_dataset(td, activar=False)
             return td
         except Exception as e:
             self.alerts.error(f"No se pudieron generar los trials del canal '{canal}': {e}")
@@ -272,6 +274,9 @@ class Ppc_plugin(IPlugin):
         except ValueError as e:
             self.alerts.error(str(e))
             return
+        # Un canal sin señal no impide calcular —el PPC sale cerca de cero, que es
+        # honesto—, pero hay que decir por qué. Se muestra con los demás avisos.
+        self._avisos_entrada = [a for a in (canal_sin_senal(td1), canal_sin_senal(td2)) if a]
 
         t = td1.time_rel
         if t is None or len(t) < 2:
@@ -361,7 +366,7 @@ class Ppc_plugin(IPlugin):
             self.ensure_vtk()
             self._ultimo = {"parametros": self._params_en_curso, "resultado": resultado}
             self.render_resultado(resultado)
-            avisos = cp.avisos(resultado)
+            avisos = list(getattr(self, "_avisos_entrada", None) or []) + cp.avisos(resultado)
             for aviso in avisos:
                 self._log(aviso)
             self._mostrar_avisos(avisos)

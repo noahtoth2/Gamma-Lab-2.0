@@ -240,7 +240,10 @@ class FileIOService:
                 keys = list(f.keys())
                 print(f"Found variables (HDF5): {keys}")
 
-                # Filter valid numeric channels
+                # Cada vector numérico es un canal y cada matriz, varios. Antes cada
+                # variable se aplanaba en un solo canal: una matriz de 3 canales quedaba
+                # como un canal con los tres seguidos, y los escalares (fs) y los textos
+                # entraban como canales rellenos de NaN.
                 channels = []
                 channel_names = []
 
@@ -249,18 +252,38 @@ class FileIOService:
                     if not isinstance(data, h5py.Dataset):
                         continue
 
+                    clase = data.attrs.get("MATLAB_class", b"")
+                    clase = clase.decode(errors="replace") if isinstance(clase, bytes) else str(clase)
                     arr = np.array(data)
 
-                    # Check if the dataset is numeric
-                    if np.issubdtype(arr.dtype, np.number):
-                        channels.append(arr.flatten())
-                        channel_names.append(key)
-                        print(f"  Channel {key}: {len(arr.flatten())} samples")
+                    # MATLAB guarda los textos como uint16 con MATLAB_class='char'
+                    if clase == "char" or not np.issubdtype(arr.dtype, np.number):
+                        print(f"  Variable {key} ignorada (no numérica: {clase or arr.dtype})")
+                        continue
+                    if arr.size <= 1 or arr.ndim > 2:
+                        print(f"  Variable {key} ignorada (forma {arr.shape}: no es un vector ni una matriz)")
+                        continue
+
+                    # HDF5 guarda las variables de MATLAB traspuestas: arr.T tiene la forma
+                    # de MATLAB. Como en el formato clásico, el eje más largo es el de las
+                    # muestras (muestras × canales en los archivos del laboratorio).
+                    raw = np.asarray(arr, dtype=np.float64).T
+                    if raw.ndim == 1:
+                        filas = raw.reshape(1, -1)
                     else:
-                        print(f"  ⚠️ Variable {key} ignored (non-numeric, dtype {arr.dtype})")
+                        filas = raw.T if raw.shape[0] >= raw.shape[1] else raw
+
+                    if filas.shape[0] == 1:
+                        channels.append(filas[0])
+                        channel_names.append(key)
+                    else:
+                        for i, fila in enumerate(filas, start=1):
+                            channels.append(fila)
+                            channel_names.append(f"{key}_ch{i}")
+                    print(f"  Variable {key}: {filas.shape[0]} canal(es) de {filas.shape[1]} muestras")
 
                 if not channels:
-                    raise ValueError("No numeric channels found in the .mat file")
+                    raise ValueError("No se encontró ningún vector ni matriz numérica en el archivo .mat (v7.3).")
 
                 # Normalize length (pad with NaN to equalize)
                 max_len = max(len(ch) for ch in channels)

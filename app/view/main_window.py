@@ -1185,7 +1185,7 @@ class MainWindow(QMainWindow):
         QApplication.instance().quit()
 
     def _on_task_started(self, handle):
-        """Engancha la barra de progreso a la tarea que acaba de encolarse."""
+        """Engancha la barra de progreso a la tarea que acaba de empezar a correr."""
         try:
             nombre = self._nombre_de_plugin(getattr(handle, "owner", ""))
             self.task_progress.seguir(handle, f"{nombre}: calculando…" if nombre else "")
@@ -1212,6 +1212,11 @@ class MainWindow(QMainWindow):
             plugin = self.kernel.get_plugin(name)
             if plugin is not None and getattr(plugin, "meta", None) is not None:
                 tasks.cancel_all_from(plugin.meta.id)
+        # También las de la propia ventana (dueño "project": abrir y guardar). Antes no
+        # se cancelaban: cerrar o cargar otra señal mientras se abría un proyecto dejaba
+        # la lectura en marcha y, al terminar, el proyecto se abría igual, encima de lo
+        # que el usuario hubiera hecho después.
+        tasks.cancel_all_from("project")
 
     def _any_background_worker_running(self) -> bool:
         tasks = self.kernel.get_service("TaskService")
@@ -1239,7 +1244,21 @@ class MainWindow(QMainWindow):
                     pass
 
     def _confirm_discard_unsaved_changes(self) -> bool:
-        """Ask Save/Don't Save/Cancel if dirty; True means OK to proceed."""
+        """Ask Save/Don't Save/Cancel if dirty; True means OK to proceed.
+
+        Si hay un cálculo en curso o un proyecto abriéndose, primero se pide permiso para
+        cancelarlo y **después**, si hay cambios sin guardar, se ofrece guardarlos. Antes,
+        «Cerrar de todos modos» devolvía True sin mirar si había cambios y el trabajo se
+        perdía sin preguntar.
+
+        Mientras se guarda no se deja cerrar: cancelar a medias revierte el guardado, y
+        volver a guardar enseguida competiría con la copia que aún no terminó.
+        """
+        if getattr(self, "_guardando", False):
+            self.alerts.warning(
+                "El proyecto se está guardando. Espera a que termine y vuelve a intentarlo.",
+                "Guardando proyecto")
+            return False
         if self._project_busy or self._any_background_worker_running():
             box = QMessageBox(self)
             box.setIcon(QMessageBox.Warning)
@@ -1256,7 +1275,7 @@ class MainWindow(QMainWindow):
             if box.clickedButton() is not close_btn:
                 return False
             self._stop_all_background_workers()
-            return True
+            # Sin return: si además hay cambios sin guardar, se pregunta abajo.
         if not self.project_service.dirty:
             return True
 

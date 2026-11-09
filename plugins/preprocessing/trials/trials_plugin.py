@@ -10,7 +10,7 @@ from core.utils.vtk_context_menu import VTKContextMenu
 from core.services.data_store import DataStore
 from core.model.signal_dataset import SignalDataset
 from core.model.trial_dataset import TrialDataset
-from core.filters.trials import cut_trials_single_channel, mv_to_unit
+from core.filters.trials import canal_sin_senal, cut_trials_single_channel, mv_to_unit, revisar_corte
 from core.utils.adapters import trials_matrix_to_vtk_table
 from plugins.preprocessing.trials.trial_plugin_ui import Ui_Trials
 from functools import partial
@@ -430,8 +430,10 @@ class TrialsPlugin(IPlugin):
         td.metadata["generation_params"] = dict(params)
 
         try:
+            # add_trial_dataset ya olvida los descartes de ESTE canal, que apuntaban
+            # a los trials viejos. Antes se llamaba además a clear_discarded_trials,
+            # que borraba los descartes de todos los canales.
             ds.add_trial_dataset(td)
-            ds.clear_discarded_trials()
             self.mark_project_dirty()
 
         except Exception as e:
@@ -447,7 +449,29 @@ class TrialsPlugin(IPlugin):
         self.kernel.emit_event("trials_generated", {"signal": ds.name, "channel": td.channel_name})
 
         self._notify(f"Trials: {td.trials.shape[1]} trials generados en '{td.channel_name}' "
-                     f"con umbral {th_text} (Ns={td.trials.shape[0]}); descartes reiniciados")
+                     f"con umbral {th_text} (Ns={td.trials.shape[0]}); descartes de "
+                     f"'{td.channel_name}' reiniciados")
+        self._avisar_del_corte(ds, params, td)
+
+    def _avisar_del_corte(self, ds, params, td):
+        """Lo que no impide el corte pero cambia lo que significan los trials: estímulos
+        irregulares (umbral en el ruido), trials que se solapan y un canal sin señal.
+        Va como aviso no modal; nada de esto se comprobaba."""
+        try:
+            est = params.get("stim_channel")
+            estimulo = ds.signals[est] if est is not None else None
+            unidad = ds.units[est] if est is not None and est < len(ds.units) else ""
+            avisos = revisar_corte(td, estimulo, unidad, params.get("threshold"))
+            sin_senal = canal_sin_senal(td)
+            if sin_senal:
+                avisos.append(sin_senal)
+        except Exception as e:
+            self._log("revisar el corte:", e)
+            return
+        for aviso in avisos:
+            self._log(aviso)
+        if avisos:
+            self.alerts.warning("\n\n".join(avisos), "Trials")
    
 
     # -------------- Navigation between trials ----------------------
@@ -499,17 +523,18 @@ class TrialsPlugin(IPlugin):
 
 
     def _on_discard_trial(self, index: int, T: int):
-
+        """Toggle discard state of the current trial (add or remove from SignalDataset list)."""
         ds = self.get_active_signal()
-        ch = self.ui.channelComboBox.currentText()
-
         if not ds:
             return
 
-        """Toggle discard state of the current trial (add or remove from SignalDataset list)."""
         if not self.last_td:
             self.alerts.warning("No trials loaded.", "Discard trial")
             return
+
+        # El canal de los trials que se están viendo, no el del combo: el combo se
+        # puede cambiar sin volver a cortar, y con él el descarte caía en otro canal.
+        ch = self._canal_mostrado()
     
       
         if not self.visible_trials:
@@ -536,7 +561,7 @@ class TrialsPlugin(IPlugin):
     def _update_trial_ui(self, ds: SignalDataset, index: int, total: int = None, estado_descartado: bool = None):
         """Update current trial label/button depending on discard state."""
         total_text = f"/{total}" if total else ""
-        ch = self.ui.channelComboBox.currentText()
+        ch = self._canal_mostrado()
 
         if estado_descartado is None:
             estado_descartado = ds.is_trial_discarded(ds.name, ch, index)
@@ -563,6 +588,12 @@ class TrialsPlugin(IPlugin):
         self.ui.currentTrialValueBox.setText(str(index + 1))
 
         self.publish_current_trial()
+
+    def _canal_mostrado(self) -> str:
+        """El canal de los trials en pantalla; el del combo solo si aún no hay trials."""
+        if self.last_td is not None:
+            return self.last_td.channel_name
+        return self.ui.channelComboBox.currentText()
 
     def current_trial_state(self):
         """Trial visible, traducido a la numeracion de la aplicacion (posicion

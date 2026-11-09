@@ -13,6 +13,7 @@ from core.utils.vtk_context_menu import VTKContextMenu
 from core.utils.trial_labels import trials_used
 from core.utils.vtk_observers import observar
 from core.utils.submuestreo import agregar_linea
+from core.filters.trials import canal_sin_senal, validar_alineacion
 from plugins.analysis.time_frequency.pac import compute as cp
 from plugins.analysis.time_frequency.pac.pac_plugin_ui import Ui_Pac
 
@@ -127,17 +128,28 @@ class BrujulaPolar:
         x0, y0, ancho, alto = self._rect
         if ancho <= 1 or alto <= 1:
             return
-        cx, cy = x0 + ancho / 2.0, y0 + alto / 2.0
-        # Se deja margen para las etiquetas de grados, que van por fuera
-        lado = min(ancho, alto) / 2.0 * 0.78
+        # El título tiene su propia franja arriba y el círculo se centra debajo.
+        # Antes el círculo se escalaba con todo el alto y su radio se fijaba con el
+        # máximo, pero el anillo exterior queda por encima del máximo (0,006 para un
+        # vector de 0,0054): el círculo, el «90» y su valor subían hasta el título y
+        # se montaban con él, y en recuadros apaisados se salían por arriba y abajo.
+        titulo_alto = 26.0 if self.titulo else 0.0
+        area = alto - titulo_alto
+        cx, cy = x0 + ancho / 2.0, y0 + area / 2.0
         rmax = self.radio()
-        escala = lado / rmax
+        magnitudes = pasos_de_magnitud(rmax)
+        # El anillo exterior y los rótulos de grados (a 1,12 veces su radio, con
+        # margen para el texto) tienen que caber en el área, a lo ancho y a lo alto.
+        borde = min(ancho / 2.0 - 22.0, area / 2.0 - 12.0) / 1.12
+        if borde <= 4.0:
+            return
+        escala = borde / magnitudes[-1]
+        lado = rmax * escala
 
         pluma = painter.GetPen()
         painter.GetBrush().SetOpacity(0)
 
         # --- anillos de magnitud
-        magnitudes = pasos_de_magnitud(rmax)
         pluma.SetColor(*GRIS_REJILLA)
         pluma.SetWidth(1.0)
         angulos = np.linspace(0.0, 2.0 * np.pi, 181)
@@ -196,9 +208,12 @@ class BrujulaPolar:
 
         # --- el titulo, arriba del todo
         if self.titulo:
-            texto.SetFontSize(13)
+            # Se achica si no cabe a lo ancho (unos 0,55 tamaños por carácter),
+            # para no invadir el gráfico de al lado en un recuadro angosto.
+            tamano = int(min(13, max(9, (ancho - 16.0) / (0.55 * len(self.titulo)))))
+            texto.SetFontSize(tamano)
             texto.SetColor(0.15, 0.15, 0.15)
-            painter.DrawString(float(cx), float(y0 + alto - 10.0), self.titulo)
+            painter.DrawString(float(cx), float(y0 + alto - titulo_alto / 2.0), self.titulo)
 
     @staticmethod
     def _poli(painter, xs, ys):
@@ -234,7 +249,9 @@ def titulo_de(vector, n_extra=0, en_grados=True):
     angulo = np.angle(v) % (2.0 * np.pi)
     medida = (f"{np.rad2deg(angulo):.1f}°" if en_grados
               else f"{angulo:.3f} rad")
-    return f"Vector medio{sufijo} — magnitud {abs(v):.4f}, fase {medida}"
+    # «no normalizada»: la magnitud escala con la amplitud de la señal (multiplicar
+    # la señal por 0,01 la multiplica por 0,01). No es un índice de 0 a 1.
+    return f"Vector medio{sufijo} — magnitud {abs(v):.4f} (no normalizada), fase {medida}"
 
 
 class Pac_plugin(IPlugin):
@@ -306,7 +323,8 @@ class Pac_plugin(IPlugin):
         return self.widget
 
     def _init_controls(self):
-        self.ui.sampleDensitySpinBox.setRange(0, 1_000_000)
+        # Desde 1: con 0 no hay densidad a la que submuestrear
+        self.ui.sampleDensitySpinBox.setRange(1, 1_000_000)
         self.ui.sampleDensitySpinBox.setSingleStep(100)
         for spin in (self.ui.lowFrequencySpinBox, self.ui.highFrequencySpinBox,
                      self.ui.ampLowFrequencySpinBox, self.ui.ampHighFrequencySpinBox):
@@ -508,6 +526,7 @@ class Pac_plugin(IPlugin):
         canal_fase = getattr(trials, "channel_name", "")
         canal_amp = ""
         datos_amplitud = None
+        td_amp = None
         if tipo == self.PSEL_INTER:
             canal_amp = self.ui.ampChannelComboBox.currentText()
             if not canal_amp:
@@ -532,14 +551,23 @@ class Pac_plugin(IPlugin):
                 self.alerts.error(
                     f"No se pudo obtener la matriz de trials de '{canal_amp}': {e}")
                 return
-            if datos_amplitud.shape != datos.shape:
-                self.alerts.error(
-                    f"Los trials de '{canal_fase}' y '{canal_amp}' no están alineados: "
-                    f"{datos.shape[0]}×{datos.shape[1]} frente a "
-                    f"{datos_amplitud.shape[0]}×{datos_amplitud.shape[1]}. Vuelve a "
-                    f"cortarlos en Trials con el mismo umbral, los mismos tiempos y "
-                    f"los mismos trials, cambiando solo el canal.")
+            # Que las dos matrices tengan la misma forma no basta: con un descarte
+            # distinto en cada canal coinciden y aun así el trial i de una no es el
+            # trial i de la otra. Se exige el mismo corte y los mismos trials, con
+            # la misma comprobación que PPC.
+            try:
+                validar_alineacion(trials, td_amp)
+            except ValueError as e:
+                self.alerts.error(str(e))
                 return
+
+        # Un canal sin señal no impide calcular, pero el mapa en z siempre enseña
+        # manchas y parecería un resultado. Se avisa sin bloquear.
+        for td_revisar in (trials, td_amp):
+            aviso = canal_sin_senal(td_revisar) if td_revisar is not None else None
+            if aviso:
+                self._log(aviso)
+                self.alerts.warning(aviso, "PAC")
 
         senal = self.get_active_signal()
         self._params_en_curso = {
@@ -654,9 +682,10 @@ class Pac_plugin(IPlugin):
             self._trials_used = usados or None
             self._actualizar_menu()
             self._notify(
-                f"{tipo} con {etiqueta_trials}: acoplamiento {abs(resultado.vector):.4f} "
-                f"en la fase {self._fase_legible(resultado.vector)} "
-                f"({detalle})")
+                f"{tipo} con {etiqueta_trials}: vector medio de magnitud "
+                f"{abs(resultado.vector):.4f} en la fase {self._fase_legible(resultado.vector)} "
+                f"({detalle}). La magnitud escala con la amplitud de la señal: compárala "
+                f"solo dentro del mismo registro.")
             if not self._corrida_restaura:
                 self.mark_project_dirty()
         except Exception as e:

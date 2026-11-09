@@ -46,6 +46,10 @@ import numpy as np
 from core.filters.gabor import gabor_en
 from core.filters.wavelet import tasa_efectiva
 from core.utils.parallel import MAX_HILOS, map_ordenado
+# La comprobación de que los dos canales salen del mismo corte vive en core:
+# PAC Psel entre canales la necesita igual. Se reexporta para no romper a
+# quien la importe desde aquí.
+from core.filters.trials import validar_alineacion  # noqa: F401
 
 CICLOS_PPC = 3.0          # ps_StDevCycles. El .m pasa 1; su propia cabecera
                           # documenta 3 como lo normal, y con 1 la gaussiana es
@@ -150,44 +154,6 @@ class ResultadoPPC:
     filas_sin_resolver: int     # filas que salieron enteras en NaN
     canal_1: str
     canal_2: str
-
-
-def validar_alineacion(td1, td2):
-    """Los dos canales tienen que venir del **mismo corte**.
-
-    El plugin *Trials* corta un canal por vez, así que el usuario genera primero
-    uno y después el otro. Si no usó los mismos parámetros, los trials no están
-    alineados muestra a muestra y restar sus fases no significa nada: el mapa
-    saldría igual de bonito y no mediría nada.
-
-    Se comprueba lo que de verdad puede diferir, en el orden en que importa.
-    No se recorta al mínimo común en silencio: se dice qué no cuadra.
-    """
-    t1, t2 = np.asarray(td1.trials), np.asarray(td2.trials)
-    if t1.shape != t2.shape:
-        raise ValueError(
-            f"Los dos canales no tienen la misma forma: '{td1.channel_name}' da "
-            f"{t1.shape[0]} muestras × {t1.shape[1]} trial(s) y '{td2.channel_name}' da "
-            f"{t2.shape[0]} × {t2.shape[1]}. Vuelve a generarlos con los mismos "
-            f"parámetros, cambiando solo el canal.")
-
-    o1, o2 = np.asarray(td1.onsets_s, dtype=float), np.asarray(td2.onsets_s, dtype=float)
-    if o1.shape != o2.shape or not np.allclose(o1, o2):
-        raise ValueError(
-            f"Los trials de '{td1.channel_name}' y '{td2.channel_name}' empiezan en "
-            f"instantes distintos, así que no están alineados. Genéralos con el mismo "
-            f"canal de estímulo y el mismo umbral.")
-
-    if td1.sampling_rate != td2.sampling_rate:
-        raise ValueError(
-            f"Los dos canales tienen frecuencias de muestreo distintas: "
-            f"{td1.sampling_rate:g} Hz y {td2.sampling_rate:g} Hz.")
-
-    if (td1.t0, td1.t1) != (td2.t0, td2.t1):
-        raise ValueError(
-            f"Las ventanas de recorte no coinciden: '{td1.channel_name}' va de "
-            f"{td1.t0:g} a {td1.t1:g} s y '{td2.channel_name}' de {td2.t0:g} a "
-            f"{td2.t1:g} s.")
 
 
 def _unidad(coef):
@@ -540,12 +506,9 @@ def avisos(r):
             f"consigo misma vale 1 en todo el mapa por definición: no está midiendo "
             f"nada. Elige dos canales distintos.")
 
-    # --- El remuestreo pedido no se alcanzo (el problema nº 18)
-    if abs(r.fs_efectiva - r.fs_pedida) > 1e-9:
-        fuera.append(
-            f"Se pidió remuestrear a {r.fs_pedida:g} Hz, pero el factor tiene que ser "
-            f"entero y la señal quedó en {r.fs_efectiva:.1f} Hz. El eje de frecuencias "
-            f"es el de {r.fs_efectiva:.1f} Hz, no el de {r.fs_pedida:g}.")
+    # El remuestreo que no se alcanza exacto (factor entero: 2000 Hz pedidos sobre
+    # 20 833 dan 2083,3) no se avisa: salía en casi todos los registros y tapaba los
+    # avisos que importan. La tasa real queda en `r.fs_efectiva` y en la exportación.
 
     # --- Filas que no se pudieron medir en absoluto
     if sin_medir.any():
@@ -591,23 +554,8 @@ def avisos(r):
                 f"frecuencias bajas —hasta {r.ventanas_s.max():.2f} s— no cabe pegada "
                 f"al borde del trial. No es un dato que falte, es que ahí no se puede "
                 f"calcular.")
-    elif medibles.size and r.bordes == "recortar":
-        # El mapa sale lleno, y por eso hay que decir lo que esconde: en los
-        # extremos la ventana se cortó contra el borde del trial y la celda se
-        # calculó con menos muestras. No decirlo seria enseñar un borde con la
-        # misma pinta de solido que el centro, que es la mentira que este
-        # puerto le corrige a MATLAB.
-        nominal = r.n_muestras[:, None].astype(np.float64)
-        flojo = np.isfinite(r.n_por_celda) & (r.n_por_celda < 0.75 * nominal)
-        if flojo.any():
-            proporcion = float(np.mean(flojo[np.isfinite(r.n_por_celda)]))
-            peor = float(np.nanmin(r.n_por_celda / nominal)) * 100
-            fuera.append(
-                f"El mapa llega hasta los extremos porque la ventana se recorta "
-                f"contra el borde del trial, pero el {proporcion * 100:.0f} % de las "
-                f"celdas se calculó con menos muestras de las previstas —la peor, con "
-                f"el {peor:.0f} %—. Ahí el valor es correcto pero más ruidoso; "
-                f"`n_por_celda` dice cuánto respalda a cada una. Con "
-                f"`bordes='descartar'` esa zona sale en blanco en vez de recortada.")
+    # Con bordes='recortar' (el modo de la aplicación) los extremos se calculan con
+    # menos muestras. Ya no se avisa: salía en todas las corridas, siempre con el
+    # mismo texto. Cuánto respalda a cada celda sigue en `r.n_por_celda`.
 
     return fuera

@@ -420,15 +420,16 @@ def test_no_avisa_de_canales_iguales_cuando_son_distintos(con_ruido):
     assert "el mismo" not in junto(con_ruido)
 
 
-def test_avisa_cuando_el_remuestreo_pedido_no_se_alcanza():
+def test_el_remuestreo_que_no_se_alcanza_queda_en_el_resultado_sin_aviso():
     """El problema nº 18: el factor es entero, así que pedir 300 sobre 1.000
-    deja la señal en 333,3 Hz y **todo** el eje de frecuencias con ella."""
+    deja la señal en 333,3 Hz y **todo** el eje de frecuencias con ella. La tasa
+    real se guarda en el resultado; ya no se avisa, porque salía en casi todos
+    los registros (2000 Hz sobre 20 833 dan 2083,3) y tapaba los demás avisos."""
     a, b = ruido(32), ruido(33)
     r = pc.ppc_mapa(None, a, b, 1000.0, 300.0, 20.0, 120.0, n_freq=20)
     assert r.fs_pedida == 300.0
     assert r.fs_efectiva == pytest.approx(1000.0 / 3)
-    texto = junto(r)
-    assert "333.3" in texto and "300" in texto
+    assert "remuestrear" not in junto(r)
 
 
 def test_no_avisa_del_remuestreo_cuando_si_se_alcanza(con_ruido):
@@ -835,11 +836,13 @@ def test_con_descartar_la_n_por_celda_es_la_de_la_fila():
             assert np.allclose(r.n_por_celda[i, vivas], r.n_muestras[i])
 
 
-def test_recortar_avisa_de_que_los_extremos_van_mas_flojos():
+def test_recortar_no_avisa_de_los_extremos():
+    """Salía en todas las corridas con el mismo texto; cuánto respalda a cada
+    celda sigue en `n_por_celda` (test_la_n_por_celda_baja_en_los_extremos)."""
     r = mapa(ruido(108), ruido(109), bordes="recortar")
     texto = " || ".join(pc.avisos(r))
-    assert "recorta" in texto
-    assert "n_por_celda" in texto
+    assert "recorta" not in texto
+    assert "n_por_celda" not in texto
     assert "cono de influencia" not in texto, "ese aviso es del otro modo"
 
 

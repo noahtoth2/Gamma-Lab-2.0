@@ -201,7 +201,8 @@ def descartar_derivado(kernel):
 
 
 def escribir_modificacion(kernel, prep: ModificacionPreparada, out_active: np.ndarray, mode: str,
-                          point_a: float = 0.0, point_b: float = 0.0, receta_dict: dict | None = None):
+                          point_a: float = 0.0, point_b: float | None = None,
+                          receta_dict: dict | None = None):
     """
     Paso 3, en el hilo de la interfaz: escribe las columnas modificadas en el
     TrialDataset base, invalida la caché de trials activos y avisa a los plugins.
@@ -260,7 +261,7 @@ def escribir_modificacion(kernel, prep: ModificacionPreparada, out_active: np.nd
           f"({prep.file_name}, {prep.channel_name}).")
 
 
-def apply_modification_to_all_valid(kernel, *, mode: str, point_a: float, point_b: float = 0.0):
+def apply_modification_to_all_valid(kernel, *, mode: str, point_a: float, point_b: float | None = None):
     """
     Los tres pasos seguidos, en el hilo que llama (sin orquestador).
     Devuelve True si modificó los trials y None si no había nada que modificar.

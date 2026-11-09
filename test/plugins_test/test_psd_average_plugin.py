@@ -518,7 +518,10 @@ class TestPsdAverageABFVsMatlab:
     # --------------------------------------------------------
     # 2. Correlation between APP vs MATLAB average PSD
     # --------------------------------------------------------
-    @pytest.mark.xfail(reason="el plugin quita la tendencia constante de cada segmento y MATLAB no; ver test_referencias_matlab_wavelet_psd.py", strict=False)
+    @pytest.mark.xfail(reason="sin quitar la tendencia la correlación lineal subió de 0,58 a 0,93, pero no llega a 0,95: "
+                              "la diferencia que queda está en los primeros bins (0 a 3 Hz) y no está explicada; "
+                              "en escala logarítmica supera 0,995 (test_referencias_matlab_wavelet_psd.py)",
+                       strict=False)
     def test_correlation_by_column(self, app_psd_avg, matlab_psd_avg_matrix):
         """
         Check that the average PSD curve computed by the plugin has

@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import sys
+import weakref
 
 from core import kernel
 from core.kernel import Kernel
@@ -179,6 +180,7 @@ class IPlugin(ABC):
         tasks.cancel_all_from(self.meta.id)
         handle = tasks.submit(fn, owner=self.meta.id, **kwargs)
         self._task_handle = handle
+        restaura = self._anotar_si_restaura(handle)
 
         def vigente():
             return handle is getattr(self, "_task_handle", None)
@@ -197,7 +199,12 @@ class IPlugin(ABC):
                 return
             terminar()
             if result is not None:
-                on_done(result)
+                # Un resultado pedido al abrir un proyecto no es un cambio del usuario
+                self._resultado_restaurado = restaura
+                try:
+                    on_done(result)
+                finally:
+                    self._resultado_restaurado = False
 
         def al_fallar(msg):
             if not vigente():
@@ -218,8 +225,44 @@ class IPlugin(ABC):
         handle.cancelled.connect(al_cancelar)
         return handle
 
-    def mark_project_dirty(self):
+    # ---------------- Abrir un proyecto no es un cambio ----------------
+    # Al abrir un proyecto, ProjectService llama a apply_analysis_params de cada
+    # análisis guardado y casi todos recalculan. Cuando el cálculo terminaba, el
+    # plugin llamaba a mark_project_dirty como si el usuario hubiera hecho un
+    # análisis nuevo, y el proyecto recién abierto quedaba marcado como modificado:
+    # al cerrarlo pedía guardar sin que nada hubiera cambiado.
+    #
+    # ProjectService activa `_restaurando_proyecto` mientras dura
+    # apply_analysis_params. Las tareas enviadas en ese lapso se anotan, y su
+    # resultado no marca el proyecto. run_task lo hace solo; un plugin que envía
+    # sus tareas por su cuenta llama a `_anotar_si_restaura(handle)` al enviarla y
+    # a `mark_project_dirty(handle)` al recibir el resultado. PAC y PPC tienen
+    # además su propio `_restaurando`, que hace lo mismo.
 
+    def _anotar_si_restaura(self, handle) -> bool:
+        """Anota `handle` si se envió para restaurar un proyecto. Devuelve si lo anotó."""
+        if handle is None or not getattr(self, "_restaurando_proyecto", False):
+            return False
+        anotadas = getattr(self, "_tareas_de_restauracion", None)
+        if anotadas is None:
+            anotadas = self._tareas_de_restauracion = weakref.WeakSet()
+        anotadas.add(handle)
+        return True
+
+    def _es_de_restauracion(self, handle) -> bool:
+        anotadas = getattr(self, "_tareas_de_restauracion", None)
+        return handle is not None and anotadas is not None and handle in anotadas
+
+    def mark_project_dirty(self, handle=None):
+        """Marca el proyecto con cambios sin guardar, salvo si es la restauración al abrirlo.
+
+        `handle` es la tarea cuyo resultado provoca la marca, para los plugins que no
+        usan run_task.
+        """
+        if (getattr(self, "_restaurando_proyecto", False)
+                or getattr(self, "_resultado_restaurado", False)
+                or self._es_de_restauracion(handle)):
+            return
         try:
             store = self.kernel.get_service("DataStore") if self.kernel else None
             project = store.get("_project_service") if store else None

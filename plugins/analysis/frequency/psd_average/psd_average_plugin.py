@@ -13,6 +13,7 @@ from core.model.signal_dataset import SignalDataset
 from plugins.analysis.frequency.psd_average.psd_average_plugin_ui import Ui_Psd_average
 from core.utils.adapters import trials_matrix_to_vtk_table
 from core.utils.trial_labels import trials_used
+from core.utils.unidades import etiqueta_psd
 
 from functools import partial
 from core.utils.submuestreo import agregar_columna
@@ -38,10 +39,15 @@ def calcular_psd(X, fs, target_fs, window, nperseg, noverlap, nfft, ctx=None, lo
         log("Warning: noverlap >= nperseg. Adjusting noverlap.")
         noverlap = nperseg // 2
     log(f"Welch params: fs_eff={fs_eff}, window={window}, nperseg={nperseg}, "
-        f"noverlap={noverlap}, nfft={nfft}, axis=0")
+        f"noverlap={noverlap}, nfft={nfft}, detrend=False, axis=0")
 
+    # detrend=False, como el pwelch de MATLAB y como el plugin PSD con su valor por
+    # defecto («none»). Sin pasarlo, SciPy quita la media de cada segmento
+    # ('constant') y la curva se aparta de la de MATLAB en las frecuencias bajas:
+    # era la causa principal de que no coincidieran (ver
+    # test_referencias_matlab_wavelet_psd.py).
     freq, power = welch(Xds, fs=fs_eff, window=window, nperseg=nperseg, noverlap=noverlap,
-                        nfft=nfft, scaling='density', axis=0)
+                        nfft=nfft, detrend=False, scaling='density', axis=0)
     power = power.astype(np.float64)
     freq = freq.astype(np.float64)
     log(f"PSD: srt={srt}, fs_eff={fs_eff:.3f} Hz, Nf={freq.size}, T_calc={power.shape[1]}")
@@ -295,6 +301,7 @@ class Psd_average_plugin(IPlugin):
         fs = float(getattr(td, "sampling_rate", 0.0))
         X  = np.asarray(getattr(td, "trials", None), dtype=np.float64)  # (Ns, T)
         ch = getattr(td, "channel_name", "")
+        self._unidad_psd = getattr(td, "unit", "") or ""      # para el rótulo del eje
         if X is None or X.ndim != 2 or fs <= 0:
             self._log("Invalid TrialDataset (fs<=0 or trials not 2D).")
             return None, None, None
@@ -335,7 +342,7 @@ class Psd_average_plugin(IPlugin):
         ax_l = self.chart.GetAxis(vtk.vtkAxis.LEFT)
         ax_b.SetGridVisible(True); ax_l.SetGridVisible(True)
         ax_b.SetTitle("Frequency (Hz)")
-        ax_l.SetTitle("PSD (V^2/Hz)")
+        ax_l.SetTitle(etiqueta_psd(getattr(self, "_unidad_psd", "")))   # antes «V^2/Hz» fijo
         
         try:
             self.chart.SetTitle(plot_title)

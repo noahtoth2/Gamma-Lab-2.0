@@ -36,7 +36,7 @@ class Wavelet_plugin(IPlugin):
         self._handle = None
         self._calculando = False
         self.params = {
-            "sample_density_range": (0, 10000),
+            "sample_density_range": (1, 10000),   # con 0 no hay a qué submuestrear
             "frequencies_range": (0, 10000),
             "sample_density_value": 1000,
             "high_frequency_value": 500,
@@ -220,6 +220,11 @@ class Wavelet_plugin(IPlugin):
         scaled = self.ui.scaleCheckBox.isChecked()
         norm_method = self.ui.normalizeComboBox.currentText().lower()
 
+        # Antes de tasa_efectiva, que divide por la densidad: esto corre en el hilo de
+        # la interfaz y una excepción aquí cerraba la aplicación.
+        if fs <= 0:
+            self.alerts.warning("La densidad de muestreo debe ser mayor que cero.")
+            return
         if fmin <= 0:
             self.alerts.warning("La frecuencia baja debe ser mayor que cero.")
             return
@@ -258,6 +263,7 @@ class Wavelet_plugin(IPlugin):
             norm_method=norm_method, t0=float(t[0]),
         )
         self._handle = handle
+        self._anotar_si_restaura(handle)
         handle.progress.connect(partial(self._on_wavelet_progress, handle))
         handle.finished.connect(partial(self._on_wavelet_done, handle))
         handle.failed.connect(partial(self._on_wavelet_failed, handle))
@@ -319,7 +325,7 @@ class Wavelet_plugin(IPlugin):
             if usados:
                 self._notify(f"Wavelet calculada con {usados['label']} ({usados['channel']})")
             self.publish_current_trial()
-            self.mark_project_dirty()
+            self.mark_project_dirty(handle)
         except Exception as e:
             self._log("render_scalogram:", e)
             self.alerts.error(f"No se pudo dibujar el escalograma: {e}")

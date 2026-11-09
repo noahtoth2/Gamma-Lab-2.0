@@ -41,7 +41,7 @@ class SignalDataset:
     __derived_trials: Dict[tuple[str, str], TrialDataset] = field(default_factory=dict, init=False, repr=False)
 
     # Add a trial_dataset to the trials list
-    def add_trial_dataset(self, trial: "TrialDataset"):
+    def add_trial_dataset(self, trial: "TrialDataset", activar: bool = True):
         """Guarda un juego de trials, **reemplazando** el anterior del mismo canal.
 
         Antes acumulaba: cada *Generate* añadía uno más a la lista y
@@ -58,17 +58,29 @@ class SignalDataset:
         Se tiran también los descartes y la caché de ese canal: sus índices
         apuntaban a los trials viejos y en los nuevos señalarían a otros. Es el
         mismo motivo por el que `replace_trial_datasets` los limpia.
+
+        Con `activar=False` el juego se guarda **sin cambiar el canal activo**: va
+        en el penúltimo lugar y el último sigue siendo el que era. Es lo que
+        necesita PPC cuando corta por su cuenta el canal que le falta. Sin esto,
+        calcular un PPC dejaba activo el canal recién cortado, y los análisis de
+        un canal (PAC, FFT, PSD...) pasaban a leer otro canal sin que el usuario
+        lo pidiera. Si el juego reemplaza al del canal activo, sigue activo.
         """
         if not isinstance(trial, TrialDataset):
             raise ValueError("trial must be of type TrialDataset")
 
         archivo = Path(trial.source).name
+        era_el_activo = False
         for i, existente in enumerate(self.__trials_dataset):
             if (Path(existente.source).name == archivo
                     and existente.channel_name == trial.channel_name):
+                era_el_activo = i == len(self.__trials_dataset) - 1
                 del self.__trials_dataset[i]
                 break
-        self.__trials_dataset.append(trial)
+        if activar or era_el_activo or not self.__trials_dataset:
+            self.__trials_dataset.append(trial)
+        else:
+            self.__trials_dataset.insert(len(self.__trials_dataset) - 1, trial)
         self.__olvidar_derivados(trial.channel_name)
 
     def __olvidar_derivados(self, channel_name: str):

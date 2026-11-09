@@ -79,9 +79,12 @@ class _Worker(QThread):
 
 class TaskService(QObject):
 
-    # La emite submit() con el TaskHandle recien creado. Existe para que la
-    # interfaz pueda mostrar progreso y ofrecer Cancelar sin que cada plugin
-    # tenga que acordarse de engancharse (requisito R04, problema nº 9).
+    # Se emite con el TaskHandle cuando la tarea **empieza a correr**, no cuando
+    # se encola. Existe para que la interfaz pueda mostrar progreso y ofrecer
+    # Cancelar sin que cada plugin tenga que acordarse de engancharse (requisito
+    # R04, problema nº 9). Antes la emitía submit(): con una tarea corriendo y
+    # otra en cola, la barra seguía a la de la cola —quieta en 0 %— y su Cancelar
+    # cancelaba esa, mientras la que corría seguía sin barra.
     task_started = pyqtSignal(object)
 
     def __init__(self, cancel_timeout_ms: int = DEFAULT_CANCEL_TIMEOUT_MS):
@@ -105,9 +108,6 @@ class TaskService(QObject):
         task = _Task(task_id, fn, kwargs, owner, handle)
 
         self._queue.append(task)
-        # Antes de arrancar, para que quien escuche ya tenga el handle conectado
-        # cuando empiecen a llegar las señales de progreso.
-        self.task_started.emit(handle)
         self._start_next_if_idle()
         return handle
 
@@ -141,6 +141,9 @@ class TaskService(QObject):
         task = self._queue.pop(0)
         task.state = "running"
         self._running = task
+        # Antes de arrancar el hilo, para que quien escuche ya tenga el handle
+        # conectado cuando empiecen a llegar las señales de progreso.
+        self.task_started.emit(task.handle)
 
         ctx = None
         if _accepts_ctx(task.fn):

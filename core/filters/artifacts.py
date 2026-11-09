@@ -51,7 +51,7 @@ def _fill_nan_segments(t: np.ndarray, data: np.ndarray) -> np.ndarray:
     return data
 
 
-def medidas_del_segmento(t, trials, *, mode: str, point_a: float, point_b: float = 0.0):
+def medidas_del_segmento(t, trials, *, mode: str, point_a: float, point_b: float | None = None):
     """Medidas del segmento que `calcular_modificacion` va a tocar, sin tocarlo.
 
     Se calculan sobre el **promedio de los trials activos**, que es lo que el
@@ -63,7 +63,7 @@ def medidas_del_segmento(t, trials, *, mode: str, point_a: float, point_b: float
     """
     t = np.asarray(t, dtype=float)
     datos = np.asarray(trials, dtype=float)
-    if mode == "interpolate" or (point_b and point_b != point_a):
+    if mode == "interpolate" or (point_b is not None and point_b != point_a):
         i_a, i_b = _time_window_indices(t, point_a, point_b)
     else:
         i_a, i_b = 0, int(np.searchsorted(t, point_a, side="left"))
@@ -86,12 +86,15 @@ def medidas_del_segmento(t, trials, *, mode: str, point_a: float, point_b: float
     }
 
 
-def calcular_modificacion(t, trials, *, mode: str, point_a: float, point_b: float = 0.0, ctx=None):
+def calcular_modificacion(t, trials, *, mode: str, point_a: float, point_b: float | None = None,
+                          ctx=None):
     """
     Devuelve una copia modificada de `trials` (muestras × trials activos), o None si
     no hay nada que modificar o si se canceló.
 
-      - mode='blank' (alias 'cut'): NaN en [A, B], o hasta A si no hay B; después
+      - mode='blank' (alias 'cut'): NaN en [A, B], o hasta A si no hay B
+        (`point_b=None`). B = 0 es un punto como cualquier otro: antes se tomaba
+        como «sin B» y [-0,05; 0] borraba desde el inicio hasta A. Después
         esos tramos se rellenan interpolando para que los análisis reciban valores finitos.
       - mode='interpolate': rellena [A, B] con un spline cúbico natural cuando se puede;
         si no, con una recta.
@@ -103,7 +106,7 @@ def calcular_modificacion(t, trials, *, mode: str, point_a: float, point_b: floa
     out_active = trials.copy()
 
     if mode in ("blank", "cut"):
-        if point_b and point_b != point_a:
+        if point_b is not None and point_b != point_a:
             i_a, i_b = _time_window_indices(t, point_a, point_b)
             if i_b > i_a:
                 out_active[i_a:i_b, :] = np.nan
@@ -119,6 +122,8 @@ def calcular_modificacion(t, trials, *, mode: str, point_a: float, point_b: floa
                 return None
 
     elif mode == "interpolate":
+        if point_b is None:
+            raise ValueError("Para interpolar hace falta el punto B.")
         if point_a == point_b:
             raise ValueError("Los puntos A y B no pueden ser iguales para interpolar.")
         i_a, i_b = _time_window_indices(t, point_a, point_b)
@@ -175,7 +180,13 @@ def crear_derivado(td):
                                metadata=copy.deepcopy(td.metadata or {}))
 
 
-def receta(mode: str, point_a: float, point_b: float, discarded) -> dict:
+# Las recetas guardadas antes de la versión 2 escribían B = 0.0 cuando no había B
+# («Cut From The Start»), y B = 0 se leía como «sin B». Desde la 2, «sin B» se
+# guarda como None y B = 0 es un punto válido.
+VERSION_RECETA = 2
+
+
+def receta(mode: str, point_a: float, point_b: float | None, discarded) -> dict:
     """Describe una modificación con lo justo para poder repetirla.
 
     Los descartes vigentes van incluidos porque determinan qué columnas del
@@ -185,9 +196,26 @@ def receta(mode: str, point_a: float, point_b: float, discarded) -> dict:
     return {
         "mode": str(mode),
         "point_a": float(point_a),
-        "point_b": float(point_b),
+        "point_b": None if point_b is None else float(point_b),
         "discarded_indices": sorted(int(i) for i in (discarded or ())),
+        "version": VERSION_RECETA,
     }
+
+
+def punto_b_de_receta(r: dict) -> float | None:
+    """El B de una receta guardada, leído como se aplicó al guardarla.
+
+    En las recetas anteriores a la versión 2, B = 0.0 significaba «sin B» en el
+    modo de anular: se respeta para que un proyecto viejo se reconstruya igual
+    que se guardó.
+    """
+    pb = r.get("point_b")
+    if pb is None:
+        return None
+    pb = float(pb)
+    if pb == 0.0 and r.get("version", 1) < 2 and r.get("mode") in ("blank", "cut"):
+        return None
+    return pb
 
 
 def receta_filtro(low: float, high: float, order: int, tipo: str, fs: float, discarded) -> dict:
@@ -234,7 +262,7 @@ def reaplicar_modificaciones(td, recetas) -> int:
                     t, activos,
                     mode=r.get("mode", ""),
                     point_a=float(r.get("point_a", 0.0)),
-                    point_b=float(r.get("point_b", 0.0)),
+                    point_b=punto_b_de_receta(r),
                 )
             if salida is None:
                 continue

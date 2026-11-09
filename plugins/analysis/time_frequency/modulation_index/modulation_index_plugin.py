@@ -76,7 +76,8 @@ class Modulation_index_plugin(IPlugin):
         return self.widget
 
     def _init_controls(self):
-        self.ui.sampleFqSpinBox.setRange(0, 1_000_000)
+        # Desde 1: con 0 no hay densidad a la que submuestrear
+        self.ui.sampleFqSpinBox.setRange(1, 1_000_000)
         self.ui.sampleFqSpinBox.setSingleStep(100)
         for spin in (self.ui.fqP1SpinBox, self.ui.fqP2SpinBox,
                      self.ui.fqA1SpinBox, self.ui.fqA2SpinBox):
@@ -198,6 +199,7 @@ class Modulation_index_plugin(IPlugin):
             astep=float(self.ui.aStepSpinBox.value()),
         )
         self._handle = handle
+        self._anotar_si_restaura(handle)
         handle.progress.connect(partial(self._on_mi_progress, handle))
         self._trials_en_curso = trials_used([indice + 1], datos.shape[1], "single")
         handle.finished.connect(partial(self._on_mi_done, handle, indice))
@@ -239,7 +241,7 @@ class Modulation_index_plugin(IPlugin):
             self.render_resultado(resultado, indice)
 
             self._avisar_de_los_limites(resultado)
-            self.mark_project_dirty()
+            self.mark_project_dirty(handle)
         except Exception as e:
             self._log("render_resultado:", e)
             self.alerts.error(f"No se pudo dibujar el comodulograma: {e}")
@@ -248,9 +250,14 @@ class Modulation_index_plugin(IPlugin):
             self.process("Done")
 
     def _avisar_de_los_limites(self, r):
-        """Deja constancia en el log de lo que condiciona la lectura del gráfico.
+        """Avisa de lo que condiciona la lectura del gráfico: al log y en una tarjeta.
 
-        **No abre ninguna ventana.** Antes salía un diálogo modal en cada
+        La tarjeta es la del centro de notificaciones (`alerts.warning`), que **no
+        es modal**. Antes estos avisos solo iban al log y no los veía nadie: con
+        los valores por defecto la banda lenta tiene 0,3 ciclos en un trial de
+        3 s, el índice sale alto por azar y nada lo decía.
+
+        **No abre ningún diálogo modal.** Antes salía uno en cada
         cálculo y estorbaba más de lo que ayudaba. Hay además un motivo técnico:
         un modal abre un bucle de eventos anidado y el temporizador de
         `QVTKRenderWindowInteractor` sigue disparando dentro de él; las caídas
@@ -296,6 +303,8 @@ class Modulation_index_plugin(IPlugin):
 
         for aviso in avisos:
             self._log(aviso)
+        if avisos:
+            self.alerts.warning("\n\n".join(avisos), "Índice de modulación")
 
     # =====================================================
     # === VTK

@@ -48,9 +48,9 @@ class TaskProgressBar(QWidget):
     def seguir(self, handle, titulo: str = ""):
         """Engancha un TaskHandle y se muestra mientras la tarea viva.
 
-        Si ya estaba siguiendo otra tarea, la suelta: el orquestador ejecuta una
-        sola a la vez y `submit()` descarta las que ese mismo dueño tuviera en
-        cola, así que la última es siempre la vigente.
+        Si ya estaba siguiendo otra tarea, la suelta. `task_started` llega cuando
+        una tarea empieza a correr y el orquestador ejecuta una sola a la vez, así
+        que la que llega es siempre la que está corriendo.
         """
         if handle is None:
             return

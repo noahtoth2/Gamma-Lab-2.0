@@ -27,6 +27,11 @@ def tasa_efectiva(fs_calculado, fs):
     de frecuencias un 11 % (problema nº 18). MATLAB calcula `srate/srt`, esta
     misma tasa, y `fft_average` tambien; el wavelet era el unico que no.
     """
+    # Con 0 la división de abajo revienta con un ZeroDivisionError sin explicación;
+    # en Wavelet ocurría en el hilo de la interfaz y PyQt 5.15 cierra la aplicación
+    # ante una excepción no atrapada en un slot.
+    if fs <= 0:
+        raise ValueError(f"La densidad de muestreo debe ser mayor que cero (se recibió {fs:g}).")
     factor = max(1, int(round(fs_calculado / fs)))
     return fs_calculado / factor, factor
 
