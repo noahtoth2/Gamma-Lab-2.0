@@ -98,8 +98,8 @@ LOS REQUISITOS PARA EL TÍTULO EN INGENIERÍA DE SISTEMAS}
 \newcommand{\directorCarrera}{Ing. Nombre de la Directora de Carrera}
 
 % Nombres de los archivos de imagen (subalos con estos nombres)
-\newcommand{\logoUniversidad}{imagen_logo_universidad}
-\newcommand{\logoProyecto}{imagen_logo_gammalab}
+\newcommand{\logoUniversidad}{LogoJaveriana}
+\newcommand{\logoProyecto}{GammaLab2.0}
 %=====================================================================
 
 %------------------- Utilidades internas -----------------------------
@@ -599,6 +599,7 @@ Archivos de pruebas & 14 & $\approx$ 70 \\
 \label{tab:comparacion_arquitectura}
 \end{table}
 
+Las decisiones de diseño se materializan en una estructura de paquetes que organiza el código fuente de Gamma Lab 2.0 en tres áreas principales: la interfaz gráfica, el núcleo y las extensiones. El núcleo concentra los servicios compartidos, los modelos de datos y las utilidades comunes, mientras que las extensiones agrupan las funcionalidades de procesamiento y análisis, separando la lógica de cálculo de sus componentes gráficos. La Figura~\ref{fig:estructura-archivos} presenta la organización resultante del código y la distribución de sus principales módulos y servicios.
 
 \begin{figure}[H]
 \centering
@@ -647,9 +648,6 @@ Bajo esta estructura, un mismo \textit{plugin} puede enviar múltiples tareas al
 
 \begin{table}[!htb]
   \centering
-  \caption{Elementos del contrato de solicitud del orquestador}
-  \label{tab:elementos-orquestador}
-  \vspace{4pt}
   \small\setstretch{1}
   \renewcommand{\arraystretch}{1.15}
   \begin{tabular}{|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}p{11.3cm}|}
@@ -661,6 +659,8 @@ Bajo esta estructura, un mismo \textit{plugin} puede enviar múltiples tareas al
     \textit{TaskContext} & Contexto opcional que proporciona mecanismos para reportar el progreso y consultar solicitudes de cancelación. \\ \hline
     \textit{task\_started} & Señal global que notifica el inicio de una tarea y permite actualizar la barra de progreso. \\ \hline
   \end{tabular}
+\caption{Elementos del contrato de solicitud del orquestador}
+\label{tab:elementos-orquestador}
 \end{table}
 
 La gestión de las tareas contempla cuatro estados: \textit{queued}, cuando permanece en espera; \textit{running}, durante su ejecución; \textit{done}, cuando finaliza o presenta un error; y \textit{cancelled}, cuando se cancela o descarta. Sobre este ciclo de vida se aplican tres mecanismos: reemplazo, que descarta las solicitudes anteriores del mismo propietario que permanecen en espera y, en la mayoría de los módulos, cancela también la tarea en ejecución; cancelación por contexto, que permite detener las tareas asociadas a un \textit{plugin} al abandonar su módulo o cerrar un proyecto; y cancelación cooperativa, mediante la cual las tareas consultan las solicitudes de interrupción durante su procesamiento. Si una tarea no responde dentro del tiempo establecido, el servicio la desvincula de su gestión y descarta sus resultados posteriores. Los errores se notifican mediante el manejador, permitiendo continuar con las demás solicitudes.
@@ -671,9 +671,6 @@ La integración del orquestador con los demás componentes se establece mediante
 
 \begin{table}[H]
   \centering
-  \caption{Relación del orquestador con los demás componentes}
-  \label{tab:relaciones-orquestador}
-  \vspace{4pt}
   \small\setstretch{1}
   \renewcommand{\arraystretch}{1.15}
   \begin{tabular}{|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}p{11.3cm}|}
@@ -687,9 +684,11 @@ La integración del orquestador con los demás componentes se establece mediante
     \textit{Plugins} & Proporcionan las funciones de cálculo que se envían al orquestador desde los módulos de análisis, preprocesamiento y entrada y salida. \\ \hline
     \textit{parallel.py} & Proporciona el mecanismo de paralelismo interno utilizado por las tareas que distribuyen el procesamiento entre varios hilos. \\ \hline
   \end{tabular}
+\caption{Relación del orquestador con los demás componentes}
+\label{tab:relaciones-orquestador}
 \end{table}
 
-\subsection{Vista de arquitectura}
+\subsection{Vistas de arquitectura}
 
 \subsubsection{Vista lógica}
 
@@ -699,6 +698,10 @@ La integración del orquestador con los demás componentes se establece mediante
   \caption{Diagrama de actividades de Gamma Lab 2.0}
   \label{fig:diagrama-actividad}
 \end{figure}
+
+El flujo de trabajo de Gamma Lab 2.0 comienza con la inicialización de la aplicación, durante la cual se registran los servicios del sistema y se descubren las extensiones disponibles. Una vez iniciado, el investigador puede abrir un proyecto existente desde Home o cargar una señal desde un archivo compatible mediante \texttt{FileIOService}. En el primer caso, el sistema recupera la señal y el trabajo previo; en el segundo, incorpora los datos de la señal a la sesión. En ambos casos, la información se publica en el \texttt{DataStore} para su utilización en las etapas posteriores. Sobre estos datos, el investigador puede realizar tareas de preprocesamiento, como la generación y edición de ensayos, la selección de segmentos, la eliminación de artefactos y la aplicación de filtros, con el fin de preparar las señales para su análisis.
+
+Con los datos preparados, el investigador puede ejecutar los métodos de análisis disponibles e interactuar con sus resultados mediante las herramientas de visualización. Estas operaciones son coordinadas por el \texttt{TaskOrchestrator}, que gestiona la ejecución de los cálculos y permite cancelar las tareas en curso sin interrumpir el resto de la sesión. Para facilitar la exploración de señales de gran tamaño, el sistema contempla el uso de submuestreo durante su representación visual. El flujo mantiene un carácter iterativo, ya que el investigador puede regresar al preprocesamiento, ajustar los datos y realizar nuevos análisis según los resultados obtenidos. Finalmente, puede exportar los resultados, guardar el proyecto para conservar el trabajo realizado y cerrar la sesión, momento en el que el sistema finaliza las operaciones activas y libera los recursos utilizados.
 
 \subsubsection{Vista Física}
 
@@ -828,9 +831,6 @@ La ampliación agrega tres módulos al Subsistema de Análisis: PAC (\textit{pha
 
 \begin{table}[H]
   \centering
-  \caption{Técnicas de la ampliación del alcance analítico}
-  \label{tab:tecnicas}
-  \vspace{4pt}
   \small\setstretch{1}
   \renewcommand{\arraystretch}{1.15}
   \begin{tabular}{|>{\raggedright\arraybackslash}p{2.6cm}|>{\raggedright\arraybackslash}p{6.6cm}|>{\raggedright\arraybackslash}p{5.0cm}|}
@@ -843,6 +843,8 @@ La ampliación agrega tres módulos al Subsistema de Análisis: PAC (\textit{pha
     Índice de modulación & Un \textit{trial} del canal activo, los rangos de fase y de amplitud con sus pasos, y la densidad de muestreo & Comodulograma \\ \hline
     PPC & Los \textit{trials} de dos canales con el mismo corte, el rango de frecuencias, la ventana mínima, los ciclos de la \textit{wavelet} y la densidad de muestreo & Mapa frecuencia-tiempo \\ \hline
   \end{tabular}
+\caption{Técnicas de la ampliación del alcance analítico}
+\label{tab:tecnicas}
 \end{table}
 
 \subsubsubsection{Criterios de diseño}
@@ -869,9 +871,6 @@ La ampliación se organiza en tres niveles de responsabilidad, coherentes con la
 
 \begin{table}[H]
   \centering
-  \caption{Componentes de cálculo compartidos}
-  \label{tab:componentes-compartidos}
-  \vspace{4pt}
   \small\setstretch{1}
   \renewcommand{\arraystretch}{1.15}
   \begin{tabular}{|>{\raggedright\arraybackslash}p{3.6cm}|>{\raggedright\arraybackslash}p{6.7cm}|>{\raggedright\arraybackslash}p{3.9cm}|}
@@ -882,6 +881,8 @@ La ampliación se organiza en tres niveles de responsabilidad, coherentes con la
     Tasa efectiva & Determinar la frecuencia de muestreo real después del submuestreo & PAC, índice de modulación, PPC \\ \hline
     Reparto de \textit{trials} & Distribuir los \textit{trials} para procesarlos en paralelo, según la memoria disponible & PAC \textit{Average}, PPC \\ \hline
   \end{tabular}
+\caption{Componentes de cálculo compartidos}
+\label{tab:componentes-compartidos}
 \end{table}
 
 La \textit{wavelet} de Morse \cite{lilly2012} permanece dentro de PAC porque ningún otro módulo la necesita.
@@ -997,9 +998,6 @@ Como el diseño toma BOARD-FTD-PACC \cite{gauthier2023} como referencia, la Tabl
 
 \begin{table}[!htb]
   \centering
-  \caption{Diferencias deliberadas con BOARD-FTD-PACC \cite{gauthier2023}}
-  \label{tab:diferencias}
-  \vspace{4pt}
   \small\setstretch{1}
   \renewcommand{\arraystretch}{1.15}
   \begin{tabular}{|>{\raggedright\arraybackslash}p{2.5cm}|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}p{3.4cm}|>{\raggedright\arraybackslash}p{4.7cm}|}
@@ -1014,6 +1012,8 @@ Como el diseño toma BOARD-FTD-PACC \cite{gauthier2023} como referencia, la Tabl
     Ciclos junto al borde en PAC Psel & Detienen el análisis & Se omiten y se informa cuántos & Un ciclo del borde no debe detener todo el análisis \\ \hline
     Señales mostradas en PAC & Con un desfase acumulado & Sin desfase & El desfase contradecía al mapa que aparece junto a ellas \\ \hline
   \end{tabular}
+\caption{Diferencias deliberadas con BOARD-FTD-PACC \cite{gauthier2023}}
+\label{tab:diferencias}
 \end{table}
 
 \subsubsubsection{Persistencia y exportación}
@@ -1028,9 +1028,6 @@ Algunos datos o parámetros permitirían calcular un resultado engañoso sin que
 
 \begin{table}[!htb]
   \centering
-  \caption{Respuesta ante entradas que comprometen el resultado}
-  \label{tab:controles}
-  \vspace{4pt}
   \small\setstretch{1}
   \renewcommand{\arraystretch}{1.15}
   \begin{tabular}{|>{\raggedright\arraybackslash}p{6.9cm}|>{\raggedright\arraybackslash}p{7.8cm}|}
@@ -1047,6 +1044,8 @@ Algunos datos o parámetros permitirían calcular un resultado engañoso sin que
     Frecuencias con menos muestras de las pedidas (PPC) & Se advierte bajo la gráfica y en la exportación \\ \hline
     Menos de seis ciclos de la banda lenta (índice de modulación) & Queda constancia en el registro; el cálculo no cambia \\ \hline
   \end{tabular}
+\caption{Respuesta ante entradas que comprometen el resultado}
+\label{tab:controles}
 \end{table}
 
 \subsubsubsection{Límites del diseño}

@@ -263,7 +263,6 @@ La Tabla~\ref{tab:td_servicios} presenta cada suite, lo que verifica y su result
 \begin{center}
 \footnotesize
 \begin{longtable}{|>{\raggedright\arraybackslash}p{0.22\textwidth}|>{\raggedright\arraybackslash}p{0.33\textwidth}|>{\centering\arraybackslash}p{0.09\textwidth}|>{\centering\arraybackslash}p{0.11\textwidth}|>{\raggedright\arraybackslash}p{0.10\textwidth}|}
-\caption{Resultados de las pruebas unitarias y de integración del núcleo} \label{tab:td_servicios} \\
 \hline
 \textbf{Suite} & \textbf{Qué verifica} & \textbf{Pruebas} & \textbf{Aprobadas} & \textbf{Resultado} \\
 \hline
@@ -274,6 +273,9 @@ La Tabla~\ref{tab:td_servicios} presenta cada suite, lo que verifica y su result
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Resultados de las pruebas unitarias y de integración del núcleo} \label{tab:td_servicios} \\
+\endlastfoot
 \textit{test\_apertura\_proyecto} & La apertura de un proyecto lee el archivo fuera del hilo de interfaz y el guardado no vuelve a copiar la señal (R04). & 5 & 5 & Aprobada \\
 \hline
 \textit{test\_artifact\_remove\_orquestador} & \textit{Remove Artifact} calcula a través del servicio de tareas sin modificar los datos compartidos ni crear hilos propios. & 6 & 6 & Aprobada \\
@@ -361,7 +363,6 @@ Cada módulo de análisis separa el cálculo, que recibe y devuelve arreglos num
 \begin{center}
 \footnotesize
 \begin{longtable}{|>{\raggedright\arraybackslash}p{0.22\textwidth}|>{\raggedright\arraybackslash}p{0.33\textwidth}|>{\centering\arraybackslash}p{0.09\textwidth}|>{\centering\arraybackslash}p{0.11\textwidth}|>{\raggedright\arraybackslash}p{0.10\textwidth}|}
-\caption{Resultados de las pruebas de los módulos de análisis} \label{tab:td_modulos} \\
 \hline
 \textbf{Suite} & \textbf{Qué verifica} & \textbf{Pruebas} & \textbf{Aprobadas} & \textbf{Resultado} \\
 \hline
@@ -372,6 +373,9 @@ Cada módulo de análisis separa el cálculo, que recibe y devuelve arreglos num
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Resultados de las pruebas de los módulos de análisis} \label{tab:td_modulos} \\
+\endlastfoot
 \textit{test\_average\_seleccion} & \textit{Average} promedia solo los \textit{trials} seleccionados por el usuario (R41). & 8 & 8 & Aprobada \\
 \hline
 \textit{test\_ayudas\_controles} & Todos los controles de cada módulo tienen descripción emergente (R42). & 21 & 21 & Aprobada \\
@@ -436,7 +440,6 @@ Cada análisis se somete a tres criterios: la \textbf{estructura}, que exige las
 \begin{center}
 \small
 \begin{longtable}{|>{\raggedright\arraybackslash}p{0.15\textwidth}|>{\centering\arraybackslash}p{0.13\textwidth}|>{\centering\arraybackslash}p{0.13\textwidth}|>{\centering\arraybackslash}p{0.14\textwidth}|>{\centering\arraybackslash}p{0.14\textwidth}|>{\centering\arraybackslash}p{0.14\textwidth}|}
-\caption{Resultados de la validación frente a BOARD-FTD-PACC} \label{tab:td_validacion} \\
 \hline
 \textbf{Análisis} & \textbf{Correlación mínima} & \textbf{Tolerancia punto a punto} & \textbf{Estructura} & \textbf{Correlación} & \textbf{Punto a punto} \\
 \hline
@@ -447,6 +450,9 @@ Cada análisis se somete a tres criterios: la \textbf{estructura}, que exige las
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Resultados de la validación frente a BOARD-FTD-PACC} \label{tab:td_validacion} \\
+\endlastfoot
 \textit{Average} & 0,98 & 0,001 & Aprobada & Aprobada & Aprobada \\
 \hline
 ERP & 0,98 & 0,001 & Aprobada & Aprobada & Aprobada \\
@@ -486,7 +492,6 @@ Como complemento de la comparación numérica, el usuario revisará las gráfica
 \begin{center}
 \small
 \begin{longtable}{|>{\raggedright\arraybackslash}p{0.20\textwidth}|>{\raggedright\arraybackslash}p{0.48\textwidth}|>{\raggedright\arraybackslash}p{0.22\textwidth}|}
-\caption{Registro de la comparación visual con el usuario} \label{tab:td_visual} \\
 \hline
 \textbf{Análisis} & \textbf{Observación del usuario} & \textbf{Resultado} \\
 \hline
@@ -497,6 +502,9 @@ Como complemento de la comparación numérica, el usuario revisará las gráfica
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Registro de la comparación visual con el usuario} \label{tab:td_visual} \\
+\endlastfoot
 \textit{Average} & \rule{0pt}{2.2em} & \casilla{} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
 \hline
 ERP & \rule{0pt}{2.2em} & \casilla{} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
@@ -537,7 +545,6 @@ La verificación combina tres medios. Las pruebas automáticas comprueban los co
 \begin{center}
 \footnotesize
 \begin{longtable}{|>{\raggedright\arraybackslash}p{0.22\textwidth}|>{\raggedright\arraybackslash}p{0.33\textwidth}|>{\centering\arraybackslash}p{0.09\textwidth}|>{\centering\arraybackslash}p{0.11\textwidth}|>{\raggedright\arraybackslash}p{0.10\textwidth}|}
-\caption{Resultados de las pruebas de rendimiento} \label{tab:td_perf} \\
 \hline
 \textbf{Suite} & \textbf{Qué verifica} & \textbf{Pruebas} & \textbf{Aprobadas} & \textbf{Resultado} \\
 \hline
@@ -548,6 +555,9 @@ La verificación combina tres medios. Las pruebas automáticas comprueban los co
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Resultados de las pruebas de rendimiento} \label{tab:td_perf} \\
+\endlastfoot
 \textit{test\_compute\_bench} & Tiempo de cómputo de los análisis (FFT, PSD, promedio, \textit{wavelet} y sus variantes) sobre una señal real. & 7 & 7 & Aprobada \\
 \hline
 \textit{test\_io\_bench} & Tiempo de carga de archivos, de corte de \textit{trials} y de las operaciones del almacén en memoria. & 4 & 4 & Aprobada \\
@@ -569,7 +579,6 @@ La Tabla~\ref{tab:td_nfr_p} contrasta cada requisito de rendimiento con su verif
 \begin{center}
 \small
 \begin{longtable}{|>{\raggedright\arraybackslash}p{0.13\textwidth}|>{\raggedright\arraybackslash}p{0.19\textwidth}|>{\raggedright\arraybackslash}p{0.40\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|}
-\caption{Verificación de los requisitos de rendimiento} \label{tab:td_nfr_p} \\
 \hline
 \textbf{Requisito} & \textbf{Criterio} & \textbf{Verificación y medición} & \textbf{Resultado} \\
 \hline
@@ -580,6 +589,9 @@ La Tabla~\ref{tab:td_nfr_p} contrasta cada requisito de rendimiento con su verif
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Verificación de los requisitos de rendimiento} \label{tab:td_nfr_p} \\
+\endlastfoot
 NFR-P-01 (R11) & Liberar la señal al cerrar el proyecto & Pruebas automáticas y medición: tras cerrar el proyecto no queda ninguna copia viva de la señal (\textit{test\_liberar\_senal}). & Cumple. \\
 \hline
 NFR-P-02 (R45) & Liberar recursos gráficos al salir del módulo & Pruebas automáticas de la liberación. Medición: al recorrer los módulos de análisis, el proceso pasa de 3.118 MB sin liberar a 2.585 MB con la configuración actual (\textit{test\_liberar\_ventanas}). & Cumple. \\
@@ -624,7 +636,6 @@ Dos requisitos presentan matices. En NFR-P-05 la mediana de cuadros por segundo 
 \begin{center}
 \small
 \begin{longtable}{|>{\raggedright\arraybackslash}p{0.13\textwidth}|>{\raggedright\arraybackslash}p{0.19\textwidth}|>{\raggedright\arraybackslash}p{0.40\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|}
-\caption{Verificación de los requisitos de confiabilidad y soporte} \label{tab:td_nfr_rs} \\
 \hline
 \textbf{Requisito} & \textbf{Criterio} & \textbf{Verificación y medición} & \textbf{Resultado} \\
 \hline
@@ -635,6 +646,9 @@ Dos requisitos presentan matices. En NFR-P-05 la mediana de cuadros por segundo 
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Verificación de los requisitos de confiabilidad y soporte} \label{tab:td_nfr_rs} \\
+\endlastfoot
 NFR-R-01 (R46) & Terminar los hilos al cancelar o cerrar & Pruebas automáticas de la cancelación cooperativa, del desligado a los dos segundos y del cambio de sección (\textit{test\_task\_service}, \textit{test\_cancelacion\_al\_cambiar\_seccion}). & Cumple. \\
 \hline
 NFR-R-02 (R54) & Sincronizar el estado compartido & Pruebas automáticas de la concurrencia sobre el almacén (\textit{test\_data\_store\_concurrencia}). & Cumple. \\
@@ -688,13 +702,15 @@ Los datos de prueba son la señal \textit{17308005.abf} y, a elección del parti
 \begin{center}
 \small
 \begin{longtable}{|>{\raggedright\arraybackslash}p{0.27\textwidth}|>{\raggedright\arraybackslash}p{0.63\textwidth}|}
-\caption{Caso de prueba de usabilidad UT-01} \label{tab:ut-01} \\
 \hline
 \endfirsthead
 \hline
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Caso de prueba de usabilidad UT-01} \label{tab:ut-01} \\
+\endlastfoot
 \textbf{Id} & UT-01 \\
 \hline
 \textbf{Caso de prueba} & Primer arranque y orientación en la interfaz \\
@@ -734,13 +750,15 @@ Los datos de prueba son la señal \textit{17308005.abf} y, a elección del parti
 \begin{center}
 \small
 \begin{longtable}{|>{\raggedright\arraybackslash}p{0.27\textwidth}|>{\raggedright\arraybackslash}p{0.63\textwidth}|}
-\caption{Caso de prueba de usabilidad UT-02} \label{tab:ut-02} \\
 \hline
 \endfirsthead
 \hline
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Caso de prueba de usabilidad UT-02} \label{tab:ut-02} \\
+\endlastfoot
 \textbf{Id} & UT-02 \\
 \hline
 \textbf{Caso de prueba} & Cargar una señal e inspeccionarla \\
@@ -780,13 +798,15 @@ Los datos de prueba son la señal \textit{17308005.abf} y, a elección del parti
 \begin{center}
 \small
 \begin{longtable}{|>{\raggedright\arraybackslash}p{0.27\textwidth}|>{\raggedright\arraybackslash}p{0.63\textwidth}|}
-\caption{Caso de prueba de usabilidad UT-03} \label{tab:ut-03} \\
 \hline
 \endfirsthead
 \hline
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Caso de prueba de usabilidad UT-03} \label{tab:ut-03} \\
+\endlastfoot
 \textbf{Id} & UT-03 \\
 \hline
 \textbf{Caso de prueba} & Generar, revisar y descartar \textit{trials} \\
@@ -826,13 +846,15 @@ Los datos de prueba son la señal \textit{17308005.abf} y, a elección del parti
 \begin{center}
 \small
 \begin{longtable}{|>{\raggedright\arraybackslash}p{0.27\textwidth}|>{\raggedright\arraybackslash}p{0.63\textwidth}|}
-\caption{Caso de prueba de usabilidad UT-04} \label{tab:ut-04} \\
 \hline
 \endfirsthead
 \hline
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Caso de prueba de usabilidad UT-04} \label{tab:ut-04} \\
+\endlastfoot
 \textbf{Id} & UT-04 \\
 \hline
 \textbf{Caso de prueba} & Remover un artefacto con medidas \\
@@ -872,13 +894,15 @@ Los datos de prueba son la señal \textit{17308005.abf} y, a elección del parti
 \begin{center}
 \small
 \begin{longtable}{|>{\raggedright\arraybackslash}p{0.27\textwidth}|>{\raggedright\arraybackslash}p{0.63\textwidth}|}
-\caption{Caso de prueba de usabilidad UT-05} \label{tab:ut-05} \\
 \hline
 \endfirsthead
 \hline
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Caso de prueba de usabilidad UT-05} \label{tab:ut-05} \\
+\endlastfoot
 \textbf{Id} & UT-05 \\
 \hline
 \textbf{Caso de prueba} & Filtrar los \textit{trials} \\
@@ -918,13 +942,15 @@ Los datos de prueba son la señal \textit{17308005.abf} y, a elección del parti
 \begin{center}
 \small
 \begin{longtable}{|>{\raggedright\arraybackslash}p{0.27\textwidth}|>{\raggedright\arraybackslash}p{0.63\textwidth}|}
-\caption{Caso de prueba de usabilidad UT-06} \label{tab:ut-06} \\
 \hline
 \endfirsthead
 \hline
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Caso de prueba de usabilidad UT-06} \label{tab:ut-06} \\
+\endlastfoot
 \textbf{Id} & UT-06 \\
 \hline
 \textbf{Caso de prueba} & Análisis PAC de un canal \\
@@ -964,13 +990,15 @@ Los datos de prueba son la señal \textit{17308005.abf} y, a elección del parti
 \begin{center}
 \small
 \begin{longtable}{|>{\raggedright\arraybackslash}p{0.27\textwidth}|>{\raggedright\arraybackslash}p{0.63\textwidth}|}
-\caption{Caso de prueba de usabilidad UT-07} \label{tab:ut-07} \\
 \hline
 \endfirsthead
 \hline
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Caso de prueba de usabilidad UT-07} \label{tab:ut-07} \\
+\endlastfoot
 \textbf{Id} & UT-07 \\
 \hline
 \textbf{Caso de prueba} & PAC entre canales y PPC \\
@@ -1010,13 +1038,15 @@ Los datos de prueba son la señal \textit{17308005.abf} y, a elección del parti
 \begin{center}
 \small
 \begin{longtable}{|>{\raggedright\arraybackslash}p{0.27\textwidth}|>{\raggedright\arraybackslash}p{0.63\textwidth}|}
-\caption{Caso de prueba de usabilidad UT-08} \label{tab:ut-08} \\
 \hline
 \endfirsthead
 \hline
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Caso de prueba de usabilidad UT-08} \label{tab:ut-08} \\
+\endlastfoot
 \textbf{Id} & UT-08 \\
 \hline
 \textbf{Caso de prueba} & Tomar medidas y exportar resultados \\
@@ -1056,13 +1086,15 @@ Los datos de prueba son la señal \textit{17308005.abf} y, a elección del parti
 \begin{center}
 \small
 \begin{longtable}{|>{\raggedright\arraybackslash}p{0.27\textwidth}|>{\raggedright\arraybackslash}p{0.63\textwidth}|}
-\caption{Caso de prueba de usabilidad UT-09} \label{tab:ut-09} \\
 \hline
 \endfirsthead
 \hline
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Caso de prueba de usabilidad UT-09} \label{tab:ut-09} \\
+\endlastfoot
 \textbf{Id} & UT-09 \\
 \hline
 \textbf{Caso de prueba} & Cancelar un cálculo pesado \\
@@ -1102,13 +1134,15 @@ Los datos de prueba son la señal \textit{17308005.abf} y, a elección del parti
 \begin{center}
 \small
 \begin{longtable}{|>{\raggedright\arraybackslash}p{0.27\textwidth}|>{\raggedright\arraybackslash}p{0.63\textwidth}|}
-\caption{Caso de prueba de usabilidad UT-10} \label{tab:ut-10} \\
 \hline
 \endfirsthead
 \hline
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Caso de prueba de usabilidad UT-10} \label{tab:ut-10} \\
+\endlastfoot
 \textbf{Id} & UT-10 \\
 \hline
 \textbf{Caso de prueba} & Guardar, cerrar y abrir un proyecto \\
@@ -1151,7 +1185,6 @@ Los datos de prueba son la señal \textit{17308005.abf} y, a elección del parti
 \begin{center}
 \footnotesize
 \begin{longtable}{|>{\raggedright\arraybackslash}p{0.09\textwidth}|>{\centering\arraybackslash}p{0.13\textwidth}|>{\centering\arraybackslash}p{0.12\textwidth}|>{\centering\arraybackslash}p{0.09\textwidth}|>{\centering\arraybackslash}p{0.09\textwidth}|>{\raggedright\arraybackslash}p{0.28\textwidth}|}
-\caption{Consolidado de las pruebas de usabilidad} \label{tab:td_ut_consolidado} \\
 \hline
 \textbf{Caso} & \textbf{Completado} & \textbf{Tiempo (min)} & \textbf{Errores} & \textbf{Ayudas} & \textbf{Observaciones} \\
 \hline
@@ -1162,6 +1195,9 @@ Los datos de prueba son la señal \textit{17308005.abf} y, a elección del parti
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Consolidado de las pruebas de usabilidad} \label{tab:td_ut_consolidado} \\
+\endlastfoot
 UT-01 & & & & & \rule{0pt}{1.6em} \\
 \hline
 UT-02 & & & & & \rule{0pt}{1.6em} \\
@@ -1191,7 +1227,6 @@ El participante califica cada afirmación de la Tabla~\ref{tab:td_sus} de 1 (tot
 \begin{center}
 \small
 \begin{longtable}{|>{\centering\arraybackslash}p{0.04\textwidth}|>{\raggedright\arraybackslash}p{0.56\textwidth}|c|c|c|c|c|}
-\caption{Cuestionario SUS} \label{tab:td_sus} \\
 \hline
 \textbf{N.\textsuperscript{o}} & \textbf{Afirmación} & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5} \\
 \hline
@@ -1202,6 +1237,9 @@ El participante califica cada afirmación de la Tabla~\ref{tab:td_sus} de 1 (tot
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Cuestionario SUS} \label{tab:td_sus} \\
+\endlastfoot
 1 & Creo que me gustaría usar este sistema con frecuencia. & & & & & \\
 \hline
 2 & Encontré el sistema innecesariamente complejo. & & & & & \\
@@ -3115,7 +3153,6 @@ La Tabla~\ref{tab:td_trazabilidad} relaciona cada uno de los 81 requisitos del S
 \begin{center}
 \footnotesize
 \begin{longtable}{|>{\raggedright\arraybackslash}p{0.12\textwidth}|>{\raggedright\arraybackslash}p{0.07\textwidth}|>{\raggedright\arraybackslash}p{0.24\textwidth}|>{\raggedright\arraybackslash}p{0.45\textwidth}|}
-\caption{Trazabilidad entre requisitos y pruebas} \label{tab:td_trazabilidad} \\
 \hline
 \textbf{Requisito} & \textbf{Matriz} & \textbf{Descripción breve} & \textbf{Prueba o verificación} \\
 \hline
@@ -3126,6 +3163,9 @@ La Tabla~\ref{tab:td_trazabilidad} relaciona cada uno de los 81 requisitos del S
 \endhead
 \hline
 \endfoot
+\hline
+\caption{Trazabilidad entre requisitos y pruebas} \label{tab:td_trazabilidad} \\
+\endlastfoot
 FR-IO-01 & R08 & Persistir la señal cargada & Pruebas automáticas del almacén de datos y de la lectura sin duplicación (\textit{test\_dataset}, \textit{test\_fileio\_sin\_duplicar}). \\
 \hline
 FR-IO-02 & R80 & Cargar señales ABF, EDF y MAT & Pruebas automáticas de la lectura de ABF y EDF; la de MAT se comprueba en la prueba del programa instalado (\textit{test\_fileio\_abf}, \textit{test\_fileio\_edf}, \textit{prueba\_congelado}). \\

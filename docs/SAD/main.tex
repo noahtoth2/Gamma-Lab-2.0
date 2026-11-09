@@ -55,7 +55,7 @@
 \begin{center}
     % Logos institucionales (reemplazar con los archivos reales)
     \includegraphics[height=2cm]{LogoJaveriana.png}\hspace{1cm}
-    \includegraphics[height=2cm]{GammaLab2.0.png} 
+    \includegraphics[height=2cm]{GammaLab2.0.png}
 
     \vspace{0.5cm}
     {\large \textbf{Pontificia Universidad Javeriana}}\\
@@ -146,7 +146,6 @@ correspondientes.
 \subsection{Definiciones y acr\'onimos}
 
 \begin{longtable}{@{}p{3.2cm}p{11cm}@{}}
-\caption{Acr\'onimos y t\'erminos utilizados en el documento} \\
 \toprule
 \textbf{Sigla / T\'ermino} & \textbf{Definici\'on} \\
 \midrule
@@ -173,6 +172,7 @@ EDF & European Data Format. Formato est\'andar para se\~nales biom\'edicas. \\
 ABF & Axon Binary File. Formato de archivo utilizado por Axon Instruments para registros biom\'edicos. \\
 GUI Toolkit & Conjunto de herramientas para construir interfaces gr\'aficas (Qt, PyQt, VTK). \\
 \bottomrule
+\caption{Acr\'onimos y t\'erminos utilizados en el documento} \\
 \end{longtable}
 
 \subsection{Audiencia}
@@ -311,7 +311,6 @@ Un \textit{stakeholder} es toda persona o entidad que afecta el desarrollo de Ga
                   >{\raggedright\arraybackslash}p{5.7cm}
                   >{\raggedright\arraybackslash}p{3.0cm}@{}}
 
-\caption{Stakeholders de GammaLab v2.0, rol según el PMP y necesidades que condicionan la arquitectura} \label{tab:stakeholders} \\
 \toprule
 \textbf{Stakeholder} &
 \textbf{Rol en el proyecto} &
@@ -329,6 +328,7 @@ Un \textit{stakeholder} es toda persona o entidad que afecta el desarrollo de Ga
 \endhead
 
 \bottomrule
+\caption{Stakeholders de GammaLab v2.0, rol según el PMP y necesidades que condicionan la arquitectura} \label{tab:stakeholders} \\
 \endlastfoot
 
 \textbf{Laboratorio de Electrofisiología} (Universidad Nacional de Colombia)
@@ -386,8 +386,6 @@ La Tabla~\ref{tab:stakeholders_calidad} resume qué atributos de calidad importa
 
 \begin{table}[H]
 \centering
-\caption{Matriz de interés de los stakeholders por atributo de calidad}
-\label{tab:stakeholders_calidad}
 \begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.2cm}cccc@{}}
 \toprule
 \textbf{Stakeholder} & \textbf{Usabilidad} & \textbf{Rendimiento} & \textbf{Confiabilidad} & \textbf{Soporte} \\
@@ -399,6 +397,8 @@ Revisores académicos & $\circ$ & $\bullet$ & $\bullet$ & $\circ$ \\
 Comunidad científica & $\circ$ & N/A & $\circ$ & $\bullet$ \\
 \bottomrule
 \end{tabular}
+\caption{Matriz de interés de los stakeholders por atributo de calidad}
+\label{tab:stakeholders_calidad}
 \end{table}
 
 \subsubsection{Criterios de éxito del PMP y su implicación arquitectónica}
@@ -409,7 +409,6 @@ El PMP define criterios de éxito cuantificables para el proyecto. No todos son 
                   >{\raggedright\arraybackslash}p{2.6cm}
                   >{\raggedright\arraybackslash}p{6.9cm}@{}}
 
-\caption{Criterios de éxito del PMP con impacto arquitectónico} \label{tab:criterios_exito} \\
 \toprule
 \textbf{Criterio de éxito (PMP)} &
 \textbf{Atributo} &
@@ -425,6 +424,7 @@ El PMP define criterios de éxito cuantificables para el proyecto. No todos son 
 \endhead
 
 \bottomrule
+\caption{Criterios de éxito del PMP con impacto arquitectónico} \label{tab:criterios_exito} \\
 \endlastfoot
 
 Mejora de al menos 20--30\,\% en los tiempos de procesamiento respecto a GammaLab v1.0, derivada de la paralelización.
@@ -479,7 +479,6 @@ La clasificación sigue el modelo FURPS+ \cite{eeles2001} adoptado por el SRS, d
                   >{\raggedright\arraybackslash}p{4.8cm}
                   >{\raggedright\arraybackslash}p{2.2cm}@{}}
 
-\caption{Resumen de los atributos de calidad de GammaLab v2.0} \label{tab:resumen_atributos} \\
 \toprule
 \textbf{Atributo} &
 \textbf{Qué garantiza} &
@@ -497,6 +496,7 @@ La clasificación sigue el modelo FURPS+ \cite{eeles2001} adoptado por el SRS, d
 \endhead
 
 \bottomrule
+\caption{Resumen de los atributos de calidad de GammaLab v2.0} \label{tab:resumen_atributos} \\
 \endlastfoot
 
 \textbf{Rendimiento}
@@ -609,7 +609,6 @@ Los atributos no son independientes: mejorar uno suele costar algo de otro. Hace
                   >{\raggedright\arraybackslash}p{4.9cm}
                   >{\raggedright\arraybackslash}p{6.8cm}@{}}
 
-\caption{Compromisos entre atributos de calidad y decisión adoptada} \label{tab:compromisos} \\
 \toprule
 \textbf{Atributos en tensión} &
 \textbf{Tensión} &
@@ -625,6 +624,7 @@ Los atributos no son independientes: mejorar uno suele costar algo de otro. Hace
 \endhead
 
 \bottomrule
+\caption{Compromisos entre atributos de calidad y decisión adoptada} \label{tab:compromisos} \\
 \endlastfoot
 
 Rendimiento frente a Confiabilidad
@@ -668,7 +668,6 @@ Un supuesto es una condición que se considera cierta durante el diseño sin que
                   >{\raggedright\arraybackslash}p{1.9cm}
                   >{\raggedright\arraybackslash}p{5.5cm}@{}}
 
-\caption{Supuestos de GammaLab v2.0, su fuente y su impacto} \label{tab:supuestos} \\
 \toprule
 \textbf{ID} &
 \textbf{Supuesto} &
@@ -686,6 +685,7 @@ Un supuesto es una condición que se considera cierta durante el diseño sin que
 \endhead
 
 \bottomrule
+\caption{Supuestos de GammaLab v2.0, su fuente y su impacto} \label{tab:supuestos} \\
 \endlastfoot
 
 \multicolumn{4}{@{}l}{\textit{Entorno de ejecución}} \\
@@ -1149,9 +1149,7 @@ El subsistema \textbf{Interfaz y Usabilidad} agrupa los casos de uso que definen
 
 \begin{table}[H]
     \centering
-    \caption{Casos de uso del subsistema Interfaz y Usabilidad}
-    \label{tab:cu_interfaz}
-    \begin{tabular}{|p{0.14\linewidth}|p{0.26\linewidth}|p{0.50\linewidth}|}
+\begin{tabular}{|p{0.14\linewidth}|p{0.26\linewidth}|p{0.50\linewidth}|}
         \hline
         \textbf{Caso de uso} & \textbf{Nombre} & \textbf{Descripci\'on} \\
         \hline
@@ -1166,6 +1164,8 @@ El subsistema \textbf{Interfaz y Usabilidad} agrupa los casos de uso que definen
         CU-019 & Optimizar renderizado (submuestreo) & Reduce la densidad de la representaci\'on gr\'afica para mantener la fluidez del renderizado, sin modificar los datos en memoria. \\
         \hline
     \end{tabular}
+\caption{Casos de uso del subsistema Interfaz y Usabilidad}
+\label{tab:cu_interfaz}
 \end{table}
 
 El subsistema se organiza alrededor de CU-008, que funciona como eje de la interacci\'on y como \'unico punto de conexi\'on con el subsistema N\'ucleo y Ciclo de Vida. Esta posici\'on se debe a que el cambio de m\'odulo es una transici\'on en el ciclo de vida de las extensiones. Al desactivarse, cada m\'odulo debe liberar sus recursos gr\'aficos y sus detectores de eventos de forma determinista. Al activarse, el m\'odulo destino debe reutilizar los componentes ya construidos, sin recargar la se\~nal desde disco. Los dem\'as casos de uso del subsistema se vinculan con este eje. CU-010 lo extiende como un comportamiento opcional, activado por el usuario, que no altera el estado del sistema. CU-019 se relaciona con la navegaci\'on porque la optimizaci\'on del renderizado condiciona la fluidez de cualquier vista presentada.
@@ -1182,9 +1182,7 @@ El subsistema \textbf{N\'ucleo y Ciclo de Vida} materializa el estilo arquitect\
 
 \begin{table}[H]
     \centering
-    \caption{Casos de uso del subsistema N\'ucleo y Ciclo de Vida}
-    \label{tab:cu_nucleo}
-    \begin{tabular}{|p{0.14\linewidth}|p{0.26\linewidth}|p{0.50\linewidth}|}
+\begin{tabular}{|p{0.14\linewidth}|p{0.26\linewidth}|p{0.50\linewidth}|}
         \hline
         \textbf{Caso de uso} & \textbf{Nombre} & \textbf{Descripci\'on} \\
         \hline
@@ -1203,6 +1201,8 @@ El subsistema \textbf{N\'ucleo y Ciclo de Vida} materializa el estilo arquitect\
         CU-014 & Cancelar procesamiento pesado & Interrumpe una tarea en curso, libera su hilo trabajador y descarta el resultado parcial. \\
         \hline
     \end{tabular}
+\caption{Casos de uso del subsistema N\'ucleo y Ciclo de Vida}
+\label{tab:cu_nucleo}
 \end{table}
 
 El diagrama organiza estos casos de uso en tres agrupamientos que corresponden a tres ciclos de vida distintos. El primero es el ciclo de vida de la aplicaci\'on, formado por CU-011 y CU-022. CU-011 deja disponibles los servicios del n\'ucleo mediante inversi\'on de control, de modo que ninguna extensi\'on los instancia por su cuenta, y registra las extensiones sin que sea necesario modificar el n\'ucleo ni las ya existentes. CU-022 es su contraparte: garantiza que al terminar la ejecuci\'on no queden hilos, procesos ni contextos gr\'aficos activos.
@@ -1219,9 +1219,7 @@ El subsistema \textbf{Preprocesamiento} agrupa las operaciones que acondicionan 
 
 \begin{table}[H]
     \centering
-    \caption{Casos de uso del subsistema Preprocesamiento}
-    \label{tab:cu_preproc}
-    \begin{tabular}{|p{0.14\linewidth}|p{0.26\linewidth}|p{0.50\linewidth}|}
+\begin{tabular}{|p{0.14\linewidth}|p{0.26\linewidth}|p{0.50\linewidth}|}
         \hline
         \textbf{Caso de uso} & \textbf{Nombre} & \textbf{Descripci\'on} \\
         \hline
@@ -1236,6 +1234,8 @@ El subsistema \textbf{Preprocesamiento} agrupa las operaciones que acondicionan 
         CU-006 & Seleccionar trials para an\'alisis & Define el subconjunto de trials que participa en un an\'alisis y deja constancia de cu\'ales se usaron. \\
         \hline
     \end{tabular}
+\caption{Casos de uso del subsistema Preprocesamiento}
+\label{tab:cu_preproc}
 \end{table}
 
 En el diagrama, todos los casos de uso del subsistema, con excepci\'on de CU-018, mantienen una relaci\'on de inclusi\'on con el orquestador del n\'ucleo (CU-020). Esto expresa que ninguna transformaci\'on se ejecuta en el hilo de la interfaz: el subsistema define qu\'e operaci\'on se aplica sobre la se\~nal, y el n\'ucleo determina c\'omo y cu\'ando se ejecuta. As\'i, las extensiones de preprocesamiento contienen solo su l\'ogica de transformaci\'on y quedan desacopladas de la gesti\'on de la concurrencia.
@@ -1252,9 +1252,7 @@ El subsistema \textbf{An\'alisis} agrupa los c\'omputos que extraen informaci\'o
 
 \begin{table}[H]
     \centering
-    \caption{Casos de uso del subsistema An\'alisis}
-    \label{tab:cu_analisis}
-    \begin{tabular}{|p{0.14\linewidth}|p{0.26\linewidth}|p{0.50\linewidth}|}
+\begin{tabular}{|p{0.14\linewidth}|p{0.26\linewidth}|p{0.50\linewidth}|}
         \hline
         \textbf{Caso de uso} & \textbf{Nombre} & \textbf{Descripci\'on} \\
         \hline
@@ -1267,6 +1265,8 @@ El subsistema \textbf{An\'alisis} agrupa los c\'omputos que extraen informaci\'o
         CU-015 & C\'alculo de promedio de trials & Promedia todos los trials o un subconjunto seleccionado para reducir el ruido de la se\~nal. \\
         \hline
     \end{tabular}
+\caption{Casos de uso del subsistema An\'alisis}
+\label{tab:cu_analisis}
 \end{table}
 
 En el diagrama, todos los casos de uso concretos del subsistema mantienen una relaci\'on de inclusi\'on con el orquestador del n\'ucleo (CU-020). Esto es consecuente con la naturaleza del subsistema, que re\'une los c\'omputos m\'as costosos del sistema. Delegar su ejecuci\'on en el n\'ucleo permite que la interfaz siga respondiendo durante el c\'alculo, que el usuario pueda cancelarlo y que los resultados se publiquen en el estado compartido de forma sincronizada. Cada extensi\'on de an\'alisis queda as\'i limitada a su l\'ogica de c\'alculo, sin intervenir en la gesti\'on de la concurrencia.
@@ -1283,9 +1283,7 @@ El subsistema \textbf{Exportaci\'on} agrupa los casos de uso que trasladan el tr
 
 \begin{table}[H]
     \centering
-    \caption{Casos de uso del subsistema Exportaci\'on}
-    \label{tab:cu_exportacion}
-    \begin{tabular}{|p{0.14\linewidth}|p{0.26\linewidth}|p{0.50\linewidth}|}
+\begin{tabular}{|p{0.14\linewidth}|p{0.26\linewidth}|p{0.50\linewidth}|}
         \hline
         \textbf{Caso de uso} & \textbf{Nombre} & \textbf{Descripci\'on} \\
         \hline
@@ -1294,6 +1292,8 @@ El subsistema \textbf{Exportaci\'on} agrupa los casos de uso que trasladan el tr
         CU-017 & Exportaci\'on gr\'afica vectorial (EMF) & Exporta las visualizaciones de los an\'alisis en formato vectorial, conservando sus ejes y escalas para uso en publicaciones. \\
         \hline
     \end{tabular}
+\caption{Casos de uso del subsistema Exportaci\'on}
+\label{tab:cu_exportacion}
 \end{table}
 
 En el diagrama, el subsistema se conecta con el resto del sistema mediante una \'unica relaci\'on: la inclusi\'on de CU-005 por parte de CU-021, Cerrar un proyecto, del subsistema N\'ucleo y Ciclo de Vida. Esta relaci\'on expresa que el guardado del proyecto no es una operaci\'on aislada, sino una parte obligatoria del ciclo de vida del proyecto: toda operaci\'on que cierre o reemplace el proyecto activo pasa por el mismo mecanismo de persistencia. El archivo de proyecto almacena una referencia a la se\~nal de origen junto con los trials, los an\'alisis y sus par\'ametros, sin duplicar los datos de la se\~nal. As\'i, el proyecto se mantiene liviano y puede restaurarse a partir del archivo original.
@@ -1448,8 +1448,6 @@ Se encuentra planificada la incorporación al contrato de la operación clear\_p
 Todas las extensiones del sistema realizan la interfaz IPlugin. La Tabla~\ref{tab:extensiones} resume las extensiones representadas en el modelo, su estado de implementación y su responsabilidad.
 \begin{table}[H]
 \centering
-\caption{Extensiones representadas en la vista lógica.}
-\label{tab:extensiones}
 \begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{4.5cm} X}
 \toprule
 \textbf{Elemento} & \textbf{Responsabilidad} \\
@@ -1469,6 +1467,8 @@ Todas las extensiones del sistema realizan la interfaz IPlugin. La Tabla~\ref{ta
 \texttt{PACInterChannelPlugin} & Cálculo del acoplamiento entre fase y amplitud y del acoplamiento fase-fase (\textit{Phase-Phase Coupling}, PPC) entre dos canales. \\
 \bottomrule
 \end{tabularx}
+\caption{Extensiones representadas en la vista lógica.}
+\label{tab:extensiones}
 \end{table}
 
 PACAnalysisPlugin es una clase abstracta que concentra los parámetros y el procedimiento comunes a todo análisis de acoplamiento entre fase y amplitud. Sus atributos definen la banda de frecuencia de la fase y el rango de frecuencia de la amplitud, y su operación calcular\_mapa\_fase\_frecuencia obtiene el mapa de fase y frecuencia mediante la transformada wavelet. Las clases PACSingleChannelPlugin y PACInterChannelPlugin especializan este comportamiento. La primera incorpora la operación calcular\_pac\_1\_canal, que calcula el acoplamiento dentro de un mismo canal, y la segunda incorpora las operaciones calcular\_pac\_2\_canales y calcular\_ppc, que calculan el acoplamiento y la consistencia de fase entre dos canales.
@@ -1490,8 +1490,6 @@ La Tabla~\ref{tab:relaciones_logica} resume las relaciones entre los elementos d
 
 \begin{table}[H]
 \centering
-\caption{Relaciones estructurales de la vista lógica.}
-\label{tab:relaciones_logica}
 \begin{tabularx}{\linewidth}{@{}p{4.4cm}p{2.6cm}p{3.3cm}X@{}}
 \toprule
 \textbf{Origen} & \textbf{Tipo} & \textbf{Destino} & \textbf{Descripción} \\
@@ -1511,6 +1509,8 @@ Extensiones de análisis & Dependencia & TaskOrchestrator & Solicitan la ejecuci
 TaskOrchestrator & Asociación & DataStore & Publica los resultados en el estado compartido. \\
 \bottomrule
 \end{tabularx}
+\caption{Relaciones estructurales de la vista lógica.}
+\label{tab:relaciones_logica}
 \end{table}
 
 
@@ -1941,8 +1941,6 @@ hilo principal.
 
 \begin{table}[H]
 \centering
-\caption{Escenario de calidad 1: Integración de un plugin externo}
-\label{tab:escenario1}
 \begin{tabularx}{\textwidth}{|l|X|}
 \hline
 \textbf{Aspecto} & \textbf{Descripción} \\
@@ -1966,14 +1964,14 @@ Medida de Respuesta & Plugin visible en la UI en menos de 1 minuto. Ningún plug
 Trazabilidad & NFR-S-05 (R77--R78) \\
 \hline
 \end{tabularx}
+\caption{Escenario de calidad 1: Integración de un plugin externo}
+\label{tab:escenario1}
 \end{table}
 
 \subsubsection{Escenario de Calidad 2: Carga de Señal de Gran Tamaño}
 
 \begin{table}[H]
 \centering
-\caption{Escenario de calidad 2: Carga de señal de gran tamaño}
-\label{tab:escenario2}
 \begin{tabularx}{\textwidth}{|l|X|}
 \hline
 \textbf{Aspecto} & \textbf{Descripción} \\
@@ -1997,14 +1995,14 @@ Medida de Respuesta & Visualización inicial en menos de 8 segundos para este ca
 Trazabilidad & NFR-P-03 (R48), NFR-P-14 (R72), NFR-P-10 (R56) \\
 \hline
 \end{tabularx}
+\caption{Escenario de calidad 2: Carga de señal de gran tamaño}
+\label{tab:escenario2}
 \end{table}
 
 \subsubsection{Escenario de Calidad 3: Manejo de Errores en Tiempo de Ejecución}
 
 \begin{table}[H]
 \centering
-\caption{Escenario de calidad 3: Manejo de errores en tiempo de ejecución}
-\label{tab:escenario3}
 \begin{tabularx}{\textwidth}{|l|X|}
 \hline
 \textbf{Aspecto} & \textbf{Descripción} \\
@@ -2028,14 +2026,14 @@ Medida de Respuesta & 0\% de pérdida de datos. Continuidad del sistema garantiz
 Trazabilidad & R47 \\
 \hline
 \end{tabularx}
+\caption{Escenario de calidad 3: Manejo de errores en tiempo de ejecución}
+\label{tab:escenario3}
 \end{table}
 
 \subsubsection{Escenario de Calidad 4: Exportación de Datos o Gráficas}
 
 \begin{table}[H]
 \centering
-\caption{Escenario de calidad 4: Exportación de datos o gráficas}
-\label{tab:escenario4}
 \begin{tabularx}{\textwidth}{|l|X|}
 \hline
 \textbf{Aspecto} & \textbf{Descripción} \\
@@ -2059,14 +2057,14 @@ Medida de Respuesta & Tiempo de exportación menor a 3 segundos. 0\% de pérdida
 Trazabilidad & NFR-P-07 (R51), NFR-P-12 (R57), NFR-S-03 (R70) \\
 \hline
 \end{tabularx}
+\caption{Escenario de calidad 4: Exportación de datos o gráficas}
+\label{tab:escenario4}
 \end{table}
 
 \subsubsection{Escenario de Calidad 5: Uso del Sistema sin Experiencia Técnica}
 
 \begin{table}[H]
 \centering
-\caption{Escenario de calidad 5: Operación por un usuario sin experiencia técnica}
-\label{tab:escenario5}
 \begin{tabularx}{\textwidth}{|l|X|}
 \hline
 \textbf{Aspecto} & \textbf{Descripción} \\
@@ -2090,14 +2088,14 @@ Medida de Respuesta & Análisis realizado en menos de 5 minutos. Bajo número de
 Trazabilidad & NFR-U-07 (R42), NFR-U-08 (R43), NFR-U-05 (R10), NFR-U-09 (R44) \\
 \hline
 \end{tabularx}
+\caption{Escenario de calidad 5: Operación por un usuario sin experiencia técnica}
+\label{tab:escenario5}
 \end{table}
 
 \subsubsection{Escenario de Calidad 6: Rendimiento con Múltiples Señales Cargadas}
 
 \begin{table}[H]
 \centering
-\caption{Escenario de calidad 6: Rendimiento con múltiples señales cargadas}
-\label{tab:escenario6}
 \begin{tabularx}{\textwidth}{|l|X|}
 \hline
 \textbf{Aspecto} & \textbf{Descripción} \\
@@ -2121,14 +2119,14 @@ Medida de Respuesta & Cambio entre señales cargadas en menos de 1 segundo. Sin 
 Trazabilidad & NFR-P-06 (R51), NFR-P-01/P-08 (R11, R53) \\
 \hline
 \end{tabularx}
+\caption{Escenario de calidad 6: Rendimiento con múltiples señales cargadas}
+\label{tab:escenario6}
 \end{table}
 
 \subsubsection{Escenario de Calidad 7: Resiliencia ante Archivos Corruptos o Incompatibles}
 
 \begin{table}[H]
 \centering
-\caption{Escenario de calidad 7: Resiliencia ante archivos corruptos o incompatibles}
-\label{tab:escenario7}
 \begin{tabularx}{\textwidth}{|l|X|}
 \hline
 \textbf{Aspecto} & \textbf{Descripción} \\
@@ -2152,14 +2150,14 @@ Medida de Respuesta & Mensaje de error mostrado en menos de 2 segundos. 0\% de p
 Trazabilidad & FR-IO-04  \\
 \hline
 \end{tabularx}
+\caption{Escenario de calidad 7: Resiliencia ante archivos corruptos o incompatibles}
+\label{tab:escenario7}
 \end{table}
 
 \subsubsection{Escenario de Calidad 8: Consistencia entre Datos Ingresados y Gráficas Generadas}
 
 \begin{table}[H]
 \centering
-\caption{Escenario de calidad 8: Consistencia entre datos ingresados y gráficas generadas}
-\label{tab:escenario8}
 \begin{tabularx}{\textwidth}{|l|X|}
 \hline
 \textbf{Aspecto} & \textbf{Descripción} \\
@@ -2183,6 +2181,8 @@ Medida de Respuesta & Actualización gráfica en menos de 3 segundos. 0 diferenc
 Trazabilidad & NFR-R-04 (R73), NFR-U-02 (R03) \\
 \hline
 \end{tabularx}
+\caption{Escenario de calidad 8: Consistencia entre datos ingresados y gráficas generadas}
+\label{tab:escenario8}
 \end{table}
 
 
@@ -2209,7 +2209,6 @@ Trazabilidad & NFR-R-04 (R73), NFR-U-02 (R03) \\
 \begin{center}
 \small
 \begin{longtable}{|p{0.30\textwidth}|p{0.20\textwidth}|p{0.30\textwidth}|}
-\caption{Versiones de dependencias externas ancladas en \texttt{requirements.txt}} \label{tab:deps} \\
 \hline
 \textbf{Librer\'ia} & \textbf{Versi\'on} & \textbf{Rol} \\
 \hline
@@ -2236,6 +2235,7 @@ Trazabilidad & NFR-R-04 (R73), NFR-U-02 (R03) \\
 \hline
 \texttt{pytest} & 8.4.2 & Framework de pruebas \\
 \hline
+\caption{Versiones de dependencias externas ancladas en \texttt{requirements.txt}} \label{tab:deps} \\
 \end{longtable}
 \end{center}
 
@@ -2247,7 +2247,6 @@ La Tabla~\ref{tab:metricas} formaliza la ``Medida de Respuesta'' de cada escenar
 \begin{center}
 \small
 \begin{longtable}{|p{0.16\textwidth}|p{0.19\textwidth}|p{0.21\textwidth}|p{0.28\textwidth}|}
-\caption{M\'etricas, m\'etodo de verificaci\'on y criterio de aceptaci\'on por atributo de calidad} \label{tab:metricas} \\
 \hline
 \textbf{Atributo} & \textbf{M\'etrica} & \textbf{M\'etodo} & \textbf{Criterio de aceptaci\'on} \\
 \hline
@@ -2260,6 +2259,7 @@ La Tabla~\ref{tab:metricas} formaliza la ``Medida de Respuesta'' de cada escenar
 \multicolumn{4}{r}{\textit{Contin\'ua en la siguiente p\'agina}} \\
 \endfoot
 \hline
+\caption{M\'etricas, m\'etodo de verificaci\'on y criterio de aceptaci\'on por atributo de calidad} \label{tab:metricas} \\
 \endlastfoot
 
 Extensibilidad (Esc.~1) &
