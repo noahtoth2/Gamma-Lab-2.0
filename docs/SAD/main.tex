@@ -3,7 +3,7 @@
 % ======================= PAQUETES =======================
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage[spanish]{babel}
+\usepackage[spanish,es-tabla]{babel}
 \usepackage{graphicx}
 \usepackage{geometry}
 \geometry{margin=2.5cm}
@@ -374,11 +374,11 @@ Soporte, Confiabilidad.
 
 \end{longtable}
 
-\subsubsection{Cómo se interpreta el cuadro}
+\subsubsection{Cómo se interpreta la tabla}
 
 La distinción entre el Laboratorio y la directora es deliberada. El Laboratorio es quien usa el sistema y valida los resultados; la directora, en su rol de \textit{Product Owner}, canaliza y prioriza esas necesidades ante el equipo. Por ello, los requisitos del Laboratorio se tratan como \textbf{requisitos primarios}, mientras que los de los demás interesados cumplen una función de gobierno (directora y revisores) o de sostenibilidad (equipo y comunidad). El equipo de desarrollo es, además, quien convive con las consecuencias de la arquitectura a largo plazo, razón por la cual su interés en la extensibilidad y la mantenibilidad pesa tanto como el del usuario final en la usabilidad.
 
-La Cuadro~\ref{tab:stakeholders_calidad} resume qué atributos de calidad importan a cada interesado. Un círculo lleno ($\bullet$) indica un interés principal, derivado directamente de sus necesidades; un círculo vacío ($\circ$) indica un interés secundario.
+La Tabla~\ref{tab:stakeholders_calidad} resume qué atributos de calidad importan a cada interesado. Un círculo lleno ($\bullet$) indica un interés principal, derivado directamente de sus necesidades; un círculo vacío ($\circ$) indica un interés secundario.
 
 \begin{table}[H]
 \centering
@@ -399,7 +399,7 @@ Comunidad científica & $\circ$ & N/A & $\circ$ & $\bullet$ \\
 
 \subsubsection{Criterios de éxito del PMP y su implicación arquitectónica}
 
-El PMP define criterios de éxito cuantificables para el proyecto. No todos son de naturaleza arquitectónica (por ejemplo, la entrega en la fecha acordada o la completitud de la documentación son compromisos de gestión), pero cuatro de ellos imponen condiciones directas sobre el diseño del sistema y se recogen en la Cuadro~\ref{tab:criterios_exito}.
+El PMP define criterios de éxito cuantificables para el proyecto. No todos son de naturaleza arquitectónica (por ejemplo, la entrega en la fecha acordada o la completitud de la documentación son compromisos de gestión), pero cuatro de ellos imponen condiciones directas sobre el diseño del sistema y se recogen en la Tabla~\ref{tab:criterios_exito}.
 
 \begin{longtable}{@{}>{\raggedright\arraybackslash}p{5.2cm}
                   >{\raggedright\arraybackslash}p{2.6cm}
@@ -468,7 +468,7 @@ La lógica de negocio debe poder verificarse sin la interfaz gráfica: servicios
 
 Los atributos de calidad describen \textit{cómo} debe comportarse el sistema, a diferencia de los requisitos funcionales, que describen \textit{qué} debe hacer. Son relevantes para este documento porque, de todos los requisitos, son los que más condicionan la arquitectura: la manera de ejecutar un cálculo pesado, de aislar una extensión defectuosa o de representar una señal de gran tamaño no se resuelve con código local, sino con decisiones estructurales.
 
-La clasificación sigue el modelo FURPS+ adoptado por el SRS, donde cada requisito no funcional se identifica con el código \textbf{NFR-X-YY} (\textit{X} es la categoría y \textit{YY} el consecutivo). En esta iteración se especificaron 36 requisitos no funcionales distribuidos en cuatro categorías, que constituyen los atributos de calidad del sistema: Usabilidad (9), Rendimiento (17), Confiabilidad (5) y Soporte (5). La Cuadro~\ref{tab:resumen_atributos} los sintetiza.
+La clasificación sigue el modelo FURPS+ \cite{eeles2001} adoptado por el SRS, donde cada requisito no funcional se identifica con el código \textbf{NFR-X-YY} (\textit{X} es la categoría y \textit{YY} el consecutivo). En esta iteración se especificaron 36 requisitos no funcionales distribuidos en cuatro categorías, que constituyen los atributos de calidad del sistema: Usabilidad (9), Rendimiento (17), Confiabilidad (5) y Soporte (5). La Tabla~\ref{tab:resumen_atributos} los sintetiza.
 
 \begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.7cm}
                   >{\raggedright\arraybackslash}p{4.0cm}
@@ -533,7 +533,7 @@ NFR-S-01 a NFR-S-05
 
 \end{longtable}
 
-Cada atributo se desarrolla a continuación en cuatro partes: por qué importa, qué se exige, cómo lo resuelve la arquitectura y cómo se verifica. Los escenarios detallados (estímulo, respuesta y medida) se presentan en la Sección~\ref{sec:escenarios_calidad}, y las métricas con su método de verificación en la Cuadro~\ref{tab:metricas}.
+Cada atributo se desarrolla a continuación en cuatro partes: por qué importa, qué se exige, cómo lo resuelve la arquitectura y cómo se verifica. Los escenarios detallados (estímulo, respuesta y medida) se presentan en la Sección~\ref{sec:escenarios_calidad}, y las métricas con su método de verificación en la Tabla~\ref{tab:metricas}.
 
 \subsubsection{Rendimiento}
 
@@ -549,7 +549,7 @@ Cada atributo se desarrolla a continuación en cuatro partes: por qué importa, 
     \item \textbf{Reutilización de la representación.} La tabla gráfica de una señal se conserva mientras los datos no cambien, evitando reconstruirla en cada dibujo (NFR-R-04).
 \end{itemize}
 
-\textbf{Cómo se verifica.} Escenarios de Calidad 2 (carga de señal de gran tamaño) y 6 (múltiples señales cargadas), y las métricas de la Cuadro~\ref{tab:metricas}.
+\textbf{Cómo se verifica.} Escenarios de Calidad 2 (carga de señal de gran tamaño) y 6 (múltiples señales cargadas), y las métricas de la Tabla~\ref{tab:metricas}.
 
 \subsubsection{Confiabilidad}
 
@@ -599,7 +599,7 @@ Cada atributo se desarrolla a continuación en cuatro partes: por qué importa, 
 
 \subsubsection{Priorización y compromisos entre atributos}
 
-Los atributos no son independientes: mejorar uno suele costar algo de otro. Hacer explícitos estos compromisos evita decisiones accidentales y permite justificarlas ante los interesados. La Cuadro~\ref{tab:compromisos} recoge los más relevantes y la decisión adoptada en cada caso.
+Los atributos no son independientes: mejorar uno suele costar algo de otro. Hacer explícitos estos compromisos evita decisiones accidentales y permite justificarlas ante los interesados. La Tabla~\ref{tab:compromisos} recoge los más relevantes y la decisión adoptada en cada caso.
 
 \begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.0cm}
                   >{\raggedright\arraybackslash}p{4.9cm}
@@ -641,7 +641,7 @@ Soporte frente a Rendimiento
 &
 Desacoplar los módulos mediante servicios y plugins añade capas de indirección.
 &
-Se prioriza el desacoplamiento, porque la indirección es pequeña frente al costo del cómputo científico; su efecto se vigila con las métricas de rendimiento (Cuadro~\ref{tab:metricas}).
+Se prioriza el desacoplamiento, porque la indirección es pequeña frente al costo del cómputo científico; su efecto se vigila con las métricas de rendimiento (Tabla~\ref{tab:metricas}).
 \\[0.2cm]
 
 Usabilidad frente a Rendimiento
@@ -657,7 +657,7 @@ El servicio de tareas incorpora la notificación de progreso como parte de su co
 \subsection{Supuestos}
 \label{sec:supuestos}
 
-Un supuesto es una condición que se considera cierta durante el diseño sin que el sistema pueda garantizarla. Documentarlos es importante porque, si alguno deja de cumplirse, las decisiones que dependen de él deben revisarse. Por eso, la Cuadro~\ref{tab:supuestos} registra, para cada supuesto, su fuente y la consecuencia de que no se cumpla. Las restricciones que limitan el diseño, a diferencia de los supuestos, se establecen en la Sección~\ref{sec:limitaciones} (\textit{Limitaciones del sistema}).
+Un supuesto es una condición que se considera cierta durante el diseño sin que el sistema pueda garantizarla. Documentarlos es importante porque, si alguno deja de cumplirse, las decisiones que dependen de él deben revisarse. Por eso, la Tabla~\ref{tab:supuestos} registra, para cada supuesto, su fuente y la consecuencia de que no se cumpla. Las restricciones que limitan el diseño, a diferencia de los supuestos, se establecen en la Sección~\ref{sec:limitaciones} (\textit{Limitaciones del sistema}).
 
 \begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.1cm}
                   >{\raggedright\arraybackslash}p{6.2cm}
@@ -909,36 +909,36 @@ Alrededor del núcleo se organizan otras tres agrupaciones, coherentes con la vi
 \subsection{Principios arquitectónicos}
 \label{sec:principios_lista}
 
-Los principios se agrupan en las mismas cuatro áreas del diagnóstico. Cada uno se enuncia como una regla que el diseño debe cumplir e indica los problemas de la Tabla~\ref{tab:sintesis_diagnostico} a los que responde.
+Los principios se agrupan en las mismas cuatro áreas del diagnóstico. Cada uno se identifica con un código, de P1 a P11, que se utiliza en las tablas de trazabilidad, se enuncia como una regla que el diseño debe cumplir e indica los problemas de la Tabla~\ref{tab:sintesis_diagnostico} a los que responde.
 
 \subsubsection{Núcleo y contratos}
 \begin{itemize}
-    \item \textbf{El núcleo gobierna el ciclo de vida de las extensiones:} Cada extensión pasa por estados explícitos: descubierta, inicializada, activa, inactiva, detenida o fallida. Solo el núcleo ejecuta las transiciones entre ellos. El cierre de la aplicación (CU-022) recorre las extensiones e invoca su detención, y una extensión cuya inicialización falla queda en estado fallida y visible para el usuario, en lugar de permanecer registrada como si funcionara. \textit{Responde a: D1, D14.}
-    \item \textbf{Las extensiones se comunican mediante eventos declarados:} Las extensiones no se referencian entre sí. Se coordinan a través de un catálogo cerrado de eventos del núcleo, por ejemplo, señal cargada, ensayos generados, conjunto derivado creado o tarea finalizada, y cada evento tiene una carga útil de estructura definida. Un evento que no pertenece al catálogo se rechaza al emitirse. Así, el canal de eventos deja de tener un papel marginal y se convierte en el mecanismo de desacoplamiento que el estilo prevé. \textit{Responde a: D2.}
-    \item \textbf{El cómputo se separa de la presentación:} El cálculo de cada extensión se implementa como una función sin dependencias de Qt ni de VTK, que recibe arreglos y parámetros y retorna un resultado. La extensión conserva la construcción de su vista y la solicitud de ejecución al orquestador. Esta separación permite probar el cálculo de forma aislada contra las referencias de MATLAB y ejecutarlo en un hilo o en un proceso trabajador sin arrastrar objetos de presentación. \textit{Responde a: D3.}
-    \item \textbf{Las dependencias se declaran y se verifican durante la carga:} Cada extensión declara en su \texttt{properties.yml} la versión del contrato \texttt{IPlugin} con la que fue escrita y los servicios que requiere. Durante el arranque, el PluginManager verifica que la versión sea compatible, que los servicios existan y que el identificador no esté repetido. Si alguna condición no se cumple, la extensión no se carga y el usuario recibe la causa. Las claves de los servicios se definen en un único lugar, en vez de repetirse como cadenas literales. El \textit{service locator} se conserva, pero sus errores pasan del tiempo de ejecución al arranque. \textit{Responde a: D4, D14.}
+    \item \textbf{El núcleo gobierna el ciclo de vida de las extensiones (P1):} Cada extensión pasa por estados explícitos: descubierta, inicializada, activa, inactiva, detenida o fallida. Solo el núcleo ejecuta las transiciones entre ellos. El cierre de la aplicación (CU-022) recorre las extensiones e invoca su detención, y una extensión cuya inicialización falla queda en estado fallida y visible para el usuario, en lugar de permanecer registrada como si funcionara. \textit{Responde a: D1, D14.}
+    \item \textbf{Las extensiones se comunican mediante eventos declarados (P2):} Las extensiones no se referencian entre sí. Se coordinan a través de un catálogo cerrado de eventos del núcleo, por ejemplo, señal cargada, ensayos generados, conjunto derivado creado o tarea finalizada, y cada evento tiene una carga útil de estructura definida. Un evento que no pertenece al catálogo se rechaza al emitirse. Así, el canal de eventos deja de tener un papel marginal y se convierte en el mecanismo de desacoplamiento que el estilo prevé. \textit{Responde a: D2.}
+    \item \textbf{El cómputo se separa de la presentación (P3):} El cálculo de cada extensión se implementa como una función sin dependencias de Qt ni de VTK, que recibe arreglos y parámetros y retorna un resultado. La extensión conserva la construcción de su vista y la solicitud de ejecución al orquestador. Esta separación permite probar el cálculo de forma aislada contra las referencias de MATLAB y ejecutarlo en un hilo o en un proceso trabajador sin arrastrar objetos de presentación. \textit{Responde a: D3.}
+    \item \textbf{Las dependencias se declaran y se verifican durante la carga (P4):} Cada extensión declara en su \texttt{properties.yml} la versión del contrato \texttt{IPlugin} con la que fue escrita y los servicios que requiere. Durante el arranque, el PluginManager verifica que la versión sea compatible, que los servicios existan y que el identificador no esté repetido. Si alguna condición no se cumple, la extensión no se carga y el usuario recibe la causa. Las claves de los servicios se definen en un único lugar, en vez de repetirse como cadenas literales. El \textit{service locator} se conserva, pero sus errores pasan del tiempo de ejecución al arranque. \textit{Responde a: D4, D14.}
 \end{itemize}
 
 
 \subsubsection{Estado y memoria}
 
 \begin{itemize}
-    \item \textbf{El estado tiene un dueño y los datos originales no se modifican:} El \texttt{DataStore} tiene un único escritor, el TaskOrchestrator (R54): las extensiones lo consultan, pero no lo modifican directamente. Las transformaciones de preprocesamiento no alteran la señal ni los ensayos de origen, sino que producen conjuntos derivados que referencian a su fuente. Para que esta regla no multiplique el consumo de memoria, un derivado materializa solo lo que cambia; por ejemplo, el descarte de ensayos se representa con una máscara de índices y no con una nueva matriz. Cada conjunto tiene una versión, y las cachés que dependen de él se invalidan cuando esta cambia. Por último, el ProjectService es el responsable del ciclo de vida del proyecto, de modo que al cerrarlo o reemplazarlo (CU-021, CU-003) se liberan la señal y todos sus derivados. \textit{Responde a: D5, D7.}
-    \item \textbf{Ningún componente copia la señal sin necesidad:} La visualización trabaja sobre una representación submuestreada de la señal (CU-019) y no sobre una copia profunda completa. La selección de ensayos se resuelve con índices o vistas de NumPy. El tipo numérico se elige por etapa: se usa precisión simple donde la diferencia frente a las referencias de MATLAB está dentro de la tolerancia aceptada y precisión doble donde no lo está. \textit{Responde a: D6.}
-    \item \textbf{Los recursos se liberan de forma determinista:} Al desactivarse una extensión, por ejemplo al cambiar de módulo (CU-008), esta libera su ventana de renderizado, sus observadores y sus tablas de VTK, y su vista se reconstruye bajo demanda cuando el usuario regresa. Al cerrar el proyecto o la aplicación (CU-021, CU-022) no quedan hilos, procesos ni contextos gráficos activos. \textit{Responde a: D5, D8.}
+    \item \textbf{El estado tiene un dueño y los datos originales no se modifican (P5):} El \texttt{DataStore} tiene un único escritor, el TaskOrchestrator (R54): las extensiones lo consultan, pero no lo modifican directamente. Las transformaciones de preprocesamiento no alteran la señal ni los ensayos de origen, sino que producen conjuntos derivados que referencian a su fuente. Para que esta regla no multiplique el consumo de memoria, un derivado materializa solo lo que cambia; por ejemplo, el descarte de ensayos se representa con una máscara de índices y no con una nueva matriz. Cada conjunto tiene una versión, y las cachés que dependen de él se invalidan cuando esta cambia. Por último, el ProjectService es el responsable del ciclo de vida del proyecto, de modo que al cerrarlo o reemplazarlo (CU-021, CU-003) se liberan la señal y todos sus derivados. \textit{Responde a: D5, D7.}
+    \item \textbf{Ningún componente copia la señal sin necesidad (P6):} La visualización trabaja sobre una representación submuestreada de la señal (CU-019) y no sobre una copia profunda completa. La selección de ensayos se resuelve con índices o vistas de NumPy. El tipo numérico se elige por etapa: se usa precisión simple donde la diferencia frente a las referencias de MATLAB está dentro de la tolerancia aceptada y precisión doble donde no lo está. \textit{Responde a: D6.}
+    \item \textbf{Los recursos se liberan de forma determinista (P7):} Al desactivarse una extensión, por ejemplo al cambiar de módulo (CU-008), esta libera su ventana de renderizado, sus observadores y sus tablas de VTK, y su vista se reconstruye bajo demanda cuando el usuario regresa. Al cerrar el proyecto o la aplicación (CU-021, CU-022) no quedan hilos, procesos ni contextos gráficos activos. \textit{Responde a: D5, D8.}
 \end{itemize}
 
 \subsubsection{Concurrencia}
 
 \begin{itemize}
-    \item \textbf{La ejecución de los cómputos pesados está centralizada y es cancelable:} Ninguna extensión crea hilos ni procesos. Toda operación de cómputo pesado se solicita al TaskOrchestrator (se considera pesada la que, con los datos típicos del laboratorio, puede tardar más de 1 segundo en el hardware de referencia), que la encola, la ejecuta fuera del hilo de la interfaz y de a una a la vez (R70), presenta un indicador de progreso cuando supera un segundo y permite cancelarla (CU-014). La cancelación es cooperativa: el cómputo consulta periódicamente una señal de cancelación. Si no responde dentro de un tiempo acotado, el orquestador fuerza su terminación. \textit{Responde a: D9, D10, D11.}
-    \item \textbf{Antes de ejecutar se estima el costo:} El orquestador estima la memoria que requiere un cómputo a partir de las dimensiones de la entrada y de sus parámetros, por ejemplo, el número de canales, muestras y frecuencias de una transformada wavelet o de un análisis PAC, y la compara con la memoria disponible. Si la estimación supera lo disponible, el sistema advierte al usuario y le propone reducir los parámetros; si la ejecución es claramente inviable, la rechaza antes de iniciarla. \textit{Responde a: D12.}
+    \item \textbf{La ejecución de los cómputos pesados está centralizada y es cancelable (P8):} Ninguna extensión crea hilos ni procesos. Toda operación de cómputo pesado se solicita al TaskOrchestrator (se considera pesada la que, con los datos típicos del laboratorio, puede tardar más de 1 segundo en el hardware de referencia), que la encola, la ejecuta fuera del hilo de la interfaz y de a una a la vez (R70), presenta un indicador de progreso cuando supera un segundo y permite cancelarla (CU-014). La cancelación es cooperativa: el cómputo consulta periódicamente una señal de cancelación. Si no responde dentro de un tiempo acotado, el orquestador fuerza su terminación. \textit{Responde a: D9, D10, D11.}
+    \item \textbf{Antes de ejecutar se estima el costo (P9):} El orquestador estima la memoria que requiere un cómputo a partir de las dimensiones de la entrada y de sus parámetros, por ejemplo, el número de canales, muestras y frecuencias de una transformada wavelet o de un análisis PAC, y la compara con la memoria disponible. Si la estimación supera lo disponible, el sistema advierte al usuario y le propone reducir los parámetros; si la ejecución es claramente inviable, la rechaza antes de iniciarla. \textit{Responde a: D12.}
 \end{itemize}
 
 \subsubsection{Tolerancia a fallos y observabilidad}
 \begin{itemize}
-    \item \textbf{Los fallos se contienen y se hacen visibles:} Un fallo no debe terminar la aplicación ni pasar inadvertido. Un manejador global captura las excepciones no controladas del hilo principal y de los \textit{slots} de Qt. Las excepciones de un cómputo se capturan en el trabajador y llegan a la interfaz como un resultado fallido. Los cómputos con riesgo de agotar la memoria o de fallar en código nativo se ejecutan en un proceso aislado, de modo que su caída no arrastra a la aplicación. En todos los casos el usuario recibe un mensaje comprensible y la sesión se conserva. \textit{Responde a: D13, D14.}
-    \item \textbf{El sistema es observable:} Todos los componentes registran sus eventos con nivel de severidad, marca de tiempo, componente de origen e identificador de la tarea cuando aplica. El registro se persiste en un archivo rotativo en el directorio del usuario, por lo que sobrevive a un cierre inesperado y permite reconstruir qué operación se ejecutaba cuando ocurrió un fallo. \textit{Responde a: D15.}
+    \item \textbf{Los fallos se contienen y se hacen visibles (P10):} Un fallo no debe terminar la aplicación ni pasar inadvertido. Un manejador global captura las excepciones no controladas del hilo principal y de los \textit{slots} de Qt. Las excepciones de un cómputo se capturan en el trabajador y llegan a la interfaz como un resultado fallido. Los cómputos con riesgo de agotar la memoria o de fallar en código nativo se ejecutan en un proceso aislado, de modo que su caída no arrastra a la aplicación. En todos los casos el usuario recibe un mensaje comprensible y la sesión se conserva. \textit{Responde a: D13, D14.}
+    \item \textbf{El sistema es observable (P11):} Todos los componentes registran sus eventos con nivel de severidad, marca de tiempo, componente de origen e identificador de la tarea cuando aplica. El registro se persiste en un archivo rotativo en el directorio del usuario, por lo que sobrevive a un cierre inesperado y permite reconstruir qué operación se ejecutaba cuando ocurrió un fallo. \textit{Responde a: D15.}
 \end{itemize}
 
 
@@ -1014,11 +1014,10 @@ En cuanto a su estado de implementación, ADR-09 se encuentra implementada solo 
 % ----------------------------------------------------------------------
 \subsection{Patrones aplicados}
 
-La Tabla anterior resume los patrones que materializan los principios y las decisiones anteriores.
+La Tabla~\ref{tab:patrones_arquitectonicos} resume los patrones que materializan los principios y las decisiones anteriores.
 
 \begin{table}[H]
 \centering
-\label{tab:patrones_arquitectonicos}
 \small
 \renewcommand{\arraystretch}{1.15}
 \begin{tabularx}{\linewidth}{|>{\raggedright\arraybackslash}p{0.19\linewidth}|>{\raggedright\arraybackslash}p{0.27\linewidth}|X|}
@@ -1045,6 +1044,7 @@ Template Method & Reutilizar el procedimiento común de los análisis de acoplam
 \hline
 \end{tabularx}
 \caption{Patrones arquitectónicos aplicados en Gamma Lab 2.0.}
+\label{tab:patrones_arquitectonicos}
 \end{table}
 
 % ----------------------------------------------------------------------
@@ -1127,7 +1127,7 @@ Los casos de uso marcados con el estereotipo \guillemotleft abstract\guillemotri
 
 El diagrama sigue el flujo de interacci\'on de Gamma Lab 2.0, desde que el usuario inicia la aplicaci\'on hasta que obtiene sus resultados. El sistema tiene un \'unico actor, el Investigador, que interact\'ua exclusivamente con la capa de presentaci\'on. Esta capa es el \'unico punto de entrada al sistema y concentra la navegaci\'on entre m\'odulos y la visualizaci\'on de las se\~nales. Despu\'es de cargar una se\~nal o abrir un proyecto, el investigador puede acondicionarla con las operaciones de preprocesamiento y luego aplicarle los an\'alisis disponibles. La interfaz no ejecuta directamente ninguna de estas operaciones, sino que las delega en el orquestador del n\'ucleo. Este componente act\'ua como mediador entre la presentaci\'on y la l\'ogica de procesamiento: recibe las solicitudes de procesamiento pesado, administra su ciclo de ejecuci\'on y permite cancelarlas. Gracias a esta mediaci\'on, la interfaz queda desacoplada de los algoritmos de procesamiento, cada subsistema conserva una responsabilidad bien definida y el control de la ejecuci\'on queda centralizado en el n\'ucleo, como establece el estilo arquitect\'onico de microkernel. Al final del flujo, los resultados se persisten o se exportan, y el proyecto se cierra junto con la aplicaci\'on. Este recorrido se refleja en la organizaci\'on del modelo en cinco subsistemas: Interfaz y Usabilidad, N\'ucleo y Ciclo de Vida, Preprocesamiento, An\'alisis y Exportaci\'on.
 
-Las secciones siguientes describen cada uno. La Figura \ref{fig:vistacasosuso} presenta el diagrama de casos de uso del sistema.
+Las secciones siguientes describen cada uno. La Figura~\ref{fig:vistacasosuso} presenta el diagrama de casos de uso del sistema.
 
 \begin{figure}[H]
     \centering
@@ -1136,12 +1136,12 @@ Las secciones siguientes describen cada uno. La Figura \ref{fig:vistacasosuso} p
     \label{fig:vistacasosuso}
 \end{figure}
 
-La Figura \ref{fig:vistacasosuso} revela que el subsistema \textbf{N\'ucleo y Ciclo de Vida}, en particular CU-020, el orquestador de tareas, es el verdadero centro de gravedad arquitect\'onico: diez de los otros veintid\'os casos de uso lo incluyen expl\'icitamente. Esa centralidad se concreta a continuaci\'on en tres escenarios representativos.
+La Figura~\ref{fig:vistacasosuso} revela que el subsistema \textbf{N\'ucleo y Ciclo de Vida}, en particular CU-020, el orquestador de tareas, es el verdadero centro de gravedad arquitect\'onico: diez de los otros veintid\'os casos de uso lo incluyen expl\'icitamente. Esa centralidad se concreta a continuaci\'on en tres escenarios representativos.
 
 
 \subsubsection{Subsistema Interfaz y Usabilidad}
 
-El subsistema \textbf{Interfaz y Usabilidad} agrupa los casos de uso que definen c\'omo interact\'ua el Investigador con Gamma Lab 2.0 a trav\'es de la capa de presentaci\'on. Su responsabilidad no es procesar se\~nales, sino garantizar que la interacci\'on sea comprensible, fluida y estable en el uso de recursos. Por eso concentra principalmente requerimientos no funcionales de usabilidad, rendimiento y confiabilidad, junto con algunos requerimientos funcionales de visualizaci\'on. El Cuadro \ref{tab:cu_interfaz} resume los casos de uso que lo componen.
+El subsistema \textbf{Interfaz y Usabilidad} agrupa los casos de uso que definen c\'omo interact\'ua el Investigador con Gamma Lab 2.0 a trav\'es de la capa de presentaci\'on. Su responsabilidad no es procesar se\~nales, sino garantizar que la interacci\'on sea comprensible, fluida y estable en el uso de recursos. Por eso concentra principalmente requerimientos no funcionales de usabilidad, rendimiento y confiabilidad, junto con algunos requerimientos funcionales de visualizaci\'on. La Tabla~\ref{tab:cu_interfaz} resume los casos de uso que lo componen.
 
 \begin{table}[H]
     \centering
@@ -1174,7 +1174,7 @@ En conjunto, el subsistema resuelve dentro de la capa de presentaci\'on los atri
 
 \subsubsection{Subsistema N\'ucleo y Ciclo de Vida}
 
-El subsistema \textbf{N\'ucleo y Ciclo de Vida} materializa el estilo arquitect\'onico de microkernel. En \'el se registran los servicios compartidos, se descubren las extensiones y se centraliza la ejecuci\'on de las operaciones pesadas, por lo que concentra requerimientos de rendimiento, confiabilidad y soporte. El Cuadro \ref{tab:cu_nucleo} resume los casos de uso que lo componen.
+El subsistema \textbf{N\'ucleo y Ciclo de Vida} materializa el estilo arquitect\'onico de microkernel. En \'el se registran los servicios compartidos, se descubren las extensiones y se centraliza la ejecuci\'on de las operaciones pesadas, por lo que concentra requerimientos de rendimiento, confiabilidad y soporte. La Tabla~\ref{tab:cu_nucleo} resume los casos de uso que lo componen.
 
 \begin{table}[H]
     \centering
@@ -1211,7 +1211,7 @@ En conjunto, el subsistema concentra las responsabilidades transversales del sis
 
 \subsubsection{Subsistema Preprocesamiento}
 
-El subsistema \textbf{Preprocesamiento} agrupa las operaciones que acondicionan la se\~nal antes de su an\'alisis. Su responsabilidad es transformar la se\~nal y sus segmentaciones sin comprometer la integridad de los datos originales, por lo que concentra requerimientos funcionales de transformaci\'on y requerimientos de soporte orientados al encapsulamiento del modelo de datos. El Cuadro \ref{tab:cu_preproc} resume los casos de uso que lo componen.
+El subsistema \textbf{Preprocesamiento} agrupa las operaciones que acondicionan la se\~nal antes de su an\'alisis. Su responsabilidad es transformar la se\~nal y sus segmentaciones sin comprometer la integridad de los datos originales, por lo que concentra requerimientos funcionales de transformaci\'on y requerimientos de soporte orientados al encapsulamiento del modelo de datos. La Tabla~\ref{tab:cu_preproc} resume los casos de uso que lo componen.
 
 \begin{table}[H]
     \centering
@@ -1244,7 +1244,7 @@ En conjunto, el subsistema act\'ua como la etapa de acondicionamiento previa al 
 
 \subsubsection{Subsistema An\'alisis}
 
-El subsistema \textbf{An\'alisis} agrupa los c\'omputos que extraen informaci\'on de la se\~nal acondicionada, como el acoplamiento entre bandas de frecuencia, la representaci\'on tiempo-frecuencia y el promedio de ensayos. Concentra requerimientos funcionales de c\'alculo y visualizaci\'on de resultados, junto con requerimientos de rendimiento que acotan el tiempo de los c\'omputos m\'as costosos. El Cuadro \ref{tab:cu_analisis} resume los casos de uso que lo componen.
+El subsistema \textbf{An\'alisis} agrupa los c\'omputos que extraen informaci\'on de la se\~nal acondicionada, como el acoplamiento entre bandas de frecuencia, la representaci\'on tiempo-frecuencia y el promedio de ensayos. Concentra requerimientos funcionales de c\'alculo y visualizaci\'on de resultados, junto con requerimientos de rendimiento que acotan el tiempo de los c\'omputos m\'as costosos. La Tabla~\ref{tab:cu_analisis} resume los casos de uso que lo componen.
 
 \begin{table}[H]
     \centering
@@ -1275,7 +1275,7 @@ En conjunto, el subsistema consume los datos acondicionados por el preprocesamie
 
 \subsubsection{Subsistema Exportaci\'on}
 
-El subsistema \textbf{Exportaci\'on} agrupa los casos de uso que trasladan el trabajo realizado en Gamma Lab 2.0 al sistema de archivos local. Su responsabilidad es la persistencia del proyecto y la exportaci\'on de resultados num\'ericos y gr\'aficos, por lo que concentra requerimientos funcionales de formato y nomenclatura de archivos, junto con requerimientos de rendimiento que acotan el tiempo de cada exportaci\'on. El Cuadro \ref{tab:cu_exportacion} resume los casos de uso que lo componen.
+El subsistema \textbf{Exportaci\'on} agrupa los casos de uso que trasladan el trabajo realizado en Gamma Lab 2.0 al sistema de archivos local. Su responsabilidad es la persistencia del proyecto y la exportaci\'on de resultados num\'ericos y gr\'aficos, por lo que concentra requerimientos funcionales de formato y nomenclatura de archivos, junto con requerimientos de rendimiento que acotan el tiempo de cada exportaci\'on. La Tabla~\ref{tab:cu_exportacion} resume los casos de uso que lo componen.
 
 \begin{table}[H]
     \centering
@@ -1534,7 +1534,7 @@ Por su parte, los plugins reúnen las herramientas de entrada y salida, preproce
 En conjunto, esta organización permite que GammaLab 2.0 evolucione a partir de su versión anterior, reutilice funcionalidades existentes e incorpore nuevas capacidades de manera ordenada. La separación de responsabilidades contribuye a que el sistema sea más fácil de mantener y ampliar, al tiempo que establece una estructura que puede acompañar el crecimiento de las necesidades de análisis del laboratorio.
 
 \subsubsection{Notación}
-La leyenda incluida en la Figura \ref{fig:vistadesarrollo} permite distinguir los componentes según su estado y su relación con el alcance definido para GammaLab 2.0. Los colores se interpretan de la siguiente manera:
+La leyenda incluida en la Figura~\ref{fig:vistadesarrollo} permite distinguir los componentes según su estado y su relación con el alcance definido para GammaLab 2.0. Los colores se interpretan de la siguiente manera:
 
 \begin{itemize}
     \item \textbf{Azul - Núcleo existente:} representa los componentes centrales que ya forman parte de la estructura de la aplicación, como \texttt{MainWindow} y \texttt{Kernel}.
@@ -1621,7 +1621,7 @@ Entre sus responsabilidades previstas se encuentran:
     \item Coordinar el acceso a los servicios necesarios para completar cada operación.
 \end{itemize}
 
-Como se muestra en la Figura \ref{fig:vistadesarrollo}, el TaskOrchestrator se relaciona con los plugins de entrada y salida, preprocesamiento y análisis. Estos componentes pueden solicitar la ejecución de las operaciones correspondientes, mientras que el orquestador se encarga de coordinar su procesamiento. También se relaciona con el ExportService para gestionar las tareas asociadas a la generación de resultados.
+Como se muestra en la Figura~\ref{fig:vistadesarrollo}, el TaskOrchestrator se relaciona con los plugins de entrada y salida, preprocesamiento y análisis. Estos componentes pueden solicitar la ejecución de las operaciones correspondientes, mientras que el orquestador se encarga de coordinar su procesamiento. También se relaciona con el ExportService para gestionar las tareas asociadas a la generación de resultados.
 
 Su incorporación busca mejorar la capacidad de respuesta de la aplicación y facilitar la ejecución de operaciones computacionalmente exigentes. No obstante, las capacidades efectivamente disponibles dependerán de la implementación de los mecanismos de ejecución previstos para este componente.
 
@@ -1719,7 +1719,7 @@ Una vez disponible la señal, el investigador puede realizar operaciones de prep
 
 Para representar estas interacciones, el diagrama se organiza en dos carriles: \textit{Investigador} y \textit{Sistema}. El primero agrupa las acciones y decisiones que corresponden al usuario, mientras que el segundo representa las operaciones que ejecuta la aplicación para responder a dichas acciones. Esta separación permite identificar las responsabilidades de cada participante y comprender cómo se coordinan durante una sesión de trabajo.
 
-La Figura \ref{fig:vistaprocesos} presenta el modelo completo, incluyendo las decisiones que controlan el flujo, las actividades principales y las relaciones entre las acciones del investigador y los procesos internos de GammaLab 2.0.
+La Figura~\ref{fig:vistaprocesos} presenta el modelo completo, incluyendo las decisiones que controlan el flujo, las actividades principales y las relaciones entre las acciones del investigador y los procesos internos de GammaLab 2.0.
 
 \begin{figure}[H]
     \centering
@@ -2771,6 +2771,8 @@ Este anexo resume dicha relaci\'on:
 \bibitem{sad} Equipo Gamma Lab. \textit{Software Architecture Document (SAD), v1.0}. Este documento.
 
 \bibitem{omg_uml} Object Management Group. \textit{OMG Unified Modeling Language (OMG UML), Version 2.5.1}. OMG Doc. formal/17-12-05, dic. 2017. Disponible en: \url{https://www.omg.org/spec/UML/2.5.1/}.
+
+\bibitem{eeles2001} P. Eeles, ``Capturing Architectural Requirements,'' Rational Software Corporation, nov. 2001. [En línea]. Disponible: \url{https://www.ibm.com/developerworks/rational/library/4706.html}.
 
 \end{thebibliography}
 
