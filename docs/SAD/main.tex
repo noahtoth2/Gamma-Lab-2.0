@@ -55,7 +55,7 @@
 \begin{center}
     % Logos institucionales (reemplazar con los archivos reales)
     \includegraphics[height=2cm]{LogoJaveriana.png}\hspace{1cm}
-    \includegraphics[height=2cm]{GammaLab2.0.png}
+    \includegraphics[height=2cm]{GammaLab2.0.png} 
 
     \vspace{0.5cm}
     {\large \textbf{Pontificia Universidad Javeriana}}\\
@@ -146,6 +146,7 @@ correspondientes.
 \subsection{Definiciones y acr\'onimos}
 
 \begin{longtable}{@{}p{3.2cm}p{11cm}@{}}
+\caption{Acr\'onimos y t\'erminos utilizados en el documento} \\
 \toprule
 \textbf{Sigla / T\'ermino} & \textbf{Definici\'on} \\
 \midrule
@@ -160,7 +161,6 @@ SDD & Software Design Document. Documento de dise\~no t\'ecnico. \\
 IoC & Inversi\'on de Control. Principio que delega el flujo de ejecuci\'on a un contenedor. \\
 DI & Dependency Injection. T\'ecnica para resolver dependencias desde un contenedor externo. \\
 MVP / MVC & Patrones de separaci\'on de interfaz y l\'ogica (Model--View--Presenter / Model--View--Controller). \\
-Template Method & Patr\'on que define un flujo general con pasos sobrescribibles. \\
 Adapter & Patr\'on para estandarizar interfaces incompatibles. \\
 Caching & Estrategia para evitar recalcular o recomponer estructuras de datos. \\
 Python & Lenguaje de programaci\'on principal de \textit{Gamma Lab}. \\
@@ -172,7 +172,6 @@ EDF & European Data Format. Formato est\'andar para se\~nales biom\'edicas. \\
 ABF & Axon Binary File. Formato de archivo utilizado por Axon Instruments para registros biom\'edicos. \\
 GUI Toolkit & Conjunto de herramientas para construir interfaces gr\'aficas (Qt, PyQt, VTK). \\
 \bottomrule
-\caption{Acr\'onimos y t\'erminos utilizados en el documento} \\
 \end{longtable}
 
 \subsection{Audiencia}
@@ -311,6 +310,7 @@ Un \textit{stakeholder} es toda persona o entidad que afecta el desarrollo de Ga
                   >{\raggedright\arraybackslash}p{5.7cm}
                   >{\raggedright\arraybackslash}p{3.0cm}@{}}
 
+\caption{Stakeholders de GammaLab v2.0, rol según el PMP y necesidades que condicionan la arquitectura} \label{tab:stakeholders} \\
 \toprule
 \textbf{Stakeholder} &
 \textbf{Rol en el proyecto} &
@@ -328,7 +328,6 @@ Un \textit{stakeholder} es toda persona o entidad que afecta el desarrollo de Ga
 \endhead
 
 \bottomrule
-\caption{Stakeholders de GammaLab v2.0, rol según el PMP y necesidades que condicionan la arquitectura} \label{tab:stakeholders} \\
 \endlastfoot
 
 \textbf{Laboratorio de Electrofisiología} (Universidad Nacional de Colombia)
@@ -386,6 +385,8 @@ La Tabla~\ref{tab:stakeholders_calidad} resume qué atributos de calidad importa
 
 \begin{table}[H]
 \centering
+\caption{Matriz de interés de los stakeholders por atributo de calidad}
+\label{tab:stakeholders_calidad}
 \begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.2cm}cccc@{}}
 \toprule
 \textbf{Stakeholder} & \textbf{Usabilidad} & \textbf{Rendimiento} & \textbf{Confiabilidad} & \textbf{Soporte} \\
@@ -397,8 +398,6 @@ Revisores académicos & $\circ$ & $\bullet$ & $\bullet$ & $\circ$ \\
 Comunidad científica & $\circ$ & N/A & $\circ$ & $\bullet$ \\
 \bottomrule
 \end{tabular}
-\caption{Matriz de interés de los stakeholders por atributo de calidad}
-\label{tab:stakeholders_calidad}
 \end{table}
 
 \subsubsection{Criterios de éxito del PMP y su implicación arquitectónica}
@@ -409,6 +408,7 @@ El PMP define criterios de éxito cuantificables para el proyecto. No todos son 
                   >{\raggedright\arraybackslash}p{2.6cm}
                   >{\raggedright\arraybackslash}p{6.9cm}@{}}
 
+\caption{Criterios de éxito del PMP con impacto arquitectónico} \label{tab:criterios_exito} \\
 \toprule
 \textbf{Criterio de éxito (PMP)} &
 \textbf{Atributo} &
@@ -424,7 +424,6 @@ El PMP define criterios de éxito cuantificables para el proyecto. No todos son 
 \endhead
 
 \bottomrule
-\caption{Criterios de éxito del PMP con impacto arquitectónico} \label{tab:criterios_exito} \\
 \endlastfoot
 
 Mejora de al menos 20--30\,\% en los tiempos de procesamiento respecto a GammaLab v1.0, derivada de la paralelización.
@@ -479,6 +478,7 @@ La clasificación sigue el modelo FURPS+ \cite{eeles2001} adoptado por el SRS, d
                   >{\raggedright\arraybackslash}p{4.8cm}
                   >{\raggedright\arraybackslash}p{2.2cm}@{}}
 
+\caption{Resumen de los atributos de calidad de GammaLab v2.0} \label{tab:resumen_atributos} \\
 \toprule
 \textbf{Atributo} &
 \textbf{Qué garantiza} &
@@ -496,7 +496,6 @@ La clasificación sigue el modelo FURPS+ \cite{eeles2001} adoptado por el SRS, d
 \endhead
 
 \bottomrule
-\caption{Resumen de los atributos de calidad de GammaLab v2.0} \label{tab:resumen_atributos} \\
 \endlastfoot
 
 \textbf{Rendimiento}
@@ -512,7 +511,7 @@ NFR-P-01 a NFR-P-17
 &
 Que el sistema sea estable en sesiones prolongadas y que los datos del investigador no se corrompan.
 &
-Terminación garantizada de hilos; un único escritor por dato; señal de origen inmutable; representaciones gráficas invalidadas al cambiar los datos.
+Cancelación de tareas con liberación de la interfaz en a lo sumo dos segundos; un único escritor por dato; señal de origen inmutable; representaciones gráficas invalidadas al cambiar los datos.
 &
 NFR-R-01 a NFR-R-05
 \\[0.2cm]
@@ -609,6 +608,7 @@ Los atributos no son independientes: mejorar uno suele costar algo de otro. Hace
                   >{\raggedright\arraybackslash}p{4.9cm}
                   >{\raggedright\arraybackslash}p{6.8cm}@{}}
 
+\caption{Compromisos entre atributos de calidad y decisión adoptada} \label{tab:compromisos} \\
 \toprule
 \textbf{Atributos en tensión} &
 \textbf{Tensión} &
@@ -624,7 +624,6 @@ Los atributos no son independientes: mejorar uno suele costar algo de otro. Hace
 \endhead
 
 \bottomrule
-\caption{Compromisos entre atributos de calidad y decisión adoptada} \label{tab:compromisos} \\
 \endlastfoot
 
 Rendimiento frente a Confiabilidad
@@ -638,7 +637,7 @@ Rendimiento frente a Confiabilidad
 &
 Ejecutar análisis en segundo plano introduce concurrencia y el riesgo de condiciones de carrera sobre los datos.
 &
-Se acepta la concurrencia a cambio de la fluidez, pero se compensa con un único escritor por dato (NFR-R-02) y con la terminación garantizada de los hilos (NFR-R-01).
+Se acepta la concurrencia a cambio de la fluidez, pero se compensa con un único escritor por dato (NFR-R-02) y con la cancelación de las tareas en un plazo máximo de dos segundos (NFR-R-01).
 \\[0.2cm]
 
 Soporte frente a Rendimiento
@@ -668,6 +667,7 @@ Un supuesto es una condición que se considera cierta durante el diseño sin que
                   >{\raggedright\arraybackslash}p{1.9cm}
                   >{\raggedright\arraybackslash}p{5.5cm}@{}}
 
+\caption{Supuestos de GammaLab v2.0, su fuente y su impacto} \label{tab:supuestos} \\
 \toprule
 \textbf{ID} &
 \textbf{Supuesto} &
@@ -685,7 +685,6 @@ Un supuesto es una condición que se considera cierta durante el diseño sin que
 \endhead
 
 \bottomrule
-\caption{Supuestos de GammaLab v2.0, su fuente y su impacto} \label{tab:supuestos} \\
 \endlastfoot
 
 \multicolumn{4}{@{}l}{\textit{Entorno de ejecución}} \\
@@ -825,11 +824,11 @@ Un plugin defectuoso podría comprometer la estabilidad de la sesión (NFR-R-01,
 \subsection{Síntesis del diagnóstico}
 \label{sec:sintesis_diagnostico}
 
-La arquitectura de Gamma Lab 2.0 no parte de cero. Conserva el estilo microkernel de la versión 1.0, pero corrige las limitaciones identificadas en el diagnóstico de las secciones anteriores. Por esta razón, los principios y las decisiones de esta sección se formulan como respuesta a problemas concretos. La siguente tabla sintetiza esos problemas y les asigna un identificador, de D1 a D15, que se utiliza en el resto de la sección para trazar cada principio y cada decisión hasta su origen.
+La arquitectura de Gamma Lab 2.0 no parte de cero. Conserva el estilo microkernel de la versión 1.0, pero corrige las limitaciones identificadas en el diagnóstico de las secciones anteriores. Por esta razón, los principios y las decisiones de esta sección se formulan como respuesta a problemas concretos. La siguiente tabla sintetiza esos problemas y les asigna un identificador, de D1 a D15, que se utiliza en el resto de la sección para trazar cada principio y cada decisión hasta su origen.
 
 \begin{center}
 \small
-\begin{longtable}{|>{\raggedright\arraybackslash}p{0.06\textwidth}|>{\raggedright\arraybackslash}p{0.66\textwidth}|>{\raggedright\arraybackslash}p{0.16\textwidth}|}
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.06\textwidth}|>{\raggedright\arraybackslash}p{0.84\textwidth}|}
 \hline
 \textbf{ID} & \textbf{Problema} \\
 \hline
@@ -876,13 +875,13 @@ D15 & No hay registro estructurado: la información se emite con \texttt{print},
 % ----------------------------------------------------------------------
 \subsection{Estilo arquitectónico: microkernel con núcleo activo}
 
-Gamma Lab 2.0 mantiene el estilo microkernel: un núcleo estable ofrece los servicios transversales y un conjunto de extensiones independientes implementa la funcionalidad de dominio, como el filtrado, la segmentación en ensayos, la FFT, la PSD, la transformada wavelet, el ERP y el PAC. El diagnóstico muestra que las limitaciones de la versión 1.0 no provienen del estilo, sino de su implementación: el núcleo existe estructuralmente, pero no gobierna el comportamiento del sistema (D1). Por ello, la decisión central de esta versión no es cambiar de estilo, sino asignar al núcleo las responsabilidades que el estilo le atribuye:
+Gamma Lab 2.0 mantiene el estilo microkernel: un núcleo estable ofrece los servicios transversales y un conjunto de extensiones independientes implementa la funcionalidad de dominio, como el filtrado, la segmentación en ensayos, la FFT, la PSD, la transformada wavelet, el ERP y el PAC. El diagnóstico muestra que las limitaciones de la versión 1.0 no provienen del estilo, sino de su implementación: el núcleo existe estructuralmente, pero no gobierna el comportamiento del sistema (D1). Por ello, la decisión central de esta versión no es cambiar de estilo, sino asignar al núcleo responsabilidades que en la versión 1.0 estaban dispersas:
 
 \begin{itemize}
-    \item Gobernar el ciclo de vida de las extensiones, desde su descubrimiento hasta su detención.
-    \item Mediar la comunicación entre extensiones mediante eventos declarados.
+    \item Registrar las extensiones y los servicios compartidos, e inicializar cada extensión al registrarla.
+    \item Ofrecer un canal de eventos por el que las extensiones se notifican los cambios en los datos.
     \item Centralizar la ejecución de los cómputos pesados fuera del hilo de la interfaz.
-    \item Validar las extensiones y sus dependencias durante la carga.
+    \item Verificar durante la carga que el descriptor de cada extensión contenga los campos obligatorios.
 \end{itemize}
 
 Se consideraron dos alternativas. Reescribir el sistema como un monolito en capas habría simplificado el control del flujo, pero obligaba a reescribir las dieciséis extensiones existentes y sacrificaba la extensibilidad, que es una necesidad explícita del laboratorio. Un estilo de tuberías y filtros se ajusta bien al procesamiento de señales, pero no a una aplicación interactiva en la que el usuario navega entre módulos que comparten el mismo estado. El microkernel permite conservar las extensiones existentes y, al mismo tiempo, concentrar en el núcleo el control que hoy está disperso.
@@ -890,10 +889,10 @@ Se consideraron dos alternativas. Reescribir el sistema como un monolito en capa
 El núcleo no asume todas estas responsabilidades por sí mismo, sino que las distribuye entre un conjunto de servicios que no son reemplazables por extensiones:
 
 \begin{itemize}
-    \item \textbf{Kernel}: mantiene el registro de extensiones y servicios, gobierna el ciclo de vida de las extensiones y ofrece el canal de eventos.
-    \item \textbf{PluginManager}: descubre las extensiones a partir de su descriptor \texttt{properties.yml} y valida sus metadatos, la versión del contrato y sus dependencias antes de registrarlas.
-    \item \textbf{TaskOrchestrator} (implementado como \texttt{TaskService}): encola y ejecuta los cómputos pesados fuera del hilo de la interfaz, informa el progreso, gestiona la cancelación y es el único componente que escribe en el estado compartido.
-    \item \textbf{DataStore}: mantiene el estado compartido de la sesión, es decir, las señales, la señal activa, sus derivados y los resultados.
+    \item \textbf{Kernel}: mantiene el registro de extensiones y servicios, inicializa cada extensión al registrarla y ofrece el canal de eventos.
+    \item \textbf{PluginManager}: descubre las extensiones a partir de su descriptor \texttt{properties.yml}, verifica que contenga los campos obligatorios e importa la clase de cada extensión antes de registrarla.
+    \item \textbf{TaskOrchestrator} (implementado como \texttt{TaskService}): encola y ejecuta los cómputos pesados fuera del hilo de la interfaz, informa el progreso, gestiona la cancelación y entrega los resultados al hilo de la interfaz, el único que escribe en el estado compartido.
+    \item \textbf{DataStore}: mantiene el estado compartido de la sesión, es decir, las señales, la señal activa, sus derivados y los resultados. Solo el hilo de la interfaz puede escribir en él.
     \item \textbf{FileIOService}: adapta los formatos de archivo soportados al modelo de datos interno (\texttt{SignalDataset}).
     \item \textbf{ExportService}: exporta visualizaciones y resultados tabulares a formatos externos.
     \item \textbf{SettingsService}: gestiona la configuración persistente de la aplicación.
@@ -913,36 +912,35 @@ Alrededor del núcleo se organizan otras tres agrupaciones, coherentes con la vi
 \subsection{Principios arquitectónicos}
 \label{sec:principios_lista}
 
-Los principios se agrupan en las mismas cuatro áreas del diagnóstico. Cada uno se identifica con un código, de P1 a P11, que se utiliza en las tablas de trazabilidad, se enuncia como una regla que el diseño debe cumplir e indica los problemas de la Tabla~\ref{tab:sintesis_diagnostico} a los que responde.
+Los principios se agrupan en las mismas cuatro áreas del diagnóstico. Cada uno se identifica con un código, de P1 a P10, que se utiliza en las tablas de trazabilidad, se enuncia como una regla que el sistema cumple e indica los problemas de la Tabla~\ref{tab:sintesis_diagnostico} a los que responde.
 
 \subsubsection{Núcleo y contratos}
 \begin{itemize}
-    \item \textbf{El núcleo gobierna el ciclo de vida de las extensiones (P1):} Cada extensión pasa por estados explícitos: descubierta, inicializada, activa, inactiva, detenida o fallida. Solo el núcleo ejecuta las transiciones entre ellos. El cierre de la aplicación (CU-022) recorre las extensiones e invoca su detención, y una extensión cuya inicialización falla queda en estado fallida y visible para el usuario, en lugar de permanecer registrada como si funcionara. \textit{Responde a: D1, D14.}
-    \item \textbf{Las extensiones se comunican mediante eventos declarados (P2):} Las extensiones no se referencian entre sí. Se coordinan a través de un catálogo cerrado de eventos del núcleo, por ejemplo, señal cargada, ensayos generados, conjunto derivado creado o tarea finalizada, y cada evento tiene una carga útil de estructura definida. Un evento que no pertenece al catálogo se rechaza al emitirse. Así, el canal de eventos deja de tener un papel marginal y se convierte en el mecanismo de desacoplamiento que el estilo prevé. \textit{Responde a: D2.}
-    \item \textbf{El cómputo se separa de la presentación (P3):} El cálculo de cada extensión se implementa como una función sin dependencias de Qt ni de VTK, que recibe arreglos y parámetros y retorna un resultado. La extensión conserva la construcción de su vista y la solicitud de ejecución al orquestador. Esta separación permite probar el cálculo de forma aislada contra las referencias de MATLAB y ejecutarlo en un hilo o en un proceso trabajador sin arrastrar objetos de presentación. \textit{Responde a: D3.}
-    \item \textbf{Las dependencias se declaran y se verifican durante la carga (P4):} Cada extensión declara en su \texttt{properties.yml} la versión del contrato \texttt{IPlugin} con la que fue escrita y los servicios que requiere. Durante el arranque, el PluginManager verifica que la versión sea compatible, que los servicios existan y que el identificador no esté repetido. Si alguna condición no se cumple, la extensión no se carga y el usuario recibe la causa. Las claves de los servicios se definen en un único lugar, en vez de repetirse como cadenas literales. El \textit{service locator} se conserva, pero sus errores pasan del tiempo de ejecución al arranque. \textit{Responde a: D4, D14.}
+    \item \textbf{El núcleo registra e inicializa las extensiones (P1):} El PluginManager descubre cada extensión y el Kernel la registra e invoca su inicialización. La extensión arranca la primera vez que el usuario abre su módulo. Al salir de él, la ventana principal cancela sus tareas y libera sus ventanas de renderizado. Al cerrar la aplicación (CU-022), cancela todas las tareas, finaliza las ventanas de VTK y desmonta las vistas. \textit{Responde a: D1.}
+    \item \textbf{Las extensiones se notifican los cambios mediante el canal de eventos (P2):} El Kernel ofrece un canal de eventos basado en señales de Qt, en el que cada evento lleva un tópico y una carga útil. Las extensiones lo usan para avisar que se agregó una señal, que se generaron o descartaron ensayos o que cambió el ensayo actual, y las extensiones suscritas actualizan su estado al recibirlo. \textit{Responde a: D2.}
+    \item \textbf{El cómputo se separa de la presentación (P3):} Las extensiones con cómputos pesados, como la carga de señales, la remoción de artefactos, el promedio, el ERP, la transformada wavelet, el PAC, el PPC y el índice de modulación, implementan su cálculo en un módulo \texttt{compute} sin dependencias de Qt ni de VTK, que recibe arreglos y parámetros y retorna un resultado. La extensión conserva la construcción de su vista y la solicitud de ejecución al orquestador. Esta separación permite probar el cálculo de forma aislada contra las referencias de MATLAB y ejecutarlo en un hilo trabajador sin arrastrar objetos de presentación. \textit{Responde a: D3.}
+    \item \textbf{Las extensiones se describen de forma declarativa (P4):} Cada extensión declara en su \texttt{properties.yml} su identificador, nombre, categoría, subcategoría, versión, icono y las clases de su lógica y de su interfaz. Durante el arranque, el PluginManager verifica que estén todos los campos obligatorios; si falta alguno o la clase no puede importarse, la extensión no se carga. Los servicios se obtienen del Kernel por clave, y los servicios compartidos de ajustes, exportación y medición se crean en un único lugar. \textit{Responde a: D4.}
 \end{itemize}
 
 
 \subsubsection{Estado y memoria}
 
 \begin{itemize}
-    \item \textbf{El estado tiene un dueño y los datos originales no se modifican (P5):} El \texttt{DataStore} tiene un único escritor, el TaskOrchestrator (R54): las extensiones lo consultan, pero no lo modifican directamente. Las transformaciones de preprocesamiento no alteran la señal ni los ensayos de origen, sino que producen conjuntos derivados que referencian a su fuente. Para que esta regla no multiplique el consumo de memoria, un derivado materializa solo lo que cambia; por ejemplo, el descarte de ensayos se representa con una máscara de índices y no con una nueva matriz. Cada conjunto tiene una versión, y las cachés que dependen de él se invalidan cuando esta cambia. Por último, el ProjectService es el responsable del ciclo de vida del proyecto, de modo que al cerrarlo o reemplazarlo (CU-021, CU-003) se liberan la señal y todos sus derivados. \textit{Responde a: D5, D7.}
-    \item \textbf{Ningún componente copia la señal sin necesidad (P6):} La visualización trabaja sobre una representación submuestreada de la señal (CU-019) y no sobre una copia profunda completa. La selección de ensayos se resuelve con índices o vistas de NumPy. El tipo numérico se elige por etapa: se usa precisión simple donde la diferencia frente a las referencias de MATLAB está dentro de la tolerancia aceptada y precisión doble donde no lo está. \textit{Responde a: D6.}
-    \item \textbf{Los recursos se liberan de forma determinista (P7):} Al desactivarse una extensión, por ejemplo al cambiar de módulo (CU-008), esta libera su ventana de renderizado, sus observadores y sus tablas de VTK, y su vista se reconstruye bajo demanda cuando el usuario regresa. Al cerrar el proyecto o la aplicación (CU-021, CU-022) no quedan hilos, procesos ni contextos gráficos activos. \textit{Responde a: D5, D8.}
+    \item \textbf{El estado tiene un único escritor y los ensayos de origen no se modifican al descartarlos (P5):} Solo el hilo de la interfaz escribe en el \texttt{DataStore} (R54). Una escritura desde otro hilo se rechaza, de modo que las tareas devuelven su resultado a ese hilo, donde se publica. El descarte de ensayos no modifica la matriz de origen: se representa con una máscara de índices, y la caché de ensayos filtrados se invalida cuando cambia el conjunto de descartes. Al cargar una nueva señal o cerrar el proyecto (CU-003, CU-021), se retiran del \texttt{DataStore} las señales anteriores con sus ensayos, sus mediciones y sus derivados. \textit{Responde a: D5, D7.}
+    \item \textbf{La visualización no trabaja sobre la señal completa (P6):} La visualización usa una representación submuestreada de la señal (CU-019). La selección de ensayos se resuelve con índices de NumPy, y los mapas de tiempo-frecuencia se entregan a VTK en precisión simple. \textit{Responde a: D6.}
+    \item \textbf{Los recursos gráficos se liberan al salir de un módulo (P7):} Al cambiar de módulo (CU-008), la ventana principal finaliza la ventana OpenGL de la extensión que se deja. La escena, los observadores y los resultados se conservan, y la ventana se vuelve a crear al regresar. Una extensión puede desactivar este comportamiento con \texttt{free\_graphics: false} en su descriptor. Al cerrar la aplicación (CU-022) se finalizan todas las ventanas de VTK. \textit{Responde a: D8.}
 \end{itemize}
 
 \subsubsection{Concurrencia}
 
 \begin{itemize}
-    \item \textbf{La ejecución de los cómputos pesados está centralizada y es cancelable (P8):} Ninguna extensión crea hilos ni procesos. Toda operación de cómputo pesado se solicita al TaskOrchestrator (se considera pesada la que, con los datos típicos del laboratorio, puede tardar más de 1 segundo en el hardware de referencia), que la encola, la ejecuta fuera del hilo de la interfaz y de a una a la vez (R70), presenta un indicador de progreso cuando supera un segundo y permite cancelarla (CU-014). La cancelación es cooperativa: el cómputo consulta periódicamente una señal de cancelación. Si no responde dentro de un tiempo acotado, el orquestador fuerza su terminación. \textit{Responde a: D9, D10, D11.}
-    \item \textbf{Antes de ejecutar se estima el costo (P9):} El orquestador estima la memoria que requiere un cómputo a partir de las dimensiones de la entrada y de sus parámetros, por ejemplo, el número de canales, muestras y frecuencias de una transformada wavelet o de un análisis PAC, y la compara con la memoria disponible. Si la estimación supera lo disponible, el sistema advierte al usuario y le propone reducir los parámetros; si la ejecución es claramente inviable, la rechaza antes de iniciarla. \textit{Responde a: D12.}
+    \item \textbf{La ejecución de los cómputos pesados está centralizada y es cancelable (P8):} Ninguna extensión gestiona hilos por su cuenta. Toda operación de cómputo pesado se solicita al TaskOrchestrator (se considera pesada la que, con los datos típicos del laboratorio, puede tardar más de 1 segundo en el hardware de referencia), que la encola, la ejecuta fuera del hilo de la interfaz y de a una a la vez (R70), presenta una barra de progreso no modal y permite cancelarla (CU-014). Cuando una extensión solicita un cómputo nuevo, se descartan los que tenía pendientes en la cola. La cancelación es cooperativa: el cómputo consulta periódicamente una señal de cancelación. Si no responde en dos segundos, el orquestador deja de esperarlo, descarta su resultado y continúa con la cola. \textit{Responde a: D9, D10, D11.}
+    \item \textbf{El paralelismo interno se acota por la memoria disponible (P9):} Dentro de una tarea, los cómputos por ensayos, como el PAC y el PPC, se reparten en hasta cuatro hilos, sin superar la mitad de los núcleos del equipo. Antes de repartirlos se estima la memoria que ocupa cada ensayo en curso, y el número de hilos se reduce para no superar el menor entre 3~GB y un cuarto de la memoria libre. \textit{Responde a: D12.}
 \end{itemize}
 
 \subsubsection{Tolerancia a fallos y observabilidad}
 \begin{itemize}
-    \item \textbf{Los fallos se contienen y se hacen visibles (P10):} Un fallo no debe terminar la aplicación ni pasar inadvertido. Un manejador global captura las excepciones no controladas del hilo principal y de los \textit{slots} de Qt. Las excepciones de un cómputo se capturan en el trabajador y llegan a la interfaz como un resultado fallido. Los cómputos con riesgo de agotar la memoria o de fallar en código nativo se ejecutan en un proceso aislado, de modo que su caída no arrastra a la aplicación. En todos los casos el usuario recibe un mensaje comprensible y la sesión se conserva. \textit{Responde a: D13, D14.}
-    \item \textbf{El sistema es observable (P11):} Todos los componentes registran sus eventos con nivel de severidad, marca de tiempo, componente de origen e identificador de la tarea cuando aplica. El registro se persiste en un archivo rotativo en el directorio del usuario, por lo que sobrevive a un cierre inesperado y permite reconstruir qué operación se ejecutaba cuando ocurrió un fallo. \textit{Responde a: D15.}
+    \item \textbf{Los fallos de un cómputo se capturan y se hacen visibles (P10):} Las excepciones de un cómputo se capturan en el hilo trabajador y llegan a la extensión como un resultado fallido, que se informa al usuario sin cerrar la aplicación ni perder la sesión. Los avisos y errores de las extensiones se muestran en la barra de estado y en alertas, para que no pasen inadvertidos. \textit{Responde a: D13.}
 \end{itemize}
 
 
@@ -950,11 +948,11 @@ Los principios se agrupan en las mismas cuatro áreas del diagnóstico. Cada uno
 \subsection{Decisiones arquitectónicas}
 \label{sec:adrs}
 
-La Tabla~\ref{tab:adrs} resume las decisiones arquitectónicas que materializan los principios anteriores. Para cada una se indica el problema del diagnóstico al que responde, la alternativa que se descartó, sus consecuencias y su estado: \textit{implementada}, si ya está presente en el código; \textit{parcial}, si existe una parte; o \textit{planificada}, si debe construirse en esta versión.
+La Tabla~\ref{tab:adrs} resume las decisiones arquitectónicas que materializan los principios anteriores. Para cada una se indica el problema del diagnóstico al que responde, la alternativa que se descartó y sus consecuencias.
 
 \begin{center}
 \small
-\begin{longtable}{|>{\raggedright\arraybackslash}p{0.06\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.06\textwidth}|>{\raggedright\arraybackslash}p{0.17\textwidth}|>{\raggedright\arraybackslash}p{0.20\textwidth}|>{\raggedright\arraybackslash}p{0.14\textwidth}|}
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.07\textwidth}|>{\raggedright\arraybackslash}p{0.26\textwidth}|>{\raggedright\arraybackslash}p{0.07\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.28\textwidth}|}
 \hline
 \textbf{ID} & \textbf{Decisión} & \textbf{D} & \textbf{Alternativa descartada} & \textbf{Consecuencias} \\
 \hline
@@ -964,58 +962,40 @@ La Tabla~\ref{tab:adrs} resume las decisiones arquitectónicas que materializan 
 \hline
 \endhead
 \hline
-\multicolumn{6}{r}{\textit{Continúa en la siguiente página}} \\
+\multicolumn{5}{r}{\textit{Continúa en la siguiente página}} \\
 \endfoot
 \hline
 \endlastfoot
 
 ADR-01 & Mantener el estilo microkernel y asignar al núcleo responsabilidades propias. & D1 & Monolito en capas; tuberías y filtros. & Se conservan las extensiones y el contrato existentes. El núcleo pasa a ser un componente crítico que requiere pruebas propias. \\
 \hline
-ADR-02 & Ciclo de vida de las extensiones como máquina de estados gobernada por el Kernel. & D1, D14 & Que cada extensión gestione su propia activación, como en 1.0. & Cierre ordenado y extensiones fallidas visibles. Exige que toda extensión implemente una detención completa.\\
+ADR-02 & El Kernel registra e inicializa las extensiones; cada una arranca al abrir su módulo por primera vez, y la ventana principal libera sus tareas y sus recursos gráficos al salir del módulo y al cerrar. & D1 & Que cada extensión gestione su propia activación, como en 1.0. & La vista de una extensión solo se construye si el usuario la abre. El cierre cancela las tareas y libera los recursos gráficos.\\
 \hline
-ADR-03 & Catálogo de eventos con carga útil tipada. & D2 & Canal genérico (\texttt{str, object}) y referencias directas. & Los errores de tópico se detectan al emitir. El catálogo se convierte en un contrato que debe versionarse. \\
+ADR-03 & Canal de eventos del Kernel basado en señales de Qt, con tópico y carga útil. & D2 & Referencias directas entre componentes. & Las extensiones reaccionan a los cambios en los datos sin depender unas de otras. Los tópicos se identifican con cadenas. \\
 \hline
-ADR-04 & Separar el cómputo de cada extensión en un módulo \texttt{compute} sin dependencias de Qt ni VTK. & D3 & \texttt{IPlugin} único con lógica, vista y datos. & El cálculo es comprobable y ejecutable en un trabajador. Cada extensión pasa a tener dos módulos. \\
+ADR-04 & Separar el cómputo de las extensiones con cálculos pesados en un módulo \texttt{compute} sin dependencias de Qt ni VTK. & D3 & \texttt{IPlugin} único con lógica, vista y datos. & El cálculo es comprobable de forma aislada y ejecutable en un hilo trabajador. Cada una de estas extensiones tiene dos módulos. \\
 \hline
-ADR-05 & Descubrimiento declarativo validado: \texttt{properties.yml} con versión del contrato, dependencias y unicidad. & D4, D14 & Contenedor de inyección de dependencias, por el costo de migrar todas las extensiones. & Los errores de configuración se detectan en el arranque. Se amplía el esquema del descriptor. \\
+ADR-05 & Descubrimiento declarativo: \texttt{properties.yml} con campos obligatorios que se verifican en la carga. & D4 & Contenedor de inyección de dependencias, por el costo de migrar todas las extensiones. & Agregar una extensión no exige modificar el núcleo. Un descriptor incompleto impide cargar la extensión. \\
 \hline
-ADR-06 & \texttt{DataStore} con escritor único y conjuntos derivados inmutables. & D5, D7 & Escritura libre protegida con exclusión mutua; modificación \textit{in-place}. & Estado consistente, trazable y con posibilidad de deshacer. Los derivados deben materializar solo lo que cambia. \\
+ADR-06 & \texttt{DataStore} con un único escritor, el hilo de la interfaz, y descarte de ensayos mediante una máscara de índices. & D5, D7 & Escritura libre protegida con exclusión mutua; modificación \textit{in-place}. & Estado consistente, sin condiciones de carrera. Descartar ensayos no modifica los datos de origen. \\
 \hline
-ADR-07 & Estrategia de memoria: representación submuestreada, sin copia profunda hacia VTK y tipo numérico por etapa. & D6 & Carga perezosa o memoria mapeada, que depende del formato de cada archivo. & Menor consumo de memoria. La precisión debe validarse contra las referencias de MATLAB. \\
+ADR-07 & Representación submuestreada para la visualización y mapas de tiempo-frecuencia en precisión simple. & D6 & Carga perezosa o memoria mapeada, que depende del formato de cada archivo. & Menor consumo de memoria al visualizar. La precisión se valida contra las referencias de MATLAB. \\
 \hline
-ADR-08 & Liberación determinista de recursos al desactivar una extensión, cambiar de módulo y cerrar. & D5, D8 & Conservar en caché todas las vistas instanciadas. & Consumo acotado de memoria de video y de sistema. Reconstruir una vista al regresar tiene un costo de tiempo. \\
+ADR-08 & Liberación de la ventana OpenGL al salir de un módulo y de todas las ventanas de VTK al cerrar. & D8 & Conservar en caché todas las vistas instanciadas. & Consumo acotado de memoria de video: recorrer los módulos de análisis deja el proceso en 913~MB en lugar de 3.118~MB. Recrear la ventana al regresar cuesta entre 60 y 460~ms. \\
 \hline
-ADR-09 & TaskOrchestrator híbrido: hilos por defecto y proceso trabajador para los cómputos aislables (Sección~\ref{sec:adr_concurrencia}). & D9--D11, D13 & Solo hilos; solo multiprocesamiento. & Interfaz responsiva, cancelación forzada real y aislamiento de fallos. Costo de serializar arreglos grandes. \\
+ADR-09 & TaskOrchestrator basado en hilos: una cola que ejecuta una tarea a la vez en un hilo trabajador, con cancelación cooperativa y reparto interno de ensayos en hasta cuatro hilos. & D9--D11 & Ejecución en el hilo de la interfaz; concurrencia local en cada plugin. & Interfaz responsiva y un único punto que limita las tareas simultáneas. Al cancelar, la interfaz se libera en a lo sumo dos segundos y el resultado de la tarea se descarta. \\
 \hline
-ADR-10 & Control de admisión mediante la estimación del costo de cada cómputo. & D12 & Ejecutar sin estimar, como en 1.0. & Se evitan congelamientos y cálculos perdidos. Cada extensión debe proveer su estimación. \\
+ADR-10 & Número de hilos internos acotado por la memoria estimada por ensayo y por la memoria libre del equipo. & D12 & Ejecutar sin estimar, como en 1.0. & Se evita agotar la memoria al paralelizar. Cada cómputo paralelo debe indicar cuánta memoria ocupa un ensayo. \\
 \hline
-ADR-11 & Manejador global de excepciones y captura en los trabajadores con notificación a la interfaz. & D13, D14 & Manejo local en cada extensión. & La sesión se conserva ante fallos. Los mensajes deben ser comprensibles para el usuario. \\
+ADR-11 & Captura de las excepciones en los trabajadores con notificación a la interfaz. & D13 & Manejo local en cada extensión. & Un error en un cómputo no cierra la aplicación y se informa al usuario. \\
 \hline
-ADR-12 & Registro estructurado con el módulo \texttt{logging} y archivo rotativo. & D15 & Mensajes con \texttt{print} en consola. & Diagnóstico posterior a un fallo sin reproducirlo. Deben reemplazarse las llamadas existentes a \texttt{print}. \\
-\hline
-ADR-13 & Python, PyQt5 y VTK como base tecnológica. & N/A & Migrar a PySide6. & Base madura para cálculo y visualización científica. La licencia GPL de PyQt5 condiciona la distribución, y VTK solo puede renderizar en el hilo principal.\\
+ADR-12 & Python, PyQt5 y VTK como base tecnológica. & N/A & Migrar a PySide6. & Base madura para cálculo y visualización científica. La licencia GPL de PyQt5 condiciona la distribución, y VTK solo puede renderizar en el hilo principal.\\
 \hline
 \caption{Decisiones arquitectónicas de Gamma Lab 2.0} \label{tab:adrs} \\
 \end{longtable}
 \end{center}
 
-\subsubsection{Modelo de concurrencia del TaskOrchestrator}
-\label{sec:adr_concurrencia}
 
-La decisión ADR-09 merece una explicación adicional, porque es la que más condiciona la respuesta del sistema. El \texttt{TaskService} actual ya resuelve buena parte de D9 y D10: mantiene una cola de tareas, ejecuta una sola a la vez en un hilo trabajador, descarta las tareas pendientes de una extensión cuando esta solicita una nueva y ofrece a cada cómputo una señal de cancelación cooperativa. Cuando el usuario cancela una tarea que no responde en dos segundos, el servicio deja de esperarla y descarta su resultado, pero no puede detenerla. Esta limitación es propia de los hilos de Python, que no pueden terminarse de forma segura desde fuera: el hilo desacoplado sigue consumiendo CPU y memoria hasta terminar, y un \texttt{MemoryError} o un error nativo dentro de él sigue afectando a toda la aplicación.
-
-Por ello, la terminación forzada que exige CU-014 y el aislamiento de fallos de P10 solo pueden lograrse con un proceso trabajador, que sí puede terminarse sin comprometer el proceso principal. Se adopta un modelo híbrido:
-
-\begin{itemize}
-    \item \textbf{Hilo trabajador} para los cómputos breves o de bajo consumo de memoria, como el filtrado, la segmentación o el promedio de ensayos, donde el costo de crear un proceso y de transferir los datos superaría el beneficio.
-    \item \textbf{Proceso trabajador} para los cómputos intensivos y aislables, como el PAC, la transformada wavelet y el índice de modulación, cuya duración y consumo de memoria justifican poder terminarlos y aislar su posible falla.
-\end{itemize}
-
-El modelo tiene dos costos que el diseño debe atender. El primero es la transferencia de arreglos grandes entre procesos, que se mitiga con memoria compartida en lugar de serialización completa y con un proceso trabajador persistente que evita el costo de arranque en cada tarea. El segundo es que el resultado siempre debe volver al hilo principal, porque VTK solo puede renderizar en él. En ambos casos, la extensión no conoce el mecanismo utilizado: entrega una función de cómputo (P3) y el orquestador decide cómo ejecutarla.
-
-En cuanto a su estado de implementación, ADR-09 se encuentra implementada solo en parte: el \texttt{TaskService} ejecuta todos los cómputos en hilos y el proceso trabajador no se ha construido. La decisión de no incorporarlo todavía se apoyó en una medición: arrancar un proceso y transferirle los arreglos costó 1.486\,ms, frente a los 1.163\,ms que tarda el propio cálculo. Como las transformadas de NumPy liberan el \textit{GIL} mientras calculan, los hilos sí aprovechan varios núcleos; por ejemplo, el reparto de ensayos entre cuatro hilos en PPC acelera el cálculo entre 1,8 y 2,7 veces sin alterar el resultado. La terminación forzada y el aislamiento de fallos, que son los argumentos que sostienen el proceso trabajador, siguen pendientes y se documentan como brecha en el SDD.
-
-% ----------------------------------------------------------------------
 \subsection{Patrones aplicados}
 
 La Tabla~\ref{tab:patrones_arquitectonicos} resume los patrones que materializan los principios y las decisiones anteriores.
@@ -1030,21 +1010,17 @@ La Tabla~\ref{tab:patrones_arquitectonicos} resume los patrones que materializan
 \hline
 Microkernel / Plugin & Agregar capacidades sin modificar el núcleo. & Cada extensión declara un \texttt{properties.yml} y una clase que realiza \texttt{IPlugin}; el PluginManager la descubre y la registra en el Kernel. \\
 \hline
-State & Gobernar el ciclo de vida de las extensiones (D1). & El Kernel mantiene el estado de cada extensión y solo permite las transiciones definidas (P1, ADR-02). \\
+Service Locator & Ofrecer servicios compartidos sin que las extensiones los instancien (D4). & El Kernel expone los servicios por clave, y los servicios compartidos se crean y se registran en un único lugar (P4, ADR-05). \\
 \hline
-Service Locator & Ofrecer servicios compartidos sin que las extensiones los instancien (D4). & El Kernel expone los servicios por clave. Sus dependencias se declaran y se verifican en la carga para mitigar sus riesgos (P4, ADR-05). \\
-\hline
-Observer & Comunicar cambios sin referencias directas (D2). & El canal de eventos del Kernel, basado en señales de Qt, notifica a los suscriptores los eventos del catálogo (P2, ADR-03). \\
+Observer & Comunicar cambios sin referencias directas (D2). & El canal de eventos del Kernel, basado en señales de Qt, notifica a los suscriptores los cambios en los datos (P2, ADR-03). \\
 \hline
 Command con señal de cancelación & Ejecutar, seguir y cancelar cómputos de forma uniforme (D10, D11). & Cada cómputo se encapsula como una tarea con su \texttt{TaskHandle} (progreso, finalización, fallo, cancelación) y su \texttt{TaskContext} (señal de cancelación cooperativa). \\
 \hline
-Single Writer & Mantener la consistencia del estado compartido (D5, D7). & Solo el TaskOrchestrator escribe en el \texttt{DataStore} (P5, ADR-06). \\
+Single Writer & Mantener la consistencia del estado compartido (D5, D7). & Solo el hilo de la interfaz escribe en el \texttt{DataStore}; el TaskOrchestrator le entrega los resultados (P5, ADR-06). \\
 \hline
 Adapter & Integrar representaciones incompatibles. & El \texttt{FileIOService} adapta los formatos ABF, EDF y MAT a \texttt{SignalDataset}; los adaptadores de VTK convierten arreglos de NumPy en estructuras de visualización. \\
 \hline
 Strategy & Intercambiar extensiones detrás de un mismo contrato. & El núcleo y la ventana principal operan sobre \texttt{IPlugin} sin conocer la extensión concreta. \\
-\hline
-Template Method & Reutilizar el procedimiento común de los análisis de acoplamiento. & \texttt{PACAnalysisPlugin} define el cálculo del mapa de fase y frecuencia, y sus especializaciones de uno y dos canales completan los pasos propios. \\
 \hline
 \end{tabularx}
 \caption{Patrones arquitectónicos aplicados en Gamma Lab 2.0.}
@@ -1075,7 +1051,7 @@ D3 & P3 & ADR-04 & Escenario 1; métrica de mantenibilidad (cobertura) \\
 \hline
 D4 & P4 & ADR-05 & CU-011; Escenario 1 \\
 \hline
-D5 & P5, P7 & ADR-06, ADR-08 & CU-003, CU-021; Escenario 6 \\
+D5 & P5 & ADR-06 & CU-003, CU-021; Escenario 6 \\
 \hline
 D6 & P6 & ADR-07 & CU-019; Escenarios 2 y 6 \\
 \hline
@@ -1091,11 +1067,11 @@ D11 & P8 & ADR-09 & CU-014; métrica de robustez ante cancelación \\
 \hline
 D12 & P9 & ADR-10 & CU-020; Escenario 2 \\
 \hline
-D13 & P10 & ADR-09, ADR-11 & Escenarios 3 y 7 \\
+D13 & P10 & ADR-11 & Escenarios 3 y 7 \\
 \hline
-D14 & P1, P4, P10 & ADR-02, ADR-05, ADR-11 & CU-011; Escenarios 1 y 3 \\
+D14 & N/A & N/A & N/A \\
 \hline
-D15 & P11 & ADR-12 & Escenario 3 \\
+D15 & N/A & N/A & N/A \\
 \hline
 \caption{Trazabilidad entre el diagnóstico, los principios y las decisiones} \label{tab:traza_diagnostico} \\
 \end{longtable}
@@ -1149,7 +1125,9 @@ El subsistema \textbf{Interfaz y Usabilidad} agrupa los casos de uso que definen
 
 \begin{table}[H]
     \centering
-\begin{tabular}{|p{0.14\linewidth}|p{0.26\linewidth}|p{0.50\linewidth}|}
+    \caption{Casos de uso del subsistema Interfaz y Usabilidad}
+    \label{tab:cu_interfaz}
+    \begin{tabular}{|p{0.14\linewidth}|p{0.26\linewidth}|p{0.50\linewidth}|}
         \hline
         \textbf{Caso de uso} & \textbf{Nombre} & \textbf{Descripci\'on} \\
         \hline
@@ -1164,8 +1142,6 @@ El subsistema \textbf{Interfaz y Usabilidad} agrupa los casos de uso que definen
         CU-019 & Optimizar renderizado (submuestreo) & Reduce la densidad de la representaci\'on gr\'afica para mantener la fluidez del renderizado, sin modificar los datos en memoria. \\
         \hline
     \end{tabular}
-\caption{Casos de uso del subsistema Interfaz y Usabilidad}
-\label{tab:cu_interfaz}
 \end{table}
 
 El subsistema se organiza alrededor de CU-008, que funciona como eje de la interacci\'on y como \'unico punto de conexi\'on con el subsistema N\'ucleo y Ciclo de Vida. Esta posici\'on se debe a que el cambio de m\'odulo es una transici\'on en el ciclo de vida de las extensiones. Al desactivarse, cada m\'odulo debe liberar sus recursos gr\'aficos y sus detectores de eventos de forma determinista. Al activarse, el m\'odulo destino debe reutilizar los componentes ya construidos, sin recargar la se\~nal desde disco. Los dem\'as casos de uso del subsistema se vinculan con este eje. CU-010 lo extiende como un comportamiento opcional, activado por el usuario, que no altera el estado del sistema. CU-019 se relaciona con la navegaci\'on porque la optimizaci\'on del renderizado condiciona la fluidez de cualquier vista presentada.
@@ -1182,7 +1158,9 @@ El subsistema \textbf{N\'ucleo y Ciclo de Vida} materializa el estilo arquitect\
 
 \begin{table}[H]
     \centering
-\begin{tabular}{|p{0.14\linewidth}|p{0.26\linewidth}|p{0.50\linewidth}|}
+    \caption{Casos de uso del subsistema N\'ucleo y Ciclo de Vida}
+    \label{tab:cu_nucleo}
+    \begin{tabular}{|p{0.14\linewidth}|p{0.26\linewidth}|p{0.50\linewidth}|}
         \hline
         \textbf{Caso de uso} & \textbf{Nombre} & \textbf{Descripci\'on} \\
         \hline
@@ -1196,13 +1174,11 @@ El subsistema \textbf{N\'ucleo y Ciclo de Vida} materializa el estilo arquitect\
         \hline
         CU-021 & Cerrar un proyecto & Cierra el proyecto activo, ofrece guardarlo y libera la memoria asociada a la se\~nal y sus derivados. \\
         \hline
-        CU-020 & Orquestador del n\'ucleo (ejecutar an\'alisis pesado) & Recibe, encola y ejecuta fuera del hilo de la interfaz las operaciones de c\'omputo pesado y publica sus resultados en el estado compartido. \\
+        CU-020 & Orquestador del n\'ucleo (ejecutar an\'alisis pesado) & Recibe, encola y ejecuta fuera del hilo de la interfaz las operaciones de c\'omputo pesado y entrega sus resultados al hilo de la interfaz, que los publica en el estado compartido. \\
         \hline
-        CU-014 & Cancelar procesamiento pesado & Interrumpe una tarea en curso, libera su hilo trabajador y descarta el resultado parcial. \\
+        CU-014 & Cancelar procesamiento pesado & Solicita la cancelaci\'on de una tarea en curso, libera la interfaz y la cola y descarta su resultado. \\
         \hline
     \end{tabular}
-\caption{Casos de uso del subsistema N\'ucleo y Ciclo de Vida}
-\label{tab:cu_nucleo}
 \end{table}
 
 El diagrama organiza estos casos de uso en tres agrupamientos que corresponden a tres ciclos de vida distintos. El primero es el ciclo de vida de la aplicaci\'on, formado por CU-011 y CU-022. CU-011 deja disponibles los servicios del n\'ucleo mediante inversi\'on de control, de modo que ninguna extensi\'on los instancia por su cuenta, y registra las extensiones sin que sea necesario modificar el n\'ucleo ni las ya existentes. CU-022 es su contraparte: garantiza que al terminar la ejecuci\'on no queden hilos, procesos ni contextos gr\'aficos activos.
@@ -1219,7 +1195,9 @@ El subsistema \textbf{Preprocesamiento} agrupa las operaciones que acondicionan 
 
 \begin{table}[H]
     \centering
-\begin{tabular}{|p{0.14\linewidth}|p{0.26\linewidth}|p{0.50\linewidth}|}
+    \caption{Casos de uso del subsistema Preprocesamiento}
+    \label{tab:cu_preproc}
+    \begin{tabular}{|p{0.14\linewidth}|p{0.26\linewidth}|p{0.50\linewidth}|}
         \hline
         \textbf{Caso de uso} & \textbf{Nombre} & \textbf{Descripci\'on} \\
         \hline
@@ -1234,8 +1212,6 @@ El subsistema \textbf{Preprocesamiento} agrupa las operaciones que acondicionan 
         CU-006 & Seleccionar trials para an\'alisis & Define el subconjunto de trials que participa en un an\'alisis y deja constancia de cu\'ales se usaron. \\
         \hline
     \end{tabular}
-\caption{Casos de uso del subsistema Preprocesamiento}
-\label{tab:cu_preproc}
 \end{table}
 
 En el diagrama, todos los casos de uso del subsistema, con excepci\'on de CU-018, mantienen una relaci\'on de inclusi\'on con el orquestador del n\'ucleo (CU-020). Esto expresa que ninguna transformaci\'on se ejecuta en el hilo de la interfaz: el subsistema define qu\'e operaci\'on se aplica sobre la se\~nal, y el n\'ucleo determina c\'omo y cu\'ando se ejecuta. As\'i, las extensiones de preprocesamiento contienen solo su l\'ogica de transformaci\'on y quedan desacopladas de la gesti\'on de la concurrencia.
@@ -1252,7 +1228,9 @@ El subsistema \textbf{An\'alisis} agrupa los c\'omputos que extraen informaci\'o
 
 \begin{table}[H]
     \centering
-\begin{tabular}{|p{0.14\linewidth}|p{0.26\linewidth}|p{0.50\linewidth}|}
+    \caption{Casos de uso del subsistema An\'alisis}
+    \label{tab:cu_analisis}
+    \begin{tabular}{|p{0.14\linewidth}|p{0.26\linewidth}|p{0.50\linewidth}|}
         \hline
         \textbf{Caso de uso} & \textbf{Nombre} & \textbf{Descripci\'on} \\
         \hline
@@ -1265,8 +1243,6 @@ El subsistema \textbf{An\'alisis} agrupa los c\'omputos que extraen informaci\'o
         CU-015 & C\'alculo de promedio de trials & Promedia todos los trials o un subconjunto seleccionado para reducir el ruido de la se\~nal. \\
         \hline
     \end{tabular}
-\caption{Casos de uso del subsistema An\'alisis}
-\label{tab:cu_analisis}
 \end{table}
 
 En el diagrama, todos los casos de uso concretos del subsistema mantienen una relaci\'on de inclusi\'on con el orquestador del n\'ucleo (CU-020). Esto es consecuente con la naturaleza del subsistema, que re\'une los c\'omputos m\'as costosos del sistema. Delegar su ejecuci\'on en el n\'ucleo permite que la interfaz siga respondiendo durante el c\'alculo, que el usuario pueda cancelarlo y que los resultados se publiquen en el estado compartido de forma sincronizada. Cada extensi\'on de an\'alisis queda as\'i limitada a su l\'ogica de c\'alculo, sin intervenir en la gesti\'on de la concurrencia.
@@ -1283,7 +1259,9 @@ El subsistema \textbf{Exportaci\'on} agrupa los casos de uso que trasladan el tr
 
 \begin{table}[H]
     \centering
-\begin{tabular}{|p{0.14\linewidth}|p{0.26\linewidth}|p{0.50\linewidth}|}
+    \caption{Casos de uso del subsistema Exportaci\'on}
+    \label{tab:cu_exportacion}
+    \begin{tabular}{|p{0.14\linewidth}|p{0.26\linewidth}|p{0.50\linewidth}|}
         \hline
         \textbf{Caso de uso} & \textbf{Nombre} & \textbf{Descripci\'on} \\
         \hline
@@ -1292,8 +1270,6 @@ El subsistema \textbf{Exportaci\'on} agrupa los casos de uso que trasladan el tr
         CU-017 & Exportaci\'on gr\'afica vectorial (EMF) & Exporta las visualizaciones de los an\'alisis en formato vectorial, conservando sus ejes y escalas para uso en publicaciones. \\
         \hline
     \end{tabular}
-\caption{Casos de uso del subsistema Exportaci\'on}
-\label{tab:cu_exportacion}
 \end{table}
 
 En el diagrama, el subsistema se conecta con el resto del sistema mediante una \'unica relaci\'on: la inclusi\'on de CU-005 por parte de CU-021, Cerrar un proyecto, del subsistema N\'ucleo y Ciclo de Vida. Esta relaci\'on expresa que el guardado del proyecto no es una operaci\'on aislada, sino una parte obligatoria del ciclo de vida del proyecto: toda operaci\'on que cierre o reemplace el proyecto activo pasa por el mismo mecanismo de persistencia. El archivo de proyecto almacena una referencia a la se\~nal de origen junto con los trials, los an\'alisis y sus par\'ametros, sin duplicar los datos de la se\~nal. As\'i, el proyecto se mantiene liviano y puede restaurarse a partir del archivo original.
@@ -1360,8 +1336,8 @@ de extensiones, indexadas por nombre, y el registro de servicios,
    a una categoría funcional (get\_plugins\_by\_category), lo cual permite 
    a la interfaz organizar los módulos por categorías. Asimismo, ofrece
     operaciones para registrar y localizar servicios por clave 
-    (register\_service y get\_service), para detener de forma ordenada todas
-     las extensiones al finalizar la aplicación (stop\_plugins) y para publicar 
+    (register\_service y get\_service), para invocar la detención de todas
+     las extensiones (stop\_plugins) y para publicar
      eventos dirigidos a los componentes suscritos (emit\_event). El Kernel se 
      asocia con el PluginManager, el SettingsService, el FileIOService,
       el DataStore y el TaskOrchestrator, y administra las extensiones 
@@ -1379,7 +1355,7 @@ El SettingsService se encuentra implementado y gestiona la configuración persis
 El FileIOService se encuentra implementado y adapta los formatos de archivo soportados al modelo de datos interno del sistema. Sus operaciones load\_abf, load\_edf y load\_mat leen archivos en los formatos ABF, EDF y MAT, respectivamente, y retornan en todos los casos un objeto SignalDataset. De esta manera, el resto del sistema permanece independiente de la representación de las señales en disco.
 
 \paragraph{ExportService}
-El ExportService se encuentra implementado y es responsable de exportar visualizaciones y resultados tabulares a formatos externos. Mantiene una referencia al componente de visualización y una función que provee la gráfica activa en cada momento. La operación export\_image exporta la visualización a formatos de imagen ráster (PNG, JPG, BMP y TIFF) y la operación export\_table exporta los resultados a formatos tabulares (CSV, XLSX y JSON). Se encuentra planificada la operación export\_vector, que permitirá la exportación a formato vectorial EMF en respuesta al caso de uso CU-017.
+El ExportService se encuentra implementado y es responsable de exportar visualizaciones y resultados tabulares a formatos externos. Mantiene una referencia al componente de visualización y una función que provee la gráfica activa en cada momento. La operación export\_image exporta la visualización a formatos de imagen ráster (PNG, JPG, BMP y TIFF), la operación export\_emf la exporta a formato vectorial EMF (CU-017) y la operación export\_table exporta los resultados a formatos tabulares (CSV, XLSX y JSON).
 
 \paragraph{DataStore}
 El DataStore se encuentra implementado y mantiene en memoria el estado compartido de la sesión de trabajo, el cual comprende las señales cargadas, la señal activa, las mediciones y los resultados de los análisis. Constituye la fuente única de verdad del estado de la aplicación. Ofrece operaciones genéricas de almacenamiento, consulta y verificación por clave (set, get y has), operaciones para incorporar señales (add\_signal), para establecer, consultar y liberar la señal activa (set\_active\_signal, get\_active\_signal y clear\_active\_signal) y para eliminar entradas del estado (remove).
@@ -1390,16 +1366,12 @@ coordinar la ejecución de las operaciones de cómputo solicitadas por las
 extensiones. Su propósito es garantizar que dichas operaciones se ejecuten
  de forma ordenada, que puedan ser canceladas por el usuario, que se presente 
  retroalimentación de progreso y que sus resultados se publiquen de manera
-  consistente. Para ello mantendrá una cola de solicitudes pendientes, una 
-  referencia a la operación en ejecución y un umbral de tiempo, fijado en un 
-  segundo, a partir del cual se presentará el indicador de progreso.
+  consistente. Se encuentra implementado como \texttt{TaskService}: mantiene una cola de solicitudes pendientes y una
+  referencia a la operación en ejecución, que corre en un único hilo trabajador, y la interfaz presenta su progreso en una barra no modal con opción de cancelar.
 
-La operación solicitar constituirá el punto de entrada único mediante el cual
- una extensión pide la ejecución de un cómputo. La operación encolar diferirá 
- una solicitud cuando exista otra operación en curso, en cumplimiento del 
- requerimiento R70. Las operaciones cancelar y forzar\_terminacion permitirán,
-  respectivamente, la cancelación de una tarea a petición del usuario y la
-   terminación forzada de una tarea que no responda a la cancelación, conforme al caso de uso CU-014 y su excepción 2a. Por último, la operación publicar\_resultado escribirá los resultados en el estado compartido de forma sincronizada. El TaskOrchestrator será el único componente autorizado para escribir en el DataStore, en cumplimiento del requerimiento R54.
+La operación submit es el punto de entrada único mediante el cual
+ una extensión pide la ejecución de un cómputo. Si existe otra operación en curso, la solicitud queda en la cola, en cumplimiento del
+ requerimiento R70, y las solicitudes pendientes de la misma extensión se descartan. La operación cancel activa la señal de cancelación cooperativa de la tarea a petición del usuario (CU-014); si la tarea no responde en dos segundos, el servicio deja de esperarla y descarta su resultado, conforme a la excepción 2a de CU-014. La operación cancel\_all\_from cancela todas las tareas de una extensión cuando el usuario sale de su módulo. Por último, el resultado se entrega mediante señales de Qt al hilo de la interfaz, el único autorizado para escribir en el DataStore, en cumplimiento del requerimiento R54.
 
 \paragraph{ProjectService}
 El ProjectService se encuentra implementado y gestiona la persistencia del 
@@ -1434,7 +1406,7 @@ La MainWindow se encuentra parcialmente implementada y constituye el contenedor 
 El VTKContextMenu se encuentra implementado y provee el menú contextual asociado a las visualizaciones. Sus operaciones permiten presentar el menú en la posición indicada por el usuario (show\_menu) y solicitar la exportación de la visualización como imagen o como tabla (export\_image y export\_table). Este elemento delega la exportación en el ExportService y opera sobre los componentes visuales provistos por las extensiones.
 
 \paragraph{TooltipHelper}
-El TooltipHelper se encuentra planificado y tendrá la responsabilidad de proveer ayuda contextual sobre los controles de la interfaz. Mantendrá un diccionario de descripciones asociadas a cada control. La operación (aplicar\_tooltips) asignará dichas descripciones a los controles de un componente visual y la operación (al\_cambiar\_habilitado) actualizará la descripción de un control cuando cambie su disponibilidad, de modo que el usuario conozca el motivo por el cual un control se encuentra deshabilitado.
+El TooltipHelper se encuentra implementado en el módulo \texttt{ayudas} y provee ayuda contextual sobre los controles de la interfaz (R42). Mantiene un diccionario de descripciones para los controles habituales. La operación completar\_ayudas recorre los controles de un módulo cuando la ventana principal lo presenta y asigna una descripción a los que no traen una propia: la del diccionario o, en su defecto, la del rótulo que acompaña al control. Nunca reemplaza una descripción declarada por la extensión.
 
 \subsubsection{Contrato de extensión}
 
@@ -1445,33 +1417,31 @@ Se encuentra planificada la incorporación al contrato de la operación clear\_p
 
 \subsubsection{Extensiones}
 
-Todas las extensiones del sistema realizan la interfaz IPlugin. La Tabla~\ref{tab:extensiones} resume las extensiones representadas en el modelo, su estado de implementación y su responsabilidad.
+Todas las extensiones del sistema realizan la interfaz IPlugin. La Tabla~\ref{tab:extensiones} resume las extensiones representadas en el modelo y su responsabilidad.
 \begin{table}[H]
 \centering
+\caption{Extensiones representadas en la vista lógica.}
+\label{tab:extensiones}
 \begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{4.5cm} X}
 \toprule
 \textbf{Elemento} & \textbf{Responsabilidad} \\
 \midrule
 \texttt{OpenSignalPlugin} & Selección y carga de señales desde archivo. \\
 \addlinespace
-\texttt{FilterPlugin} & Filtrado en frecuencia de la señal. \\
+\texttt{Filter\_plugin} & Filtrado en frecuencia de la señal. \\
 \addlinespace
-\texttt{WaveletPlugin} & Análisis en tiempo y frecuencia mediante la transformada wavelet. \\
+\texttt{Wavelet\_plugin} & Análisis en tiempo y frecuencia mediante la transformada wavelet. \\
 \addlinespace
 \texttt{TrialsPlugin} & Segmentación de la señal en ensayos. \\
 \addlinespace
-\texttt{PACAnalysisPlugin} & Comportamiento común del análisis de acoplamiento entre fase y amplitud (PAC). \\
+\texttt{Pac\_plugin} & Acoplamiento entre fase y amplitud (PAC) de un ensayo, promediado sobre los ensayos o sobre los ciclos detectados (Psel); en esta última modalidad, la fase y la amplitud pueden tomarse de canales distintos. \\
 \addlinespace
-\texttt{PACSingleChannelPlugin} & Cálculo del acoplamiento entre fase y amplitud dentro de un mismo canal. \\
-\addlinespace
-\texttt{PACInterChannelPlugin} & Cálculo del acoplamiento entre fase y amplitud y del acoplamiento fase-fase (\textit{Phase-Phase Coupling}, PPC) entre dos canales. \\
+\texttt{Ppc\_plugin} & Consistencia de fase entre dos canales (\textit{Pairwise Phase Consistency}, PPC). \\
 \bottomrule
 \end{tabularx}
-\caption{Extensiones representadas en la vista lógica.}
-\label{tab:extensiones}
 \end{table}
 
-PACAnalysisPlugin es una clase abstracta que concentra los parámetros y el procedimiento comunes a todo análisis de acoplamiento entre fase y amplitud. Sus atributos definen la banda de frecuencia de la fase y el rango de frecuencia de la amplitud, y su operación calcular\_mapa\_fase\_frecuencia obtiene el mapa de fase y frecuencia mediante la transformada wavelet. Las clases PACSingleChannelPlugin y PACInterChannelPlugin especializan este comportamiento. La primera incorpora la operación calcular\_pac\_1\_canal, que calcula el acoplamiento dentro de un mismo canal, y la segunda incorpora las operaciones calcular\_pac\_2\_canales y calcular\_ppc, que calculan el acoplamiento y la consistencia de fase entre dos canales.
+Cada análisis de acoplamiento es una extensión independiente que realiza IPlugin. Su cálculo reside en un módulo \texttt{compute} propio (P3), que la extensión entrega al TaskOrchestrator para su ejecución.
 
 \subsubsection{Modelo de datos}
 
@@ -1490,6 +1460,8 @@ La Tabla~\ref{tab:relaciones_logica} resume las relaciones entre los elementos d
 
 \begin{table}[H]
 \centering
+\caption{Relaciones estructurales de la vista lógica.}
+\label{tab:relaciones_logica}
 \begin{tabularx}{\linewidth}{@{}p{4.4cm}p{2.6cm}p{3.3cm}X@{}}
 \toprule
 \textbf{Origen} & \textbf{Tipo} & \textbf{Destino} & \textbf{Descripción} \\
@@ -1503,14 +1475,11 @@ ProjectService & Dependencia & ProjectData & Produce y consume el contenido del 
 VTKContextMenu & Dependencia & ExportService & Delega la exportación. \\
 VTKContextMenu, TooltipHelper & Dependencia & IPlugin & Operan sobre los componentes visuales de las extensiones. \\
 IPlugin & Dependencia & SignalDataset, TrialDataset & Manipula el modelo de datos. \\
-Extensiones concretas y PACAnalysisPlugin & Realización & IPlugin & Implementan el contrato de extensión. \\
-PACSingleChannelPlugin, PACInterChannelPlugin & Generalización & PACAnalysisPlugin & Especializan el análisis de acoplamiento. \\
+Extensiones concretas & Realización & IPlugin & Implementan el contrato de extensión. \\
 Extensiones de análisis & Dependencia & TaskOrchestrator & Solicitan la ejecución de operaciones de cómputo. \\
-TaskOrchestrator & Asociación & DataStore & Publica los resultados en el estado compartido. \\
+TaskOrchestrator & Asociación & DataStore & Entrega los resultados, que se publican en el estado compartido desde el hilo de la interfaz. \\
 \bottomrule
 \end{tabularx}
-\caption{Relaciones estructurales de la vista lógica.}
-\label{tab:relaciones_logica}
 \end{table}
 
 
@@ -1518,16 +1487,13 @@ TaskOrchestrator & Asociación & DataStore & Publica los resultados en el estado
 
 La separación entre el núcleo y las extensiones mediante la interfaz IPlugin favorece la extensibilidad del sistema, ya que permite incorporar nuevos análisis, como los de acoplamiento entre fase y amplitud, sin modificar el código existente, en conformidad con el principio de abierto y cerrado.
 
-La asignación exclusiva de la escritura sobre el estado compartido al TaskOrchestrator garantiza la consistencia del estado de la aplicación, al eliminar las condiciones de carrera entre operaciones concurrentes, conforme al requerimiento R54.
+La asignación exclusiva de la escritura sobre el estado compartido al hilo de la interfaz, al que el TaskOrchestrator entrega los resultados, garantiza la consistencia del estado de la aplicación, al eliminar las condiciones de carrera entre operaciones concurrentes, conforme al requerimiento R54.
 
 La centralización de la ejecución de los cómputos en el TaskOrchestrator mejora la capacidad de respuesta del sistema y el control que ejerce el usuario sobre él, puesto que habilita la ejecución ordenada de las operaciones (R70), su cancelación (CU-014) y la presentación de progreso, sin que cada extensión deba gestionar sus propios hilos de ejecución.
 
 La concentración de la lectura de archivos en el FileIOService asegura la independencia del sistema respecto de los formatos de señal, y confina a un único elemento el impacto de incorporar nuevos formatos.
 
 La persistencia de proyectos mediante el ProjectService y la estructura ProjectData produce proyectos autocontenidos y versionados. La inclusión de una copia de la señal de origen permite reabrir el trabajo en otro equipo, y la versión del esquema permite detectar incompatibilidades entre versiones del formato.
-
-Por último, la jerarquía encabezada por PACAnalysisPlugin promueve la reutilización, al evitar la duplicación del cálculo del mapa de fase y frecuencia entre las variantes de análisis de uno y de dos canales.
-
 
 \subsection{Vista de despliegue}
 \subsubsection{Propósito}
@@ -1861,13 +1827,12 @@ otros actúan como estructuras compartidas entre ambos.
     componente que actualiza la presentación gráfica.
 
     \item \textbf{Almacén de datos (DataStore):} se instancia como un servicio único 
-    del núcleo y lo comparten todas las extensiones. Es el punto de encuentro entre el 
-    hilo principal, que lee el estado para presentarlo, y los hilos trabajadores, que 
-    escriben los resultados. Por eso su acceso se sincroniza y cada dato tiene un único 
-    propietario de escritura.
+    del núcleo y lo comparten todas las extensiones. Solo el hilo principal
+    escribe en él: los hilos trabajadores no lo modifican, sino que devuelven sus
+    resultados al hilo principal, y una escritura desde otro hilo se rechaza.
 
     \item \textbf{Orquestador de tareas (TaskOrchestrator):} se registra en el núcleo 
-    durante el arranque y mantiene las colas de ejecución durante toda la sesión. Por 
+    durante el arranque y mantiene la cola de ejecución durante toda la sesión. Por 
     cada solicitud crea un hilo trabajador, lo supervisa durante el cómputo y lo libera 
     al terminar, ya sea por finalización, error o cancelación.
 
@@ -1884,13 +1849,12 @@ otros actúan como estructuras compartidas entre ambos.
 En ejecución, la interacción entre estos componentes sigue un ciclo constante. La 
 interfaz recibe una acción del usuario y la dirige a la extensión activa. La extensión 
 obtiene del núcleo el orquestador y le entrega la operación como una tarea. El 
-orquestador la ejecuta en un hilo trabajador, que publica el resultado en el almacén 
-de datos mediante escritura sincronizada. Por último, la interfaz recibe la 
-notificación y actualiza la presentación desde el hilo principal. Gracias a este 
+orquestador la ejecuta en un hilo trabajador y devuelve el resultado al hilo
+principal, donde se registra en el almacén de datos y se actualiza la presentación. Gracias a este 
 ciclo, ningún cómputo pesado ocupa el hilo principal y ninguna extensión escribe 
 directamente sobre la presentación. Al cerrar la aplicación, el recorrido se invierte: 
-el orquestador cancela o espera las tareas en curso, las extensiones se detienen y 
-liberan sus recursos, y el núcleo finaliza el proceso.
+el orquestador cancela las tareas en curso, se finalizan las ventanas de VTK y
+se desmontan las vistas de las extensiones, y el núcleo finaliza el proceso.
 
 \subsubsection{Artefactos externos}
 
@@ -1941,6 +1905,8 @@ hilo principal.
 
 \begin{table}[H]
 \centering
+\caption{Escenario de calidad 1: Integración de un plugin externo}
+\label{tab:escenario1}
 \begin{tabularx}{\textwidth}{|l|X|}
 \hline
 \textbf{Aspecto} & \textbf{Descripción} \\
@@ -1964,14 +1930,14 @@ Medida de Respuesta & Plugin visible en la UI en menos de 1 minuto. Ningún plug
 Trazabilidad & NFR-S-05 (R77--R78) \\
 \hline
 \end{tabularx}
-\caption{Escenario de calidad 1: Integración de un plugin externo}
-\label{tab:escenario1}
 \end{table}
 
 \subsubsection{Escenario de Calidad 2: Carga de Señal de Gran Tamaño}
 
 \begin{table}[H]
 \centering
+\caption{Escenario de calidad 2: Carga de señal de gran tamaño}
+\label{tab:escenario2}
 \begin{tabularx}{\textwidth}{|l|X|}
 \hline
 \textbf{Aspecto} & \textbf{Descripción} \\
@@ -1995,14 +1961,14 @@ Medida de Respuesta & Visualización inicial en menos de 8 segundos para este ca
 Trazabilidad & NFR-P-03 (R48), NFR-P-14 (R72), NFR-P-10 (R56) \\
 \hline
 \end{tabularx}
-\caption{Escenario de calidad 2: Carga de señal de gran tamaño}
-\label{tab:escenario2}
 \end{table}
 
 \subsubsection{Escenario de Calidad 3: Manejo de Errores en Tiempo de Ejecución}
 
 \begin{table}[H]
 \centering
+\caption{Escenario de calidad 3: Manejo de errores en tiempo de ejecución}
+\label{tab:escenario3}
 \begin{tabularx}{\textwidth}{|l|X|}
 \hline
 \textbf{Aspecto} & \textbf{Descripción} \\
@@ -2026,14 +1992,14 @@ Medida de Respuesta & 0\% de pérdida de datos. Continuidad del sistema garantiz
 Trazabilidad & R47 \\
 \hline
 \end{tabularx}
-\caption{Escenario de calidad 3: Manejo de errores en tiempo de ejecución}
-\label{tab:escenario3}
 \end{table}
 
 \subsubsection{Escenario de Calidad 4: Exportación de Datos o Gráficas}
 
 \begin{table}[H]
 \centering
+\caption{Escenario de calidad 4: Exportación de datos o gráficas}
+\label{tab:escenario4}
 \begin{tabularx}{\textwidth}{|l|X|}
 \hline
 \textbf{Aspecto} & \textbf{Descripción} \\
@@ -2057,14 +2023,14 @@ Medida de Respuesta & Tiempo de exportación menor a 3 segundos. 0\% de pérdida
 Trazabilidad & NFR-P-07 (R51), NFR-P-12 (R57), NFR-S-03 (R70) \\
 \hline
 \end{tabularx}
-\caption{Escenario de calidad 4: Exportación de datos o gráficas}
-\label{tab:escenario4}
 \end{table}
 
 \subsubsection{Escenario de Calidad 5: Uso del Sistema sin Experiencia Técnica}
 
 \begin{table}[H]
 \centering
+\caption{Escenario de calidad 5: Operación por un usuario sin experiencia técnica}
+\label{tab:escenario5}
 \begin{tabularx}{\textwidth}{|l|X|}
 \hline
 \textbf{Aspecto} & \textbf{Descripción} \\
@@ -2088,14 +2054,14 @@ Medida de Respuesta & Análisis realizado en menos de 5 minutos. Bajo número de
 Trazabilidad & NFR-U-07 (R42), NFR-U-08 (R43), NFR-U-05 (R10), NFR-U-09 (R44) \\
 \hline
 \end{tabularx}
-\caption{Escenario de calidad 5: Operación por un usuario sin experiencia técnica}
-\label{tab:escenario5}
 \end{table}
 
 \subsubsection{Escenario de Calidad 6: Rendimiento con Múltiples Señales Cargadas}
 
 \begin{table}[H]
 \centering
+\caption{Escenario de calidad 6: Rendimiento con múltiples señales cargadas}
+\label{tab:escenario6}
 \begin{tabularx}{\textwidth}{|l|X|}
 \hline
 \textbf{Aspecto} & \textbf{Descripción} \\
@@ -2119,14 +2085,14 @@ Medida de Respuesta & Cambio entre señales cargadas en menos de 1 segundo. Sin 
 Trazabilidad & NFR-P-06 (R51), NFR-P-01/P-08 (R11, R53) \\
 \hline
 \end{tabularx}
-\caption{Escenario de calidad 6: Rendimiento con múltiples señales cargadas}
-\label{tab:escenario6}
 \end{table}
 
 \subsubsection{Escenario de Calidad 7: Resiliencia ante Archivos Corruptos o Incompatibles}
 
 \begin{table}[H]
 \centering
+\caption{Escenario de calidad 7: Resiliencia ante archivos corruptos o incompatibles}
+\label{tab:escenario7}
 \begin{tabularx}{\textwidth}{|l|X|}
 \hline
 \textbf{Aspecto} & \textbf{Descripción} \\
@@ -2150,14 +2116,14 @@ Medida de Respuesta & Mensaje de error mostrado en menos de 2 segundos. 0\% de p
 Trazabilidad & FR-IO-04  \\
 \hline
 \end{tabularx}
-\caption{Escenario de calidad 7: Resiliencia ante archivos corruptos o incompatibles}
-\label{tab:escenario7}
 \end{table}
 
 \subsubsection{Escenario de Calidad 8: Consistencia entre Datos Ingresados y Gráficas Generadas}
 
 \begin{table}[H]
 \centering
+\caption{Escenario de calidad 8: Consistencia entre datos ingresados y gráficas generadas}
+\label{tab:escenario8}
 \begin{tabularx}{\textwidth}{|l|X|}
 \hline
 \textbf{Aspecto} & \textbf{Descripción} \\
@@ -2181,8 +2147,6 @@ Medida de Respuesta & Actualización gráfica en menos de 3 segundos. 0 diferenc
 Trazabilidad & NFR-R-04 (R73), NFR-U-02 (R03) \\
 \hline
 \end{tabularx}
-\caption{Escenario de calidad 8: Consistencia entre datos ingresados y gráficas generadas}
-\label{tab:escenario8}
 \end{table}
 
 
@@ -2209,6 +2173,7 @@ Trazabilidad & NFR-R-04 (R73), NFR-U-02 (R03) \\
 \begin{center}
 \small
 \begin{longtable}{|p{0.30\textwidth}|p{0.20\textwidth}|p{0.30\textwidth}|}
+\caption{Versiones de dependencias externas ancladas en \texttt{requirements.txt}} \label{tab:deps} \\
 \hline
 \textbf{Librer\'ia} & \textbf{Versi\'on} & \textbf{Rol} \\
 \hline
@@ -2235,7 +2200,6 @@ Trazabilidad & NFR-R-04 (R73), NFR-U-02 (R03) \\
 \hline
 \texttt{pytest} & 8.4.2 & Framework de pruebas \\
 \hline
-\caption{Versiones de dependencias externas ancladas en \texttt{requirements.txt}} \label{tab:deps} \\
 \end{longtable}
 \end{center}
 
@@ -2247,6 +2211,7 @@ La Tabla~\ref{tab:metricas} formaliza la ``Medida de Respuesta'' de cada escenar
 \begin{center}
 \small
 \begin{longtable}{|p{0.16\textwidth}|p{0.19\textwidth}|p{0.21\textwidth}|p{0.28\textwidth}|}
+\caption{M\'etricas, m\'etodo de verificaci\'on y criterio de aceptaci\'on por atributo de calidad} \label{tab:metricas} \\
 \hline
 \textbf{Atributo} & \textbf{M\'etrica} & \textbf{M\'etodo} & \textbf{Criterio de aceptaci\'on} \\
 \hline
@@ -2259,7 +2224,6 @@ La Tabla~\ref{tab:metricas} formaliza la ``Medida de Respuesta'' de cada escenar
 \multicolumn{4}{r}{\textit{Contin\'ua en la siguiente p\'agina}} \\
 \endfoot
 \hline
-\caption{M\'etricas, m\'etodo de verificaci\'on y criterio de aceptaci\'on por atributo de calidad} \label{tab:metricas} \\
 \endlastfoot
 
 Extensibilidad (Esc.~1) &
@@ -2329,9 +2293,9 @@ Arranque exitoso, sin configuraci\'on manual \\
 \hline
 
 Robustez --\newline cancelaci\'on (UC-02) &
-Liberaci\'on del hilo tras cancelar &
-Prueba forzada sobre \texttt{Task\-Orchestrator} &
-Liberaci\'on garantizada (R46, R70, R74) \\
+Liberaci\'on de la interfaz y la cola tras cancelar &
+Prueba sobre \texttt{Task\-Orchestrator} con una tarea que ignora la cancelaci\'on &
+Liberaci\'on en $\leq$ 2~s (R46, R70, R74) \\
 \hline
 
 \end{longtable}
@@ -2344,7 +2308,7 @@ Liberaci\'on garantizada (R46, R70, R74) \\
     \item \textbf{Auditor\'ias documentales.} Los informes \texttt{reporte\_\allowbreak tests.\allowbreak tex} e \texttt{informe\_\allowbreak rendimiento.\allowbreak tex} (\texttt{docs/\allowbreak tests documents/}) registran el estado de la suite de pruebas y los hallazgos de rendimiento.
     \item \textbf{Pruebas de usabilidad con usuarios reales.} \texttt{docs/pruebas-usabilidad/} sustenta el criterio de aceptaci\'on de Usabilidad (Esc.~5).
     \item \textbf{Prueba de instalaci\'on limpia.} Arranque del ejecutable generado por PyInstaller en un Windows~10/11 sin Python previamente instalado, como evidencia de Portabilidad.
-    \item \textbf{Registro de cancelaci\'on forzada.} La prueba de cancelaci\'on forzada sobre el \texttt{Task\-Orchestrator} bajo carga es la evidencia de Robustez (UC-02).
+    \item \textbf{Pruebas de cancelaci\'on.} Las pruebas de \texttt{test/\allowbreak services\_\allowbreak test/\allowbreak test\_\allowbreak task\_\allowbreak service.py} sobre el \texttt{Task\-Orchestrator}, incluida la de una tarea que ignora la cancelaci\'on, son la evidencia de Robustez (UC-02).
 \end{enumerate}
 
 \subsection{Conclusi\'on}
@@ -2647,7 +2611,7 @@ La Tabla~\ref{tab:traza_cu_arq} invierte la Tabla~\ref{tab:traza_diagnostico}: i
 \hline
 \endlastfoot
 
-CU-003 & D2, D5 & P2, P5, P7 & ADR-03, ADR-06, ADR-08 & Escenario 6 \\
+CU-003 & D2, D5 & P2, P5 & ADR-03, ADR-06 & Escenario 6 \\
 \hline
 CU-004 & D2 & P2 & ADR-03 & N/A \\
 \hline
@@ -2655,7 +2619,7 @@ CU-007 & D7 & P5 & ADR-06 & Escenario 8 \\
 \hline
 CU-008 & D8 & P7 & ADR-08 & N/A \\
 \hline
-CU-011 & D1, D4, D14 & P1, P4, P10 & ADR-01, ADR-02, ADR-05, ADR-11 & Escenarios 1 y 3 \\
+CU-011 & D1, D4 & P1, P4 & ADR-01, ADR-02, ADR-05 & Escenario 1 \\
 \hline
 CU-014 & D11 & P8 & ADR-09 & N/A \\
 \hline
@@ -2665,7 +2629,7 @@ CU-019 & D6 & P6 & ADR-07 & Escenarios 2 y 6 \\
 \hline
 CU-020 & D9, D10, D12 & P8, P9 & ADR-09, ADR-10 & Escenario 2 \\
 \hline
-CU-021 & D5 & P5, P7 & ADR-06, ADR-08 & Escenario 6 \\
+CU-021 & D5 & P5 & ADR-06 & Escenario 6 \\
 \hline
 CU-022 & D1, D8 & P1, P7 & ADR-01, ADR-02, ADR-08 & N/A \\
 \hline
