@@ -824,7 +824,7 @@ Un plugin defectuoso podría comprometer la estabilidad de la sesión (NFR-R-01,
 \subsection{Síntesis del diagnóstico}
 \label{sec:sintesis_diagnostico}
 
-La arquitectura de Gamma Lab 2.0 no parte de cero. Conserva el estilo microkernel de la versión 1.0, pero corrige las limitaciones identificadas en el diagnóstico de las secciones anteriores. Por esta razón, los principios y las decisiones de esta sección se formulan como respuesta a problemas concretos. La siguiente tabla sintetiza esos problemas y les asigna un identificador, de D1 a D15, que se utiliza en el resto de la sección para trazar cada principio y cada decisión hasta su origen.
+La arquitectura de Gamma Lab 2.0 no parte de cero. Conserva el estilo microkernel de la versión 1.0, pero corrige las limitaciones identificadas en el diagnóstico de las secciones anteriores. Por esta razón, los principios y las decisiones de esta sección se formulan como respuesta a problemas concretos. La siguiente tabla sintetiza esos problemas y les asigna un identificador, de D1 a D14, que se utiliza en el resto de la sección para trazar cada principio y cada decisión hasta su origen.
 
 \begin{center}
 \small
@@ -863,9 +863,7 @@ D12 & No hay control de admisión: no se estima el costo en tiempo ni en memoria
 \hline
 D13 & Todo se ejecuta en un único proceso sin manejador global de excepciones: un error no capturado termina la aplicación y se pierde la sesión.  \\
 \hline
-D14 & Los errores se ocultan: el cargador omite los plugins que fallan al importarse y el núcleo mantiene registrados los que fallaron al inicializarse.  \\
-\hline
-D15 & No hay registro estructurado: la información se emite con \texttt{print}, sin niveles, sin marcas de tiempo y sin persistencia.  \\
+D14 & Los errores se ocultan y el sistema no es observable: el usuario no recibe una explicación cuando una funcionalidad falla, y la información de diagnóstico se emite con \texttt{print}, sin niveles de severidad ni identificación del componente de origen.  \\
 \hline
 \caption{Síntesis del diagnóstico de Gamma Lab 1.0} \label{tab:sintesis_diagnostico} \\
 \end{longtable}
@@ -912,7 +910,7 @@ Alrededor del núcleo se organizan otras tres agrupaciones, coherentes con la vi
 \subsection{Principios arquitectónicos}
 \label{sec:principios_lista}
 
-Los principios se agrupan en las mismas cuatro áreas del diagnóstico. Cada uno se identifica con un código, de P1 a P10, que se utiliza en las tablas de trazabilidad, se enuncia como una regla que el sistema cumple e indica los problemas de la Tabla~\ref{tab:sintesis_diagnostico} a los que responde.
+Los principios se agrupan en las mismas cuatro áreas del diagnóstico. Cada uno se identifica con un código, de P1 a P11, que se utiliza en las tablas de trazabilidad, se enuncia como una regla que el sistema cumple e indica los problemas de la Tabla~\ref{tab:sintesis_diagnostico} a los que responde.
 
 \subsubsection{Núcleo y contratos}
 \begin{itemize}
@@ -940,7 +938,8 @@ Los principios se agrupan en las mismas cuatro áreas del diagnóstico. Cada uno
 
 \subsubsection{Tolerancia a fallos y observabilidad}
 \begin{itemize}
-    \item \textbf{Los fallos de un cómputo se capturan y se hacen visibles (P10):} Las excepciones de un cómputo se capturan en el hilo trabajador y llegan a la extensión como un resultado fallido, que se informa al usuario sin cerrar la aplicación ni perder la sesión. Los avisos y errores de las extensiones se muestran en la barra de estado y en alertas, para que no pasen inadvertidos. \textit{Responde a: D13.}
+    \item \textbf{Los fallos de un cómputo se capturan y se hacen visibles (P10):} Las excepciones de un cómputo se capturan en el hilo trabajador y llegan a la extensión como un resultado fallido, que se informa al usuario sin cerrar la aplicación ni perder la sesión. \textit{Responde a: D13.}
+    \item \textbf{Los mensajes tienen severidad y origen (P11):} Las extensiones informan al usuario a través de un servicio común de alertas con tres severidades, cada una con su propia presentación: la información se muestra como un aviso no modal que se cierra solo; la advertencia, como un aviso no modal que permanece hasta que el usuario lo cierra; y el error, como un diálogo modal, porque interrumpe la operación en curso. Los avisos no modales se concentran en un centro de notificaciones de la ventana principal, y los mensajes breves se muestran en la barra de estado con el color de su severidad. Un cómputo que falla se informa por defecto con un mensaje de error, sin que la extensión deba programarlo. Las alertas se replican en la consola con su severidad, y los mensajes de diagnóstico de cada extensión, con el nombre de la extensión que los emite. \textit{Responde a: D14.}
 \end{itemize}
 
 
@@ -948,7 +947,7 @@ Los principios se agrupan en las mismas cuatro áreas del diagnóstico. Cada uno
 \subsection{Decisiones arquitectónicas}
 \label{sec:adrs}
 
-La Tabla~\ref{tab:adrs} resume las decisiones arquitectónicas que materializan los principios anteriores. Para cada una se indica el problema del diagnóstico al que responde, la alternativa que se descartó y sus consecuencias.
+La Tabla~\ref{tab:adrs} resume las decisiones arquitectónicas que materializan los principios anteriores. Cada fila presenta el identificador de la decisión, la decisión adoptada, los problemas de la Tabla~\ref{tab:sintesis_diagnostico} a los que responde (columna D), la alternativa que se descartó y las consecuencias de la decisión.
 
 \begin{center}
 \small
@@ -989,7 +988,7 @@ ADR-10 & Número de hilos internos acotado por la memoria estimada por ensayo y 
 \hline
 ADR-11 & Captura de las excepciones en los trabajadores con notificación a la interfaz. & D13 & Manejo local en cada extensión. & Un error en un cómputo no cierra la aplicación y se informa al usuario. \\
 \hline
-ADR-12 & Python, PyQt5 y VTK como base tecnológica. & N/A & Migrar a PySide6. & Base madura para cálculo y visualización científica. La licencia GPL de PyQt5 condiciona la distribución, y VTK solo puede renderizar en el hilo principal.\\
+ADR-12 & Servicio común de alertas con tres severidades y un centro de notificaciones no modal en la ventana principal; mensajes de consola con severidad y extensión de origen. & D14 & Que cada extensión informe con sus propios diálogos y llamadas a \texttt{print}, como en 1.0. & El usuario distingue la gravedad de cada mensaje y solo los errores interrumpen su trabajo. Los mensajes de consola no se persisten. \\
 \hline
 \caption{Decisiones arquitectónicas de Gamma Lab 2.0} \label{tab:adrs} \\
 \end{longtable}
@@ -1069,9 +1068,7 @@ D12 & P9 & ADR-10 & CU-020; Escenario 2 \\
 \hline
 D13 & P10 & ADR-11 & Escenarios 3 y 7 \\
 \hline
-D14 & N/A & N/A & N/A \\
-\hline
-D15 & N/A & N/A & N/A \\
+D14 & P11 & ADR-12 & Escenarios 3 y 7 \\
 \hline
 \caption{Trazabilidad entre el diagnóstico, los principios y las decisiones} \label{tab:traza_diagnostico} \\
 \end{longtable}
