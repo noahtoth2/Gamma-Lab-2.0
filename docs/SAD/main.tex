@@ -50,49 +50,144 @@
 \begin{document}
 
 % ---------------------- PORTADA ----------------------
-\begin{titlepage}
+%=====================================================================
+%  PORTADA (misma estructura que la Memoria: caratula + paginas i a iii)
+%  Los datos usan \providecommand: si el documento ya los define, se
+%  respetan sus valores.
+%=====================================================================
+\providecommand{\tituloProyecto}{GAMMA LAB 2.0}
+\providecommand{\grupo}{Grupo 12}
+\providecommand{\autorUno}{Juan Felipe Romero Ortiz}
+\providecommand{\autorDos}{Laura Juliana Garzón Arias}
+\providecommand{\autorTres}{Sebastián Almanza Galvis}
+\providecommand{\autorCuatro}{Xiomara Herrera Suárez}
+\providecommand{\leyendaGrado}{MEMORIA DE PROYECTO DE GRADO REALIZADO PARA CUMPLIR UNO DE
+LOS REQUISITOS PARA EL TÍTULO EN INGENIERÍA DE SISTEMAS}
+\providecommand{\director}{Ing. Cécile Gauthier Umaña}
+\providecommand{\juradoUno}{Ing. Nombre del Primer Jurado}
+\providecommand{\juradoDos}{Ing. Nombre del Segundo Jurado}
+\providecommand{\universidad}{PONTIFICIA UNIVERSIDAD JAVERIANA}
+\providecommand{\universidadNombre}{Pontificia Universidad Javeriana}
+\providecommand{\facultad}{FACULTAD DE INGENIERÍA}
+\providecommand{\programa}{PROGRAMA DE INGENIERÍA DE SISTEMAS}
+\providecommand{\ciudad}{BOGOTÁ, D.C.}
+\providecommand{\anio}{2026}
+\providecommand{\fechaLarga}{Noviembre, 2026}
+\providecommand{\rector}{Nombre del Rector, S.J.}
+\providecommand{\decano}{Ing. Nombre del Decano de la Facultad}
+\providecommand{\directorDepto}{Ing. Nombre del Director de Departamento, Ph.D.}
+\providecommand{\directorCarrera}{Ing. Nombre de la Directora de Carrera}
+
+\pagenumbering{alph}% la caratula no comparte destino PDF con la pagina 1
+\begingroup\setlength{\parskip}{0pt}% sin espacio extra entre parrafos en la portada
+
+%---------------------------------------------------------------------
+%  CARATULA (pagina sin numeracion)
+%---------------------------------------------------------------------
 \thispagestyle{empty}
 \begin{center}
-    % Logos institucionales (reemplazar con los archivos reales)
-    \includegraphics[height=2cm]{LogoJaveriana.png}\hspace{1cm}
-    \includegraphics[height=2cm]{GammaLab2.0.png} 
-
-    \vspace{0.5cm}
-    {\large \textbf{Pontificia Universidad Javeriana}}\\
-    {\large Facultad de Ingenier\'ia, Ingenier\'ia de Sistemas}
-
-    \vspace{1.5cm}
-    {\Large\bfseries\color{titleblue} Software Architecture Document}\\
-    {\large\bfseries SAD}
-
-    \vspace{1cm}
-    {\Huge\bfseries GammaLab v2.0}
-
-    \vspace{2cm}
-
-    \begin{tabular}{@{}ll@{}}
-        \textbf{Proyecto} & Plataforma de an\'alisis y visualizaci\'on de se\~nales neurofisiol\'ogicas Gamma Lab \\
-        \textbf{Documento} & Software Architecture Document (SAD) \\
-        \textbf{Versi\'on} & 1.0 \\
-        \textbf{Estado} & En elaboraci\'on \\
-        \textbf{Fecha} & 27 de agosto de 2026 \\
-    \end{tabular}
-
-    \vspace{2cm}
-    {\bfseries Autores}\\[0.3cm]
-    Juan Felipe Romero Ortiz (\texttt{juanromeroo@javeriana.edu.co})\\
-    Laura Juliana Garz\'on Arias (\texttt{garzonlj@javeriana.edu.co})\\
-    Xiomara Herrera Su\'arez (\texttt{x\_herrera@javeriana.edu.co})\\
-    Sebasti\'an Almanza Galvis (\texttt{s.almanzag@javeriana.edu.co})
-
+  \vspace*{1cm}
+  {\large \grupo}\par\vspace{1.2cm}
+  {\LARGE\bfseries \tituloProyecto}\par\vspace{1cm}
+  {\Large\bfseries Software Architecture Document}\par\vspace{0.3cm}
+  {\large\bfseries (SAD)}\par\vspace{2cm}
+  \autorUno\par
+  \autorDos\par
+  \autorTres\par
+  \autorCuatro\par
+  \vfill
+  \universidad\par
+  \facultad\par
+  \programa\par
+  \ciudad\par
+  \anio\par
+  \vspace{1cm}
 \end{center}
+\clearpage
 
-\vfill
+%---------------------------------------------------------------------
+%  PAGINAS PRELIMINARES (numeracion romana: i, ii, iii, ...)
+%---------------------------------------------------------------------
+\pagenumbering{roman}
 
-\noindent\textbf{Nota de uso.} Documento acad\'emico/interno del equipo de proyecto. No distribuir sin autorizaci\'on.\\
-\noindent\textbf{Trazabilidad.} Este SAD define la arquitectura del sistema y traza su relaci\'on con el SRS de GammaLab v2.0.
+%------------------------ PORTADA (pagina i) -------------------------
+\begin{center}
+  {\Large\bfseries \tituloProyecto}\par
+  \vspace{1.4cm}
 
-\end{titlepage}
+  {\bfseries Autores:}\par
+  \vspace{0.5cm}
+  \autorUno\par
+  \autorDos\par
+  \autorTres\par
+  \autorCuatro\par
+  \vspace{1.4cm}
+
+  \leyendaGrado\par
+  \vspace{1.4cm}
+
+  {\bfseries Director}\par
+  \vspace{0.4cm}
+  \director\par
+  \vspace{1.2cm}
+
+  {\bfseries Jurados del Trabajo Final de Grado}\par
+  \vspace{0.4cm}
+  \juradoUno\par
+  \juradoDos\par
+  \vspace{1.8cm}
+
+  \universidad\par\vspace{0.6cm}
+  \facultad\par\vspace{0.6cm}
+  \programa\par\vspace{0.6cm}
+  \ciudad\par\vspace{0.6cm}
+  \fechaLarga\par
+\end{center}
+\clearpage
+
+%--------------------- AUTORIDADES (pagina ii) -----------------------
+\begin{center}
+  {\bfseries \universidad}\par
+  {\bfseries \facultad}\par
+  {\bfseries \programa}\par
+  \vspace{6cm}
+
+  {\bfseries Rector de la \universidadNombre}\par
+  \vspace{0.4cm}
+  \rector\par
+  \vspace{0.9cm}
+
+  {\bfseries Decano de la Facultad de Ingeniería}\par
+  \vspace{0.4cm}
+  \decano\par
+  \vspace{0.9cm}
+
+  {\bfseries Director del Departamento de Ingeniería de Sistemas}\par
+  \vspace{0.4cm}
+  \directorDepto\par
+  \vspace{0.9cm}
+
+  {\bfseries Directora de Carrera de Ingeniería de Sistemas}\par
+  \vspace{0.4cm}
+  \directorCarrera\par
+\end{center}
+\clearpage
+
+%------------------ NOTA REGLAMENTARIA (pagina iii) ------------------
+\noindent{\bfseries Artículo 23 de la Resolución No. 1 de Junio de 1946}
+\vspace{1cm}
+
+{\itshape\noindent
+``La Universidad no se hace responsable de los conceptos emitidos por sus alumnos en sus
+proyectos de grado. Sólo velará porque no se publique nada contrario al dogma y la moral
+católica y porque no contengan ataques o polémicas puramente personales. Antes bien, que se
+vean en ellos el anhelo de buscar la verdad y la Justicia''\par}
+\clearpage
+%=====================================================================
+%  FIN DE LA PORTADA (cierra el grupo abierto en la caratula)
+\endgroup
+%=====================================================================
+\pagenumbering{arabic}
 
 % ---------------------- TABLA DE CONTENIDO ----------------------
 \tableofcontents
