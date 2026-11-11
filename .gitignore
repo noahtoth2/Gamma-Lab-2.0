@@ -56,3 +56,22 @@ installer/build/
 installer/dist/
 installer/salida/
 installer/*.log
+
+# Señales de doble canal para pruebas manuales: pesan unos 550 MB y GitHub
+# rechaza el push (el zip supera los 100 MB). Se comparten por fuera del repo.
+test/data/15o14000.abf
+test/data/15o14006.abf
+test/data/15o14024.abf
+test/data/15o14031.abf
+test/data/17613000.abf
+test/data/17613006 (1).abf
+test/data/17613025.abf
+test/data/17613029 (1).abf
+test/data/17620000.abf
+test/data/17620000.zip
+test/data/17620007.abf
+test/data/17620028.abf
+test/data/17620042.abf
+test/data/17o04000.abf
+test/data/17o04000.mat
+test/data/R38_F_051022.mat
