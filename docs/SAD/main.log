@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.9.2)  8 NOV 2026 19:42
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.9.2)  10 NOV 2026 07:46
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -599,29 +599,20 @@ Package hyperref Info: Link coloring ON on input line 50.
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: float package is loaded.
 Package caption Info: End \AtBeginDocument code.
-<LogoJaveriana.png, id=463, 150.5625pt x 159.59625pt>
-File: LogoJaveriana.png Graphic file (type png)
-<use LogoJaveriana.png>
-Package pdftex.def Info: LogoJaveriana.png  used on input line 57.
-(pdftex.def)             Requested size: 53.68324pt x 56.9055pt.
-<GammaLab2.0.png, id=465, 1281.78876pt x 1236.62pt>
-File: GammaLab2.0.png Graphic file (type png)
-<use GammaLab2.0.png>
-Package pdftex.def Info: GammaLab2.0.png  used on input line 58.
-(pdftex.def)             Requested size: 58.96886pt x 56.9055pt.
  [1
 
-{C:/Users/basti/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map} <./LogoJaveri
-ana.png> <./GammaLab2.0.png>] (main.toc
+{C:/Users/basti/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}] [1
+
+] [2
+
+] [3
+
+] (main.toc
 LaTeX Info: Redefining \. on input line 1.
 LaTeX Info: Redefining \% on input line 1.
+ [1
 
-pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has 
-been already used, duplicate ignored
-<to be read again> 
-                   \relax 
-l.35 ...cleo y contratos}{23}{subsubsection.4.3.1}
-                                                  % [1] [2] [3])
+] [2] [3])
 \tf@toc=\write4
 \openout4 = `main.toc'.
 
@@ -632,15 +623,16 @@ LaTeX Info: Redefining \% on input line 1.
 \tf@lof=\write5
 \openout5 = `main.lof'.
 
-[5] (main.lot
+ [5] (main.lot
 LaTeX Info: Redefining \. on input line 1.
 LaTeX Info: Redefining \% on input line 1.
 )
 \tf@lot=\write6
 \openout6 = `main.lot'.
 
- [6]
-Underfull \hbox (badness 1946) in paragraph at lines 169--170
+
+[6]
+Underfull \hbox (badness 1946) in paragraph at lines 263--264
 []|\T1/cmr/m/n/10.95 Visualization Tool-kit. Bi-blio-te-ca pa-ra vi-sua-li-za-c
 ión cien-tí-fi-ca
  []
@@ -654,330 +646,328 @@ ignored error: Infinite glue shrinkage found in box being split [15] [16]
 ignored error: Infinite glue shrinkage found in box being split [18]
 ignored error: Infinite glue shrinkage found in box being split [19] [20]
 [21]
-<DiagramaEstiloBase.jpg, id=787, 844.15375pt x 523.9575pt>
+<DiagramaEstiloBase.jpg, id=792, 844.15375pt x 523.9575pt>
 File: DiagramaEstiloBase.jpg Graphic file (type jpg)
 <use DiagramaEstiloBase.jpg>
-Package pdftex.def Info: DiagramaEstiloBase.jpg  used on input line 907.
+Package pdftex.def Info: DiagramaEstiloBase.jpg  used on input line 999.
 (pdftex.def)             Requested size: 432.48051pt x 268.43802pt.
  [22] [23 <./DiagramaEstiloBase.jpg>] [24]
 ignored error: Infinite glue shrinkage found in box being split [25]
-ignored error: Infinite glue shrinkage found in box being split [26] [27]
-Underfull \hbox (badness 10000) in paragraph at lines 1049--1049
-[]|\T1/cmr/m/n/10 Solo el Tas-kOr-ches-tra-tor es-cri-be en el
+Underfull \hbox (badness 3199) in paragraph at lines 1119--1119
+[]|\T1/cmr/m/n/10 Solo el hi-lo de la in-ter-faz es-cri-be en el
  []
 
-[28] [29]
-<diagrama_casos_de_uso_sistema_completo.png, id=829, 10169.995pt x 6275.445pt>
+[26] [27] [28]
+<diagrama_casos_de_uso_sistema_completo.png, id=830, 10169.995pt x 6275.445pt>
 File: diagrama_casos_de_uso_sistema_completo.png Graphic file (type png)
 <use diagrama_casos_de_uso_sistema_completo.png>
 Package pdftex.def Info: diagrama_casos_de_uso_sistema_completo.png  used on in
-put line 1138.
+put line 1206.
 (pdftex.def)             Requested size: 432.48051pt x 266.7747pt.
- [30 <./diagrama_casos_de_uso_sistema_completo.png>]
-Underfull \hbox (badness 1817) in paragraph at lines 1158--1158
+
+Underfull \hbox (badness 1817) in paragraph at lines 1226--1226
 []|\T1/cmr/m/n/10.95 Navegar y cam-biar de
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1160--1160
+Underfull \hbox (badness 10000) in paragraph at lines 1228--1228
 []|\T1/cmr/m/n/10.95 Limpiar for-mu-la-rio
  []
 
 
-Underfull \hbox (badness 2326) in paragraph at lines 1164--1164
+Underfull \hbox (badness 2326) in paragraph at lines 1232--1232
 []|\T1/cmr/m/n/10.95 Interactuar vi-sual-men-te
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1166--1166
+Underfull \hbox (badness 10000) in paragraph at lines 1234--1234
 []|\T1/cmr/m/n/10.95 Optimizar ren-de-ri-za-do
  []
 
-[31]
-Underfull \hbox (badness 1152) in paragraph at lines 1201--1201
+[29 <./diagrama_casos_de_uso_sistema_completo.png>] [30]
+Underfull \hbox (badness 1152) in paragraph at lines 1269--1269
 []|\T1/cmr/m/n/10.95 Orquestador del nú-cleo
  []
 
 
-Underfull \hbox (badness 2326) in paragraph at lines 1203--1203
+Underfull \hbox (badness 2326) in paragraph at lines 1271--1271
 []|\T1/cmr/m/n/10.95 Cancelar pro-ce-sa-mien-to
  []
 
-[32]
-Underfull \hbox (badness 10000) in paragraph at lines 1228--1228
+[31]
+Underfull \hbox (badness 10000) in paragraph at lines 1296--1296
 []|\T1/cmr/m/n/10.95 Generar y mo-di-fi-car
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1230--1230
+Underfull \hbox (badness 10000) in paragraph at lines 1298--1298
 []|\T1/cmr/m/n/10.95 Ajustar fre-cuen-cia de
  []
 
 
-Underfull \hbox (badness 2894) in paragraph at lines 1234--1234
+Underfull \hbox (badness 2894) in paragraph at lines 1302--1302
 []|\T1/cmr/m/n/10.95 Remover ar-te-fac-to con
  []
 
 
-Underfull \hbox (badness 4634) in paragraph at lines 1236--1236
+Underfull \hbox (badness 4634) in paragraph at lines 1304--1304
 []|\T1/cmr/m/n/10.95 Seleccionar trials pa-ra
  []
 
-[33] [34] [35]
-<diagrama_clases_sistema_completo.png, id=863, 12639.22pt x 6520.36pt>
+[32] [33] [34]
+<diagrama_clases_sistema_completo.png, id=865, 12639.22pt x 6520.36pt>
 File: diagrama_clases_sistema_completo.png Graphic file (type png)
 <use diagrama_clases_sistema_completo.png>
 Package pdftex.def Info: diagrama_clases_sistema_completo.png  used on input li
-ne 1346.
+ne 1414.
 (pdftex.def)             Requested size: 432.48051pt x 223.0623pt.
- [36] [37 <./diagrama_clases_sistema_completo.png>] [38] [39]
-[40]
-Underfull \hbox (badness 10000) in paragraph at lines 1513--1513
+ [35 <./diagrama_clases_sistema_completo.png>] [36] [37] [38]
+Underfull \hbox (badness 10000) in paragraph at lines 1574--1574
 []|\T1/cmr/m/n/10.95 SettingsService,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1513--1513
+Underfull \hbox (badness 10000) in paragraph at lines 1574--1574
 \T1/cmr/m/n/10.95 Fi-leIO-Ser-vi-ce,
  []
 
 
-Underfull \hbox (badness 3396) in paragraph at lines 1513--1513
+Underfull \hbox (badness 3396) in paragraph at lines 1574--1574
 []|\T1/cmr/m/n/10.95 FileIOService, Da-
  []
 
 
-Underfull \hbox (badness 1881) in paragraph at lines 1513--1513
+Underfull \hbox (badness 1881) in paragraph at lines 1574--1574
 []|\T1/cmr/m/n/10.95 VTKContextMenu, Tool-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1513--1513
+Underfull \hbox (badness 10000) in paragraph at lines 1574--1574
 []|\T1/cmr/m/n/10.95 SignalDataset,
  []
 
 
-Underfull \hbox (badness 3386) in paragraph at lines 1513--1513
-[]|\T1/cmr/m/n/10.95 Extensiones con-cre-tas y
- []
-
-
-Underfull \hbox (badness 1590) in paragraph at lines 1513--1513
+Underfull \hbox (badness 1590) in paragraph at lines 1574--1574
 []|\T1/cmr/m/n/10.95 Implementan el con-tra-to
  []
 
-
-Underfull \hbox (badness 10000) in paragraph at lines 1513--1513
-[]|\T1/cmr/m/n/10.95 PACSingleChannelPlugin,
- []
-
-[41] [42]
-<diagrama_componentes_sistema_completo.png, id=913, 5542.20563pt x 3609.73593pt
+[39] [40] [41]
+<diagrama_componentes_sistema_completo.png, id=914, 5542.20563pt x 3609.73593pt
 >
 File: diagrama_componentes_sistema_completo.png Graphic file (type png)
 <use diagrama_componentes_sistema_completo.png>
 Package pdftex.def Info: diagrama_componentes_sistema_completo.png  used on inp
-ut line 1565.
+ut line 1623.
 (pdftex.def)             Requested size: 432.48051pt x 281.67944pt.
- [43] [44 <./diagrama_componentes_sistema_completo.png>] [45]
+ [42 <./diagrama_componentes_sistema_completo.png>] [43] [44]
 LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10.95> not available
-(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 1639.
- [46]
-[47] [48]
-<diagrama_actividad_sistema_completo.png, id=948, 6905.8pt x 8736.64pt>
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 1697.
+
+[45] [46] [47]
+<diagrama_actividad_sistema_completo.png, id=949, 6905.8pt x 8736.64pt>
 File: diagrama_actividad_sistema_completo.png Graphic file (type png)
 <use diagrama_actividad_sistema_completo.png>
 Package pdftex.def Info: diagrama_actividad_sistema_completo.png  used on input
- line 1730.
+ line 1788.
 (pdftex.def)             Requested size: 432.48051pt x 547.10515pt.
- [49] [50 <./diagrama_actividad_sistema_completo.png>] [51] [52]
-<diagrama_despliegue_sistema_completo.png, id=968, 4617.25pt x 3131.7pt>
+ [48 <./diagrama_actividad_sistema_completo.png>] [49] [50]
+<diagrama_despliegue_sistema_completo.png, id=965, 4617.25pt x 3131.7pt>
 File: diagrama_despliegue_sistema_completo.png Graphic file (type png)
 <use diagrama_despliegue_sistema_completo.png>
 Package pdftex.def Info: diagrama_despliegue_sistema_completo.png  used on inpu
-t line 1837.
+t line 1895.
 (pdftex.def)             Requested size: 386.96027pt x 262.43979pt.
 
-[53] [54 <./diagrama_despliegue_sistema_completo.png>] [55] [56] [57] [58]
-[59]
-ignored error: Infinite glue shrinkage found in box being split [60]
-Underfull \hbox (badness 10000) in paragraph at lines 2265--2265
+[51] [52 <./diagrama_despliegue_sistema_completo.png>] [53] [54] [55] [56]
+[57]
+ignored error: Infinite glue shrinkage found in box being split [58]
+Underfull \hbox (badness 10000) in paragraph at lines 2321--2321
 []|\T1/cmr/m/n/10 Extensibilidad
  []
 
 
-Underfull \hbox (badness 3260) in paragraph at lines 2266--2266
+Underfull \hbox (badness 3260) in paragraph at lines 2322--2322
 []|\T1/cmr/m/n/10 Tiempo de apa-ri-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2267--2267
+Underfull \hbox (badness 10000) in paragraph at lines 2323--2323
 []|\T1/cmr/m/n/10 Agregar un plu-
  []
 
 
-Underfull \hbox (badness 3000) in paragraph at lines 2267--2267
+Underfull \hbox (badness 3000) in paragraph at lines 2323--2323
 \T1/cmr/m/n/10 gin vá-li-do y co-rrer
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2268--2269
+Underfull \hbox (badness 10000) in paragraph at lines 2324--2325
 []|$\OML/cmm/m/it/10 <$\T1/cmr/m/n/10 1min; 0 plu-gins fa-llan
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2271--2271
+Underfull \hbox (badness 10000) in paragraph at lines 2327--2327
 []|\T1/cmr/m/n/10 Rendimiento:
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2271--2271
+Underfull \hbox (badness 10000) in paragraph at lines 2327--2327
 \T1/cmr/m/n/10 car-ga gran-de
  []
 
 
-Underfull \hbox (badness 5008) in paragraph at lines 2272--2272
+Underfull \hbox (badness 5008) in paragraph at lines 2328--2328
 []|\T1/cmr/m/n/10 Tiempo a pri-mer
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2273--2273
+Underfull \hbox (badness 10000) in paragraph at lines 2329--2329
 []|\T1/cmtt/m/n/10 performance_test\T1/cmr/m/n/10 ;
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2273--2273
+Underfull \hbox (badness 10000) in paragraph at lines 2329--2329
 \T1/cmr/m/n/10 me-di-do: 78.4ms
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2277--2277
+Underfull \hbox (badness 10000) in paragraph at lines 2333--2333
 []|\T1/cmr/m/n/10 Confiabilidad:
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2279--2279
+Underfull \hbox (badness 10000) in paragraph at lines 2335--2335
 []|\T1/cmr/m/n/10 Inyección de fa-llos
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2283--2283
+Underfull \hbox (badness 10000) in paragraph at lines 2339--2339
 []|\T1/cmr/m/n/10 Confiabilidad:
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2283--2283
+Underfull \hbox (badness 10000) in paragraph at lines 2339--2339
 \T1/cmr/m/n/10 ex-por-ta-ción
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2289--2289
+Underfull \hbox (badness 10000) in paragraph at lines 2345--2345
 []|\T1/cmr/m/n/10 Usabilidad
  []
 
 
-Underfull \hbox (badness 1596) in paragraph at lines 2292--2293
+Underfull \hbox (badness 1596) in paragraph at lines 2348--2349
 []|$\OML/cmm/m/it/10 <$\T1/cmr/m/n/10 5min; ba-jas con-sul-tas al
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2295--2295
+Underfull \hbox (badness 10000) in paragraph at lines 2351--2351
 []|\T1/cmr/m/n/10 Rendimiento:
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2296--2296
+Underfull \hbox (badness 10000) in paragraph at lines 2352--2352
 []|\T1/cmr/m/n/10 Tiempo de
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2296--2296
+Underfull \hbox (badness 10000) in paragraph at lines 2352--2352
 \T1/cmr/m/n/10 cambio;$ $% de
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2297--2297
+Underfull \hbox (badness 10000) in paragraph at lines 2353--2353
 []|\T1/cmr/m/n/10 Benchmark de
  []
 
 
-Underfull \hbox (badness 1629) in paragraph at lines 2298--2299
+Underfull \hbox (badness 1629) in paragraph at lines 2354--2355
 []|$\OML/cmm/m/it/10 <$\T1/cmr/m/n/10 1s cam-bio; me-mo-ria 70--
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2301--2301
+Underfull \hbox (badness 10000) in paragraph at lines 2357--2357
 []|\T1/cmr/m/n/10 Confiabilidad:
  []
 
 
-Underfull \hbox (badness 2302) in paragraph at lines 2302--2302
+Underfull \hbox (badness 2302) in paragraph at lines 2358--2358
 []|\T1/cmr/m/n/10 Tiempo del error;
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2303--2303
+Underfull \hbox (badness 10000) in paragraph at lines 2359--2359
 []|\T1/cmtt/m/n/10 test_fileio_
  []
 
 
-Underfull \hbox (badness 1406) in paragraph at lines 2304--2305
+Underfull \hbox (badness 1406) in paragraph at lines 2360--2361
 []|\T1/cmr/m/n/10 Mensaje $\OML/cmm/m/it/10 <$\T1/cmr/m/n/10 2s; 0$ $% pér-di-d
 a
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2307--2307
+Underfull \hbox (badness 10000) in paragraph at lines 2363--2363
 \T1/cmr/m/n/10 Usabilidad
  []
 
 
-Underfull \hbox (badness 7168) in paragraph at lines 2315--2315
+Underfull \hbox (badness 7168) in paragraph at lines 2371--2371
 []|\T1/cmtt/m/n/10 pytest \T1/cmr/m/n/10 --\T1/cmtt/m/n/10 cov \T1/cmr/m/n/10 s
 o-bre
  []
 
 
-Underfull \hbox (badness 2469) in paragraph at lines 2322--2323
+Underfull \hbox (badness 2469) in paragraph at lines 2378--2379
 []|\T1/cmr/m/n/10 Nada em-peo-ra; ren-der sin
  []
 
 
-Underfull \hbox (badness 1107) in paragraph at lines 2326--2326
+Underfull \hbox (badness 1107) in paragraph at lines 2382--2382
 []|\T1/cmr/m/n/10 Éxito de arran-que
  []
 
 
-Underfull \hbox (badness 2277) in paragraph at lines 2327--2327
+Underfull \hbox (badness 2277) in paragraph at lines 2383--2383
 []|\T1/cmr/m/n/10 Instalación en Win-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2327--2327
+Underfull \hbox (badness 10000) in paragraph at lines 2383--2383
 \T1/cmr/m/n/10 dows lim-pio sin
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2331--2331
+Underfull \hbox (badness 10000) in paragraph at lines 2387--2387
 \T1/cmr/m/n/10 cancelación
  []
 
-[61] [62] [63]
-ignored error: Infinite glue shrinkage found in box being split [64] [65]
-[66]
-Underfull \hbox (badness 10000) in paragraph at lines 2747--2748
+
+Underfull \hbox (badness 1694) in paragraph at lines 2389--2389
+[]|\T1/cmr/m/n/10 Prueba so-bre \T1/cmtt/m/n/10 Task-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2389--2389
+\T1/cmtt/m/n/10 Orchestrator \T1/cmr/m/n/10 con
+ []
+
+[59] [60] [61]
+ignored error: Infinite glue shrinkage found in box being split [62] [63]
+[64]
+Underfull \hbox (badness 10000) in paragraph at lines 2803--2804
 []\T1/cmr/m/n/10.95 Riverbank Com-pu-ting. \T1/cmr/m/it/10.95 PyQt5 Re-fe-ren-c
 e Gui-de\T1/cmr/m/n/10.95 . Dis-po-ni-ble en: [][]$\T1/cmtt/m/n/10.95 https : /
  / www .
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2753--2754
+Underfull \hbox (badness 10000) in paragraph at lines 2809--2810
 \T1/cmtt/m/n/10.95 latest / api / python / vtkmodules . vtkChartsCore . html # 
 vtkmodules . vtkChartsCore .
  []
 
-[67] [68] (main.aux
+[65] [66] (main.aux
 LaTeX Info: Redefining \. on input line 11.
 LaTeX Info: Redefining \% on input line 11.
 )
@@ -986,36 +976,37 @@ LaTeX2e <2025-11-01>
 L3 programming layer <2025-12-24>
  ***********
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: 1DA006C113F7EA9500933B8B4A950142;23601.
+(rerunfilecheck)             Checksum: 528CE2EF4C00D14047F0B703571BE1E0;23305.
  ) 
 Here is how much of TeX's memory you used:
- 15137 strings out of 467871
- 243403 string characters out of 5418377
- 774779 words of memory out of 5000000
- 43567 multiletter control sequences out of 15000+600000
- 641310 words of font info for 68 fonts, out of 8000000 for 9000
+ 15146 strings out of 467871
+ 243235 string characters out of 5418377
+ 774672 words of memory out of 5000000
+ 43574 multiletter control sequences out of 15000+600000
+ 641999 words of font info for 69 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,12n,79p,1481b,800s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,12n,79p,1481b,802s stack positions out of 10000i,1000n,20000p,200000b,200000s
  <C:\Users\basti\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecti
 1000.pk> <C:\Users\basti\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi60
 0\ectt1000.pk> <C:\Users\basti\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec
 /dpi600\ecrm1000.pk> <C:\Users\basti\AppData\Local\MiKTeX\fonts/pk/ljfour/jknap
 pen/ec/dpi600\ecbx1000.pk> <C:\Users\basti\AppData\Local\MiKTeX\fonts/pk/ljfour
-/jknappen/ec/dpi600\ecti1095.pk> <C:\Users\basti\AppData\Local\MiKTeX\fonts/pk/
-ljfour/jknappen/ec/dpi600\ectt1095.pk> <C:\Users\basti\AppData\Local\MiKTeX\fon
-ts/pk/ljfour/jknappen/ec/dpi600\ecrm1095.pk> <C:\Users\basti\AppData\Local\MiKT
+/jknappen/ec/dpi600\ectt1095.pk> <C:\Users\basti\AppData\Local\MiKTeX\fonts/pk/
+ljfour/jknappen/ec/dpi600\ecti1095.pk> <C:\Users\basti\AppData\Local\MiKTeX\fon
+ts/pk/ljfour/jknappen/ec/dpi600\ecxc1095.pk> <C:\Users\basti\AppData\Local\MiKT
 eX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1095.pk> <C:\Users\basti\AppData\Loca
-l\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx2488.pk> <C:\Users\basti\AppDat
-a\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1440.pk> <C:\Users\basti\
-AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1200.pk> <C:\Users\
-basti\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1200.pk><C:/U
-sers/basti/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.
-pfb><C:/Users/basti/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/c
-m/cmr10.pfb><C:/Users/basti/AppData/Local/Programs/MiKTeX/fonts/type1/public/am
-sfonts/cm/cmsy10.pfb>
-Output written on main.pdf (69 pages, 6692107 bytes).
+l\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1095.pk> <C:\Users\basti\AppDat
+a\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1200.pk> <C:\Users\basti\
+AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1440.pk> <C:\Users\
+basti\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1728.pk> <C:\
+Users\basti\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1200.pk
+><C:/Users/basti/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/c
+mmi10.pfb><C:/Users/basti/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsf
+onts/cm/cmr10.pfb><C:/Users/basti/AppData/Local/Programs/MiKTeX/fonts/type1/pub
+lic/amsfonts/cm/cmsy10.pfb>
+Output written on main.pdf (70 pages, 5954939 bytes).
 PDF statistics:
  1834 PDF objects out of 2073 (max. 8388607)
- 267 named destinations out of 1000 (max. 500000)
- 961 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 268 named destinations out of 1000 (max. 500000)
+ 943 words of extra memory for PDF output out of 10000 (max. 10000000)
 
