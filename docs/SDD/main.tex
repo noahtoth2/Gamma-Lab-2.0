@@ -1276,10 +1276,16 @@ Abrir & 1. Leer el manifiesto y el archivo de señal, sin tocar el \textit{DataS
 \hline
 Cerrar & Restablecer el estado del proyecto. & Interfaz \\
 \hline
+Nuevo & Crear la carpeta y un manifiesto sin señal con \textit{crear\_proyecto\_vacio()}. & Interfaz \\
+\hline
+Duplicar & Copiar la carpeta del proyecto con \textit{duplicar\_proyecto()}, con progreso y posibilidad de cancelar, y renombrar el manifiesto. & Trabajador \\
+\hline
 \end{longtable}
 \end{center}
 
 La copia de la señal se escribe primero en un archivo temporal, que se renombra al terminar; así, una copia cancelada o fallida nunca deja una señal incompleta en el proyecto. Si el archivo ya está en la carpeta con el mismo tamaño y la misma fecha de modificación, no se copia de nuevo. Si el guardado se cancela o falla, el proyecto conserva la ubicación que tenía antes, y si el proyecto cambió de nombre desde el último guardado, el manifiesto se renombra al guardar. Cerrar el proyecto solo restablece el estado del servicio; la liberación de las señales y de la memoria la realiza \textit{MainWindow} a través del \textit{DataStore} (Sección~\ref{sec:sdd_datastore}).
+
+El servicio sigue manejando un solo proyecto activo; la lista de proyectos abiertos la lleva \textit{MainWindow}. Un proyecto nuevo nace sin señal: si el usuario carga una mientras está activo, la señal pasa a ser suya en lugar de cerrarlo. Al duplicar se copia lo guardado en disco, sin los restos \textit{.part} de copias cortadas; la copia no puede quedar dentro de la carpeta original, y si se cancela o falla se borra lo copiado.
 
 \subsubsection{Diagrama de clases de los servicios de soporte}
 \label{sec:sdd_dc_servicios}
@@ -1437,7 +1443,7 @@ Navegación & Secciones \textit{Home}, \textit{Preprocessing} y \textit{Analysis
 \hline
 Área de trabajo & Muestra la vista de la extensión seleccionada y administra el cambio entre módulos. \\
 \hline
-Proyecto & Menú Archivo: cargar señal, guardar, guardar como, abrir y cerrar proyecto, coordinando \textit{ProjectService} y \textit{TaskService}. \\
+Proyecto & Menú Archivo: cargar señal, crear, abrir, guardar, guardar como y cerrar proyecto, coordinando \textit{ProjectService} y \textit{TaskService}. Lleva la lista de proyectos abiertos y abre un proyecto en otra ventana lanzando una nueva instancia de la aplicación con su \textit{.glab}. \\
 \hline
 Barra de título & Nombre de la señal activa, nombre del proyecto (editable con doble clic) e indicador del \textit{trial} en uso. \\
 \hline
@@ -1445,7 +1451,7 @@ Barra de estado & Mensajes por severidad, barra de progreso y lectura del cursor
 \hline
 Panel de resultados & Tablas de mediciones de pendiente y amplitud, con exportación a CSV y XLSX. \\
 \hline
-Explorador & Vista de la carpeta del proyecto abierto, con operaciones básicas sobre archivos. \\
+Explorador & Un árbol por carpeta de proyecto abierto (\textit{ArbolProyecto}, en \textit{app/view/explorer\_proyectos.py}), con el activo en negrita y operaciones básicas sobre archivos. El doble clic sobre un \textit{.glab} cambia de proyecto activo y el clic derecho sobre la carpeta de un proyecto lo duplica. \\
 \hline
 Cierre & Confirmación de cambios sin guardar y cierre ordenado de la aplicación. \\
 \hline
@@ -1534,7 +1540,7 @@ En caso contrario, si la copia es cancelada o falla, \textit{MainWindow} ejecuta
     \label{fig:sdd_diagrama_cerrar_proyecto}
 \end{figure}
 
-Este diagrama representa el flujo que sigue GammaLab 2.0 cuando el usuario solicita cerrar un proyecto desde la opción \textbf{\textit{File} > \textit{Close project}}. El proceso comienza en \textit{MainWindow}, que invoca \textit{\textunderscore{}confirm\_discard\_unsaved\_changes()} para determinar si el cierre puede realizarse de forma segura y si es necesario solicitar una confirmación al usuario.
+Este diagrama representa el flujo que sigue GammaLab 2.0 cuando el usuario solicita cerrar un proyecto desde la opción \textbf{\textit{File} > \textit{Close project}}. Si hay varios proyectos abiertos, \textit{MainWindow} muestra antes \textit{DialogoCerrarProyecto} para elegir cuál, identificado por el nombre de su \textit{.glab}; cerrar uno que no es el activo solo lo quita de la lista del \textit{Explorer}, sin pasar por el resto del flujo. Para el proyecto activo, el proceso comienza en \textit{MainWindow}, que invoca \textit{\textunderscore{}confirm\_discard\_unsaved\_changes()} para determinar si el cierre puede realizarse de forma segura y si es necesario solicitar una confirmación al usuario.
 
 En primer lugar, se verifica si hay un cálculo en ejecución o si el proyecto se encuentra en proceso de apertura. Cuando se presenta alguna de estas condiciones, la interfaz muestra un aviso que permite al usuario decidir entre cerrar de todos modos o permanecer en el proyecto. Si el usuario confirma el cierre, \textit{MainWindow} solicita a \textit{TaskService} la cancelación de las tareas y autoriza inmediatamente el cierre. En esta situación no se realiza una consulta adicional sobre los cambios sin guardar. Si el usuario decide quedarse, el método devuelve \textit{False} y el cierre se interrumpe.
 
@@ -1614,7 +1620,7 @@ Esta sección presenta la interfaz de GammaLab 2.0 tal como la ve el usuario. Pr
                         \caption{opciones de \textit{zoom}}
                         \label{fig:zoom}
                 \end{figure}
-            \item \textbf{9 - explorador de archivos:} despliega, desde la barra lateral izquierda, la carpeta del sistema de archivos en la que se encuentra almacenado el proyecto actual junto con las señales y resultados exportados, sin salir de la aplicación.
+            \item \textbf{9 - explorador de archivos:} despliega, desde la barra lateral izquierda, la carpeta del sistema de archivos en la que se encuentra almacenado el proyecto actual junto con las señales y resultados exportados, sin salir de la aplicación. Si hay varios proyectos abiertos muestra la carpeta de cada uno, con el activo en negrita; un doble clic sobre otro \textit{.glab} lo vuelve activo y el clic derecho sobre la carpeta de un proyecto permite duplicarlo.
                     \begin{figure}[H]
                      \centering
                      \includegraphics[width=0.5\textwidth]{exploradorArchivos.png}
@@ -1650,10 +1656,11 @@ Esta sección presenta la interfaz de GammaLab 2.0 tal como la ve el usuario. Pr
 
         \begin{itemize}
             \item \textbf{\textit{Open signal}:} permite cargar una señal individual dentro de la aplicación para su preprocesamiento y análisis.
-            \item \textbf{\textit{Open project}:} permite abrir un proyecto previamente guardado con extensión \textit{.glab}, restaurando la señal activa, los \textit{trials}, los análisis y los parámetros de la sesión.
+            \item \textbf{\textit{New project}:} crea un proyecto en blanco con el nombre y la ubicación indicados, y lo abre en la misma ventana o en una nueva.
+            \item \textbf{\textit{Open project}:} permite abrir un proyecto previamente guardado con extensión \textit{.glab}, restaurando la señal activa, los \textit{trials}, los análisis y los parámetros de la sesión. El proyecto se suma a los que ya muestra el explorador.
             \item \textbf{\textit{Save}:} guarda los cambios realizados sobre el proyecto actualmente abierto.
             \item \textbf{\textit{Save as}:} permite guardar el proyecto actual bajo un nuevo nombre o ubicación, sin sobrescribir el archivo original.
-            \item \textbf{\textit{Close project}:} cierra el proyecto que se encuentra abierto, liberando la señal activa de memoria.
+            \item \textbf{\textit{Close project}:} cierra el proyecto que se encuentra abierto, liberando la señal activa de memoria. Si hay varios abiertos, pregunta cuál cerrar.
             \item \textbf{\textit{Exit}:} cierra la aplicación, con la misma confirmación de cambios sin guardar que \textit{Close project}.
         \end{itemize}
 

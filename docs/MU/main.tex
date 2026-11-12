@@ -471,6 +471,16 @@ Al iniciar la aplicaci\'on se abre la ventana principal en la secci\'on \textbf{
         \item \textbf{Copia de la se\~nal:} el archivo de la se\~nal que GammaLab copia dentro de la carpeta del proyecto al guardarlo.
     \end{senalamientos}
 
+    El \textbf{\textit{Explorer}} puede mostrar varios proyectos a la vez, cada uno con su carpeta en un \'arbol propio, uno debajo de otro. Solo uno es el \textbf{proyecto activo}, el que est\'a cargado en la aplicaci\'on; su carpeta y su archivo \textit{.glab} aparecen en negrita. Las acciones disponibles en el panel son:
+
+    \begin{itemize}
+        \item \textbf{Doble clic sobre un \textit{.glab}:} convierte ese proyecto en el activo. Si el proyecto anterior tiene cambios sin guardar, GammaLab pregunta antes con \textbf{\textit{Save}}, \textbf{\textit{Don't Save}} y \textbf{\textit{Cancel}}.
+        \item \textbf{Doble clic sobre otro archivo:} lo abre con el programa que el sistema tenga asociado.
+        \item \textbf{Clic derecho sobre un elemento:} ofrece \textbf{\textit{Rename}}, \textbf{\textit{Copy}}, \textbf{\textit{Paste}} y \textbf{\textit{Delete}}. Sobre la carpeta que contiene el \textit{.glab} aparece adem\'as \textbf{\textit{Duplicate project}}.
+        \item \textbf{Clic derecho sobre un espacio vac\'io:} ofrece \textbf{\textit{New Folder}} y \textbf{\textit{Paste}}.
+        \item \textbf{Arrastrar un archivo:} lo mueve a otra carpeta.
+    \end{itemize}
+
 
     \subsection{Panel de resultados}
     El panel \textbf{\textit{Results}} se abre desde el icono correspondiente de la barra lateral y contiene dos pesta\~nas, \textbf{\textit{Slope}} y \textbf{\textit{Amplitude}}, con las tablas de todas las medidas tomadas sobre las gr\'aficas. En su cabecera dispone de dos controles:
@@ -563,13 +573,15 @@ El flujo de trabajo de GammaLab comienza siempre con la carga de una se\~nal. A 
     \hline
     \textbf{\textit{Open signal}} & Abre el explorador del sistema para cargar una se\~nal en formato ABF, EDF o MAT. \\
     \hline
-    \textbf{\textit{Open project}} & Abre el explorador del sistema filtrado por \textit{Gamma Lab Project (*.glab)} para recuperar un proyecto guardado. \\
+    \textbf{\textit{New project}} & Crea un proyecto en blanco, sin se\~nal, con el nombre y la ubicaci\'on que se indiquen, y pregunta si se abre en esta ventana o en una nueva. \\
+    \hline
+    \textbf{\textit{Open project}} & Abre el explorador del sistema filtrado por \textit{Gamma Lab Project (*.glab)} para recuperar un proyecto guardado. El proyecto se a\~nade al \textbf{\textit{Explorer}} junto a los que ya estaban abiertos. \\
     \hline
     \textbf{\textit{Save}} & Guarda el proyecto en su ubicaci\'on actual. Si el proyecto a\'un no se ha guardado nunca, se comporta como \textbf{\textit{Save as}}. \\
     \hline
     \textbf{\textit{Save as}} & Pide siempre una ubicaci\'on y crea el proyecto en ella. \\
     \hline
-    \textbf{\textit{Close project}} & Cierra el proyecto en curso. Si hay cambios sin guardar, GammaLab pregunta antes con las opciones \textbf{\textit{Save}}, \textbf{\textit{Don't Save}} y \textbf{\textit{Cancel}}. \\
+    \textbf{\textit{Close project}} & Cierra un proyecto. Si hay varios abiertos, pregunta cu\'al por el nombre de su \textit{.glab}. Si se cierra el activo con cambios sin guardar, GammaLab pregunta antes con las opciones \textbf{\textit{Save}}, \textbf{\textit{Don't Save}} y \textbf{\textit{Cancel}}. \\
     \hline
     \textbf{\textit{Exit}} & Cierra la aplicaci\'on, preguntando igualmente si hay cambios sin guardar. \\
     \hline
@@ -580,14 +592,14 @@ El flujo de trabajo de GammaLab comienza siempre con la carga de una se\~nal. A 
 
     \capturaPendiente[7]{6cm}
     {Men\'u \textbf{\textit{File}} desplegado sobre la ventana principal.}
-    {(1) la entrada \textbf{\textit{File}} de la cinta; (2) la opci\'on \textbf{\textit{Open signal}}; (3) la opci\'on \textbf{\textit{Open project}}; (4) las opciones \textbf{\textit{Save}} y \textbf{\textit{Save as}}; (5) las opciones \textbf{\textit{Close project}} y \textbf{\textit{Exit}}.}
+    {(1) la entrada \textbf{\textit{File}} de la cinta; (2) la opci\'on \textbf{\textit{Open signal}}; (3) las opciones \textbf{\textit{New project}} y \textbf{\textit{Open project}}; (4) las opciones \textbf{\textit{Save}} y \textbf{\textit{Save as}}; (5) las opciones \textbf{\textit{Close project}} y \textbf{\textit{Exit}}.}
     {Men\'u \textbf{\textit{File}} desplegado}
     {fig:mu_menu_file}
 
     \begin{senalamientos}{fig:mu_menu_file}
         \item \textbf{Entrada \textit{File}:} abre el men\'u.
         \item \textbf{\textit{Open signal}:} carga una se\~nal ABF, EDF o MAT.
-        \item \textbf{\textit{Open project}:} recupera un proyecto guardado (\textit{.glab}).
+        \item \textbf{\textit{New project}} y \textbf{\textit{Open project}:} crean un proyecto en blanco o recuperan uno guardado (\textit{.glab}).
         \item \textbf{\textit{Save}} y \textbf{\textit{Save as}:} guardan el proyecto en su ubicaci\'on actual o en una nueva.
         \item \textbf{\textit{Close project}} y \textbf{\textit{Exit}:} cierran el proyecto o la aplicaci\'on, preguntando antes si hay cambios sin guardar.
     \end{senalamientos}
@@ -692,6 +704,42 @@ El flujo de trabajo de GammaLab comienza siempre con la carga de una se\~nal. A 
     \end{enumerate}
 
     Si el archivo del proyecto est\'a incompleto o la copia de la se\~nal no se encuentra, GammaLab muestra un aviso de error indicando el motivo y no deja el proyecto a medio abrir.
+
+    \subsubsection*{C\'omo crear un proyecto en blanco}
+    \begin{enumerate}
+        \item Seleccione \textbf{\textit{File} > \textit{New project}}.
+        \item Escriba el nombre del proyecto y elija su ubicaci\'on con \textbf{\textit{Browse}}. Debajo se muestra la ruta que se crear\'a, de la forma \textit{ubicaci\'on/nombre/nombre.glab}.
+        \item En \textbf{Abrir en}, elija \textbf{Esta ventana} o \textbf{Una ventana nueva}.
+        \item Pulse \textbf{\textit{Create}}. Con \textbf{Esta ventana}, el proyecto se a\~nade al \textbf{\textit{Explorer}} como activo; con \textbf{Una ventana nueva}, se abre otra ventana de GammaLab con el proyecto y la actual no cambia.
+        \item Cargue la se\~nal con \textbf{\textit{File} > \textit{Open signal}}. La se\~nal queda dentro del proyecto en blanco y \textbf{\textit{File} > \textit{Save}} la copia a su carpeta.
+    \end{enumerate}
+
+    El nombre no puede quedar vac\'io ni contener los caracteres que Windows no admite en un nombre de archivo, y en la ubicaci\'on elegida no puede existir ya una carpeta con ese nombre que tenga archivos.
+
+    \subsubsection*{C\'omo trabajar con varios proyectos}
+    \begin{enumerate}
+        \item Con un proyecto abierto, abra otro con \textbf{\textit{File} > \textit{Open project}} o cree uno con \textbf{\textit{File} > \textit{New project}}.
+        \item El nuevo proyecto aparece en el \textbf{\textit{Explorer}} debajo del anterior y pasa a ser el activo. El anterior sigue visible, sin negrita.
+        \item Para volver a un proyecto, haga doble clic sobre su archivo \textit{.glab} en el \textbf{\textit{Explorer}}. GammaLab descarga el proyecto activo, preguntando antes si tiene cambios sin guardar, y carga el elegido.
+    \end{enumerate}
+
+    \subsubsection*{C\'omo duplicar un proyecto}
+    \begin{enumerate}
+        \item En el \textbf{\textit{Explorer}}, haga clic derecho sobre la carpeta del proyecto, la que contiene su \textit{.glab}, y elija \textbf{\textit{Duplicate project}}. Si la carpeta guarda m\'as de un \textit{.glab}, GammaLab pregunta cu\'al duplicar.
+        \item Si el proyecto tiene cambios sin guardar, elija \textbf{Guardar y duplicar} o \textbf{Duplicar lo guardado}: la copia se hace siempre de lo que est\'a guardado en disco.
+        \item Indique el nombre y la ubicaci\'on de la copia. Por defecto se propone \textit{nombre\_copia} junto al original; la copia no puede quedar dentro de la carpeta del proyecto original.
+        \item Elija \textbf{Esta ventana} o \textbf{Una ventana nueva} y pulse \textbf{\textit{Duplicate}}.
+        \item GammaLab copia la carpeta completa (la se\~nal, los archivos exportados y las subcarpetas) y renombra el \textit{.glab}. La copia muestra la barra de progreso y puede cancelarse; al cancelarla no queda nada a medio copiar.
+    \end{enumerate}
+
+    \subsubsection*{C\'omo cerrar un proyecto}
+    \begin{enumerate}
+        \item Seleccione \textbf{\textit{File} > \textit{Close project}}.
+        \item Si hay varios proyectos abiertos, elija cu\'al cerrar. Cada uno aparece con el nombre de su \textit{.glab} y, debajo, la carpeta en la que est\'a; el activo viene seleccionado y marcado como \emph{(activo)}.
+        \item Cerrar un proyecto que no es el activo solo lo quita del \textbf{\textit{Explorer}}. Cerrar el activo libera su se\~nal, y los dem\'as proyectos siguen visibles sin que ninguno quede activo.
+    \end{enumerate}
+
+    \aviso{Varias ventanas.}{Cada ventana de GammaLab es independiente y tiene su propio \textbf{\textit{Explorer}}: un proyecto abierto en una ventana no aparece en las dem\'as. Conviene no abrir el mismo proyecto en dos ventanas, porque el \'ultimo guardado reemplaza al otro.}
 
     \aviso{Cambios sin guardar.}{GammaLab marca el proyecto como modificado en cuanto se genera un \textit{trial}, se ejecuta un an\'alisis o se toma una medida. Al cerrar el proyecto o la aplicaci\'on con cambios pendientes, aparece un di\'alogo con las opciones \textbf{\textit{Save}}, \textbf{\textit{Don't Save}} y \textbf{\textit{Cancel}}.}
 
@@ -1720,6 +1768,10 @@ El mapa de \textbf{PPC} tiene regiones en blanco & En esa combinaci\'on de frecu
 El \textbf{\textit{Zoom}} de la cinta avisa de que hay que abrir primero una vista con gr\'aficas & No se ha visitado ninguna gr\'afica en esta sesi\'on & Abra un \textit{plugin} con gr\'aficas y vuelva a intentarlo \\
 \hline
 El panel \textbf{\textit{Explorer}} dice que no hay proyecto abierto & El explorador muestra la carpeta del proyecto, y todav\'ia no hay ninguno & Guarde el trabajo con \textbf{\textit{File} > \textit{Save as}}, o abra un proyecto existente \\
+\hline
+El clic derecho no ofrece \textbf{\textit{Duplicate project}} & La opci\'on solo aparece sobre la carpeta que contiene el \textit{.glab} & Haga clic derecho sobre la carpeta del proyecto, no sobre sus archivos ni sus subcarpetas \\
+\hline
+El doble clic sobre un \textit{.glab} del \textbf{\textit{Explorer}} no cambia nada & Ese proyecto ya es el activo & Haga doble clic sobre el \textit{.glab} de otro proyecto \\
 \hline
 Al cerrar aparece un di\'alogo con \textbf{\textit{Save}}, \textbf{\textit{Don't Save}} y \textbf{\textit{Cancel}} & Hay cambios que no se han escrito en el archivo \textit{.glab} & Elija \textbf{\textit{Save}} para conservarlos, \textbf{\textit{Don't Save}} para descartarlos o \textbf{\textit{Cancel}} para volver atr\'as \\
 \hline

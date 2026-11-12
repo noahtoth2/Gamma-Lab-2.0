@@ -1069,7 +1069,7 @@ En la versión 1.0 de GammaLab, el usuario debía descubrir por su cuenta la org
 
 \subsubsubsection{\textit{File}}
 
-Se añadió el apartado \textit{File} como primera opción de la barra de menú superior, antes de \textit{Home}, \textit{Preprocessing} y \textit{Analysis}. Su propósito es reunir en un solo lugar las acciones que afectan a la sesión de trabajo completa y no a un análisis concreto. Su posición responde a la convención de las aplicaciones de escritorio, en las que el usuario espera encontrar en este menú las operaciones para abrir, guardar y cerrar su trabajo. A diferencia de las demás categorías, que presentan sus herramientas en la barra de \textit{plugins}, \textit{File} se despliega como un menú breve de seis opciones: \textit{Open signal}, \textit{Open project}, \textit{Save}, \textit{Save as}, \textit{Close project} y \textit{Exit}. El orden acompaña el ciclo natural de una sesión: primero se abre una señal o un proyecto, después se guarda el trabajo y, por último, se cierra el proyecto o se sale de la aplicación. La incorporación de este apartado está ligada al concepto de proyecto. Un proyecto se guarda en una carpeta propia e incluye un archivo con extensión .glab junto con una copia de la señal.
+Se añadió el apartado \textit{File} como primera opción de la barra de menú superior, antes de \textit{Home}, \textit{Preprocessing} y \textit{Analysis}. Su propósito es reunir en un solo lugar las acciones que afectan a la sesión de trabajo completa y no a un análisis concreto. Su posición responde a la convención de las aplicaciones de escritorio, en las que el usuario espera encontrar en este menú las operaciones para abrir, guardar y cerrar su trabajo. A diferencia de las demás categorías, que presentan sus herramientas en la barra de \textit{plugins}, \textit{File} se despliega como un menú breve de siete opciones: \textit{Open signal}, \textit{New project}, \textit{Open project}, \textit{Save}, \textit{Save as}, \textit{Close project} y \textit{Exit}. El orden acompaña el ciclo natural de una sesión: primero se abre una señal o un proyecto, después se guarda el trabajo y, por último, se cierra el proyecto o se sale de la aplicación. La incorporación de este apartado está ligada al concepto de proyecto. Un proyecto se guarda en una carpeta propia e incluye un archivo con extensión .glab junto con una copia de la señal.
 
 \subsubsubsection{\textit{Home}}
 
@@ -1154,6 +1154,8 @@ La barra se organizó en torno a una columna estrecha de iconos que permanece si
 
 \paragraph{\textit{Explorer}.} El \textit{Explorer} se concibió como un panel de consulta y organización de archivos. Se abre y se cierra con el mismo botón, y su ancho se ajusta arrastrando el borde. Al reabrirlo conserva el ancho elegido, mientras que la primera vez se abre con un tamaño que permite leer los nombres de los archivos. Cuando cambia de tamaño, el área de trabajo y la barra de herramientas se reacomodan juntas, de manera que ningún elemento queda oculto. El panel muestra la carpeta real del proyecto activo, se actualiza al abrir, guardar, renombrar o cerrar un proyecto y excluye las carpetas ajenas. Además, presenta únicamente el nombre de cada elemento, lo que favorece una lectura limpia en un espacio reducido. Si no hay un proyecto abierto, en lugar de un panel vacío se muestra un mensaje que indica cómo proceder. El \textit{Explorer} también permite trabajar directamente con los archivos. Con un doble clic, el usuario abre un archivo en el programa asociado del sistema, y mediante el menú contextual puede renombrar, copiar, pegar, eliminar y crear carpetas. También puede mover archivos entre carpetas arrastrándolos. Para evitar pérdidas accidentales, la eliminación solicita confirmación. Así, los datos y las exportaciones se organizan sin salir de la aplicación facilitando su usabilidad.
 
+El panel admite además varios proyectos abiertos a la vez, cada uno en un árbol propio. Solo uno está activo y se distingue en negrita; para cambiar de proyecto basta con un doble clic sobre su \textit{.glab}. Se optó por mantener un único proyecto cargado en memoria y no todos, porque las señales pesan y la aplicación está construida alrededor de una sesión activa. El menú contextual de la carpeta de un proyecto ofrece duplicarlo, y la copia puede abrirse en la misma ventana o en una nueva.
+
 \paragraph{\textit{Results}.} El panel \textit{Results} se diseñó para consultar las mediciones sin abandonar el análisis en curso, ya que en la versión anterior de GammaLab el usuario debía cambiar constantemente de pestaña para poder consultar los resultados de sus mediciones. Al ubicarse debajo del área de trabajo, permite ver las tablas y la señal al mismo tiempo, sin cambiar de pantalla. Su altura se ajusta arrastrando el borde superior, según se quiera dar prioridad a los datos o a la señal. Las mediciones de pendiente y de amplitud se separan en las pestañas \textit{Slope} y \textit{Amplitude}, y su contenido se actualiza cada vez que se abre el panel. La cabecera reúne el título, un menú para exportar la tabla activa a CSV o Excel y un botón de cierre, de modo que las acciones sobre los resultados quedan junto a ellos. El panel también puede cerrarse pulsando de nuevo su icono en la barra lateral.
 
 \subsection{Tecnologías}
@@ -1185,7 +1187,7 @@ Esta sección presenta las funcionalidades de Gamma Lab 2.0 desde la perspectiva
 
 \subsubsection{\textit{Explorer}}
 
-El \textit{Explorer} muestra en forma de árbol la carpeta del proyecto abierto y se actualiza al abrir, guardar, renombrar o cerrar el proyecto, como se observa en la Figura~\ref{fig:producto-explorer}. Si no hay un proyecto abierto, muestra un mensaje que indica cómo hacer que aparezca su contenido.
+El \textit{Explorer} muestra en forma de árbol la carpeta de cada proyecto abierto y se actualiza al abrir, guardar, renombrar o cerrar el proyecto, como se observa en la Figura~\ref{fig:producto-explorer}. Si no hay un proyecto abierto, muestra un mensaje que indica cómo hacer que aparezca su contenido.
 
 \begin{figure}[H]
   \centering
@@ -1197,8 +1199,9 @@ El \textit{Explorer} muestra en forma de árbol la carpeta del proyecto abierto 
 Sus funciones son las siguientes:
 
 \begin{itemize}
+  \item \textbf{Varios proyectos.} Cada proyecto abierto tiene su árbol. El activo aparece en negrita y un doble clic sobre otro \textit{.glab} lo vuelve activo.
   \item \textbf{Abrir archivos.} Con doble clic, el archivo se abre en el programa asociado del sistema.
-  \item \textbf{Menú contextual.} Permite renombrar, copiar, pegar, eliminar (con confirmación) y crear carpetas.
+  \item \textbf{Menú contextual.} Permite renombrar, copiar, pegar, eliminar (con confirmación) y crear carpetas. Sobre la carpeta de un proyecto permite también duplicarlo.
   \item \textbf{Mover.} Los archivos se arrastran de una carpeta a otra.
   \item \textbf{Tamaño.} El ancho se ajusta arrastrando el borde y se conserva al reabrir el panel.
 \end{itemize}
@@ -1237,11 +1240,12 @@ El menú \textit{File} reúne las operaciones que afectan a toda la sesión de t
 \end{figure}
 
 Con \textit{Open signal} se cargan señales en formato \textit{.abf}, \textit{.edf} o \textit{.mat}, con la opción de corregir 
-la frecuencia de muestreo y elegir qué canales se ven, y con \textit{Open project} se 
-abre un proyecto \textit{.glab} que restaura el trabajo hecho. \textit{Save} y \textit{Save as}
- guardan el proyecto en una carpeta con el archivo \textit{.glab} y una copia de la señal, 
+la frecuencia de muestreo y elegir qué canales se ven, y con \textit{Open project} se
+abre un proyecto \textit{.glab} que restaura el trabajo hecho y se suma a los que ya muestra el \textit{Explorer}.
+\textit{New project} crea un proyecto en blanco y pregunta si abrirlo en la misma ventana o en una nueva. \textit{Save} y \textit{Save as}
+ guardan el proyecto en una carpeta con el archivo \textit{.glab} y una copia de la señal,
  mientras que \textit{Close project} y \textit{Exit} cierran el proyecto o la aplicación,
-  avisando antes si hay cálculos en curso o cambios sin guardar.
+  avisando antes si hay cálculos en curso o cambios sin guardar. Si hay varios proyectos abiertos, \textit{Close project} pregunta cuál cerrar por el nombre de su \textit{.glab}.
 
 \subsubsection{\textit{Home}}
 

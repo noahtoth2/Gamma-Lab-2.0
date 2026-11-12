@@ -501,6 +501,103 @@ class ProjectService:
             except Exception as e:
                 print(f"[ProjectService] Could not restore analysis '{name}':", e)
 
+    # ---------------- nuevo y duplicar ----------------
+    @staticmethod
+    def crear_proyecto_vacio(carpeta_proyecto, nombre) -> Path:
+        """Crea `carpeta_proyecto/nombre.glab` sin señal. Al abrirlo, la señal que se cargue será suya."""
+        carpeta = Path(carpeta_proyecto)
+        glab = carpeta / f"{nombre}.glab"
+        if glab.exists():
+            raise FileExistsError(f"Ya existe un proyecto en:\n{glab}")
+        carpeta.mkdir(parents=True, exist_ok=True)
+        (carpeta / "archivos").mkdir(exist_ok=True)
+        manifest = {
+            "schema_version": SCHEMA_VERSION,
+            "project_name": nombre,
+            "saved_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "signal": {"filename": None},
+            "measurements": [],
+            "trials": [],
+            "analysis": {},
+        }
+        glab.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+        return glab
+
+    @staticmethod
+    def duplicar_proyecto(glab_origen, carpeta_destino, nombre, ctx=None):
+        """Copia la carpeta del proyecto en `carpeta_destino` y renombra su `.glab` a `nombre.glab`.
+
+        Copia lo guardado en disco (señal, archivos exportados, subcarpetas). Corre en el
+        TaskService: informa progreso y, si se cancela, borra la copia a medias y devuelve None.
+        Devuelve la ruta del `.glab` nuevo.
+        """
+        origen = Path(glab_origen)
+        carpeta_origen = origen.parent.resolve()
+        destino = Path(carpeta_destino).resolve()
+        if destino == carpeta_origen or carpeta_origen in destino.parents:
+            raise ValueError("La copia no puede ir dentro de la carpeta del proyecto que se duplica.")
+        if destino.exists() and any(destino.iterdir()):
+            raise FileExistsError(f"La carpeta de destino ya existe y no está vacía:\n{destino}")
+
+        # La lista se arma antes de copiar nada.
+        archivos, total = [], 0
+        for raiz, _dirs, nombres in os.walk(carpeta_origen):
+            for n in nombres:
+                ruta = Path(raiz) / n
+                if n.endswith(".part"):
+                    continue  # restos de una copia de señal cortada
+                archivos.append(ruta)
+                try:
+                    total += ruta.stat().st_size
+                except OSError:
+                    pass
+
+        destino_existia = destino.exists()
+        try:
+            destino.mkdir(parents=True, exist_ok=True)
+            for raiz, dirs, _n in os.walk(carpeta_origen):
+                for d in dirs:
+                    (destino / Path(raiz).relative_to(carpeta_origen) / d).mkdir(parents=True, exist_ok=True)
+            hecho = 0
+            for ruta in archivos:
+                if ctx is not None and ctx.cancelled:
+                    raise _CopiaCancelada()
+                relativa = ruta.relative_to(carpeta_origen)
+                if ctx is not None:
+                    ctx.progress(int(100 * hecho / total) if total else 100, f"Copiando {relativa}")
+                shutil.copy2(ruta, destino / relativa)
+                try:
+                    hecho += ruta.stat().st_size
+                except OSError:
+                    pass
+        except _CopiaCancelada:
+            ProjectService._borrar_copia(destino, destino_existia)
+            return None
+        except Exception:
+            ProjectService._borrar_copia(destino, destino_existia)
+            raise
+
+        glab_copia = destino / origen.name
+        glab_nuevo = destino / f"{nombre}.glab"
+        if glab_copia != glab_nuevo:
+            os.replace(glab_copia, glab_nuevo)
+        manifest = json.loads(glab_nuevo.read_text(encoding="utf-8"))
+        manifest["project_name"] = nombre
+        glab_nuevo.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+        return glab_nuevo
+
+    @staticmethod
+    def _borrar_copia(destino: Path, destino_existia: bool):
+        """Deshace una copia a medias. Si la carpeta ya existía (vacía) se deja vacía."""
+        if destino_existia:
+            for hijo in destino.iterdir():
+                if hijo.is_dir():
+                    shutil.rmtree(hijo, ignore_errors=True)
+                else:
+                    hijo.unlink(missing_ok=True)
+        else:
+            shutil.rmtree(destino, ignore_errors=True)
+
     # ---------------- close ----------------
     def close(self):
         self.project_dir = None

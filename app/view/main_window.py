@@ -3,6 +3,7 @@ import html
 import gc
 import os
 import shutil
+import sys
 from core.utils.ayudas import completar_ayudas
 from core.utils.dialogo_bienvenida import DialogoBienvenida
 from functools import partial
@@ -28,19 +29,23 @@ from PyQt5.QtWidgets import (
     QLineEdit,
     QPushButton,
     QMessageBox,
+    QSplitter,
+    QInputDialog,
 )
+from app.view.explorer_proyectos import (ArbolProyecto, DialogoCerrarProyecto,
+                                         DialogoProyectoNuevo, clave_ruta)
 from app.view.main_window_ui import Ui_MainWindow 
 from PyQt5.QtGui import QIcon, QFontMetrics, QFont, QPixmap, QPainter
 from PyQt5.QtCore import QSize, Qt, QEvent
 from PyQt5.QtWidgets import QFrame, QCompleter
 from app.view.main_window_ui import Ui_MainWindow
 from PyQt5.QtGui import QIcon, QFontMetrics, QFont, QPixmap, QPainter, QDesktopServices
-from PyQt5.QtCore import QSize, Qt, QEvent, QUrl, QMimeData, QTimer
+from PyQt5.QtCore import QSize, Qt, QEvent, QUrl, QMimeData, QTimer, QProcess
 from PyQt5.QtWidgets import QFrame
 
 from core.plugins.interfaces import IPlugin
 from core.utils.plugin_alerts import PluginAlerts
-from core.utils.rutas import carpeta_inicial
+from core.utils.rutas import carpeta_del_programa, carpeta_inicial
 from core.utils.notifications import NotificationCenter
 from core.utils.task_progress import TaskProgressBar
 from core.utils.trial_labels import describe_trials
@@ -72,6 +77,11 @@ class MainWindow(QMainWindow):
         self.kernel.event.connect(self.on_kernel_event)
 
         # Project (.glab) persistence
+        # Proyectos abiertos en el Explorer (rutas .glab). Solo uno está activo: el que
+        # tiene cargado el ProjectService; los demás se activan con doble clic en su .glab.
+        self._proyectos_abiertos = []
+        self._glab_activo = None
+        self._abriendo_proyecto = False
         self.project_service = ProjectService(self.kernel)
         self.project_service.on_change = self._on_project_changed
         self.kernel.register_service("ProjectService", self.project_service)
@@ -904,6 +914,7 @@ class MainWindow(QMainWindow):
         file_menu = QMenu(self.ui.btn_file)
 
         act_open_signal = QAction("Open signal", self)
+        act_new_project = QAction("New project", self)
         act_open_project = QAction("Open project", self)
         act_save = QAction("Save", self)
         act_save_as = QAction("Save as", self)
@@ -911,6 +922,7 @@ class MainWindow(QMainWindow):
         act_exit = QAction("Exit", self)
 
         act_open_signal.triggered.connect(self.on_open_signal_clicked)
+        act_new_project.triggered.connect(self.on_new_project_clicked)
         act_open_project.triggered.connect(self.on_open_project_clicked)
         act_save.triggered.connect(self.on_save_project_clicked)
         act_save_as.triggered.connect(self.on_save_project_as_clicked)
@@ -918,6 +930,7 @@ class MainWindow(QMainWindow):
         act_exit.triggered.connect(self.on_exit_clicked)
 
         file_menu.addAction(act_open_signal)
+        file_menu.addAction(act_new_project)
         file_menu.addAction(act_open_project)
         file_menu.addAction(act_save)
         file_menu.addAction(act_save_as)
@@ -1015,6 +1028,232 @@ class MainWindow(QMainWindow):
         self.kernel.get_service("Settings").set("last_project_dir", str(Path(path_str).parent))
         self._abrir_proyecto(path_str)
 
+    def cambiar_a_proyecto(self, path_str):
+        """Doble clic en un .glab del Explorer: ese proyecto pasa a ser el activo.
+
+        El activo se descarga (preguntando si hay cambios sin guardar) y su carpeta sigue en
+        el Explorer para poder volver a él.
+        """
+        if self._project_busy or getattr(self, "_guardando", False):
+            self.statusBar().showMessage("Espera a que termine de abrirse o guardarse el proyecto.", 4000)
+            return
+        activo = self.project_service.glab_path
+        if activo is not None and clave_ruta(activo) == clave_ruta(path_str):
+            self.statusBar().showMessage(f"«{Path(path_str).name}» ya es el proyecto activo.", 4000)
+            return
+        if not self._confirm_discard_unsaved_changes():
+            return
+        self.abrir_proyecto_desde_ruta(path_str)
+
+    # ---------- nuevo proyecto y duplicar ----------
+    def _proyecto_ocupado(self) -> bool:
+        if self._project_busy or getattr(self, "_guardando", False):
+            self.statusBar().showMessage("Espera a que termine la operación con el proyecto en curso.", 4000)
+            return True
+        return False
+
+    def _ubicacion_por_defecto(self) -> str:
+        """Junto al último proyecto abierto (su carpeta padre), o la carpeta del usuario."""
+        settings = self.kernel.get_service("Settings")
+        ultimo = settings.get("last_project_dir", "") if settings is not None else ""
+        padre = Path(ultimo).parent if ultimo else None
+        return str(padre) if padre is not None and padre.is_dir() else carpeta_inicial()
+
+    def on_new_project_clicked(self):
+        """File > New project: un proyecto en blanco, en esta ventana o en una nueva."""
+        if self._proyecto_ocupado():
+            return
+        respuesta = DialogoProyectoNuevo.pedir(
+            "New Project", "nuevo_proyecto", self._ubicacion_por_defecto(), "Create", parent=self)
+        if respuesta is None:
+            return
+        carpeta, nombre, ventana_nueva = respuesta
+        # En esta ventana el activo se descarga: se pregunta antes de crear nada.
+        if not ventana_nueva and not self._confirm_discard_unsaved_changes():
+            return
+        try:
+            glab = ProjectService.crear_proyecto_vacio(carpeta, nombre)
+        except Exception as e:
+            self.alerts.error(str(e), "New Project")
+            return
+        self._abrir_proyecto_creado(glab, ventana_nueva)
+
+    @staticmethod
+    def _glabs_de_carpeta(carpeta) -> list:
+        """Los .glab que están directamente en `carpeta` (no en subcarpetas)."""
+        try:
+            return sorted(p for p in Path(carpeta).iterdir()
+                          if p.is_file() and p.suffix.lower() == ".glab")
+        except OSError:
+            return []
+
+    def duplicar_proyecto_de_carpeta(self, carpeta):
+        """Clic derecho > Duplicate project sobre la carpeta de un proyecto.
+
+        Si la carpeta guarda más de un .glab, pregunta cuál (el activo o uno abierto va primero).
+        """
+        glabs = self._glabs_de_carpeta(carpeta)
+        if not glabs:
+            return
+        if len(glabs) > 1:
+            activo = self.project_service.glab_path
+            clave_activo = clave_ruta(activo) if activo is not None else None
+            glabs.sort(key=lambda p: (clave_ruta(p) != clave_activo,
+                                      self._indice_proyecto_abierto(p) is None, p.name.lower()))
+            nombres = [p.name for p in glabs]
+            elegido, ok = QInputDialog.getItem(
+                self, "Duplicate Project", "¿Qué proyecto quieres duplicar?", nombres, 0, False)
+            if not ok:
+                return
+            glab = glabs[nombres.index(elegido)]
+        else:
+            glab = glabs[0]
+        self.duplicar_proyecto(glab)
+
+    def duplicar_proyecto(self, glab):
+        """Copia la carpeta del proyecto con otro nombre y lo abre aquí o en otra ventana."""
+        if self._proyecto_ocupado():
+            return
+        glab = Path(glab)
+        activo = self.project_service.glab_path
+        es_activo = activo is not None and clave_ruta(activo) == clave_ruta(glab)
+        if es_activo and self.project_service.dirty:
+            box = QMessageBox(self)
+            box.setIcon(QMessageBox.Question)
+            box.setWindowTitle("Duplicate Project")
+            box.setText("El proyecto tiene cambios sin guardar. La copia se hace de lo que está guardado en disco.")
+            guardar_btn = box.addButton("Guardar y duplicar", QMessageBox.AcceptRole)
+            tal_cual_btn = box.addButton("Duplicar lo guardado", QMessageBox.DestructiveRole)
+            box.addButton("Cancel", QMessageBox.RejectRole)
+            box.setDefaultButton(guardar_btn)
+            box.exec_()
+            if box.clickedButton() is guardar_btn:
+                try:
+                    guardado = self.project_service.save(self)
+                except Exception as e:
+                    self.alerts.error(str(e), "Save Project")
+                    return
+                if not guardado:
+                    return
+                glab = Path(guardado)
+            elif box.clickedButton() is not tal_cual_btn:
+                return
+
+        carpeta_origen = glab.parent.resolve()
+
+        def fuera_del_original(carpeta):
+            carpeta = carpeta.resolve()
+            if carpeta == carpeta_origen or carpeta_origen in carpeta.parents:
+                return "La copia no puede ir dentro de la carpeta del proyecto que se duplica."
+            return None
+
+        respuesta = DialogoProyectoNuevo.pedir(
+            "Duplicate Project", f"{glab.stem}_copia", str(carpeta_origen.parent), "Duplicate",
+            validar_extra=fuera_del_original, parent=self)
+        if respuesta is None:
+            return
+        carpeta, nombre, ventana_nueva = respuesta
+        if not ventana_nueva and not self._confirm_discard_unsaved_changes():
+            return
+
+        tasks = self.kernel.get_service("TaskService")
+        if tasks is None:
+            try:
+                nuevo = ProjectService.duplicar_proyecto(glab, carpeta, nombre)
+            except Exception as e:
+                self.alerts.error(str(e), "Duplicate Project")
+                return
+            self._abrir_proyecto_creado(nuevo, ventana_nueva)
+            return
+
+        # La carpeta puede pesar (la señal va dentro): se copia en el TaskService (R04).
+        self._project_busy = True
+        self.statusBar().showMessage(f"Duplicando {glab.name}…")
+        handle = tasks.submit(ProjectService.duplicar_proyecto, owner="project",
+                              glab_origen=str(glab), carpeta_destino=str(carpeta), nombre=nombre)
+        handle.finished.connect(lambda nuevo: self._duplicado_terminado(nuevo, ventana_nueva))
+        handle.failed.connect(lambda msg: self._duplicado_fallido(msg))
+        handle.cancelled.connect(lambda: self._duplicado_fallido(None))
+
+    def _duplicado_terminado(self, nuevo, ventana_nueva):
+        self._project_busy = False
+        if not nuevo:
+            self._duplicado_fallido(None)
+            return
+        self._abrir_proyecto_creado(Path(nuevo), ventana_nueva)
+
+    def _duplicado_fallido(self, mensaje):
+        self._project_busy = False
+        if mensaje:
+            self.statusBar().clearMessage()
+            self.alerts.error(mensaje, "Duplicate Project")
+        else:
+            self.statusBar().showMessage("Duplicado cancelado.", 4000)
+
+    def _abrir_proyecto_creado(self, glab, ventana_nueva):
+        """Abre el proyecto recién creado: en esta ventana (se añade al Explorer) o en otra."""
+        if ventana_nueva:
+            if self.abrir_en_ventana_nueva(glab):
+                self.statusBar().showMessage(f"Abriendo «{Path(glab).name}» en una ventana nueva…", 6000)
+            return
+        # El aviso de cambios sin guardar ya se mostró antes de crear el proyecto.
+        self.abrir_proyecto_desde_ruta(str(glab))
+
+    def abrir_en_ventana_nueva(self, glab) -> bool:
+        """Lanza otra instancia de Gamma Lab con ese proyecto, como al hacer doble clic en un .glab."""
+        if getattr(sys, "frozen", False):
+            programa, argumentos = sys.executable, [str(glab)]
+        else:
+            programa, argumentos = sys.executable, [str(carpeta_del_programa() / "main.py"), str(glab)]
+        resultado = QProcess.startDetached(programa, argumentos, str(carpeta_del_programa()))
+        ok = resultado[0] if isinstance(resultado, tuple) else bool(resultado)
+        if not ok:
+            self.alerts.error(f"No se pudo abrir una ventana nueva.\nEl proyecto se creó en:\n{glab}",
+                              "New Window")
+        return ok
+
+    # ---------- proyectos abiertos en el Explorer ----------
+    def _indice_proyecto_abierto(self, glab):
+        clave = clave_ruta(glab)
+        for i, p in enumerate(self._proyectos_abiertos):
+            if clave_ruta(p) == clave:
+                return i
+        return None
+
+    def _depurar_proyectos_abiertos(self):
+        """Quita los proyectos cuyo .glab ya no existe (borrado o movido), salvo el activo."""
+        activo = self.project_service.glab_path
+        clave_activo = clave_ruta(activo) if activo is not None else None
+        self._proyectos_abiertos = [
+            p for p in self._proyectos_abiertos
+            if p.is_file() or clave_ruta(p) == clave_activo
+        ]
+
+    def _actualizar_proyectos_abiertos(self):
+        """Lleva la lista al día con el proyecto activo tras abrir, guardar o renombrar.
+
+        Abrir añade el proyecto. Guardar con otro nombre o en otra carpeta (Save as) sustituye
+        la entrada del activo, porque es el mismo proyecto en otro sitio. Cerrar no quita nada:
+        eso lo hace File > Close project.
+        """
+        nuevo = self.project_service.glab_path
+        viejo = self._glab_activo
+        if nuevo is not None:
+            nuevo = Path(nuevo)
+            i_viejo = self._indice_proyecto_abierto(viejo) if viejo is not None else None
+            reemplaza = (not self._abriendo_proyecto and i_viejo is not None
+                         and clave_ruta(viejo) != clave_ruta(nuevo))
+            if reemplaza:
+                self._proyectos_abiertos[i_viejo] = nuevo
+                # Si el destino ya estaba abierto aparte, queda una sola entrada.
+                self._proyectos_abiertos = [
+                    p for j, p in enumerate(self._proyectos_abiertos)
+                    if j == i_viejo or clave_ruta(p) != clave_ruta(nuevo)
+                ]
+            elif self._indice_proyecto_abierto(nuevo) is None:
+                self._proyectos_abiertos.append(nuevo)
+        self._glab_activo = nuevo
+
     def _abrir_proyecto(self, path_str):
         self._project_busy = True
         tasks = self.kernel.get_service("TaskService")
@@ -1035,7 +1274,12 @@ class MainWindow(QMainWindow):
     def _finish_open_project(self, path_str, preparado):
         try:
             self.liberar_senal_anterior()
-            self.project_service.open(path_str, self, preparado=preparado)
+            # Abrir otro proyecto lo añade al Explorer sin quitar el que estaba activo.
+            self._abriendo_proyecto = True
+            try:
+                self.project_service.open(path_str, self, preparado=preparado)
+            finally:
+                self._abriendo_proyecto = False
             faltante = self.project_service.senal_faltante(*preparado)
             if faltante:
                 self.statusBar().showMessage(f"Proyecto abierto sin señal: {path_str}", 8000)
@@ -1105,6 +1349,12 @@ class MainWindow(QMainWindow):
         """
         if not self.project_service.is_open:
             return True
+        # Proyecto en blanco (File > New project): la señal se carga en él en vez de cerrarlo.
+        kernel = getattr(self, "kernel", None)
+        store = kernel.get_service("DataStore") if kernel is not None else None
+        if store is not None and store.get_active_signal() is None:
+            self._senal_para_proyecto_en_blanco = True
+            return True
         if not self._confirm_discard_unsaved_changes():
             return False
         nombre = self.project_service.project_name
@@ -1114,9 +1364,53 @@ class MainWindow(QMainWindow):
         return True
 
     def on_close_project_clicked(self):
-        """File > Close project: forget the project location and free the active signal."""
+        """File > Close project. Con varios proyectos abiertos pregunta cuál, por el nombre del .glab.
+
+        Cerrar uno inactivo solo lo quita del Explorer. Cerrar el activo además suelta su señal
+        (pidiendo guardar si hay cambios); los demás siguen en el Explorer, sin activar ninguno.
+        """
+        if self._project_busy or getattr(self, "_guardando", False):
+            self.statusBar().showMessage("Espera a que termine de abrirse o guardarse el proyecto.", 4000)
+            return
+        self._depurar_proyectos_abiertos()
+        activo = self.project_service.glab_path
+        clave_activo = clave_ruta(activo) if activo is not None else None
+
+        # (ruta .glab o None si aún no se ha guardado, título, detalle, es el activo)
+        opciones = [(p, p.name, str(p.parent), clave_ruta(p) == clave_activo)
+                    for p in self._proyectos_abiertos]
+        store = self.kernel.get_service("DataStore")
+        hay_senal = store is not None and store.get_active_signal() is not None
+        if activo is None and hay_senal:
+            nombre_nuevo = self.project_service.project_name or "untitled"
+            opciones.append((None, f"{nombre_nuevo}.glab", "Sin guardar todavía", True))
+
+        if len(opciones) > 1:
+            fila = DialogoCerrarProyecto.elegir([o[1:] for o in opciones], self)
+            if fila is None:
+                return
+            ruta, titulo, _detalle, es_activo = opciones[fila]
+        elif opciones:
+            ruta, titulo, _detalle, es_activo = opciones[0]
+        else:
+            ruta, titulo, es_activo = None, None, True
+
+        if not es_activo:
+            i = self._indice_proyecto_abierto(ruta)
+            if i is not None:
+                del self._proyectos_abiertos[i]
+            self._refrescar_explorer()
+            self.statusBar().showMessage(f"Proyecto «{titulo}» cerrado.", 6000)
+            return
+
         if not self._confirm_discard_unsaved_changes():
             return
+        # Guardar desde el aviso pudo darle ruta (o cambiarla): se quita la que tenga ahora.
+        activo = self.project_service.glab_path
+        if activo is not None:
+            i = self._indice_proyecto_abierto(activo)
+            if i is not None:
+                del self._proyectos_abiertos[i]
         nombre = self.project_service.project_name
         self.project_service.close()
         if nombre:
@@ -1305,7 +1599,8 @@ class MainWindow(QMainWindow):
     def _on_project_changed(self):
         """ProjectService callback: refresh title bar + Explorer after open/save/rename/close."""
         self._update_title_bar_project_name()
-        self.set_explorer_root(self.project_service.project_dir)
+        self._actualizar_proyectos_abiertos()
+        self._refrescar_explorer()
 
     def _on_project_name_edited(self, new_name: str):
         """User double-clicked the project name in the title bar and typed a new one."""
@@ -1447,6 +1742,12 @@ class MainWindow(QMainWindow):
         """
         if topic == "signal_added":
             print(f"New signal added: {payload}")
+            if getattr(self, "_senal_para_proyecto_en_blanco", False):
+                # La señal ya es del proyecto en blanco, pero aún no está guardada en él.
+                self._senal_para_proyecto_en_blanco = False
+                if self.project_service.is_open:
+                    self.project_service.mark_dirty()
+                    self._update_title_bar_project_name()
             self.update_signal_list()
             self._update_background_logo_visibility()
             self._update_title_bar_signal_name()
@@ -1591,7 +1892,7 @@ class MainWindow(QMainWindow):
                 return
 
     def setup_explorer_section(self):
-        """Build the Explorer: a real filesystem view rooted at the open project's folder."""
+        """Build the Explorer: one file tree per open project folder, stacked vertically."""
         container = self.ui.explorer_QWidget
         layout = container.layout()
         if layout is None:
@@ -1607,100 +1908,110 @@ class MainWindow(QMainWindow):
         self.explorer_placeholder.setAlignment(Qt.AlignCenter)
         self.explorer_placeholder.setWordWrap(True)
 
-        self.explorer_model = QFileSystemModel(self)
-        # Allow rename/move/delete through the model (defaults to read-only).
-        self.explorer_model.setReadOnly(False)
-        self.explorer_project_dir = None
-        self.explorer_model.directoryLoaded.connect(self._on_explorer_directory_loaded)
-        self.explorer_model.rowsInserted.connect(self._on_explorer_rows_inserted)
-
-        self.explorer_tree = QTreeView(container)
-        self.explorer_tree.setObjectName("explorerTreeWidget")
-        self.explorer_tree.setModel(self.explorer_model)
-        self.explorer_tree.setHeaderHidden(True)
-        self.explorer_tree.setIndentation(14)
-        self.explorer_tree.setIconSize(QSize(16, 16))
-        self.explorer_tree.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        # Only the name column is useful in this narrow sidebar.
-        for col in range(1, 4):
-            self.explorer_tree.setColumnHidden(col, True)
-
-        self.explorer_tree.setEditTriggers(QAbstractItemView.EditKeyPressed)
-
-        # Drag files between folders to move them.
-        self.explorer_tree.setDragEnabled(True)
-        self.explorer_tree.setAcceptDrops(True)
-        self.explorer_tree.setDropIndicatorShown(True)
-        self.explorer_tree.setDragDropMode(QAbstractItemView.DragDrop)
-        self.explorer_tree.setDefaultDropAction(Qt.MoveAction)
-
-        # Double-click a file to open it in its OS-associated app (Excel, Photos, ...).
-        self.explorer_tree.doubleClicked.connect(self._on_explorer_double_clicked)
-
-        # Right-click -> "Rename" context menu.
-        self.explorer_tree.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.explorer_tree.customContextMenuRequested.connect(self._on_explorer_context_menu)
+        # Un árbol por carpeta de proyecto abierta (ver app/view/explorer_proyectos.py).
+        self.explorer_splitter = QSplitter(Qt.Vertical, container)
+        self.explorer_splitter.setChildrenCollapsible(False)
+        self.explorer_arboles = {}  # clave de la carpeta -> ArbolProyecto
 
         self.explorer_stack.addWidget(self.explorer_placeholder)
-        self.explorer_stack.addWidget(self.explorer_tree)
+        self.explorer_stack.addWidget(self.explorer_splitter)
         self.explorer_stack.setCurrentWidget(self.explorer_placeholder)
 
         layout.addWidget(self.explorer_stack)
 
-    def _on_explorer_double_clicked(self, index):
-        """Open a file from the Explorer with whatever app the OS associates with it."""
-        if not index.isValid() or self.explorer_model.isDir(index):
+    def _crear_arbol_proyecto(self, carpeta: Path):
+        arbol = ArbolProyecto(carpeta, self.explorer_splitter)
+        # Doble clic: un .glab cambia de proyecto; otro archivo se abre con su programa.
+        arbol.doubleClicked.connect(partial(self._on_explorer_double_clicked, arbol))
+        arbol.customContextMenuRequested.connect(partial(self._on_explorer_context_menu, arbol))
+        self.explorer_splitter.addWidget(arbol)
+        return arbol
+
+    def _refrescar_explorer(self):
+        """Un árbol por cada carpeta con un proyecto abierto; el activo en negrita."""
+        self._depurar_proyectos_abiertos()
+        carpetas = {}
+        for glab in self._proyectos_abiertos:
+            carpetas.setdefault(clave_ruta(glab.parent), glab.parent)
+
+        for clave in list(self.explorer_arboles):
+            if clave not in carpetas:
+                arbol = self.explorer_arboles.pop(clave)
+                arbol.setParent(None)
+                arbol.deleteLater()
+        for clave, carpeta in carpetas.items():
+            if clave not in self.explorer_arboles:
+                self.explorer_arboles[clave] = self._crear_arbol_proyecto(carpeta)
+
+        activo = self.project_service.glab_path
+        for arbol in self.explorer_arboles.values():
+            arbol.marcar_activo(activo)
+        destino = self.explorer_splitter if self.explorer_arboles else self.explorer_placeholder
+        self.explorer_stack.setCurrentWidget(destino)
+
+    def _on_explorer_double_clicked(self, arbol, index):
+        """Double-click: a .glab switches to that project; any other file opens in its OS app."""
+        if not index.isValid() or arbol.modelo.isDir(index):
             return  # let the default expand/collapse behavior handle folders
-        path = self.explorer_model.filePath(index)
+        path = arbol.modelo.filePath(index)
+        if path.lower().endswith(".glab"):
+            self.cambiar_a_proyecto(path)
+            return
         QDesktopServices.openUrl(QUrl.fromLocalFile(path))
 
-    def _on_explorer_context_menu(self, pos):
+    def _on_explorer_context_menu(self, arbol, pos):
         """Right-click in the Explorer: item -> Rename/Copy/Paste; empty space -> New Folder."""
-        index = self.explorer_tree.indexAt(pos)
-        menu = QMenu(self.explorer_tree)
+        index = arbol.indexAt(pos)
+        menu = QMenu(arbol)
 
         if index.isValid():
             rename_action = menu.addAction("Rename")
             copy_action = menu.addAction("Copy")
             paste_action = menu.addAction("Paste")
             paste_action.setEnabled(QApplication.clipboard().mimeData().hasUrls())
+            # La carpeta de un proyecto (la que guarda su .glab) se puede duplicar.
+            duplicate_action = None
+            ruta_item = arbol.modelo.filePath(index)
+            if arbol.modelo.isDir(index) and self._glabs_de_carpeta(ruta_item):
+                duplicate_action = menu.addAction("Duplicate project")
             menu.addSeparator()
             delete_action = menu.addAction("Delete")
 
-            chosen = menu.exec_(self.explorer_tree.viewport().mapToGlobal(pos))
-            if chosen == rename_action:
-                self.explorer_tree.edit(index)
+            chosen = menu.exec_(arbol.viewport().mapToGlobal(pos))
+            if chosen is not None and chosen == duplicate_action:
+                self.duplicar_proyecto_de_carpeta(ruta_item)
+            elif chosen == rename_action:
+                arbol.edit(index)
             elif chosen == copy_action:
-                self._explorer_copy_path(index)
+                self._explorer_copy_path(arbol, index)
             elif chosen == paste_action:
-                path = Path(self.explorer_model.filePath(index))
-                target_dir = path if self.explorer_model.isDir(index) else path.parent
+                path = Path(arbol.modelo.filePath(index))
+                target_dir = path if arbol.modelo.isDir(index) else path.parent
                 self._explorer_paste_into(target_dir)
             elif chosen == delete_action:
-                self._explorer_delete_path(index)
+                self._explorer_delete_path(arbol, index)
         else:
             new_folder_action = menu.addAction("New Folder")
             paste_action = menu.addAction("Paste")
             paste_action.setEnabled(QApplication.clipboard().mimeData().hasUrls())
 
-            chosen = menu.exec_(self.explorer_tree.viewport().mapToGlobal(pos))
+            chosen = menu.exec_(arbol.viewport().mapToGlobal(pos))
             if chosen == new_folder_action:
-                self._explorer_create_new_folder()
+                self._explorer_create_new_folder(arbol)
             elif chosen == paste_action:
-                if self.explorer_project_dir:
-                    self._explorer_paste_into(self.explorer_project_dir)
+                self._explorer_paste_into(arbol.carpeta)
 
-    def _explorer_copy_path(self, index):
+    def _explorer_copy_path(self, arbol, index):
         """Put the file/folder's path on the system clipboard as a file URL."""
-        path = self.explorer_model.filePath(index)
+        path = arbol.modelo.filePath(index)
         mime = QMimeData()
         mime.setUrls([QUrl.fromLocalFile(path)])
         QApplication.clipboard().setMimeData(mime)
 
-    def _explorer_delete_path(self, index):
+    def _explorer_delete_path(self, arbol, index):
         """Delete a file/folder from the Explorer, after confirmation."""
-        path = Path(self.explorer_model.filePath(index))
-        is_dir = self.explorer_model.isDir(index)
+        path = Path(arbol.modelo.filePath(index))
+        is_dir = arbol.modelo.isDir(index)
         kind = "folder" if is_dir else "file"
         reply = QMessageBox.warning(
             self, "Delete",
@@ -1716,6 +2027,9 @@ class MainWindow(QMainWindow):
                 path.unlink()
         except Exception as e:
             self.alerts.error(f"Could not delete '{path.name}':\n{e}", "Delete")
+            return
+        # Si se borró un proyecto que no es el activo (su .glab o su carpeta), sale del Explorer.
+        self._refrescar_explorer()
 
     def _explorer_paste_into(self, target_dir: Path):
         """Copy whatever file/folder is on the clipboard into target_dir."""
@@ -1735,17 +2049,14 @@ class MainWindow(QMainWindow):
             except Exception as e:
                 self.alerts.error(f"Could not paste '{src.name}':\n{e}", "Paste")
 
-    def _explorer_create_new_folder(self):
-        """New Folder in the currently browsed project folder, ready to rename."""
-        root_path = self.explorer_project_dir
-        if not root_path:
-            return
-        dest = self._explorer_unique_path(Path(root_path) / "New Folder")
-        parent_index = self.explorer_model.index(str(root_path))
-        new_index = self.explorer_model.mkdir(parent_index, dest.name)
+    def _explorer_create_new_folder(self, arbol):
+        """New Folder in that tree's project folder, ready to rename."""
+        dest = self._explorer_unique_path(arbol.carpeta / "New Folder")
+        parent_index = arbol.modelo.index(str(arbol.carpeta))
+        new_index = arbol.modelo.mkdir(parent_index, dest.name)
         if new_index.isValid():
-            self.explorer_tree.setCurrentIndex(new_index)
-            self.explorer_tree.edit(new_index)
+            arbol.setCurrentIndex(new_index)
+            arbol.edit(new_index)
 
     @staticmethod
     def _explorer_unique_path(path: Path) -> Path:
@@ -1759,46 +2070,6 @@ class MainWindow(QMainWindow):
             candidate = parent / f"{stem} ({n}){suffix}"
             if not candidate.exists():
                 return candidate
-
-    def set_explorer_root(self, folder_path):
-
-        if not folder_path:
-            self.explorer_project_dir = None
-            self.explorer_stack.setCurrentWidget(self.explorer_placeholder)
-            return
-        folder_path = Path(folder_path)
-        self.explorer_project_dir = folder_path
-        self.explorer_model.setRootPath(str(folder_path.parent))
-        folder_index = self.explorer_model.index(str(folder_path))
-        parent_index = self.explorer_model.parent(folder_index)
-        self.explorer_tree.setRootIndex(parent_index)
-        self._explorer_hide_siblings(parent_index)
-        self.explorer_tree.expand(folder_index)
-        self.explorer_tree.setCurrentIndex(folder_index)
-        self.explorer_stack.setCurrentWidget(self.explorer_tree)
-
-    def _explorer_hide_siblings(self, parent_index):
-       
-        if not self.explorer_project_dir:
-            return
-        for row in range(self.explorer_model.rowCount(parent_index)):
-            sibling = self.explorer_model.index(row, 0, parent_index)
-            is_project_dir = Path(self.explorer_model.filePath(sibling)) == self.explorer_project_dir
-            self.explorer_tree.setRowHidden(row, parent_index, not is_project_dir)
-
-    def _on_explorer_directory_loaded(self, path_str):
-        
-        if not self.explorer_project_dir or Path(path_str) != self.explorer_project_dir.parent:
-            return
-        self._explorer_hide_siblings(self.explorer_model.index(path_str))
-
-    def _on_explorer_rows_inserted(self, parent_index, first, last):
-       
-        if not self.explorer_project_dir:
-            return
-        if self.explorer_model.filePath(parent_index) != str(self.explorer_project_dir.parent):
-            return
-        self._explorer_hide_siblings(parent_index)
 
     def _on_app_about_to_quit(self):
         """Shut down plugins and their UI safely. Idempotent."""

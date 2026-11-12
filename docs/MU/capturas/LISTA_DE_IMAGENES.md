@@ -83,7 +83,7 @@ Sobre cada imagen hay que rotular los números de «Señalar», en el mismo orde
 - **Señalar:**
   1. la entrada File de la cinta
   2. la opción Open signal
-  3. la opción Open project
+  3. las opciones New project y Open project
   4. las opciones Save y Save as
   5. las opciones Close project y Exit
 

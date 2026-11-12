@@ -1488,11 +1488,13 @@ el proyecto en su ubicación actual (save), guardarlo en una nueva ubicación
   generar un nombre predeterminado a partir del nombre de la señal 
   (default\_project\_name). El ProjectService depende del FileIOService,
      del DataStore y del Kernel, y produce y consume objetos de tipo ProjectData.
+También crea un proyecto en blanco, sin señal (\textit{crear\_proyecto\_vacio}), y duplica
+un proyecto copiando su carpeta en una tarea cancelable (\textit{duplicar\_proyecto}).
 
 \subsubsection{Elementos de presentación}
 
 \paragraph{MainWindow}
-La MainWindow se encuentra parcialmente implementada y constituye el contenedor principal de la interfaz gráfica. Es responsable de la navegación entre los módulos funcionales, de la presentación de la pantalla de inicio y de las operaciones de proyecto disponibles en el menú Archivo. Mantiene referencias al Kernel y al ProjectService. La operación switch\_module presenta las extensiones correspondientes a la categoría seleccionada por el usuario, la operación (show\_home) presenta la pantalla de inicio y la operación (build\_home\_welcome) construye el panel de bienvenida. Esta última se encuentra pendiente de incorporar la detección de la primera ejecución de la aplicación, requerida por el requerimiento R10.
+La MainWindow se encuentra parcialmente implementada y constituye el contenedor principal de la interfaz gráfica. Es responsable de la navegación entre los módulos funcionales, de la presentación de la pantalla de inicio y de las operaciones de proyecto disponibles en el menú Archivo. Mantiene referencias al Kernel y al ProjectService. La operación switch\_module presenta las extensiones correspondientes a la categoría seleccionada por el usuario, la operación (show\_home) presenta la pantalla de inicio y la operación (build\_home\_welcome) construye el panel de bienvenida. Esta última se encuentra pendiente de incorporar la detección de la primera ejecución de la aplicación, requerida por el requerimiento R10. La ventana mantiene además la lista de proyectos abiertos en el \textit{Explorer}, con uno solo activo, y puede abrir un proyecto en otra ventana lanzando una nueva instancia de la aplicación.
 
 \paragraph{VTKContextMenu}
 El VTKContextMenu se encuentra implementado y provee el menú contextual asociado a las visualizaciones. Sus operaciones permiten presentar el menú en la posición indicada por el usuario (show\_menu) y solicitar la exportación de la visualización como imagen o como tabla (export\_image y export\_table). Este elemento delega la exportación en el ExportService y opera sobre los componentes visuales provistos por las extensiones.
