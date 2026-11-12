@@ -8,7 +8,10 @@ import vtk
 import numpy as np
 
 from core.utils.emf_writer import anotar_mapa
-from core.utils.rango_color import limites_color, leer_rango, mostrar_rango_automatico, guardar_rango, restaurar_rango
+from core.utils.mapa_zoom import MapaConZoom
+from core.utils.rango_color import (AVISO_RANGO_INVALIDO, guardar_rango, leer_rango, limites_color,
+                                    mapa_en_pantalla, mostrar_rango_automatico, rango_manual_invalido,
+                                    recolorear, restaurar_rango)
 from core.utils.heatmap_export import secciones_de_mapa
 from core.plugins.interfaces import IPlugin
 from core.plugins.meta import PluginMeta
@@ -427,11 +430,20 @@ class Wavelet_average_plugin(IPlugin):
     # === Rendering (VTK)
     # =====================================================
     def _redibujar_color(self, *_):
-        """R33: aplica el rango de color sin volver a calcular."""
+        """R33: aplica el rango de color sin volver a calcular y sin perder el zoom."""
         u = self._ultimo
         if not u:
             return
-        self.render_scalogram(u["tiempos"], u["frecuencias"], u["matriz"], u["titulo"], u["logaritmica"])
+        if rango_manual_invalido(self.ui):
+            self.alerts.warning(AVISO_RANGO_INVALIDO, "Color range")
+        chart = mapa_en_pantalla(self._context_view)
+        if chart is None:
+            self.render_scalogram(u["tiempos"], u["frecuencias"], u["matriz"], u["titulo"], u["logaritmica"])
+            return
+        vmin, vmax = limites_color(u["matriz"], *leer_rango(self.ui))
+        mostrar_rango_automatico(self.ui, vmin, vmax)
+        recolorear(chart, self._build_lut("viridis", vmin, vmax))
+        self._context_view.GetRenderWindow().Render()
 
     def render_scalogram(self, t, freqs, scalogram, title="Scalogram", log_scale=False):
         
@@ -479,13 +491,15 @@ class Wavelet_average_plugin(IPlugin):
         df_spacing = (f_end_range - f0_range) / n_freqs if n_freqs > 1 else 1.0
 
         # Configure vtkImageData
+        # La imagen completa no se dibuja: la leen las exportaciones (tabla y EMF).
+        # Lo que se pinta lo arma MapaConZoom con la zona visible.
+        Z = np.ascontiguousarray(Z, dtype=np.float32)
         img = vtk.vtkImageData()
         img.SetDimensions(n_times, n_freqs, 1)
         img.SetSpacing(dt, df_spacing, 1.0)
         img.SetOrigin(t0, f0_range, 0.0)
-
-        Z_plano = np.ascontiguousarray(Z, dtype=np.float32).ravel()
-        arr = numpy_support.numpy_to_vtk(Z_plano, deep=True, array_type=vtk.VTK_FLOAT)
+        # Sin copiar: el arreglo de VTK guarda una referencia a Z
+        arr = numpy_support.numpy_to_vtk(Z.ravel(), deep=False, array_type=vtk.VTK_FLOAT)
         img.GetPointData().SetScalars(arr)
         img.Modified()
 
@@ -496,7 +510,6 @@ class Wavelet_average_plugin(IPlugin):
 
         # Create chart
         chart = vtk.vtkChartHistogram2D()
-        chart.SetInputData(img, 0)
         chart.SetTransferFunction(lut)
         anotar_mapa(chart, img, lut)
 
@@ -509,6 +522,10 @@ class Wavelet_average_plugin(IPlugin):
         ax_left.SetBehavior(vtk.vtkAxis.FIXED)
         ax_left.SetLogScale(False)
         ax_left.SetRange(f0_range, f_end_range)
+
+        # Con los ejes ya fijados: se dibuja la zona visible y al acercar se
+        # recorta de nuevo, hasta mostrar cada celda calculada.
+        chart.mapa_zoom = MapaConZoom(chart, Z, t0, dt, f0_range, df_spacing)
 
         if log_scale:
             tick_values, tick_labels = self._get_log_ticks_coords(f0_range, f_end_range)

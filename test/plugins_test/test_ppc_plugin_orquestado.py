@@ -68,12 +68,35 @@ class _Senal:
 class _Spin:
     def __init__(self, valor=0):
         self._v = valor
+        self._decimales = 4
+        self.editingFinished = _Senal()
 
     def value(self):
         return self._v
 
     def setValue(self, v):
         self._v = v
+
+    def setDecimals(self, d):
+        self._decimales = d
+
+    def decimals(self):
+        return self._decimales
+
+    def blockSignals(self, _):
+        pass
+
+
+class _Casilla:
+    def __init__(self, marcada=False):
+        self._marcada = marcada
+        self.toggled = _Senal()
+
+    def isChecked(self):
+        return self._marcada
+
+    def setChecked(self, v):
+        self._marcada = bool(v)
 
 
 class _Combo:
@@ -135,6 +158,9 @@ class _UiFalsa:
         self.highFrequencySpinBox = _Spin(500.0)
         self.windowSpinBox = _Spin(0.05)
         self.cyclesSpinBox = _Spin(3.0)
+        self.colorRangeCheckBox = _Casilla()
+        self.colorMinSpinBox = _Spin(0.0)
+        self.colorMaxSpinBox = _Spin(1.0)
         self.clearButton = _Boton()
         self.createPpcButton = _Boton()
         self.plotArea = None

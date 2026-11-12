@@ -12,7 +12,10 @@ from core.plugins.interfaces import IPlugin
 from core.utils.vtk_context_menu import VTKContextMenu
 from core.utils.trial_labels import trials_used
 from core.utils.vtk_observers import observar
-from core.utils.submuestreo import agregar_linea
+from core.utils.submuestreo import MAX_PUNTOS_DETALLE, agregar_linea
+from core.utils.rango_color import (AVISO_RANGO_INVALIDO, guardar_rango, leer_rango, limites_color,
+                                    mostrar_rango_automatico, rango_manual_invalido, recolorear,
+                                    restaurar_rango)
 from core.filters.trials import canal_sin_senal, validar_alineacion
 from plugins.analysis.time_frequency.pac import compute as cp
 from plugins.analysis.time_frequency.pac.pac_plugin_ui import Ui_Pac
@@ -316,6 +319,9 @@ class Pac_plugin(IPlugin):
             self.ui.nextTrialButton.clicked.connect(partial(self._mover_trial, +1))
             self.ui.pacTypeComboBox.currentIndexChanged.connect(self._actualizar_selector_trial)
             self.ui.degreesCheckBox.toggled.connect(self._on_unidades_cambiadas)
+            for señal in (self.ui.colorRangeCheckBox.toggled, self.ui.colorMinSpinBox.editingFinished,
+                          self.ui.colorMaxSpinBox.editingFinished):
+                señal.connect(self._redibujar_color)
             self.ui.pacTypeComboBox.currentIndexChanged.connect(lambda _: self.publish_current_trial())
             self.ui.trialSpinBox.valueChanged.connect(lambda _: self.publish_current_trial())
         else:
@@ -370,6 +376,7 @@ class Pac_plugin(IPlugin):
         self.ui.ampLowFrequencySpinBox.setValue(d["a1"])
         self.ui.ampHighFrequencySpinBox.setValue(d["a2"])
         self.ui.degreesCheckBox.setChecked(True)
+        self.ui.colorRangeCheckBox.setChecked(False)
         self._actualizar_selector_trial()
 
     # =====================================================
@@ -789,6 +796,7 @@ class Pac_plugin(IPlugin):
         escena = self._context_view.GetScene()
         escena.ClearItems()
         self._charts = []
+        self._mapas = []
 
         self._mapa_chart = self._grafico_mapa(r, titulo)
         self._histograma_chart = self._grafico_histograma(r)
@@ -854,6 +862,7 @@ class Pac_plugin(IPlugin):
         escena = self._context_view.GetScene()
         escena.ClearItems()
         self._charts, self._altos, self._cuadrados = [], [], []
+        self._mapas = []
         self._charts_senal = []
         self._mapa_chart = self._histograma_chart = self._brujula = None
 
@@ -960,14 +969,16 @@ class Pac_plugin(IPlugin):
                                              self.MAX_TRAZAS_CICLOS).astype(int))
 
         for c in columnas:
-            linea = agregar_linea(chart, x, np.nan_to_num(pila[:, c]), "Muestra", f"c{c}")
+            linea = agregar_linea(chart, x, np.nan_to_num(pila[:, c]), "Muestra", f"c{c}",
+                                  n_max=MAX_PUNTOS_DETALLE)
             linea.SetWidth(0.6)
             linea.SetColor(150, 170, 200, 70)      # tenue: son el fondo
             linea.LegendVisibilityOff()
 
         if promedio is not None:
             prom = np.nan_to_num(np.asarray(promedio, dtype=np.float64))
-            linea = agregar_linea(chart, np.arange(prom.size, dtype=np.float64), prom, "Muestra", "Promedio")
+            linea = agregar_linea(chart, np.arange(prom.size, dtype=np.float64), prom, "Muestra", "Promedio",
+                                  n_max=MAX_PUNTOS_DETALLE)
             linea.SetWidth(2.5)
             linea.SetColor(*color_promedio, 255)
             linea.LegendVisibilityOff()
@@ -1013,24 +1024,14 @@ class Pac_plugin(IPlugin):
             np.ascontiguousarray(datos).ravel(), deep=True, array_type=vtk.VTK_FLOAT))
         img.Modified()
 
-        finitos = datos[np.isfinite(datos)]
-        vmin, vmax = (float(finitos.min()), float(finitos.max())) if finitos.size else (0.0, 1.0)
-        if vmax <= vmin:
-            vmax = vmin + 1.0
-
-        lut = vtk.vtkColorTransferFunction()
-        for fraccion, (rr, gg, bb) in zip(
-                (0.0, 0.125, 0.375, 0.625, 0.875, 1.0),
-                ((0.0, 0.0, 0.5), (0.0, 0.0, 1.0), (0.0, 1.0, 1.0),
-                 (1.0, 1.0, 0.0), (1.0, 0.0, 0.0), (0.5, 0.0, 0.0))):
-            lut.AddRGBPoint(vmin + fraccion * (vmax - vmin), rr, gg, bb)
-        lut.SetNanColor(*self.FONDO)
-        lut.SetNanOpacity(0.0)
+        vmin, vmax = limites_color(datos, *leer_rango(self.ui))
+        lut = self._tabla_jet(vmin, vmax, nan_transparente=True)
 
         chart = vtk.vtkChartHistogram2D()
         chart.SetInputData(img, 0)
         chart.SetTransferFunction(lut)
         anotar_mapa(chart, img, lut)
+        self._registrar_mapa(chart, datos, True, vmin, vmax)
         chart.SetTitle(titulo)
         eje_horizontal = chart.GetAxis(vtk.vtkAxis.BOTTOM)
         eje_horizontal.SetTitle(etiqueta_x)
@@ -1076,25 +1077,16 @@ class Pac_plugin(IPlugin):
             numpy_support.numpy_to_vtk(plano, deep=True, array_type=vtk.VTK_FLOAT))
         img.Modified()
 
-        finitos = mapa[np.isfinite(mapa)]
-        vmin, vmax = (float(finitos.min()), float(finitos.max())) if finitos.size else (0.0, 1.0)
-        if vmax <= vmin:
-            vmax = vmin + 1.0
-
-        # `jet`, el mismo mapa de colores que pasa f_Phase_PAC a f_ImageMatrix.
-        # Para un mapa z-scoreado un divergente seria mejor practica —el blanco
-        # marcaria el cero—, pero el criterio es parecerse a la referencia.
-        lut = vtk.vtkColorTransferFunction()
-        for fraccion, (rr, gg, bb) in zip(
-                (0.0, 0.125, 0.375, 0.625, 0.875, 1.0),
-                ((0.0, 0.0, 0.5), (0.0, 0.0, 1.0), (0.0, 1.0, 1.0),
-                 (1.0, 1.0, 0.0), (1.0, 0.0, 0.0), (0.5, 0.0, 0.0))):
-            lut.AddRGBPoint(vmin + fraccion * (vmax - vmin), rr, gg, bb)
+        # R33: sin rango manual, el mínimo y el máximo del mapa, como el `[]` que
+        # f_Phase_PAC pasa a f_ImageMatrix
+        vmin, vmax = limites_color(mapa, *leer_rango(self.ui))
+        lut = self._tabla_jet(vmin, vmax)
 
         chart = vtk.vtkChartHistogram2D()
         chart.SetInputData(img, 0)
         chart.SetTransferFunction(lut)
         anotar_mapa(chart, img, lut)
+        self._registrar_mapa(chart, mapa, False, vmin, vmax)
         chart.SetTitle(f"{titulo} — mapa fase/frecuencia")
         chart.GetAxis(vtk.vtkAxis.BOTTOM).SetTitle(f"Fase ({self._unidad_de_fase()})")
         chart.GetAxis(vtk.vtkAxis.LEFT).SetTitle("Frecuencia (Hz)")
@@ -1108,6 +1100,52 @@ class Pac_plugin(IPlugin):
         eje_y.SetBehavior(vtk.vtkAxis.FIXED)
         eje_y.SetRange(f_min, f_max)
         return chart
+
+    @staticmethod
+    def _tabla_jet(vmin, vmax, nan_transparente=False):
+        """`jet`, el mapa de colores que pasa f_Phase_PAC a f_ImageMatrix.
+
+        Para un mapa z-scoreado un divergente sería mejor práctica —el blanco
+        marcaría el cero—, pero el criterio es parecerse a la referencia.
+        """
+        lut = vtk.vtkColorTransferFunction()
+        for fraccion, (rr, gg, bb) in zip(
+                (0.0, 0.125, 0.375, 0.625, 0.875, 1.0),
+                ((0.0, 0.0, 0.5), (0.0, 0.0, 1.0), (0.0, 1.0, 1.0),
+                 (1.0, 1.0, 0.0), (1.0, 0.0, 0.0), (0.5, 0.0, 0.0))):
+            lut.AddRGBPoint(vmin + fraccion * (vmax - vmin), rr, gg, bb)
+        if nan_transparente:
+            lut.SetNanColor(*Pac_plugin.FONDO)
+            lut.SetNanOpacity(0.0)
+        return lut
+
+    def _registrar_mapa(self, chart, datos, nan_transparente, vmin, vmax):
+        """Guarda el mapa para recolorearlo sin recalcular. El primero llena los cuadros del rango."""
+        mapas = getattr(self, "_mapas", None)
+        if mapas is None:
+            mapas = self._mapas = []
+        if not mapas:
+            mostrar_rango_automatico(self.ui, vmin, vmax)
+        mapas.append((chart, datos, nan_transparente))
+
+    def _redibujar_color(self, *_):
+        """R33: aplica el rango de color a los mapas sin volver a calcular y sin perder el zoom.
+
+        Con el rango manual todos los mapas usan ese. Sin él, cada uno el suyo:
+        en PAC Psel el mapa fase/frecuencia y el tiempo/frecuencia van los dos en
+        z-score, pero con extremos distintos.
+        """
+        if rango_manual_invalido(self.ui):
+            self.alerts.warning(AVISO_RANGO_INVALIDO, "Color range")
+        mapas = getattr(self, "_mapas", None) or []
+        if not mapas or self._context_view is None:
+            return
+        for k, (chart, datos, nan_transparente) in enumerate(mapas):
+            vmin, vmax = limites_color(datos, *leer_rango(self.ui))
+            if k == 0:
+                mostrar_rango_automatico(self.ui, vmin, vmax)
+            recolorear(chart, self._tabla_jet(vmin, vmax, nan_transparente))
+        self._context_view.GetRenderWindow().Render()
 
     def _en_grados(self):
         """Si la casilla de unidades está marcada. Por omisión, sí."""
@@ -1218,8 +1256,10 @@ class Pac_plugin(IPlugin):
     def _grafico_senal(self, tiempo, serie, etiqueta, unidad="Amplitud"):
         n = min(len(tiempo), len(serie))
         chart = vtk.vtkChartXY()
+        # Con todas las muestras, como Trials: al acercar debe verse la señal
+        # con su definición completa (con 2000 puntos se perdía detalle).
         linea = agregar_linea(chart, np.asarray(tiempo[:n]), np.nan_to_num(np.asarray(serie[:n])),
-                              "Tiempo", etiqueta)
+                              "Tiempo", etiqueta, n_max=MAX_PUNTOS_DETALLE)
         linea.SetWidth(1.0)
         linea.SetColor(40, 90, 190, 255)
         linea.LegendVisibilityOff()
@@ -1365,6 +1405,7 @@ class Pac_plugin(IPlugin):
             "trials_used": self._trials_used,
             "en_grados": self.ui.degreesCheckBox.isChecked(),
             "canal_amplitud": self.ui.ampChannelComboBox.currentText(),
+            **guardar_rango(self.ui),
         }
 
     def apply_analysis_params(self, params: dict):
@@ -1378,6 +1419,7 @@ class Pac_plugin(IPlugin):
         self.ui.ampLowFrequencySpinBox.setValue(params.get("a1", d["a1"]))
         self.ui.ampHighFrequencySpinBox.setValue(params.get("a2", d["a2"]))
         self.ui.degreesCheckBox.setChecked(bool(params.get("en_grados", True)))
+        restaurar_rango(self.ui, params)
         self._actualizar_selector_trial()   # esto repuebla el selector de canal
         idx_canal = self.ui.ampChannelComboBox.findText(params.get("canal_amplitud", ""))
         if idx_canal >= 0:
