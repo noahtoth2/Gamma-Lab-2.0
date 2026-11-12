@@ -20,13 +20,14 @@ def wavelet_individual(ctx, sig, fs_calculado, fs, fmin, fmax, cycles,
     sig = np.nan_to_num(np.asarray(sig).ravel(), nan=0.0, posinf=0.0, neginf=0.0)
 
     ctx.progress(0, "Calculando la transformada wavelet")
-    scalogram, times, freqs = compute_wavelet(
-        sig, fs_calculado, fs, fmin, fmax, cycles, escala_log=scaled, t0=t0)
+    resultado = compute_wavelet(
+        sig, fs_calculado, fs, fmin, fmax, cycles, escala_log=scaled, t0=t0, ctx=ctx)
 
-    # La CWT entra de un salto en el codigo C de PyWavelets y no vuelve hasta
-    # terminar, asi que la cancelacion solo puede atenderse a los extremos.
-    if ctx.cancelled:
+    # La CWT va por bloques de frecuencias: la cancelación se atiende entre
+    # bloques, y compute_wavelet devuelve None si llegó a cancelarse.
+    if resultado is None or ctx.cancelled:
         return None
+    scalogram, times, freqs = resultado
 
     if normalize:
         ctx.progress(90, "Normalizando")

@@ -15,6 +15,8 @@ y no deben cambiar:
 | `highFrequencySpinBox` | `QDoubleSpinBox` | `F max` |
 | `windowSpinBox` | `QDoubleSpinBox` | `wd`, la ventana **mínima** en segundos |
 | `cyclesSpinBox` | `QDoubleSpinBox` | ciclos de la gaussiana (`ps_StDevCycles`) |
+| `colorRangeCheckBox` | `QCheckBox` | fija a mano el rango de color del mapa (R33) |
+| `colorMinSpinBox`, `colorMaxSpinBox` | `QDoubleSpinBox` | mínimo y máximo de ese rango |
 
 Los nombres repiten los de PAC donde el campo es el mismo
 (`sampleDensitySpinBox`, `lowFrequencySpinBox`, `highFrequencySpinBox`,
@@ -30,6 +32,8 @@ La etiqueta tiene que decirlo o se lee al revés.
 import os
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+
+from core.utils.rango_color import agregar_rango_color
 
 
 class Ui_Ppc(object):
@@ -110,6 +114,16 @@ class Ui_Ppc(object):
         self.cyclesSpinBox = self._decimal(
             "Gaussian cycles", "Cycles of the Gabor wavelet. More cycles give a sharper frequency "
                                "and a blurrier time resolution.")
+
+        # --- El color del mapa (R33), el mismo control de Wavelet
+        self.colorLabel = self._etiqueta("Map color")
+        self.colorLayout = QtWidgets.QVBoxLayout()
+        self.colorRangeCheckBox, self.colorMinSpinBox, self.colorMaxSpinBox = agregar_rango_color(
+            self, self.layoutWidget, self.colorLayout)
+        self.colorRangeCheckBox.setToolTip(
+            "Fix the minimum and maximum of the color scale. By default it goes from 0 to 0.5, "
+            "as in MATLAB. Values outside the range take the end colors.")
+        self.paramsLayout.addLayout(self.colorLayout)
 
         self.paramsLayout.addStretch(1)
         self.retranslateUi(PPC)

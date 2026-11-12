@@ -23,6 +23,9 @@ from vtkmodules.util import numpy_support
 from core.filters.trials import canal_sin_senal, cut_trials_single_channel
 from core.plugins.interfaces import IPlugin
 from core.utils.emf_writer import anotar_mapa
+from core.utils.rango_color import (AVISO_RANGO_INVALIDO, guardar_rango, leer_rango, limites_color,
+                                    mostrar_rango_automatico, rango_manual_invalido, recolorear,
+                                    restaurar_rango)
 from core.utils.trial_labels import trials_used
 from core.utils.vtk_context_menu import VTKContextMenu
 from plugins.analysis.time_frequency.ppc import compute as cp
@@ -90,6 +93,9 @@ class Ppc_plugin(IPlugin):
             self._valores_por_defecto()
             self.ui.clearButton.clicked.connect(self._valores_por_defecto)
             self.ui.createPpcButton.clicked.connect(self.on_create_ppc)
+            for señal in (self.ui.colorRangeCheckBox.toggled, self.ui.colorMinSpinBox.editingFinished,
+                          self.ui.colorMaxSpinBox.editingFinished):
+                señal.connect(self._redibujar_color)
             self._llenar_canales()
         else:
             self.widget.setParent(parent)
@@ -133,6 +139,7 @@ class Ppc_plugin(IPlugin):
         self.ui.highFrequencySpinBox.setValue(self.DEFECTOS["f_max_hz"])
         self.ui.windowSpinBox.setValue(self.DEFECTOS["ventana_min_s"])
         self.ui.cyclesSpinBox.setValue(self.DEFECTOS["ciclos"])
+        self.ui.colorRangeCheckBox.setChecked(False)
 
     def _canales_disponibles(self):
         """Todos los canales de la señal activa, en el orden del archivo.
@@ -477,15 +484,11 @@ class Ppc_plugin(IPlugin):
             datos.ravel(), deep=True, array_type=vtk.VTK_FLOAT))
         img.Modified()
 
-        vmin, vmax = 0.0, self.LIMITE_COLOR
-        lut = vtk.vtkColorTransferFunction()
-        for fraccion, (rr, gg, bb) in zip(
-                (0.0, 0.125, 0.375, 0.625, 0.875, 1.0),
-                ((0.0, 0.0, 0.5), (0.0, 0.0, 1.0), (0.0, 1.0, 1.0),
-                 (1.0, 1.0, 0.0), (1.0, 0.0, 0.0), (0.5, 0.0, 0.0))):
-            lut.AddRGBPoint(vmin + fraccion * (vmax - vmin), rr, gg, bb)
-        lut.SetNanColor(*self.FONDO)
-        lut.SetNanOpacity(0.0)
+        # R33: sin rango manual, 0-0,5 como el `[0 0.5]` de f_phase_coherence
+        self._datos_mapa = datos
+        vmin, vmax = limites_color(datos, *leer_rango(self.ui), por_defecto=(0.0, self.LIMITE_COLOR))
+        mostrar_rango_automatico(self.ui, vmin, vmax)
+        lut = self._tabla_de_color(vmin, vmax)
 
         chart = vtk.vtkChartHistogram2D()
         chart.SetInputData(img, 0)
@@ -514,6 +517,31 @@ class Ppc_plugin(IPlugin):
         chart.SetAutoSize(True)
         escena.AddItem(chart)
         self._chart = chart
+        self._context_view.GetRenderWindow().Render()
+
+    def _tabla_de_color(self, vmin, vmax):
+        """`jet` de vmin a vmax; las celdas sin medida (NaN) van transparentes."""
+        lut = vtk.vtkColorTransferFunction()
+        for fraccion, (rr, gg, bb) in zip(
+                (0.0, 0.125, 0.375, 0.625, 0.875, 1.0),
+                ((0.0, 0.0, 0.5), (0.0, 0.0, 1.0), (0.0, 1.0, 1.0),
+                 (1.0, 1.0, 0.0), (1.0, 0.0, 0.0), (0.5, 0.0, 0.0))):
+            lut.AddRGBPoint(vmin + fraccion * (vmax - vmin), rr, gg, bb)
+        lut.SetNanColor(*self.FONDO)
+        lut.SetNanOpacity(0.0)
+        return lut
+
+    def _redibujar_color(self, *_):
+        """R33: aplica el rango de color sin volver a calcular y sin perder el zoom."""
+        if rango_manual_invalido(self.ui):
+            self.alerts.warning(AVISO_RANGO_INVALIDO, "Color range")
+        datos = getattr(self, "_datos_mapa", None)
+        chart = getattr(self, "_chart", None)
+        if datos is None or chart is None or self._context_view is None:
+            return
+        vmin, vmax = limites_color(datos, *leer_rango(self.ui), por_defecto=(0.0, self.LIMITE_COLOR))
+        mostrar_rango_automatico(self.ui, vmin, vmax)
+        recolorear(chart, self._tabla_de_color(vmin, vmax))
         self._context_view.GetRenderWindow().Render()
 
     # =====================================================
@@ -579,6 +607,7 @@ class Ppc_plugin(IPlugin):
             "f_max": self.ui.highFrequencySpinBox.value(),
             "window": self.ui.windowSpinBox.value(),
             "cycles": self.ui.cyclesSpinBox.value(),
+            **guardar_rango(self.ui),
         }
 
     def apply_analysis_params(self, params: dict):
@@ -594,5 +623,6 @@ class Ppc_plugin(IPlugin):
         self.ui.highFrequencySpinBox.setValue(params.get("f_max", d["f_max_hz"]))
         self.ui.windowSpinBox.setValue(params.get("window", d["ventana_min_s"]))
         self.ui.cyclesSpinBox.setValue(params.get("cycles", d["ciclos"]))
+        restaurar_rango(self.ui, params)
         self._restaurando = True
         self.on_create_ppc()

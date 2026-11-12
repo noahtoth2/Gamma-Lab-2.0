@@ -4,6 +4,7 @@ from PyQt5.QtCore import Qt
 from vtk import vtkChartXY, vtkChart, vtkAxis
 import os
 
+from core.utils.ajuste_vertical import AjusteVertical, es_grafico_de_lineas
 from core.utils.cursor_readout import CursorReadout
 from core.utils.vtk_observers import observar, _estado
 
@@ -69,12 +70,13 @@ class VTKContextMenu:
         except Exception as e:
             self._log("CursorReadout attach error:", e)
 
-        # Ensure zoom with mouse wheel
+        # Zoom con la rueda: en las señales, solo el tiempo (ver _ejes_del_zoom)
         for ch in self._get_charts():
             if ch:
                 ch.SetZoomWithMouseWheel(True)
-                ch.SetAxisZoom(0, True)
-                ch.SetAxisZoom(1, True)
+                x, y = self._ejes_del_zoom(ch)
+                ch.SetAxisZoom(EJE_X, x)
+                ch.SetAxisZoom(EJE_Y, y)
 
         # Context menu
         self.vtk_widget.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -207,15 +209,72 @@ class VTKContextMenu:
                 if not ch:
                     continue
                 ch.SetZoomWithMouseWheel(True)
-                if modifiers == Qt.ControlModifier:
-                    ch.SetAxisZoom(EJE_X, True);  ch.SetAxisZoom(EJE_Y, False)
-                elif modifiers == Qt.ShiftModifier:
-                    ch.SetAxisZoom(EJE_X, False); ch.SetAxisZoom(EJE_Y, True)
-                else:
-                    ch.SetAxisZoom(EJE_X, True);  ch.SetAxisZoom(EJE_Y, True)
+                x, y = self._ejes_del_zoom(ch, modifiers)
+                ch.SetAxisZoom(EJE_X, x)
+                ch.SetAxisZoom(EJE_Y, y)
+                self._ajuste_de(ch, x and not y)
             old_wheel_event(event)
+            # Sobre el área de dibujo de un gráfico la rueda es zoom: se acepta el
+            # evento. Si queda sin aceptar, Qt se lo pasa al contenedor, y PAC (que
+            # apila sus paneles en un QScrollArea) bajaba la página mientras hacía
+            # zoom: el gráfico se iba de la vista. Fuera de los gráficos —los
+            # huecos entre paneles, la brújula— la rueda sigue moviendo la página.
+            if self._grafico_bajo(event) is not None:
+                event.accept()
+            else:
+                event.ignore()
 
         self.vtk_widget.wheelEvent = custom_wheel_event
+
+    def _grafico_bajo(self, event):
+        """El gráfico cuya área de dibujo está bajo el ratón en `event`, o None."""
+        try:
+            pos = event.position() if hasattr(event, "position") else event.pos()
+            ratio = getattr(type(self.vtk_widget), "_getPixelRatio", None)
+            escala = float(ratio()) if callable(ratio) else 1.0
+            x = pos.x() * escala
+            y = (self.vtk_widget.height() - pos.y() - 1) * escala      # VTK cuenta desde abajo
+        except Exception:
+            return None
+        for ch in self._get_charts():
+            try:
+                (x0, y0), (x1, y1) = ch.GetPoint1(), ch.GetPoint2()
+            except Exception:
+                continue
+            if x0 <= x <= x1 and y0 <= y <= y1:
+                return ch
+        return None
+
+    def _ejes_del_zoom(self, chart, modificadores=None):
+        """(acerca X, acerca Y) para la rueda sobre `chart`.
+
+        Ctrl acerca solo X y Shift solo Y. Sin teclas manda el modo elegido en
+        el menú; si no se eligió ninguno, en las gráficas de líneas se acerca
+        solo el tiempo y el eje Y se ajusta a lo visible (`AjusteVertical`). Antes
+        se acercaban los dos ejes: a los 15 pasos la ventana vertical era 14
+        veces más chica que la señal y solo se veían rayas. En los mapas de color
+        el eje Y es frecuencia, y ahí se siguen acercando los dos.
+
+        Antes, además, cada giro de la rueda volvía a poner X+Y y la opción
+        «Horizontal (X)» del menú duraba hasta el siguiente movimiento.
+        """
+        if modificadores == Qt.ControlModifier:
+            return True, False
+        if modificadores == Qt.ShiftModifier:
+            return False, True
+        modo = getattr(self, "_modo_zoom", None) or ("x" if es_grafico_de_lineas(chart) else "xy")
+        return {"x": (True, False), "y": (False, True), "xy": (True, True)}[modo]
+
+    @staticmethod
+    def _ajuste_de(chart, activo):
+        """Enciende o apaga el ajuste del eje Y a lo visible (solo en gráficas de líneas)."""
+        if not es_grafico_de_lineas(chart):
+            return
+        ajuste = AjusteVertical.de(chart)
+        if activo:
+            ajuste.activar()
+        else:
+            ajuste.activo = False
 
     # ---------- menu ----------
     def add_action(self, text, callback):
@@ -305,6 +364,8 @@ class VTKContextMenu:
 
     # ---------- zoom ----------
     def set_zoom_mode(self, mode):
+        """Modo de la rueda elegido en el menú; dura hasta que el plugin rehace el menú."""
+        self._modo_zoom = mode
         for ch in self._get_charts():
             if not ch:
                 continue
@@ -314,9 +375,14 @@ class VTKContextMenu:
                 ch.SetAxisZoom(EJE_X, False); ch.SetAxisZoom(EJE_Y, True)
             elif mode == "xy":
                 ch.SetAxisZoom(EJE_X, True);  ch.SetAxisZoom(EJE_Y, True)
+            # «Horizontal (X)»: el eje Y sigue a los datos. Con Y o X+Y lo maneja el usuario.
+            self._ajuste_de(ch, mode == "x")
 
     def reset_zoom(self):
         for ch in self._get_charts():
+            ajuste = getattr(ch, "_ajuste_vertical", None)
+            if ajuste is not None:
+                ajuste.restaurar()
             try:
                 ch.RecalculateBounds()
             except AttributeError:
@@ -327,12 +393,22 @@ class VTKContextMenu:
             pass
 
     def zoom_by_factor(self, factor: float):
-        """Scale the visible X/Y range of every chart around its own center."""
+        """Escala alrededor del centro los ejes que acerca la rueda (botones + y − de la cinta).
+
+        En las gráficas de líneas es solo el tiempo, y el eje Y se ajusta a lo
+        visible. Ahí el eje X no se deja en FIXED: así «Reset view» lo puede
+        devolver al rango completo.
+        """
         for ch in self._get_charts():
             if not ch:
                 continue
             try:
-                for axis_id in (vtkAxis.BOTTOM, vtkAxis.LEFT):
+                x, y = self._ejes_del_zoom(ch)
+                lineas = es_grafico_de_lineas(ch)
+                self._ajuste_de(ch, x and not y)
+                for axis_id, usar in ((vtkAxis.BOTTOM, x), (vtkAxis.LEFT, y)):
+                    if not usar:
+                        continue
                     axis = ch.GetAxis(axis_id)
                     rng = [0.0, 0.0]
                     axis.GetRange(rng)
@@ -342,7 +418,8 @@ class VTKContextMenu:
                     center = (lo + hi) / 2.0
                     half = (hi - lo) / 2.0 * factor
                     axis.SetRange(center - half, center + half)
-                    axis.SetBehavior(vtkAxis.FIXED)
+                    if not (lineas and axis_id == vtkAxis.BOTTOM):
+                        axis.SetBehavior(vtkAxis.FIXED)
             except Exception:
                 pass
         try:

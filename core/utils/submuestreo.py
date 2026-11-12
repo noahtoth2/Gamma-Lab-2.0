@@ -7,12 +7,24 @@ exportación y las mediciones (`tabla_de`).
 
 Al acercar el gráfico, la serie se vuelve a reducir sobre el rango visible, así
 que el zoom recupera el detalle hasta la resolución original.
+
+Trials y los paneles de señal de PAC usan `MAX_PUNTOS_DETALLE`: ahí el
+investigador tiene que ver todas las muestras del trial, haga zoom o no.
 """
 import numpy as np
 import vtk
 from vtkmodules.util import numpy_support
 
 MAX_PUNTOS = 2000
+
+# Hasta este tamaño la serie se dibuja completa, sin reducir. Un trial de 4,5 s
+# a 10 kHz son 45.454 puntos: redibujarlo al hacer zoom cuesta unos 16 ms, frente
+# a 13 ms con 2000 (medido con VTK 9.5, ventana de 1600 x 500). La señal entera de
+# un registro (3,6 millones de puntos) tardaría más de un segundo por paso, por
+# eso Open Signal sigue con `MAX_PUNTOS`. Solo una serie más larga que esto —PAC
+# Psel con muchos trials concatenados a alta densidad— se reduce, y el zoom
+# recupera todas las muestras en cuanto la ventana tiene menos de este tope.
+MAX_PUNTOS_DETALLE = 250_000
 
 # dirección del plot -> (x, y, nombre_x, nombre_y); se limpia cuando el plot se destruye
 _COMPLETAS = {}
@@ -25,23 +37,26 @@ def indices_reducidos(y, n_max=MAX_PUNTOS, con_nan=True):
         return np.arange(n)
     y = np.asarray(y, dtype=np.float64)
     tramos = max(1, n_max // 2)
-    k = n // tramos
-    util = tramos * k
-    bloques = y[:util].reshape(tramos, k)
-    base = np.arange(tramos, dtype=np.int64) * k
-    # los NaN no ganan ni el mínimo ni el máximo
-    if con_nan:
-        imin = base + np.argmin(np.where(np.isnan(bloques), np.inf, bloques), axis=1)
-        imax = base + np.argmax(np.where(np.isnan(bloques), -np.inf, bloques), axis=1)
-    else:
-        imin = base + np.argmin(bloques, axis=1)
-        imax = base + np.argmax(bloques, axis=1)
-    extra = [0, n - 1]
-    if util < n:
-        cola = y[util:]
-        if con_nan and not np.isnan(cola).all() or not con_nan and cola.size:
-            extra += [util + int(np.nanargmin(cola)), util + int(np.nanargmax(cola))]
-    return np.unique(np.concatenate([imin, imax, np.asarray(extra, dtype=np.int64)]))
+    # Los tramos cubren toda la serie: los `r` primeros llevan una muestra más.
+    # Antes todos medían n // tramos y lo que sobraba al final quedaba en solo
+    # 2 puntos, dibujado como una recta: con 2999 muestras visibles era un
+    # tercio de la ventana (99 ms a 10 kHz).
+    k, r = divmod(n, tramos)
+    corte = r * (k + 1)
+    partes = [np.asarray([0, n - 1], dtype=np.int64)]
+    for inicio, fin, largo in ((0, corte, k + 1), (corte, n, k)):
+        if fin <= inicio:
+            continue
+        bloques = y[inicio:fin].reshape(-1, largo)
+        base = inicio + np.arange(bloques.shape[0], dtype=np.int64) * largo
+        # los NaN no ganan ni el mínimo ni el máximo
+        if con_nan:
+            partes.append(base + np.argmin(np.where(np.isnan(bloques), np.inf, bloques), axis=1))
+            partes.append(base + np.argmax(np.where(np.isnan(bloques), -np.inf, bloques), axis=1))
+        else:
+            partes.append(base + np.argmin(bloques, axis=1))
+            partes.append(base + np.argmax(bloques, axis=1))
+    return np.unique(np.concatenate(partes))
 
 
 def _a_vtk(valores, nombre):
@@ -160,6 +175,33 @@ def tabla_de(plot):
     tabla.AddColumn(_a_vtk(y, nombre_y))
     tabla.SetNumberOfRows(len(x))
     return tabla
+
+
+def datos_completos(plot):
+    """(x, y) completos del plot como arreglos de numpy, sin copiar; None si no son numéricos.
+
+    Para una serie reducida son los datos guardados, no los dibujados. Para las
+    demás, las columnas de la tabla que el plot usa como X e Y.
+    """
+    completa = _COMPLETAS.get(getattr(plot, "__this__", None))
+    if completa is not None:
+        return completa[0], completa[1]
+    try:
+        tabla = plot.GetInput()
+        if tabla is None:
+            return None
+        mapper = plot.GetData()
+        columnas = []
+        for i in (0, 1):
+            nombre = mapper.GetInputArrayInformation(i).Get(vtk.vtkDataObject.FIELD_NAME())
+            col = tabla.GetColumnByName(nombre) if nombre else None
+            columnas.append(col if col is not None else tabla.GetColumn(i))
+        x, y = (numpy_support.vtk_to_numpy(c) for c in columnas)
+        if x.shape != y.shape or not np.issubdtype(y.dtype, np.number):
+            return None
+        return x, y
+    except Exception:
+        return None
 
 
 def agregar_columna(chart, tabla, columna, n_max=MAX_PUNTOS):

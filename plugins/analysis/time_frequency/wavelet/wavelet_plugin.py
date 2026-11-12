@@ -8,7 +8,10 @@ import vtk
 import numpy as np
 
 from core.utils.emf_writer import anotar_mapa
-from core.utils.rango_color import limites_color, leer_rango, mostrar_rango_automatico, guardar_rango, restaurar_rango
+from core.utils.mapa_zoom import MapaConZoom
+from core.utils.rango_color import (AVISO_RANGO_INVALIDO, guardar_rango, leer_rango, limites_color,
+                                    mapa_en_pantalla, mostrar_rango_automatico, rango_manual_invalido,
+                                    recolorear, restaurar_rango)
 from core.utils.heatmap_export import secciones_de_mapa
 from core.plugins.interfaces import IPlugin
 from core.plugins.meta import PluginMeta
@@ -36,14 +39,46 @@ class Wavelet_plugin(IPlugin):
         self._handle = None
         self._calculando = False
         self.params = {
-            "sample_density_range": (1, 10000),   # con 0 no hay a qué submuestrear
+            # Con 0 no hay a qué submuestrear. El tope cubre registros de hasta 200 kHz.
+            "sample_density_range": (1, 200_000),
             "frequencies_range": (0, 10000),
-            "sample_density_value": 1000,
+            # None: la tasa del archivo, para que al acercar se vea con definición
+            # completa. Sin señal todavía se muestra DENSIDAD_SIN_SENAL.
+            "sample_density_value": None,
             "high_frequency_value": 500,
             "low_frequency_value": 1,
             "cycles_range": (1, 20),
             "cycles_value": 2
         }
+        # Mientras el usuario no cambie la densidad, se usa la del archivo de los
+        # trials que se van a analizar (puede cambiar de una señal a otra).
+        self._densidad_automatica = True
+        self._poniendo_densidad = False
+    # end def
+
+    DENSIDAD_SIN_SENAL = 1000
+
+    def _densidad_por_defecto(self):
+        """La tasa del archivo de los trials activos, o DENSIDAD_SIN_SENAL si aún no hay."""
+        _, td = self._active_trials_quiet()
+        t = getattr(td, "time_rel", None)
+        if t is None or len(t) < 2 or not (t[1] - t[0]) > 0:
+            return self.DENSIDAD_SIN_SENAL
+        lo, hi = self.params["sample_density_range"]
+        return int(min(max(round(1.0 / (t[1] - t[0])), lo), hi))
+
+    def _poner_densidad(self, valor):
+        """Pone la densidad sin contarla como un cambio del usuario."""
+        self._poniendo_densidad = True
+        try:
+            self.ui.sampleDensitySpinBox.setValue(int(valor))
+        finally:
+            self._poniendo_densidad = False
+        self._densidad_automatica = True
+
+    def _al_cambiar_densidad(self, *_):
+        if not self._poniendo_densidad:
+            self._densidad_automatica = False
     # end def
 
     # =====================================================
@@ -92,7 +127,8 @@ class Wavelet_plugin(IPlugin):
     # =====================================================
     def init_controls(self):
         self.ui.sampleDensitySpinBox.setRange(*self.params["sample_density_range"])
-        self.ui.sampleDensitySpinBox.setValue(self.params["sample_density_value"])
+        self._poner_densidad(self._densidad_por_defecto())
+        self.ui.sampleDensitySpinBox.valueChanged.connect(self._al_cambiar_densidad)
         self.ui.highFrequencySpinBox.setRange(*self.params["frequencies_range"])
         self.ui.highFrequencySpinBox.setValue(self.params["high_frequency_value"])
         self.ui.lowFrequencySpinBox.setRange(*self.params["frequencies_range"])
@@ -123,7 +159,7 @@ class Wavelet_plugin(IPlugin):
         if self._calculando:
             self.alerts.warning("Hay un cálculo de wavelet en curso; espera a que termine.")
             return
-        self.ui.sampleDensitySpinBox.setValue(self.params["sample_density_value"])
+        self._poner_densidad(self._densidad_por_defecto())
         self.ui.lowFrequencySpinBox.setValue(self.params["low_frequency_value"])
         self.ui.highFrequencySpinBox.setValue(self.params["high_frequency_value"])
         self.ui.cyclesSpinBox.setValue(self.params["cycles_value"])
@@ -212,6 +248,10 @@ class Wavelet_plugin(IPlugin):
         sig = np.nan_to_num(np.asarray(sig).flatten(), nan=0.0, posinf=0.0, neginf=0.0)
         fs_calculado = round(1.0 / (t[1] - t[0]), 3)
 
+        # Si el usuario no eligió otra, la densidad es la del archivo de estos trials
+        if self._densidad_automatica:
+            lo, hi = self.params["sample_density_range"]
+            self._poner_densidad(min(max(round(fs_calculado), lo), hi))
         fs = self.ui.sampleDensitySpinBox.value()
         fmin = self.ui.lowFrequencySpinBox.value()
         fmax = self.ui.highFrequencySpinBox.value()
@@ -240,7 +280,9 @@ class Wavelet_plugin(IPlugin):
             self.alerts.warning(f"La frecuencia alta ({fmax:g} Hz) no puede superar {fs_efectiva / 2:g} Hz, "
                               f"la mitad de la densidad efectiva ({fs_efectiva:g} Hz).")
             return
-        if abs(fs_efectiva - fs) > 1e-9:
+        # Relativo: la densidad es entera y la del archivo no (10.101 frente a
+        # 10.101,01 Hz); esa centésima no corre nada y no merece un aviso.
+        if abs(fs_efectiva - fs) > 1e-4 * fs:
             self.alerts.info(f"La densidad de {fs:g} Hz no divide a los {fs_calculado:g} Hz del archivo; "
                              f"se usará {fs_efectiva:.1f} Hz, la más cercana alcanzable.")
 
@@ -432,11 +474,20 @@ class Wavelet_plugin(IPlugin):
     # === Render 2D scalogram in VTK
     # =====================================================
     def _redibujar_color(self, *_):
-        """R33: aplica el rango de color sin volver a calcular."""
+        """R33: aplica el rango de color sin volver a calcular y sin perder el zoom."""
         u = self._ultimo
         if not u:
             return
-        self.render_scalogram(u["tiempos"], u["frecuencias"], u["matriz"], u["titulo"], u["logaritmica"])
+        if rango_manual_invalido(self.ui):
+            self.alerts.warning(AVISO_RANGO_INVALIDO, "Color range")
+        chart = mapa_en_pantalla(self._context_view)
+        if chart is None:
+            self.render_scalogram(u["tiempos"], u["frecuencias"], u["matriz"], u["titulo"], u["logaritmica"])
+            return
+        vmin, vmax = limites_color(u["matriz"], *leer_rango(self.ui))
+        mostrar_rango_automatico(self.ui, vmin, vmax)
+        recolorear(chart, self._build_lut("viridis", vmin, vmax))
+        self._context_view.GetRenderWindow().Render()
 
     def render_scalogram(self, t, freqs, scalogram, title="Scalogram", log_scale=False):
         if not self.vtk_widget:
@@ -469,13 +520,15 @@ class Wavelet_plugin(IPlugin):
         df_spacing = (f_end_range - f0_range) / n_freqs if n_freqs > 1 else 1.0
 
         # --- Configure vtkImageData ---
+        # La imagen completa no se dibuja: la leen las exportaciones (tabla y EMF).
+        # Lo que se pinta lo arma MapaConZoom con la zona visible.
+        Z = np.ascontiguousarray(Z, dtype=np.float32)
         img = vtk.vtkImageData()
         img.SetDimensions(n_times, n_freqs, 1)
         img.SetSpacing(dt, df_spacing, 1.0)
         img.SetOrigin(t0, f0_range, 0.0)
-        
-        Z_plano = np.ascontiguousarray(Z, dtype=np.float32).ravel()
-        arr = numpy_support.numpy_to_vtk(Z_plano, deep=True, array_type=vtk.VTK_FLOAT)
+        # Sin copiar: el arreglo de VTK guarda una referencia a Z
+        arr = numpy_support.numpy_to_vtk(Z.ravel(), deep=False, array_type=vtk.VTK_FLOAT)
         img.GetPointData().SetScalars(arr)
         img.Modified()
 
@@ -486,7 +539,6 @@ class Wavelet_plugin(IPlugin):
         
         # --- Create 2D Chart ---
         chart = vtk.vtkChartHistogram2D()
-        chart.SetInputData(img, 0)
         chart.SetTransferFunction(lut)
         anotar_mapa(chart, img, lut)
 
@@ -500,6 +552,10 @@ class Wavelet_plugin(IPlugin):
         ax_left.SetBehavior(vtk.vtkAxis.FIXED)
         ax_left.SetLogScale(False)
         ax_left.SetRange(f0_range, f_end_range)
+
+        # Con los ejes ya fijados: se dibuja la zona visible y al acercar se
+        # recorta de nuevo, hasta mostrar cada celda calculada.
+        chart.mapa_zoom = MapaConZoom(chart, Z, t0, dt, f0_range, df_spacing)
 
         if log_scale:
             tick_values, tick_labels = self._get_log_ticks_coords(f0_range, f_end_range) 

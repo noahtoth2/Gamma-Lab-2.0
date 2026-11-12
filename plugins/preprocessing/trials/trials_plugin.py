@@ -14,7 +14,7 @@ from core.filters.trials import canal_sin_senal, cut_trials_single_channel, mv_t
 from core.utils.adapters import trials_matrix_to_vtk_table
 from plugins.preprocessing.trials.trial_plugin_ui import Ui_Trials
 from functools import partial
-from core.utils.submuestreo import agregar_columna
+from core.utils.submuestreo import MAX_PUNTOS_DETALLE, agregar_columna
 
 
 def cortar_trials(ds, ctx=None, **params):
@@ -640,7 +640,9 @@ class TrialsPlugin(IPlugin):
             sel = [1] if T > 1 else ([0] if T == 1 else [])
 
         for idx in sel:
-            plot = agregar_columna(self.chart, table, idx + 1)
+            # El trial se dibuja con todas sus muestras: el investigador tiene que
+            # verlo completo aunque haga zoom (con 2000 puntos se perdía detalle).
+            plot = agregar_columna(self.chart, table, idx + 1, n_max=MAX_PUNTOS_DETALLE)
             plot.SetWidth(1.0)
             plot.SetLabel(f"Trial {idx+1}")
 

@@ -1,6 +1,8 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import os
 
+from core.utils.rango_color import agregar_rango_color
+
 class Ui_Pac(object):
 
     def setupUi(self, PAC):
@@ -370,6 +372,25 @@ class Ui_Pac(object):
 
         self.paramsLayout.addLayout(self.degreesLayout)
 
+        # --- El color de los mapas (R33), el mismo control de Wavelet ---
+        self.colorLayout = QtWidgets.QVBoxLayout()
+        self.colorLayout.setObjectName("colorLayout")
+
+        self.colorLabel = QtWidgets.QLabel(self.layoutWidget)
+        self.colorLabel.setObjectName("colorLabel")
+        self.colorLabel.setProperty("variant", "subtitle")
+        self.colorLayout.addWidget(self.colorLabel)
+
+        self.colorLine = QtWidgets.QFrame(self.layoutWidget)
+        self.colorLine.setFrameShape(QtWidgets.QFrame.HLine)
+        self.colorLine.setObjectName("colorLine")
+        self.colorLine.setProperty("role", "divider")
+        self.colorLayout.addWidget(self.colorLine)
+
+        self.colorRangeCheckBox, self.colorMinSpinBox, self.colorMaxSpinBox = agregar_rango_color(
+            self, self.layoutWidget, self.colorLayout)
+        self.paramsLayout.addLayout(self.colorLayout)
+
         # --- Spacer ---
         self.paramsLayout.addStretch(1)
 
@@ -399,6 +420,7 @@ class Ui_Pac(object):
             "PAC", "El canal del que sale la amplitud. Los ciclos y la fase salen "
                    "del canal activo. Los dos tienen que estar cortados igual."))
         self.degreesLabel.setText(_translate("PAC", "Phase units"))
+        self.colorLabel.setText(_translate("PAC", "Map color"))
         self.degreesCheckBox.setText(_translate("PAC", "Degrees (0-360)"))
         self.degreesCheckBox.setToolTip(_translate(
             "PAC", "Sin marcar, la fase va en radianes de -pi a pi, como en MATLAB"))
