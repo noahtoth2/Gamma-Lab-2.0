@@ -95,6 +95,10 @@ class Fft_plugin(IPlugin):
         self.ui.highFrequencySpinBox.setValue(500.0)
         self.ui.lowFrequencySpinBox.setDecimals(2)
         self.ui.lowFrequencySpinBox.setRange(0.0, 10000)
+        # Sync low/high only when the user finishes typing: while typing "100", the "1" was
+        # momentarily below the low limit and dragged it down
+        self.ui.lowFrequencySpinBox.setKeyboardTracking(False)
+        self.ui.highFrequencySpinBox.setKeyboardTracking(False)
         self.ui.lowFrequencySpinBox.setSingleStep(1.0)
         self.ui.lowFrequencySpinBox.setValue(0.0)
 

@@ -14,7 +14,7 @@ from core.utils.adapters import trials_matrix_to_vtk_table
 from core.utils.trial_labels import trials_used
 from core.utils.unidades import etiqueta_psd
 from functools import partial
-from core.utils.submuestreo import agregar_columna
+from core.utils.submuestreo import agregar_columna, agregar_linea
 
 
 def calcular_psd(X, fs, target_fs, window, nperseg, noverlap, nfft, detrend, ctx=None, log=None):
@@ -185,6 +185,10 @@ class Relative_psd_plugin(IPlugin):
         self.ui.highFrequencySpinBox.setValue(12.0)
         self.ui.lowFrequencySpinBox.setDecimals(2)
         self.ui.lowFrequencySpinBox.setRange(0.0, 10000)
+        # Sync low/high only when the user finishes typing: while typing "100", the "1" was
+        # momentarily below the low limit and dragged it down
+        self.ui.lowFrequencySpinBox.setKeyboardTracking(False)
+        self.ui.highFrequencySpinBox.setKeyboardTracking(False)
         self.ui.lowFrequencySpinBox.setSingleStep(1.0)
         self.ui.lowFrequencySpinBox.setValue(8.0)
 
@@ -295,6 +299,15 @@ class Relative_psd_plugin(IPlugin):
             avisos.append(f"Total power is defined on 0.5-490 Hz, but with a sample density of "
                           f"{fs_eff:.0f} Hz it only reaches {nyq:.1f} Hz. Raise 'Sample density' "
                           f"to at least 980 Hz for MATLAB-comparable relative values.")
+        # Too few frequency bins in the band: the value depends on where the bins fall
+        if len(freq) > 1 and f1 < nyq:
+            df = float(freq[1] - freq[0])
+            nb = self._bins_in_band(freq, f1, f2)
+            if nb < 4:
+                necesario = int(2 ** np.ceil(np.log2(4.0 * fs_eff / max(f2 - f1, 1e-9))))
+                avisos.append(f"Low frequency resolution: each PSD bin is {df:.2f} Hz wide, so the band "
+                              f"[{f1}-{f2}] Hz only covers {nb} bin(s) and the result is not reliable. "
+                              f"Raise 'nperseg' (and 'nfft') to at least {necesario}.")
         if avisos:
             self.alerts.warning("\n\n".join(avisos), "Relative PSD")
 
@@ -304,7 +317,7 @@ class Relative_psd_plugin(IPlugin):
         for lbl in (self.ui.absPowerValue, self.ui.relPowerValue):
             lbl.setToolTip(f"Calculado con {self._trials_used['label']} — {ch_name}")
         self._notify(f"Relative PSD [{f1}-{f2} Hz] ready with {self._trials_used['label']}. "
-                     f"fs_eff={fs_eff:.1f} Hz, df≈{freq[1]-freq[0]:.2f} Hz")
+                     f"fs_eff={fs_eff:.1f} Hz, df~{freq[1]-freq[0]:.2f} Hz")
         self.publish_current_trial()
 
         self._log_bands(freq, pxx_all, GF)
@@ -409,9 +422,21 @@ class Relative_psd_plugin(IPlugin):
         Ptot     = self._band_sum(freq, pxx_sum, 0.5, 490.0, edges=edges_mode)
         pow_band = self._band_sum(freq, pxx_sum, f1,  f2,    edges=edges_mode)
         rel      = (pow_band / Ptot) if Ptot > 0 else 0.0
+        # Absolute power = integral of the PSD over the band: sum of bins times their width.
+        # Without df the value changed with nperseg (same signal: 0.07, 0.51 or 2.0); the
+        # relative power is a ratio of two sums with the same df, so it does not change.
+        abs_power = pow_band * float(df)
 
-        self._log(f"[GF={GF}, edges={edges_mode}] Band {f1}-{f2} Hz -> Abs={pow_band:.4e}, RelFrac={rel:.4f}")
-        return pow_band, rel
+        self._log(f"[GF={GF}, edges={edges_mode}] Band {f1}-{f2} Hz -> Abs={abs_power:.4e}, RelFrac={rel:.4f}")
+        return abs_power, rel
+
+    @staticmethod
+    def _bins_in_band(freq, f1, f2) -> int:
+        """Frequency bins summed for [f1, f2] with the MATLAB edge rule (first f>=f1 to first f>=f2)."""
+        i1 = int(np.searchsorted(freq, f1, side="left"))
+        i2 = int(np.searchsorted(freq, f2, side="left"))
+        i1 = max(0, min(i1, len(freq) - 1)); i2 = max(0, min(i2, len(freq) - 1))
+        return abs(i2 - i1) + 1
 
 
     # 3) Log band parts similar to MATLAB
@@ -495,21 +520,19 @@ class Relative_psd_plugin(IPlugin):
         self._log("ensure_vtk(): scheduled init")
 
     def _plot_psd(self, freq: np.ndarray, pxx_all: np.ndarray, ch_name: str, lo: float, hi: float):
+        """Whole spectrum up to 490 Hz (the total-power range): every trial thin, their average
+        in black on top, and the band [lo, hi] marked with two vertical lines. Before, only the
+        band was drawn, which with the default resolution was a single point per trial."""
         if self.vtk_view is None:
             self._ensure_vtk()
         if self.vtk_view is None:
             return
 
-        sel = (freq >= lo) & (freq <= hi)
+        sel = (freq >= 0.5) & (freq <= 490.0)
         freq_v = freq[sel]
         pxx_v = pxx_all[sel, :]
-
-        MAX_PLOTS = 200
-        if pxx_v.shape[1] > MAX_PLOTS:
-            self._log(f"There are {pxx_v.shape[1]} trials → showing {MAX_PLOTS}")
-            pxx_v = pxx_v[:, :MAX_PLOTS]
-
-        table = trials_matrix_to_vtk_table(freq_v, pxx_v)
+        if freq_v.size == 0:
+            return
 
         scene = self.vtk_view.GetScene()
         scene.ClearItems()
@@ -521,17 +544,42 @@ class Relative_psd_plugin(IPlugin):
         ax_b.SetGridVisible(True); ax_l.SetGridVisible(True)
         ax_b.SetTitle("Frequency (Hz)")
         ax_l.SetTitle(etiqueta_psd(getattr(self, "_unidad_psd", "")))   # antes «V^2/Hz» fijo
+
+        MAX_PLOTS = 200
+        dibujar = pxx_v
+        if pxx_v.shape[1] > MAX_PLOTS:
+            self._log(f"There are {pxx_v.shape[1]} trials → showing {MAX_PLOTS}")
+            dibujar = pxx_v[:, :MAX_PLOTS]
+        for c in range(dibujar.shape[1]):
+            plot = agregar_linea(self.chart, freq_v, dibujar[:, c], "frequency", f"trial_{c + 1}")
+            plot.SetWidth(0.5)
+            plot.SetColor(170, 170, 170, 255)
+        if pxx_v.shape[1] > 1:
+            prom = agregar_linea(self.chart, freq_v, np.nanmean(pxx_v, axis=1), "frequency", "average")
+            prom.SetColor(0, 0, 0, 255)
+            prom.SetWidth(2.5)
+            prom.SetLabel("Average")
+
+        # Band limits
+        y_max = float(np.nanmax(pxx_v)) if np.isfinite(pxx_v).any() else 1.0
+        for x in (lo, hi):
+            linea = agregar_linea(self.chart, [x, x], [0.0, y_max], "frequency", "band")
+            linea.SetColor(220, 0, 0, 255)
+            linea.SetWidth(1.5)
+            try:
+                linea.GetPen().SetLineType(vtk.vtkPen.DASH_LINE)
+            except Exception:
+                pass
+
         try:
             if ch_name:
                 etiqueta = (self._trials_used or {}).get("label")
-                self.chart.SetTitle(f"Relative PSD - {ch_name}" + (f" — {etiqueta}" if etiqueta else ""))
+                txt = f"Relative PSD - {ch_name} — band {lo:g}-{hi:g} Hz"
+                if etiqueta:
+                    txt += f" — {etiqueta}"
+                self.chart.SetTitle(txt)
         except Exception:
             pass
-
-        num_cols = table.GetNumberOfColumns()
-        for c in range(1, num_cols):
-            plot = agregar_columna(self.chart, table, c)
-            plot.SetWidth(0.5)
 
         try:
             if self.vtk_menu is None:
