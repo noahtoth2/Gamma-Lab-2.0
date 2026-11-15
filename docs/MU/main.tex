@@ -184,7 +184,7 @@
         \item \textbf{Gesti\'on de se\~nales y proyectos:} carga de se\~nales en formato ABF, EDF y MAT, y creaci\'on, guardado, apertura y cierre de proyectos \textit{.glab}.
         \item \textbf{Preprocesamiento:} segmentaci\'on en \textit{trials}, eliminaci\'on de artefactos y filtrado.
         \item \textbf{An\'alisis:} dominio del tiempo, dominio de la frecuencia, dominio tiempo--frecuencia y conectividad entre canales.
-        \item \textbf{Medidas:} medici\'on de pendiente y amplitud sobre las gr\'aficas, y consulta de las tablas de resultados.
+        \item \textbf{Medidas:} medici\'on de pendiente, diferencia (derivada) y amplitud sobre las gr\'aficas, y consulta de las tablas de resultados.
         \item \textbf{Exportaci\'on:} im\'agenes y tablas en los formatos disponibles.
     \end{itemize}
 
@@ -219,7 +219,7 @@
         \item Segmentar la se\~nal en \textit{trials}, descartar los defectuosos, eliminar artefactos y aplicar un filtro.
         \item Ejecutar an\'alisis en los dominios del tiempo, de la frecuencia y de tiempo--frecuencia, as\'i como el an\'alisis de conectividad entre dos canales.
         \item Interpretar los paneles que produce cada an\'alisis.
-        \item Tomar medidas de amplitud y de pendiente sobre las gr\'aficas y consultarlas en las tablas de resultados.
+        \item Tomar medidas de amplitud, de pendiente y de diferencia (derivada) sobre las gr\'aficas y consultarlas en las tablas de resultados.
         \item Guardar el trabajo en un proyecto \textit{.glab} y volver a abrirlo m\'as adelante.
         \item Exportar gr\'aficas y tablas para su uso en informes y publicaciones.
     \end{enumerate}
@@ -419,7 +419,7 @@ Al iniciar la aplicaci\'on se abre la ventana principal en la secci\'on \textbf{
     \hline
     \textbf{\textit{File}} & Men\'u desplegable con las operaciones de archivo y de proyecto: \textbf{\textit{Open signal}}, \textbf{\textit{Open project}}, \textbf{\textit{Save}}, \textbf{\textit{Save as}}, \textbf{\textit{Close project}} y \textbf{\textit{Exit}}. \\
     \hline
-    \textbf{\textit{Home}} & Tablas de medidas (\textbf{\textit{Slope Results}} y \textbf{\textit{Amplitude Results}}), controles de borrado y de visibilidad de las medidas, y el control de \textbf{\textit{Zoom}} de la gr\'afica activa. \\
+    \textbf{\textit{Home}} & Botones de medida (\textbf{\textit{Slope Results}}, \textbf{\textit{Difference Results}} y \textbf{\textit{Amplitude Results}}), controles de borrado y de visibilidad de las medidas, y el control de \textbf{\textit{Zoom}} de la gr\'afica activa. \\
     \hline
     \textbf{\textit{Preprocessing}} & \textit{Plugins} de preparaci\'on de la se\~nal: \textbf{\textit{Trials}}, \textbf{\textit{Remove Artifact}} y \textbf{\textit{Filter}}. \\
     \hline
@@ -483,7 +483,7 @@ Al iniciar la aplicaci\'on se abre la ventana principal en la secci\'on \textbf{
 
 
     \subsection{Panel de resultados}
-    El panel \textbf{\textit{Results}} se abre desde el icono correspondiente de la barra lateral y contiene dos pesta\~nas, \textbf{\textit{Slope}} y \textbf{\textit{Amplitude}}, con las tablas de todas las medidas tomadas sobre las gr\'aficas. En su cabecera dispone de dos controles:
+    El panel \textbf{\textit{Results}} se abre desde el icono correspondiente de la barra lateral y contiene tres pesta\~nas, \textbf{\textit{Slope}}, \textbf{\textit{Difference}} y \textbf{\textit{Amplitude}}, con las tablas de todas las medidas tomadas sobre las gr\'aficas. En su cabecera dispone de dos controles:
 
     \begin{itemize}
         \item El bot\'on \textbf{\textbullet\textbullet\textbullet}, que despliega las acciones \textbf{\textit{Export CSV}} y \textbf{\textit{Export Excel (.xlsx)}} y exporta la pesta\~na que est\'e activa en ese momento.
@@ -498,7 +498,7 @@ Al iniciar la aplicaci\'on se abre la ventana principal en la secci\'on \textbf{
 
     \begin{senalamientos}{fig:mu_panel_resultados}
         \item \textbf{Icono de \textit{Results}:} muestra y oculta el panel.
-        \item \textbf{Pesta\~nas \textit{Slope} y \textit{Amplitude}:} cada una contiene la tabla de un tipo de medida.
+        \item \textbf{Pesta\~nas \textit{Slope}, \textit{Difference} y \textit{Amplitude}:} cada una contiene la tabla de un tipo de medida.
         \item \textbf{Bot\'on \textbullet\textbullet\textbullet:} despliega \textbf{\textit{Export CSV}} y \textbf{\textit{Export Excel (.xlsx)}}, que exportan la pesta\~na activa.
         \item \textbf{Bot\'on \texttimes:} cierra el panel.
         \item \textbf{Fila de la tabla:} una medida tomada; la columna \textbf{\textit{Slope (m)}} da su pendiente (Tabla~\ref{tab:mu_columnas_slope}).
@@ -681,7 +681,7 @@ El flujo de trabajo de GammaLab comienza siempre con la carga de una se\~nal. A 
         \item Los datos de la se\~nal: nombre del archivo, formato, nombre interno, frecuencia de muestreo y procedencia de esa frecuencia.
         \item Los \textit{trials} generados, con los par\'ametros exactos con los que se cortaron.
         \item Los par\'ametros de cada an\'alisis ejecutado que admite guardado.
-        \item Todas las medidas de pendiente y de amplitud tomadas sobre las gr\'aficas.
+        \item Todas las medidas de pendiente, de diferencia y de amplitud tomadas sobre las gr\'aficas.
     \end{itemize}
 
     El proyecto guarda, por tanto, la \emph{receta} del trabajo y no sus resultados num\'ericos: al abrirlo, GammaLab reconstruye los \textit{trials} y vuelve a ejecutar los an\'alisis con los mismos par\'ametros. Esta decisi\'on mantiene los proyectos peque\~nos y garantiza que el resultado que se ve corresponde siempre a la versi\'on actual del c\'odigo de c\'alculo.
@@ -924,7 +924,7 @@ La subcategor\'ia \textbf{\textit{Time}} de la secci\'on \textbf{\textit{Analysi
 
     El diagrama de mariposa permite valorar de un vistazo la consistencia de la respuesta: si las trazas de los distintos \textit{trials} se agrupan en torno al promedio, la respuesta es estable; si se dispersan, el promedio est\'a resumiendo fen\'omenos distintos.
 
-    Sobre el diagrama de mariposa pueden tomarse medidas de pendiente y de amplitud, tanto sobre un \textit{trial} concreto como sobre el promedio, y tambi\'en en su variante \textit{all trials}. El procedimiento se describe en la Secci\'on~\ref{sec:mu_medidas_butterfly}.
+    Sobre el diagrama de mariposa pueden tomarse medidas de pendiente, de diferencia y de amplitud, tanto sobre un \textit{trial} concreto como sobre el promedio, y tambi\'en en su variante \textit{all trials}. El procedimiento se describe en la Secci\'on~\ref{sec:mu_medidas_butterfly}.
 
     \subsubsection*{Componentes}
     Los controles de selecci\'on de \textit{trials} son los mismos que en \textbf{\textit{Average}}: \textbf{\textit{Select all trials}}, \textbf{\textit{Single trial}}, \textbf{\textit{Range}} con sus dos campos, \textbf{\textit{List}} con su \textbf{\textit{Filter\ldots}}, y el bot\'on \textbf{\textit{Generate}}.
@@ -1448,7 +1448,7 @@ La subcategor\'ia \textbf{\textit{Time-Frequency}} re\'une los an\'alisis que de
 
 \section{Medidas sobre las gr\'aficas}
 
-GammaLab permite tomar medidas cuantitativas directamente sobre cualquier gr\'afica, marcando puntos con el rat\'on. Las medidas se acumulan en dos tablas, se guardan con el proyecto y pueden exportarse.
+GammaLab permite tomar medidas cuantitativas directamente sobre cualquier gr\'afica, marcando puntos con el rat\'on. Las medidas se acumulan en tres tablas, una por tipo de medida, se guardan con el proyecto y pueden exportarse.
 
     \subsection{Men\'u contextual de las gr\'aficas}
     \label{sec:mu_menu_contextual}
@@ -1477,15 +1477,18 @@ GammaLab permite tomar medidas cuantitativas directamente sobre cualquier gr\'af
 
     \begin{enumerate}
         \item \textbf{\textit{Slope (2 points)}:} inicia una medida de pendiente entre dos puntos.
-        \item \textbf{\textit{Amplitude (2 points)}:} inicia una medida de amplitud sobre el intervalo entre dos puntos.
         \item \textbf{\textit{Slope (all trials)}:} inicia una medida de pendiente que se aplica al mismo intervalo en todos los \textit{trials}.
+        \item \textbf{\textit{Difference / derivative (2 points)}:} inicia una medida de diferencia, es decir, de la derivada de la se\~nal en el intervalo entre dos puntos (Secci\'on~\ref{sec:mu_medida_difference}).
+        \item \textbf{\textit{Difference / derivative (all trials)}:} inicia una medida de diferencia que se aplica al mismo intervalo en todos los \textit{trials}.
+        \item \textbf{\textit{Amplitude (2 points)}:} inicia una medida de amplitud sobre el intervalo entre dos puntos.
+        \item \textbf{\textit{Amplitude (all trials)}:} inicia una medida de amplitud que se aplica al mismo intervalo en todos los \textit{trials}.
         \item \textbf{\textit{Cancel measurement (Esc)}:} cancela la medida en curso. Tambi\'en responde a la tecla \textbf{Esc}.
         \item \textbf{\textit{Show/Hide all lines}:} muestra u oculta las l\'ineas de todas las medidas dibujadas sobre la gr\'afica.
         \item \textbf{\textit{Delete last measurement}:} elimina la \'ultima medida tomada.
         \item \textbf{\textit{Delete ALL measurements}:} elimina todas las medidas.
     \end{enumerate}
 
-    Las tres primeras entradas permanecen inactivas mientras no haya una gr\'afica sobre la que medir o mientras haya otra medida en curso, de modo que no es posible iniciar dos medidas a la vez.
+    Las seis primeras entradas permanecen inactivas mientras no haya una gr\'afica sobre la que medir o mientras haya otra medida en curso, de modo que no es posible iniciar dos medidas a la vez. Las variantes \textit{all trials} se habilitan adem\'as solo en las vistas que muestran \textit{trials}.
 
     \capturaPendiente[30]{7cm}
     {Men\'u contextual abierto con el bot\'on derecho sobre una gr\'afica, con el submen\'u \textbf{\textit{Measurements}} desplegado.}
@@ -1505,11 +1508,11 @@ GammaLab permite tomar medidas cuantitativas directamente sobre cualquier gr\'af
 
 
     \subsection{C\'omo tomar una medida}
-    El procedimiento es el mismo para la pendiente y para la amplitud:
+    El procedimiento es el mismo para la pendiente, la diferencia y la amplitud:
 
     \begin{enumerate}
         \item Abra el \textit{plugin} cuya gr\'afica desea medir y calcule el resultado.
-        \item Pulse el bot\'on derecho sobre la gr\'afica y elija \textbf{\textit{Measurements} > \textit{Slope (2 points)}} o \textbf{\textit{Measurements} > \textit{Amplitude (2 points)}}.
+        \item Pulse el bot\'on derecho sobre la gr\'afica y elija \textbf{\textit{Measurements} > \textit{Slope (2 points)}}, \textbf{\textit{Measurements} > \textit{Difference / derivative (2 points)}} o \textbf{\textit{Measurements} > \textit{Amplitude (2 points)}}. Tambi\'en puede pulsar el icono del bot\'on correspondiente en la cinta \textbf{\textit{Home}}.
         \item Sit\'ue el cursor sobre el primer punto. La lectura \textit{X = \ldots\ Y = \ldots} permite comprobar la posici\'on exacta antes de hacer clic.
         \item Haga clic para fijar el primer punto.
         \item Repita la operaci\'on con el segundo punto.
@@ -1535,6 +1538,34 @@ GammaLab permite tomar medidas cuantitativas directamente sobre cualquier gr\'af
     \subsection{La variante Slope (all trials)}
     La entrada \textbf{\textit{Slope (all trials)}} toma los dos puntos una sola vez y aplica el mismo intervalo temporal a todos los \textit{trials}, generando una medida de pendiente por cada uno. Sirve para estudiar c\'omo var\'ia la pendiente de un mismo tramo a lo largo del registro, sin necesidad de repetir la medida \textit{trial} por \textit{trial}. Las filas resultantes se distinguen en la tabla por la columna \textbf{\textit{Graph}}, que indica a qu\'e \textit{trial} corresponde cada una.
 
+    Las entradas \textbf{\textit{Difference / derivative (all trials)}} y \textbf{\textit{Amplitude (all trials)}} funcionan de la misma manera: con un solo par de puntos generan una medida de diferencia o de amplitud por cada \textit{trial}, sobre el mismo intervalo. Al terminar, un aviso indica cu\'antas medidas se generaron y entre qu\'e valores de \textit{x}.
+
+    \subsection{La medida Difference (derivada)}
+    \label{sec:mu_medida_difference}
+    La medida \textbf{\textit{Difference}} calcula la derivada de la se\~nal dentro del intervalo comprendido entre los dos puntos marcados. A diferencia de \textbf{\textit{Slope}}, que solo une los dos puntos con una recta, \textbf{\textit{Difference}} recorre todas las muestras del intervalo y obtiene la derivada entre cada par de muestras consecutivas:
+
+    \[
+        \frac{dy}{dx} \approx \frac{y_{i+1} - y_i}{x_{i+1} - x_i}
+    \]
+
+    Cada valor se asigna al punto medio entre las dos muestras que lo producen. Las unidades son las de la se\~nal por unidad del eje X, por ejemplo mV/s. La medida principal es el \textbf{valor m\'aximo} de la derivada en el intervalo, es decir, el punto donde la se\~nal crece m\'as r\'apido; se informan tambi\'en el valor m\'inimo, \'util cuando la respuesta es una onda negativa, y el valor medio.
+
+    \subsubsection*{C\'omo medir la derivada}
+    \begin{enumerate}
+        \item Abra la gr\'afica que desea medir.
+        \item En la cinta \textbf{\textit{Home}}, pulse el icono del bot\'on \textbf{\textit{Difference}}, o bien elija \textbf{\textit{Measurements} > \textit{Difference / derivative (2 points)}} en el men\'u contextual de la gr\'afica.
+        \item Haga clic en el inicio del intervalo y despu\'es en su final.
+        \item GammaLab muestra un aviso con el m\'aximo de la derivada y su posici\'on en X, el m\'inimo y su posici\'on, la media y el identificador de la medida.
+        \item Sobre la gr\'afica se marca en morado el punto de m\'axima derivada, junto con un tramo corto de su recta tangente, cuya inclinaci\'on es precisamente ese valor m\'aximo.
+        \item La fila de la medida aparece en la pesta\~na \textbf{\textit{Difference}} del panel \textbf{\textit{Results}}.
+    \end{enumerate}
+
+    Para aplicar el mismo intervalo a todos los \textit{trials}, despliegue la flecha situada junto al icono y elija \textbf{\textit{Difference (all trials)}}, o use la entrada \textbf{\textit{Difference / derivative (all trials)}} del men\'u contextual.
+
+    \aviso{Intervalo demasiado corto.}{La derivada necesita al menos dos muestras dentro del intervalo. Si los dos puntos marcados caen sobre la misma muestra o demasiado juntos, GammaLab muestra el aviso \emph{The window needs at least two samples to compute the derivative} y no guarda la medida. Basta repetirla con un intervalo m\'as amplio.}
+
+    Al dibujarse la medida, la vista de la gr\'afica conserva el acercamiento que ten\'ia, de modo que no es necesario volver a ajustar el \textit{zoom}.
+
     \subsection{Medidas sobre el diagrama de mariposa}
     \label{sec:mu_medidas_butterfly}
     Las medidas tambi\'en pueden tomarse sobre el diagrama de mariposa (\textit{Butterfly Plot}) del \textit{plugin} \textbf{\textit{Event Related Potential}}, una vez pulsado \textbf{\textit{Generate}}. Se inician igual que en cualquier otra gr\'afica: desde el men\'u contextual \textbf{\textit{Measurements}} o desde los botones de medida de la cinta \textbf{\textit{Home}}, que act\'uan sobre la gr\'afica que est\'a en pantalla.
@@ -1544,24 +1575,35 @@ GammaLab permite tomar medidas cuantitativas directamente sobre cualquier gr\'af
     \begin{itemize}
         \item \textbf{Medida de dos puntos:} el primer clic toma la curva m\'as cercana al cursor, ya sea un \textit{trial} o la traza del promedio. El segundo punto se busca sobre esa misma curva, de modo que la medida nunca mezcla dos \textit{trials}. Donde varias curvas se cruzan se toma la que est\'a dibujada encima, que es el promedio.
         \item \textbf{Identificaci\'on en la tabla:} la columna \textbf{\textit{Graph}} indica \textit{trial k} cuando se midi\'o un \textit{trial} y \textit{average} cuando se midi\'o el promedio.
-        \item \textbf{Variante \textit{all trials}:} \textbf{\textit{Slope (all trials)}} aplica el intervalo elegido a cada uno de los \textit{trials} que se ven en el diagrama en ese momento y genera una fila por \textit{trial}. Todas esas filas aparecen en el panel \textbf{\textit{Results}} y en su exportaci\'on a CSV o Excel.
+        \item \textbf{Variante \textit{all trials}:} \textbf{\textit{Slope (all trials)}}, \textbf{\textit{Difference (all trials)}} y \textbf{\textit{Amplitude (all trials)}} aplican el intervalo elegido a cada uno de los \textit{trials} que se ven en el diagrama en ese momento y genera una fila por \textit{trial}. Todas esas filas aparecen en el panel \textbf{\textit{Results}} y en su exportaci\'on a CSV o Excel.
     \end{itemize}
 
-    Sobre la gr\'afica, cada pendiente se dibuja como una l\'inea roja y el promedio se mantiene en negro. En la variante \textit{all trials} los dos puntos elegidos se marcan una sola vez con dos l\'ineas verticales grises, y cada \textit{trial} lleva su propia l\'inea roja. Si en pantalla hay m\'as de doce \textit{trials}, las l\'ineas de cada \textit{trial} no se dibujan para que la gr\'afica siga siendo legible, aunque las medidas se calculan y se guardan igual. En ese caso conviene mostrar el diagrama por grupos peque\~nos, por ejemplo de seis \textit{trials}, para ver la l\'inea de cada uno.
+    Sobre la gr\'afica, cada pendiente se dibuja como una l\'inea roja, cada diferencia como el punto de m\'axima derivada con su tangente en morado, y el promedio se mantiene en negro. En la variante \textit{all trials} los dos puntos elegidos se marcan una sola vez con dos l\'ineas verticales grises, y cada \textit{trial} lleva su propia l\'inea roja. Si en pantalla hay m\'as de doce \textit{trials}, las l\'ineas de cada \textit{trial} no se dibujan para que la gr\'afica siga siendo legible, aunque las medidas se calculan y se guardan igual. En ese caso conviene mostrar el diagrama por grupos peque\~nos, por ejemplo de seis \textit{trials}, para ver la l\'inea de cada uno.
 
     La opci\'on \textbf{\textit{delete last}} borra completa la \'ultima medida \textit{all trials}, es decir, todas sus filas y sus l\'ineas a la vez.
 
     \subsection{Controles de medidas en la cinta Home}
-    La secci\'on \textbf{\textit{Home}} de la cinta duplica, de forma m\'as accesible, los controles de gesti\'on de las medidas:
+    La secci\'on \textbf{\textit{Home}} de la cinta duplica, de forma m\'as accesible, los controles de gesti\'on de las medidas.
+
+    El grupo \textbf{\textit{Measurements}} contiene tres botones de medida, en este orden: \textbf{\textit{Slope}}, \textbf{\textit{Difference}} y \textbf{\textit{Amplitude}}. Cada uno se compone de dos partes:
+
+    \begin{itemize}
+        \item \textbf{Icono:} al pulsarlo se inicia directamente la medida de dos puntos sobre la \'ultima gr\'afica visitada. Si no hay ninguna, GammaLab avisa de que primero debe abrirse una vista con gr\'aficas.
+        \item \textbf{Flecha:} despliega las dos variantes de la medida. En el bot\'on \textbf{\textit{Difference}} son \textbf{\textit{Difference (2 points)}} y \textbf{\textit{Difference (all trials)}}; en los otros dos botones son las equivalentes de pendiente y de amplitud.
+    \end{itemize}
+
+    El bot\'on \textbf{\textit{Difference}} es el acceso m\'as r\'apido a la medida de la derivada descrita en la Secci\'on~\ref{sec:mu_medida_difference}. Al pasar el cursor sobre cualquiera de los tres iconos aparece una descripci\'on breve de la medida.
+
+    El resto de la secci\'on \textbf{\textit{Home}} contiene los controles que se se\~nalan a continuaci\'on:
 
     \capturaPendiente[32]{5.5cm}
     {Secci\'on \textbf{\textit{Home}} de la cinta con el panel de \textbf{\textit{Zoom}} abierto y el desplegable de borrado visible.}
-    {(1) los botones \textbf{\textit{Slope Results}} y \textbf{\textit{Amplitude Results}} del grupo \textbf{\textit{Measurements}}; (2) el desplegable con \textbf{\textit{delete last}} y \textbf{\textit{delete all}}; (3) el desplegable con \textbf{\textit{Show all}} y \textbf{\textit{Hide all}}; (4) el grupo \textbf{\textit{Zoom}}; (5) el campo con el porcentaje actual y los controles de aumento, reducci\'on y restauraci\'on.}
+    {(1) los botones \textbf{\textit{Slope}}, \textbf{\textit{Difference}} y \textbf{\textit{Amplitude}} del grupo \textbf{\textit{Measurements}}; (2) el desplegable con \textbf{\textit{delete last}} y \textbf{\textit{delete all}}; (3) el desplegable con \textbf{\textit{Show all}} y \textbf{\textit{Hide all}}; (4) el grupo \textbf{\textit{Zoom}}; (5) el campo con el porcentaje actual y los controles de aumento, reducci\'on y restauraci\'on.}
     {Controles de medidas y de \textbf{\textit{Zoom}} en la cinta \textbf{\textit{Home}}}
     {fig:mu_home_zoom}
 
     \begin{senalamientos}{fig:mu_home_zoom}
-        \item \textbf{\textit{Slope Results}} y \textbf{\textit{Amplitude Results}:} abren la pesta\~na correspondiente del panel \textbf{\textit{Results}}.
+        \item \textbf{Botones \textit{Slope}, \textit{Difference} y \textit{Amplitude}:} el icono inicia la medida de dos puntos y la flecha ofrece la variante \textit{all trials}. Sus resultados se consultan en la pesta\~na correspondiente del panel \textbf{\textit{Results}}.
         \item \textbf{Bot\'on de borrado:} despliega las acciones \textbf{\textit{delete last}} y \textbf{\textit{delete all}}.
         \item \textbf{Bot\'on de visibilidad:} despliega las acciones \textbf{\textit{Show all}} y \textbf{\textit{Hide all}}, que muestran u ocultan las l\'ineas de todas las medidas.
         \item \textbf{Control \textit{Zoom}:} abre el panel de acercamiento. Act\'ua sobre la \'ultima gr\'afica visitada; si no hay ninguna, GammaLab avisa de que primero debe abrirse una vista con gr\'aficas.
@@ -1569,7 +1611,7 @@ GammaLab permite tomar medidas cuantitativas directamente sobre cualquier gr\'af
     \end{senalamientos}
 
     \subsection{Tabla de resultados: Slope}
-    La pesta\~na \textbf{\textit{Slope}} del panel \textbf{\textit{Results}}, accesible tambi\'en desde el bot\'on \textbf{\textit{Slope Results}} de la cinta \textbf{\textit{Home}}, contiene una fila por cada medida de pendiente, con las columnas de la Tabla~\ref{tab:mu_columnas_slope}.
+    La pesta\~na \textbf{\textit{Slope}} del panel \textbf{\textit{Results}} contiene una fila por cada medida de pendiente, con las columnas de la Tabla~\ref{tab:mu_columnas_slope}.
 
     \begin{center}
     \small
@@ -1615,6 +1657,47 @@ GammaLab permite tomar medidas cuantitativas directamente sobre cualquier gr\'af
         \item \textbf{Fila de \textit{Slope (all trials)}:} una de las filas que genera esa variante, una por \textit{trial}.
         \item \textbf{Bot\'on \textbullet\textbullet\textbullet:} exporta la tabla en CSV o en Excel.
     \end{senalamientos}
+
+
+    \subsection{Tabla de resultados: Difference}
+    La pesta\~na \textbf{\textit{Difference}} recoge las medidas de diferencia, con las columnas de la Tabla~\ref{tab:mu_columnas_difference}. Igual que la amplitud, la diferencia se obtiene recorriendo todas las muestras del intervalo comprendido entre los dos puntos marcados, en este caso para calcular la derivada $dy/dx$ entre cada par de muestras consecutivas (Secci\'on~\ref{sec:mu_medida_difference}).
+
+    \begin{center}
+    \small
+    \begin{tabularx}{\textwidth}{|p{0.24\textwidth}|X|}
+    \hline
+    \textbf{Columna} & \textbf{Contenido} \\
+    \hline
+    \textbf{ID} & Identificador \'unico de la medida. \\
+    \hline
+    \textbf{\textit{Channel}} & Canal sobre el que se tom\'o la medida. \\
+    \hline
+    \textbf{\textit{Graph}} & Gr\'afica concreta, por ejemplo el \textit{trial} medido. \\
+    \hline
+    \textbf{Point 1 (x, y)} y \textbf{Point 2 (x, y)} & Coordenadas de los dos puntos marcados. \\
+    \hline
+    \textbf{\textit{Window start (x1)}} y \textbf{\textit{Window end (x2)}} & Primera y \'ultima muestra del intervalo analizado. \\
+    \hline
+    \textbf{\textit{Samples (N)}} & N\'umero de muestras comprendidas en el intervalo. \\
+    \hline
+    \textbf{\textit{Max dy/dx}} & Valor m\'aximo de la derivada en el intervalo. Es el resultado principal de la medida. \\
+    \hline
+    \textbf{\textit{x at max}} & Posici\'on en X donde se alcanza la derivada m\'axima. \\
+    \hline
+    \textbf{\textit{Min dy/dx}} & Valor m\'inimo de la derivada en el intervalo, \'util en ondas negativas. \\
+    \hline
+    \textbf{\textit{x at min}} & Posici\'on en X donde se alcanza la derivada m\'inima. \\
+    \hline
+    \textbf{\textit{Mean dy/dx}} & Valor medio de la derivada en el intervalo. \\
+    \hline
+    \textbf{\textit{Timestamp}} & Fecha y hora en que se tom\'o la medida. \\
+    \hline
+    \end{tabularx}
+    \captionof{table}{Columnas de la tabla \textbf{\textit{Difference Results}}}
+    \label{tab:mu_columnas_difference}
+    \end{center}
+
+    Al pasar el cursor sobre la cabecera de cada columna aparece una descripci\'on breve de su contenido. La tabla se exporta, como las dem\'as, desde el bot\'on \textbf{\textbullet\textbullet\textbullet} del panel \textbf{\textit{Results}} con la pesta\~na \textbf{\textit{Difference}} activa.
 
 
     \subsection{Tabla de resultados: Amplitude}
@@ -1666,7 +1749,7 @@ GammaLab permite tomar medidas cuantitativas directamente sobre cualquier gr\'af
     \end{senalamientos}
 
 
-    \aviso{Las medidas se guardan con el proyecto.}{Todas las medidas de pendiente y de amplitud se escriben en el archivo \textit{.glab} y se restauran al abrir el proyecto, con su identificador, su canal, su gr\'afica y su marca de tiempo. No es necesario exportarlas para conservarlas: la exportaci\'on sirve para llevarlas a otra herramienta, no para no perderlas.}
+    \aviso{Las medidas se guardan con el proyecto.}{Todas las medidas de pendiente, de diferencia y de amplitud se escriben en el archivo \textit{.glab} y se restauran al abrir el proyecto, con su identificador, su canal, su gr\'afica y su marca de tiempo. No es necesario exportarlas para conservarlas: la exportaci\'on sirve para llevarlas a otra herramienta, no para no perderlas.}
 
 \clearpage
 
@@ -1729,7 +1812,7 @@ GammaLab ofrece dos v\'ias de exportaci\'on: la de gr\'aficas, como im\'agenes, 
         \item \textit{xlsx}, libro de Excel.
     \end{itemize}
 
-    Las tablas de medidas disponen adem\'as de su propia exportaci\'on, desde el bot\'on \textbf{\textbullet\textbullet\textbullet} del panel \textbf{\textit{Results}}, con las opciones \textbf{\textit{Export CSV}} y \textbf{\textit{Export Excel (.xlsx)}}. Esta exportaci\'on act\'ua sobre la pesta\~na activa: si est\'a seleccionada \textbf{\textit{Slope}}, exporta las pendientes, y si est\'a seleccionada \textbf{\textit{Amplitude}}, las amplitudes.
+    Las tablas de medidas disponen adem\'as de su propia exportaci\'on, desde el bot\'on \textbf{\textbullet\textbullet\textbullet} del panel \textbf{\textit{Results}}, con las opciones \textbf{\textit{Export CSV}} y \textbf{\textit{Export Excel (.xlsx)}}. Esta exportaci\'on act\'ua sobre la pesta\~na activa: si est\'a seleccionada \textbf{\textit{Slope}}, exporta las pendientes; si est\'a seleccionada \textbf{\textit{Difference}}, las derivadas, y si est\'a seleccionada \textbf{\textit{Amplitude}}, las amplitudes. Los archivos se proponen con los nombres \textit{slope\_measurements}, \textit{difference\_measurements} y \textit{amplitude\_measurements}, respectivamente.
 
     \capturaPendiente[36]{6cm}
     {Exportaci\'on de la tabla de medidas desde el panel \textbf{\textit{Results}}.}
@@ -1784,6 +1867,8 @@ Un c\'alculo tarda demasiado & \textbf{\textit{Modulation Index}} con pasos muy 
 El mapa de \textbf{PPC} tiene regiones en blanco & En esa combinaci\'on de frecuencia y tiempo no hay datos suficientes para medir & Alargue la ventana de los \textit{trials}, aumente su n\'umero o eleve la frecuencia m\'inima del mapa \\
 \hline
 El \textbf{\textit{Zoom}} de la cinta avisa de que hay que abrir primero una vista con gr\'aficas & No se ha visitado ninguna gr\'afica en esta sesi\'on & Abra un \textit{plugin} con gr\'aficas y vuelva a intentarlo \\
+\hline
+La medida \textbf{\textit{Difference}} avisa de que el intervalo necesita al menos dos muestras & Los dos puntos marcados est\'an demasiado juntos y no hay suficientes muestras entre ellos para calcular la derivada & Repita la medida marcando un intervalo m\'as amplio \\
 \hline
 El panel \textbf{\textit{Explorer}} dice que no hay proyecto abierto & El explorador muestra la carpeta del proyecto, y todav\'ia no hay ninguno & Guarde el trabajo con \textbf{\textit{File} > \textit{Save as}}, o abra un proyecto existente \\
 \hline
@@ -1857,7 +1942,7 @@ El siguiente recorrido re\'une, en orden, los pasos de un an\'alisis completo. S
     \item \textbf{Guardar el proyecto.} \textbf{\textit{File} > \textit{Save as}}. A partir de aqu\'i, \textbf{\textit{File} > \textit{Save}} basta.
     \item \textbf{Ejecutar los an\'alisis} en la secci\'on \textbf{\textit{Analysis}}, empezando por los m\'as r\'apidos y dejando para el final los costosos, como \textbf{\textit{Modulation Index}} y \textbf{\textit{Wavelet Average}}.
     \item \textbf{Tomar las medidas} sobre las gr\'aficas, con el bot\'on derecho y el submen\'u \textbf{\textit{Measurements}}.
-    \item \textbf{Consultar las tablas} en el panel \textbf{\textit{Results}}, pesta\~nas \textbf{\textit{Slope}} y \textbf{\textit{Amplitude}}.
+    \item \textbf{Consultar las tablas} en el panel \textbf{\textit{Results}}, pesta\~nas \textbf{\textit{Slope}}, \textbf{\textit{Difference}} y \textbf{\textit{Amplitude}}.
     \item \textbf{Exportar} las gr\'aficas, preferentemente en \textit{emf} o \textit{png}, y las tablas en \textit{csv} o \textit{xlsx}.
     \item \textbf{Guardar de nuevo el proyecto} para conservar los par\'ametros de los an\'alisis y las medidas.
 \end{enumerate}
@@ -1917,6 +2002,8 @@ Wavelet Average & Analysis / Time-Frequency & \textit{Trials} generados \\
 PPC & Analysis / Time-Frequency & \textit{Trials} generados en dos canales, cortados con los mismos par\'ametros \\
 \hline
 Slope Results & Home & Medidas de pendiente tomadas \\
+\hline
+Difference Results & Home & Medidas de diferencia (derivada) tomadas \\
 \hline
 Amplitude Results & Home & Medidas de amplitud tomadas \\
 \hline
