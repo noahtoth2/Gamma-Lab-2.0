@@ -164,6 +164,35 @@ def agregar_linea(chart, x, y, nombre_x="x", nombre_y="y", n_max=MAX_PUNTOS, tip
     return plot
 
 
+def rango_x_completo(chart):
+    """(min, max) de X de los datos completos de las series reducidas del gráfico, o None.
+
+    Tras un zoom las tablas dibujadas solo tienen el tramo visible, así que
+    `RecalculateBounds()` devolvería ese tramo y no el registro entero.
+    """
+    ctrl = getattr(chart, "_submuestreo", None)
+    if ctrl is None or not ctrl.series:
+        return None
+    try:
+        lo = min(float(np.nanmin(s.x)) for s in ctrl.series if len(s.x))
+        hi = max(float(np.nanmax(s.x)) for s in ctrl.series if len(s.x))
+    except ValueError:
+        return None
+    return (lo, hi) if hi > lo else None
+
+
+def restablecer_vista(chart):
+    """Devuelve el gráfico al rango completo de sus datos, también si sus series están recortadas por un zoom."""
+    chart.RecalculateBounds()
+    rango = rango_x_completo(chart)
+    if rango is None:
+        return
+    eje = chart.GetAxis(vtk.vtkAxis.BOTTOM)
+    if (eje.GetMinimum(), eje.GetMaximum()) != rango:
+        eje.SetRange(*rango)            # el controlador vuelve a llenar las tablas con todo el registro
+        chart.RecalculateBounds()       # y con ellas completas, los ejes abarcan todos los datos
+
+
 def tabla_de(plot):
     """Tabla con los datos completos del plot (X, Y), no la reducida que se dibuja."""
     completa = _COMPLETAS.get(getattr(plot, "__this__", None))

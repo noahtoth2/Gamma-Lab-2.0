@@ -32,11 +32,11 @@ class DifferenceTableModel(QtCore.QAbstractTableModel):
         "Window start (x1)",    # 5
         "Window end (x2)",      # 6
         "Samples (N)",          # 7
-        "Mean dy/dx",           # 8
-        "Max dy/dx",            # 9
-        "x at max",             # 10
-        "Min dy/dx",            # 11
-        "x at min",             # 12
+        "Max dy/dx",            # 8
+        "x at max",             # 9
+        "Min dy/dx",            # 10
+        "x at min",             # 11
+        "Mean dy/dx",           # 12
         "Timestamp",            # 13
     ]
 
@@ -49,16 +49,16 @@ class DifferenceTableModel(QtCore.QAbstractTableModel):
         5: "First sample of the window.",
         6: "Last sample of the window.",
         7: "Number of samples in the window.",
-        8: "Mean of the derivative dy/dx in the window.",
-        9: "Largest value of dy/dx in the window.",
-        10: "X where the largest dy/dx occurs.",
-        11: "Smallest value of dy/dx in the window.",
-        12: "X where the smallest dy/dx occurs.",
+        8: "Largest value of dy/dx = diff(y)/diff(x) in the window: the measurement.",
+        9: "X where the largest dy/dx occurs.",
+        10: "Smallest value of dy/dx in the window (useful for negative waves).",
+        11: "X where the smallest dy/dx occurs.",
+        12: "Mean of the derivative dy/dx in the window.",
         13: "Timestamp when the measurement was saved.",
     }
 
     KEYS = ["id", "ctx_channel", "ctx_graph", None, None, "x1", "x2", "n",
-            "d_mean", "d_max", "x_at_dmax", "d_min", "x_at_dmin", "timestamp"]
+            "d_max", "x_at_dmax", "d_min", "x_at_dmin", "d_mean", "timestamp"]
 
     def __init__(self, rows: List[Dict[str, Any]] | None = None, parent=None):
         super().__init__(parent)

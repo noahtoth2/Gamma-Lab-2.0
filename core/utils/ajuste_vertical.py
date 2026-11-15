@@ -18,6 +18,18 @@ from core.utils.submuestreo import datos_completos
 
 MARGEN = 0.05     # fracción del rango visible que se deja arriba y abajo
 
+# Plots que no son datos (las líneas de las medidas): no deben estirar el eje Y.
+_IGNORADOS = set()
+
+
+def ignorar_en_ajuste(plot):
+    """Excluye el plot del ajuste vertical (p. ej. la línea de una medida)."""
+    clave = getattr(plot, "__this__", None)
+    if clave is None:
+        return
+    _IGNORADOS.add(clave)
+    plot.AddObserver("DeleteEvent", lambda o, e, k=clave: _IGNORADOS.discard(k))
+
 
 def es_grafico_de_lineas(chart):
     """Gráficas X-Y (señales, espectros, barras); no los mapas de color."""
@@ -29,8 +41,14 @@ def rango_visible_y(chart, x0, x1):
     lo, hi = np.inf, -np.inf
     for i in range(chart.GetNumberOfPlots()):
         plot = chart.GetPlot(i)
-        if not plot.GetVisible():
+        if not plot.GetVisible() or getattr(plot, "__this__", None) in _IGNORADOS:
             continue
+        # Solo las curvas del eje izquierdo: la derivada de 'difference' va en el derecho, con otra escala
+        try:
+            if chart.GetPlotCorner(plot) not in (0, 3):
+                continue
+        except Exception:
+            pass
         datos = datos_completos(plot)
         if datos is None or datos[0].size == 0:
             continue

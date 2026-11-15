@@ -79,43 +79,55 @@ def amplitude_in_window(xs, ys, x1, x2):
     return res
 
 
-def derivative_in_window(xs, ys, x1, x2, max_curve_points=500):
+def derivative_in_window(xs, ys, x1, x2):
     """
-    Derivative dy/dx of the signal, sample by sample, inside [x1, x2].
+    Derivative of the signal inside [x1, x2], as the tutor asked: diff of the vector.
 
-    Uses central differences (numpy.gradient) with the real X spacing, so the
-    result is in signal units per X unit (e.g. mV/s).
-    Returns a dict:
+        d = diff(y) / diff(x)        (signal units per X unit, e.g. mV/s)
+
+    Each value belongs to the midpoint between two samples. The maximum is the
+    measurement; the minimum is also reported, useful when the response is a negative wave.
+
+    Returns a dict, or None when the window has fewer than 2 samples:
       {
-        "type": "difference",
-        "x1", "x2", "n",
-        "d_mean":  mean derivative in the window,
-        "d_max", "x_at_dmax", "d_min", "x_at_dmin",
-        "curve": [(x, dy/dx), ...]   (at most `max_curve_points`, for drawing)
+        "type": "difference", "x1", "x2", "n",
+        "d_mean", "d_max", "x_at_dmax", "y_at_dmax", "d_min", "x_at_dmin", "y_at_dmin",
+        "tangent": [(x, y), (x, y)]   short line of slope d_max through the maximum, for drawing
       }
-    or None when the window has fewer than 2 samples.
     """
-    i0, i1, wxs, wys = _slice_window(xs, ys, x1, x2)
-    x = np.asarray(wxs, dtype=np.float64)
-    y = np.asarray(wys, dtype=np.float64)
+    x_all = np.asarray(xs, dtype=np.float64)
+    y_all = np.asarray(ys, dtype=np.float64)
+
+    i0, i1, _, _ = _slice_window(x_all, y_all, x1, x2)
+    x = x_all[i0:i1]
+    y = y_all[i0:i1]
     ok = np.isfinite(x) & np.isfinite(y)
     x, y = x[ok], y[ok]
     if x.size < 2:
         return None
 
-    d = np.gradient(y, x)
-    j_max = int(np.nanargmax(d))
-    j_min = int(np.nanargmin(d))
+    dx = np.diff(x)
+    valido = dx > 0
+    if not np.any(valido):
+        return None
+    d = np.diff(y)[valido] / dx[valido]
+    xm = ((x[:-1] + x[1:]) / 2.0)[valido]          # where each derivative value belongs
+    ym = ((y[:-1] + y[1:]) / 2.0)[valido]
 
-    paso = max(1, int(np.ceil(x.size / float(max_curve_points))))
-    curve = [(float(a), float(b)) for a, b in zip(x[::paso], d[::paso])]
+    j_max = int(np.argmax(d))
+    j_min = int(np.argmin(d))
+
+    # Tangent of slope d_max through the maximum, as long as a quarter of the window
+    medio = (x[-1] - x[0]) / 8.0
+    x0, y0, m = float(xm[j_max]), float(ym[j_max]), float(d[j_max])
+    tangent = [(x0 - medio, y0 - m * medio), (x0 + medio, y0 + m * medio)]
 
     return {
         "type": "difference",
         "x1": float(x[0]), "x2": float(x[-1]),
         "n": int(x.size),
-        "d_mean": float(np.nanmean(d)),
-        "d_max": float(d[j_max]), "x_at_dmax": float(x[j_max]),
-        "d_min": float(d[j_min]), "x_at_dmin": float(x[j_min]),
-        "curve": curve,
+        "d_mean": float(np.mean(d)),
+        "d_max": m, "x_at_dmax": x0, "y_at_dmax": y0,
+        "d_min": float(d[j_min]), "x_at_dmin": float(xm[j_min]), "y_at_dmin": float(ym[j_min]),
+        "tangent": tangent,
     }

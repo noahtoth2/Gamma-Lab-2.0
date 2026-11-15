@@ -7,6 +7,7 @@ import os
 from core.utils.ajuste_vertical import AjusteVertical, es_grafico_de_lineas
 from core.utils.cursor_readout import CursorReadout
 from core.utils.vtk_observers import observar, _estado
+from core.utils.submuestreo import restablecer_vista
 
 EJE_X, EJE_Y = vtkAxis.BOTTOM, vtkAxis.LEFT   # SetAxisZoom recibe el eje de VTK: LEFT es 0 y BOTTOM es 1
 
@@ -393,7 +394,7 @@ class VTKContextMenu:
             if ajuste is not None:
                 ajuste.restaurar()
             try:
-                ch.RecalculateBounds()
+                restablecer_vista(ch)   # también cuando el zoom dejó las series recortadas al tramo visible
             except AttributeError:
                 pass
         try:

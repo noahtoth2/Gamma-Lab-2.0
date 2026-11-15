@@ -41,7 +41,7 @@ def test_la_derivada_de_una_recta_es_su_pendiente():
     r = derivative_in_window(t, 5.0 * t + 1.0, 0.5, 1.5)
     assert r["d_mean"] == pytest.approx(5.0)
     assert r["d_max"] == pytest.approx(5.0) and r["d_min"] == pytest.approx(5.0)
-    assert r["n"] == 101 and len(r["curve"]) <= 500
+    assert r["n"] == 101
 
 
 def test_la_derivada_de_un_seno_es_un_coseno():
@@ -49,6 +49,27 @@ def test_la_derivada_de_un_seno_es_un_coseno():
     r = derivative_in_window(t, np.sin(2 * np.pi * t), 0.0, 1.0)
     assert r["d_max"] == pytest.approx(2 * np.pi, rel=1e-3)
     assert r["x_at_dmax"] == pytest.approx(0.0, abs=1e-3) or r["x_at_dmax"] == pytest.approx(1.0, abs=1e-3)
+
+
+def test_la_derivada_es_diff_de_y_entre_diff_de_x():
+    # como diff en MATLAB: una derivada entre cada par de muestras, en el punto medio
+    x = np.array([0.0, 0.1, 0.2, 0.3, 0.4])
+    y = np.array([0.0, 1.0, 1.5, 4.5, 4.0])
+    r = derivative_in_window(x, y, 0.0, 0.4)
+    assert r["d_max"] == pytest.approx(30.0)            # (4.5 - 1.5) / 0.1
+    assert r["x_at_dmax"] == pytest.approx(0.25)        # entre 0.2 y 0.3
+    assert r["y_at_dmax"] == pytest.approx(3.0)         # sobre la señal, entre 1.5 y 4.5
+    assert r["d_min"] == pytest.approx(-5.0)
+    assert r["d_mean"] == pytest.approx(np.mean(np.diff(y) / np.diff(x)))
+
+
+def test_la_tangente_pasa_por_el_maximo_con_su_pendiente():
+    x = np.array([0.0, 0.1, 0.2, 0.3, 0.4])
+    y = np.array([0.0, 1.0, 1.5, 4.5, 4.0])
+    r = derivative_in_window(x, y, 0.0, 0.4)
+    (xa, ya), (xb, yb) = r["tangent"]
+    assert (yb - ya) / (xb - xa) == pytest.approx(r["d_max"])
+    assert (xa + xb) / 2 == pytest.approx(r["x_at_dmax"]) and (ya + yb) / 2 == pytest.approx(r["y_at_dmax"])
 
 
 def test_la_derivada_necesita_dos_muestras():
@@ -82,15 +103,16 @@ def test_amplitude_all_trials_una_fila_por_trial():
     assert [m["amp_pp"] for m in meds] == pytest.approx([1.0, 2.0, 3.0])
 
 
-def test_difference_all_trials_guarda_la_curva_para_dibujarla_en_el_eje_derecho():
+def test_difference_all_trials_marca_el_maximo_de_cada_trial():
     svc, almacen = _sesion(trials_source=_trials)
     _medir(svc, "difference_all_trials", 0.1, 0.9)
     meds = almacen["measurements"]
     assert [m["type"] for m in meds] == ["difference"] * 3
-    assert [m["d_mean"] for m in meds] == pytest.approx([1.0, 2.0, 3.0])
+    assert [m["d_max"] for m in meds] == pytest.approx([1.0, 2.0, 3.0])
     for m in meds:
-        assert "curve" not in m
-        assert m["overlay_right_axis"] is True and len(m["overlay_pts"]) >= 2
+        assert "tangent" not in m and not m.get("overlay_right_axis")
+        assert len(m["overlay_pts"]) == 2
+        assert tuple(m["overlay_marker"]) == (m["x_at_dmax"], m["y_at_dmax"])
 
 
 def test_en_trials_cada_medicion_queda_en_la_grafica_de_su_trial():
@@ -196,4 +218,6 @@ def test_difference_de_una_traza():
     _medir(svc, "difference", 0.0, 1.0)
     (m,) = almacen["measurements"]
     assert m["type"] == "difference" and m["d_mean"] == pytest.approx(4.0)
-    assert svc._add_overlay_for_points.call_args.kwargs["right_axis"] is True
+    kw = svc._add_overlay_for_points.call_args.kwargs
+    assert not kw.get("right_axis") and len(kw["points"]) == 2          # tangente, sin eje derecho
+    assert svc._add_overlay_for_points.call_args.args[1] == pytest.approx((m["x_at_dmax"], m["y_at_dmax"]))

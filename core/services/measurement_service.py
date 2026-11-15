@@ -9,6 +9,7 @@ import numpy as np
 from core.filters.measurements import amplitude_in_window, two_point_metrics, derivative_in_window
 from core.utils.plugin_alerts import PluginAlerts
 from core.utils.submuestreo import tabla_de, datos_completos
+from core.utils.ajuste_vertical import ignorar_en_ajuste
 
 
 class MeasurementService:
@@ -197,7 +198,11 @@ class SesionDeMedicion:
         """Draw the overlay of a saved measurement: its curve if it has one, else P1–P2."""
         mid = m.get("id")
         pts = m.get("overlay_pts")
-        if isinstance(pts, (list, tuple)) and len(pts) >= 2:
+        marca = m.get("overlay_marker")
+        if isinstance(marca, (list, tuple)) and isinstance(pts, (list, tuple)) and len(pts) >= 2:
+            self._add_overlay_for_points(mid, marca, marca, points=pts, dashed=False,
+                                         color=self.DIFF_COLOR, render=render)
+        elif isinstance(pts, (list, tuple)) and len(pts) >= 2:
             self._add_overlay_for_points(mid, pts[0], pts[-1], points=pts,
                                          right_axis=bool(m.get("overlay_right_axis")), render=render)
         else:
@@ -820,6 +825,7 @@ class SesionDeMedicion:
         x1, y1 = cur['p1']
         x2, y2 = cur['p2']
         kind = cur.get('type', 'slope')
+        vista = self._get_current_ranges()
 
         try:
             if kind == 'slope':
@@ -839,7 +845,32 @@ class SesionDeMedicion:
             self._state = 'idle'
             self._current = None
             self._picked_ctx = None
+            self._keep_view(vista)
             self._notify_change()
+
+    def _keep_view(self, vista):
+        """Leave X and Y as they were before drawing the measurement.
+
+        Adding a plot makes VTK recompute the axes from what is drawn; after a zoom the
+        long curves only hold the visible stretch, so the view collapsed onto it and the
+        rest of the trial seemed gone. The right axis (derivative) still fits by itself.
+        """
+        ch = self.get_active_chart()
+        if not ch or not vista:
+            return
+        try:
+            self.vtk_widget.GetRenderWindow().Render()
+        except Exception:
+            pass
+        try:
+            ch.GetAxis(vtk.vtkAxis.BOTTOM).SetRange(*vista['x'])
+            ch.GetAxis(vtk.vtkAxis.LEFT).SetRange(*vista['y'])
+        except Exception:
+            return
+        try:
+            self.vtk_widget.GetRenderWindow().Render()
+        except Exception:
+            pass
 
     # ---- one trace ----
 
@@ -900,27 +931,31 @@ class SesionDeMedicion:
         result.update(self._difference_overlay_fields(result))
         meas_id = self._save_measurement(result, (x1, y1), (x2, y2), override_ctx=self._picked_ctx)
         try:
-            self._add_overlay_for_points(meas_id, (x1, y1), (x2, y2), points=result["overlay_pts"],
-                                         right_axis=True)
+            marca = result["overlay_marker"]
+            self._add_overlay_for_points(meas_id, marca, marca, points=result["overlay_pts"],
+                                         dashed=False, color=self.DIFF_COLOR)
         except Exception:
             pass
         try:
             self.alerts.info(
-                (f"Derivative dy/dx in [{result['x1']:.6g}, {result['x2']:.6g}]\n"
-                 f"Mean = {result['d_mean']:.6g}\n"
+                (f"Maximum derivative dy/dx in [{result['x1']:.6g}, {result['x2']:.6g}]\n"
                  f"Max = {result['d_max']:.6g} @ x={result['x_at_dmax']:.6g}\n"
                  f"Min = {result['d_min']:.6g} @ x={result['x_at_dmin']:.6g}\n"
-                 f"ID: {meas_id}\n\nThe derivative is drawn on the right axis."),
+                 f"Mean = {result['d_mean']:.6g}\n"
+                 f"ID: {meas_id}\n\nThe point of maximum derivative is marked with its tangent."),
                 "Saved difference"
             )
         except Exception:
             pass
 
+    DIFF_COLOR = (128, 0, 200)      # difference: point of maximum derivative and its tangent
+
     @staticmethod
     def _difference_overlay_fields(result):
-        """The derivative curve goes to the record as overlay (right axis), not as a result column."""
-        curve = result.pop("curve", None) or []
-        return {"overlay_pts": [tuple(p) for p in curve], "overlay_right_axis": True}
+        """What is drawn for a difference: the tangent of slope d_max through the maximum, and that point."""
+        tangent = result.pop("tangent", None) or []
+        return {"overlay_pts": [tuple(p) for p in tangent],
+                "overlay_marker": (result["x_at_dmax"], result["y_at_dmax"])}
 
     def _ensure_ref_data(self) -> bool:
         if self._ref_data and self._ref_data.get('xs'):
@@ -1113,7 +1148,12 @@ class SesionDeMedicion:
                 tid = (m.get("ctx") or {}).get("trial_id")
                 color = self.SLOPE_COLOR if m.get("type") == "slope" else colors.get(tid)
                 pts = m.get("overlay_pts")
-                if isinstance(pts, (list, tuple)) and len(pts) >= 2:
+                marca = m.get("overlay_marker")
+                if isinstance(marca, (list, tuple)) and isinstance(pts, (list, tuple)) and len(pts) >= 2:
+                    self._add_overlay_for_points(m.get("id"), marca, marca, points=pts, dashed=False,
+                                                 color=color, width=2.0, markers=True,
+                                                 batch=batch, render=False)
+                elif isinstance(pts, (list, tuple)) and len(pts) >= 2:
                     self._add_overlay_for_points(m.get("id"), pts[0], pts[-1], points=pts,
                                                  right_axis=bool(m.get("overlay_right_axis")),
                                                  color=color, width=1.5, markers=False,
@@ -1265,6 +1305,14 @@ class SesionDeMedicion:
                 pass
             points_plot.SetInputData(tbl_markers, 0, 1)
             points_plot.SetUseIndexForXSeries(False)
+
+        # Measurement lines are not data: they must not stretch the auto-fitted Y axis
+        for pl in (line_plot, points_plot):
+            if pl is not None:
+                try:
+                    ignorar_en_ajuste(pl)
+                except Exception:
+                    pass
 
         self._overlays.append({
             "id": meas_id,
