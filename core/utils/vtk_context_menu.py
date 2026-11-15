@@ -192,6 +192,19 @@ class VTKContextMenu:
         if graph_id is not None:     self._measure_scope["graph_id"] = graph_id
         self._apply_measure_scope_to_service()
 
+    def set_trials_source(self, source, visible_trial_ids=None):
+        """Give the measurement session every trial of the view, for the 'all trials' measurements.
+
+        `source()` returns (time (Ns,), trials (Ns, T), trial_ids 0-based). `visible_trial_ids`
+        limits the overlays to the trials drawn now (None = all).
+        """
+        try:
+            self.measure_service.trials_source = source
+            self.measure_service.visible_trial_ids = (None if visible_trial_ids is None
+                                                      else set(int(i) for i in visible_trial_ids))
+        except Exception:
+            pass
+
     def _apply_measure_scope_to_service(self):
         try:
             self.measure_service.set_context(**self._measure_scope)
@@ -301,23 +314,19 @@ class VTKContextMenu:
 
         # Measurements
         measure_menu = menu.addMenu("Measurements")
-        act_slope = measure_menu.addAction(
-            "Slope (2 points)",
-            lambda: self.measure_service.start('slope')
-        )
-        act_amp = measure_menu.addAction(
-            "Amplitude (2 points)",
-            lambda: self.measure_service.start('amplitude')
-        )
-        act_slope_all_trials = measure_menu.addAction(
-            "Slope (all trials)",
-            lambda: self.measure_service.start('slope_all_trials')
-        )
-
         can_measure = self._measurements_enabled and self._can_measure_current_chart()
-        act_slope.setEnabled(can_measure and self.measure_service.state == 'idle')
-        act_amp.setEnabled(can_measure and self.measure_service.state == 'idle')
-        act_slope_all_trials.setEnabled(can_measure and self.measure_service.state == 'idle')
+        idle = self.measure_service.state == 'idle'
+        all_ok = self.measure_service.supports_all_trials()
+        for text, mtype, needs_trials in (
+            ("Slope (2 points)", "slope", False),
+            ("Slope (all trials)", "slope_all_trials", True),
+            ("Difference / derivative (2 points)", "difference", False),
+            ("Difference / derivative (all trials)", "difference_all_trials", True),
+            ("Amplitude (2 points)", "amplitude", False),
+            ("Amplitude (all trials)", "amplitude_all_trials", True),
+        ):
+            act = measure_menu.addAction(text, lambda mt=mtype: self.measure_service.start(mt))
+            act.setEnabled(can_measure and idle and (all_ok or not needs_trials))
 
         act_cancel = measure_menu.addAction("Cancel measurement (Esc)", self.measure_service.cancel)
         act_cancel.setEnabled(self.measure_service.state != 'idle')

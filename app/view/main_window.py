@@ -54,6 +54,9 @@ from core.utils.vtk_ventanas import liberar_ventanas
 from core.services.project_service import ProjectService
 
 class MainWindow(QMainWindow):
+    # Results tables fed by DataStore['measurements'] (Results panel tabs + refresh + export)
+    RESULT_PLUGINS = ("Slope Results", "Difference Results", "Amplitude Results")
+
     def __init__(self, kernel):
         super().__init__()
         self.kernel = kernel
@@ -256,6 +259,9 @@ class MainWindow(QMainWindow):
                 if section == "Home" and name == "Slope Results":
                     row.addWidget(self._build_slope_button(name), 0, Qt.AlignBottom)
                     continue
+                if section == "Home" and name == "Difference Results":
+                    row.addWidget(self._build_difference_button(name), 0, Qt.AlignBottom)
+                    continue
                 if section == "Home" and name == "Amplitude Results":
                     row.addWidget(self._build_amplitude_button(name), 0, Qt.AlignBottom)
                     continue
@@ -432,13 +438,26 @@ class MainWindow(QMainWindow):
         """Slope icon (click = start a 2-point slope) + arrow (2 trials / all trials)."""
         return self._build_measurement_button(
             name, "slope", measure_type="slope", icon_size=52,
-            menu_items=[("Slope (2 trials)", "slope"), ("slope (all trials)", "slope_all_trials")],
+            menu_items=[("Slope (2 points)", "slope"), ("Slope (all trials)", "slope_all_trials")],
+            icon_left_margin=6,
+        )
+
+    def _build_difference_button(self, name: str) -> QWidget:
+        """Difference icon (click = derivative of the signal between 2 points) + arrow (all trials)."""
+        return self._build_measurement_button(
+            name, "difference", measure_type="difference", icon_size=52,
+            menu_items=[("Difference (2 points)", "difference"),
+                        ("Difference (all trials)", "difference_all_trials")],
             icon_left_margin=6,
         )
 
     def _build_amplitude_button(self, name: str) -> QWidget:
-        """Amplitude icon (click = start an amplitude measurement), built like slope."""
-        return self._build_measurement_button(name, "amplitude", measure_type="amplitude", icon_size=74)
+        """Amplitude icon (click = start an amplitude measurement) + arrow (all trials)."""
+        return self._build_measurement_button(
+            name, "amplitude", measure_type="amplitude", icon_size=74,
+            menu_items=[("Amplitude (2 points)", "amplitude"),
+                        ("Amplitude (all trials)", "amplitude_all_trials")],
+        )
 
     def _build_static_tool_button(self, icon_path: str, object_name: str, small: bool = False) -> QToolButton:
         """Build a ribbon button not backed by a plugin (e.g. delete, zoom)."""
@@ -452,14 +471,23 @@ class MainWindow(QMainWindow):
         btn.setIcon(QIcon(icon_path))
         return btn
 
+    def _live_vtk_menu(self):
+        """Chart menu of the view on screen, read live: plugins like the ERP create it only after
+        'Generate' and may replace it, so the one remembered when the plugin was opened can be
+        missing or stale. Falls back to the last chart view visited."""
+        menu = getattr(self.active_plugin, "vtk_menu", None) if getattr(self, "active_plugin", None) else None
+        if menu is not None:
+            self._active_vtk_menu = menu
+        return self._active_vtk_menu
+
     def _get_active_measure_service(self):
-        """MeasurementService of the last chart-bearing view the user visited."""
-        menu = self._active_vtk_menu
+        """MeasurementService of the chart view on screen (or the last one visited)."""
+        menu = self._live_vtk_menu()
         return getattr(menu, "measure_service", None) if menu else None
 
     def _refresh_measurement_tables(self):
         """Reload the Slope/Amplitude results tables if they're already built."""
-        for name in ("Slope Results", "Amplitude Results"):
+        for name in self.RESULT_PLUGINS:
             plugin = self.kernel.get_plugin(name)
             if plugin and name in self.plugin_widgets:
                 try:
@@ -553,7 +581,7 @@ class MainWindow(QMainWindow):
         zoom_state = {"pct": 100}
 
         def apply_zoom(factor):
-            menu = self._active_vtk_menu
+            menu = self._live_vtk_menu()
             if not menu or not hasattr(menu, "zoom_by_factor"):
                 self.alerts.warning("Open a chart view (Trials, FFT, etc.) first.")
                 return
@@ -562,7 +590,7 @@ class MainWindow(QMainWindow):
             zoom_field.setText(f"{zoom_state['pct']}%")
 
         def restore_zoom():
-            menu = self._active_vtk_menu
+            menu = self._live_vtk_menu()
             if not menu or not hasattr(menu, "reset_zoom"):
                 self.alerts.warning("Open a chart view (Trials, FFT, etc.) first.")
                 return
@@ -1841,7 +1869,8 @@ class MainWindow(QMainWindow):
         """Embed the real Slope/Amplitude plugin widgets (full table + CSV export) as tabs."""
         if self.ui.resultsTabs.count() > 0:
             return
-        for tab_label, plugin_name in (("Slope", "Slope Results"), ("Amplitude", "Amplitude Results")):
+        for tab_label, plugin_name in (("Slope", "Slope Results"), ("Difference", "Difference Results"),
+                                       ("Amplitude", "Amplitude Results")):
             plugin = self.kernel.get_plugin(plugin_name)
             if not plugin:
                 continue
@@ -1861,7 +1890,7 @@ class MainWindow(QMainWindow):
 
     def refresh_results_panel(self):
         """Reload both results tables from DataStore['measurements']."""
-        for plugin_name in ("Slope Results", "Amplitude Results"):
+        for plugin_name in self.RESULT_PLUGINS:
             plugin = self.kernel.get_plugin(plugin_name)
             if plugin:
                 try:
@@ -1874,7 +1903,7 @@ class MainWindow(QMainWindow):
         widget = self.ui.resultsTabs.currentWidget()
         if widget is None:
             return
-        for plugin_name in ("Slope Results", "Amplitude Results"):
+        for plugin_name in self.RESULT_PLUGINS:
             plugin = self.kernel.get_plugin(plugin_name)
             if plugin and getattr(plugin, "widget", None) is widget:
                 plugin.export_csv()
@@ -1885,7 +1914,7 @@ class MainWindow(QMainWindow):
         widget = self.ui.resultsTabs.currentWidget()
         if widget is None:
             return
-        for plugin_name in ("Slope Results", "Amplitude Results"):
+        for plugin_name in self.RESULT_PLUGINS:
             plugin = self.kernel.get_plugin(plugin_name)
             if plugin and getattr(plugin, "widget", None) is widget:
                 plugin.export_xlsx()

@@ -77,3 +77,45 @@ def amplitude_in_window(xs, ys, x1, x2):
         "x_at_max": float(wxs[j_max]),
     }
     return res
+
+
+def derivative_in_window(xs, ys, x1, x2, max_curve_points=500):
+    """
+    Derivative dy/dx of the signal, sample by sample, inside [x1, x2].
+
+    Uses central differences (numpy.gradient) with the real X spacing, so the
+    result is in signal units per X unit (e.g. mV/s).
+    Returns a dict:
+      {
+        "type": "difference",
+        "x1", "x2", "n",
+        "d_mean":  mean derivative in the window,
+        "d_max", "x_at_dmax", "d_min", "x_at_dmin",
+        "curve": [(x, dy/dx), ...]   (at most `max_curve_points`, for drawing)
+      }
+    or None when the window has fewer than 2 samples.
+    """
+    i0, i1, wxs, wys = _slice_window(xs, ys, x1, x2)
+    x = np.asarray(wxs, dtype=np.float64)
+    y = np.asarray(wys, dtype=np.float64)
+    ok = np.isfinite(x) & np.isfinite(y)
+    x, y = x[ok], y[ok]
+    if x.size < 2:
+        return None
+
+    d = np.gradient(y, x)
+    j_max = int(np.nanargmax(d))
+    j_min = int(np.nanargmin(d))
+
+    paso = max(1, int(np.ceil(x.size / float(max_curve_points))))
+    curve = [(float(a), float(b)) for a, b in zip(x[::paso], d[::paso])]
+
+    return {
+        "type": "difference",
+        "x1": float(x[0]), "x2": float(x[-1]),
+        "n": int(x.size),
+        "d_mean": float(np.nanmean(d)),
+        "d_max": float(d[j_max]), "x_at_dmax": float(x[j_max]),
+        "d_min": float(d[j_min]), "x_at_dmin": float(x[j_min]),
+        "curve": curve,
+    }

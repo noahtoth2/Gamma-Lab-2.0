@@ -35,7 +35,7 @@ def test_el_orden_de_botones_viene_de_los_metadatos():
     # a Time-Frequency, donde lo ordena `order: 5` como a los demás (ef7f0df).
     assert tf == ["PAC", "Modulation Index", "Wavelet", "Wavelet Average", "PPC"]
     med = sorted((n for n, m in metas.items() if m.subcategory == "Measurements"), key=lambda n: metas[n].order)
-    assert med == ["Slope Results", "Amplitude Results"]
+    assert med == ["Slope Results", "Difference Results", "Amplitude Results"]
 
 
 def _plugin_falso(carpeta, nombre, extra):

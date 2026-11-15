@@ -18,7 +18,7 @@ from plugins.analysis.time.erp.erp_plugin_ui import Ui_ErpPlot
 from core.utils.adapters import trials_matrix_to_vtk_table
 from core.utils.trial_labels import trials_used
 from functools import partial
-from core.utils.submuestreo import agregar_columna
+from core.utils.submuestreo import agregar_columna, agregar_linea
 
 
 def calcular_erp(t, M, idx, ctx=None):
@@ -42,6 +42,12 @@ class Erp_plugin(IPlugin):
         self.vtk_bot: QVTKRenderWindowInteractor | None = None
         self.view_top: vtk.vtkContextView | None = None
         self.view_bot: vtk.vtkContextView | None = None
+
+        # Butterfly groups: the selected trials are shown N at a time
+        self._t = None
+        self._sel = None            # (K, Ns) selected trials
+        self._sel_ids = None        # 0-based index of each row of _sel
+        self._group_idx = 0
 
 
     def process(self, data: any):
@@ -113,6 +119,11 @@ class Erp_plugin(IPlugin):
         self.ui.spnFrom.valueChanged.connect(self._sync_range)
         self.ui.spnTo.valueChanged.connect(self._sync_range)
         self.ui.txtFilter.textChanged.connect(self._apply_filter)
+        self.ui.cmbGroupSize.currentIndexChanged.connect(self._on_group_size_changed)
+        self.ui.spnGroupSize.valueChanged.connect(self._on_group_size_changed)
+        self.ui.btnPrevGroup.clicked.connect(lambda: self._move_group(-1))
+        self.ui.btnNextGroup.clicked.connect(lambda: self._move_group(+1))
+        self.ui.chkShowAverage.toggled.connect(lambda _: self._render_group())
 
     def _on_clear_clicked(self):
         self.ui.chkSelectAll.setChecked(True)
@@ -122,6 +133,8 @@ class Erp_plugin(IPlugin):
         self.ui.spnFrom.setValue(1)
         self.ui.spnTo.setValue(1)
         self.ui.txtFilter.clear()
+        self.ui.cmbGroupSize.setCurrentIndex(0)
+        self.ui.chkShowAverage.setChecked(True)
 
     # ========= Dataset =========
     def _load_trials_from_store(self):
@@ -232,16 +245,23 @@ class Erp_plugin(IPlugin):
         self.ch_name = getattr(td, "channel_name", "")
         used = trials_used(idx, n_trials, channel=self.ch_name)
 
+        self._last_idx0 = [int(i) - 1 for i in idx]
+
         # 3) selection + heat-map preparation in the TaskService (R71), render when it finishes
         self.run_task(calcular_erp, partial(self._on_erp_done, t, used, n_trials),
                       t=t, M=M, idx=list(idx))
 
     def _on_erp_done(self, t, used, n_trials, resultado):
         sel, mapa = resultado
-        self._render_butterfly(t, sel, title=f"ERP — {self.ch_name} — {used['label']}")
+        self._trials_used = used
+        self._t = np.asarray(t, dtype=float)
+        self._sel = sel
+        ids = list(getattr(self, "_last_idx0", []) or [])
+        self._sel_ids = ids if len(ids) == sel.shape[0] else list(range(sel.shape[0]))
+        self._group_idx = 0
+        self._render_group()
         self._render_heatmap(t, sel, title=f"Trials: {used['label']}", preparado=mapa)
 
-        self._trials_used = used
         self._notify(f"ERP: {used['label']} plotted. Channel: {self.ch_name}")
         self.publish_current_trial()
         self.mark_project_dirty()
@@ -270,6 +290,9 @@ class Erp_plugin(IPlugin):
             "range_to": self.ui.spnTo.value(),
             "manual_checked_indices": checked_indices,
             "trials_used": self._trials_used,
+            "group_size": self.ui.cmbGroupSize.currentText(),
+            "custom_group_size": self.ui.spnGroupSize.value(),
+            "show_average": self.ui.chkShowAverage.isChecked(),
         }
 
     def apply_analysis_params(self, params: dict):
@@ -280,6 +303,10 @@ class Erp_plugin(IPlugin):
         self.ui.spnSingleTrial.setValue(params.get("single_trial", self.ui.spnSingleTrial.value()))
         self.ui.spnFrom.setValue(params.get("range_from", self.ui.spnFrom.value()))
         self.ui.spnTo.setValue(params.get("range_to", self.ui.spnTo.value()))
+        gi = self.ui.cmbGroupSize.findText(str(params.get("group_size", "All")))
+        self.ui.cmbGroupSize.setCurrentIndex(gi if gi >= 0 else 0)
+        self.ui.spnGroupSize.setValue(int(params.get("custom_group_size", self.ui.spnGroupSize.value())))
+        self.ui.chkShowAverage.setChecked(bool(params.get("show_average", True)))
 
         if mode == "manual":
             # Plot once first so lstTrials gets (re)built at the right size,
@@ -329,42 +356,136 @@ class Erp_plugin(IPlugin):
         except Exception as e:
             print("[TrialsPlugin] cleanup_vtk() error:", e)
             
-    def _render_butterfly(self, t: np.ndarray, sel: np.ndarray, title: str = None):
+    # ===== Butterfly groups =====
+    def _group_size(self, n: int) -> int:
+        ui = getattr(self, "ui", None)
+        if ui is None or not hasattr(ui, "cmbGroupSize"):
+            return max(1, n)
+        txt = ui.cmbGroupSize.currentText()
+        if txt == "All":
+            return max(1, n)
+        if txt == "Custom":
+            return max(1, ui.spnGroupSize.value())
+        try:
+            return max(1, int(txt))
+        except ValueError:
+            return max(1, n)
+
+    def _n_groups(self) -> int:
+        if self._sel is None:
+            return 1
+        n = self._sel.shape[0]
+        return max(1, -(-n // self._group_size(n)))
+
+    def _on_group_size_changed(self, *_):
+        self.ui.spnGroupSize.setEnabled(self.ui.cmbGroupSize.currentText() == "Custom")
+        self._group_idx = 0
+        self._render_group()
+
+    def _move_group(self, step: int):
+        if self._sel is None:
+            return
+        self._group_idx = (self._group_idx + step) % self._n_groups()
+        self._render_group()
+
+    def _render_group(self):
+        """Draw the current group of selected trials with its average on top."""
+        if self._sel is None or self._t is None:
+            return
+        n = self._sel.shape[0]
+        size = self._group_size(n)
+        ng = self._n_groups()
+        self._group_idx = min(self._group_idx, ng - 1)
+        a = self._group_idx * size
+        b = min(n, a + size)
+        ids = list(self._sel_ids[a:b]) if self._sel_ids is not None else list(range(a, b))
+        label = (getattr(self, "_trials_used", None) or {}).get("label", "")
+        if ng > 1:
+            seguidos = ids == list(range(ids[0], ids[-1] + 1))
+            txt = f"trials {ids[0] + 1}-{ids[-1] + 1}" if seguidos else ", ".join(str(i + 1) for i in ids)
+            title = f"ERP — {self.ch_name} — group {self._group_idx + 1}/{ng} ({txt})"
+        else:
+            title = f"ERP — {self.ch_name} — {label}"
+        ui = getattr(self, "ui", None)
+        if ui is not None and hasattr(ui, "lblGroup"):
+            ui.lblGroup.setText(f"Group {self._group_idx + 1}/{ng}  ({b - a} trials)")
+            ui.btnPrevGroup.setEnabled(ng > 1)
+            ui.btnNextGroup.setEnabled(ng > 1)
+        self._render_butterfly(self._t, self._sel[a:b], title=title, trial_ids=ids)
+
+    def _render_butterfly(self, t: np.ndarray, sel: np.ndarray, title: str = None, trial_ids=None):
         """
-        Draw lines (1 per trial) with vtkChartXY.
-        t: (T,), sel: (K, T)
+        Draw lines (1 per trial) with vtkChartXY and, on top, their average in black.
+        t: (T,), sel: (K, T), trial_ids: 0-based index of each row (for the measurements).
         """
         assert self.view_top is not None
         scene = self.view_top.GetScene()
         scene.ClearItems()
 
+        t = np.asarray(t, dtype=float)
+        sel = np.asarray(sel, dtype=float)
+        if trial_ids is None or len(trial_ids) != sel.shape[0]:
+            trial_ids = list(range(sel.shape[0]))
+        trial_ids = [int(i) for i in trial_ids]
+
+        dibujar = sel
         if sel.shape[0] > self.MAX_CURVAS:      # R73: solo se limita lo que se dibuja
             self._log(f"Hay {sel.shape[0]} trials, se dibujan {self.MAX_CURVAS}")
-            sel = sel[:self.MAX_CURVAS]
-        table = trials_matrix_to_vtk_table(t, sel.T)
+            dibujar = sel[:self.MAX_CURVAS]
 
         chart = vtk.vtkChartXY()
         scene.AddItem(chart)
 
-        # One plot per column Yk
-        num_cols = table.GetNumberOfColumns()
-        for c in range(1, num_cols):
-            plot = agregar_columna(chart, table, c)
+        # One plot per trial, named with its number
+        for row, k in zip(dibujar, trial_ids):
+            plot = agregar_linea(chart, t, row, "time", f"trial_{k + 1}")
             plot.SetWidth(0.5)
-        
+            plot.SetLabel(f"Trial {k + 1}")
+
+        # Average of the trials on screen, added last so it is drawn on top of the butterfly
+        ui = getattr(self, "ui", None)
+        show_avg = True
+        if ui is not None and hasattr(ui, "chkShowAverage"):
+            show_avg = ui.chkShowAverage.isChecked()
+        if show_avg and sel.shape[0] > 1:
+            with np.errstate(all="ignore"):
+                avg = np.nanmean(sel, axis=0)
+            plot = agregar_linea(chart, t, avg, "time", "average")
+            plot.SetColor(0, 0, 0, 255)
+            plot.SetWidth(3.0)
+            plot.SetLabel("Average")
+
         ax_bottom = chart.GetAxis(vtk.vtkAxis.BOTTOM)
         ax_left = chart.GetAxis(vtk.vtkAxis.LEFT)
-        
+
         # R32: the superposition of all trials is named as such on screen
         chart.SetTitle(f"Butterfly Plot — {title}" if title else "Butterfly Plot")
         ax_bottom.SetTitle("Time (s)")
         ax_left.SetTitle("Amplitude")
 
         try:
-            self.vtk_menu = VTKContextMenu(chart, self.vtk_top, self.active_signal.name,self.ch_name,self.meta.id, parent=self.widget)
+            # One menu for the butterfly, kept across renders: the ribbon (slope, difference,
+            # amplitude) measures through it, so it must stay the same object.
+            if getattr(self, "vtk_menu", None) is None:
+                self.vtk_menu = VTKContextMenu(chart, self.vtk_top, self.active_signal.name, self.ch_name,
+                                               self.meta.id, parent=self.widget)
+            else:
+                self.vtk_menu.set_chart(chart)
+                self.vtk_menu.set_signal_name(self.active_signal.name)
+                self.vtk_menu.set_channel_name(self.ch_name)
+            svc = self.vtk_menu.measure_service
+            mw = getattr(self, "mainwin", None)
+            if mw is not None and hasattr(mw, "_refresh_measurement_tables"):
+                svc.on_change = mw._refresh_measurement_tables
+            # "All trials" measurements use the trials on screen; their lines are drawn per trial
+            t_m, sel_m, ids_m = t, sel, trial_ids
+            self.vtk_menu.set_trials_source(lambda: (t_m, sel_m.T, ids_m), visible_trial_ids=ids_m)
+            self.vtk_menu.set_measurement_context(
+                view_id="erp", plugin=self.meta.id, domain="time", graph_id="butterfly",
+                channel_name=f"{self.active_signal.name}:{self.ch_name}")
+            self.vtk_menu.rebuild_measurement_overlays()
         except Exception as e:
             self.alerts.error(f"Error creating contextual menu\n {str(e)}", "Contextual menu")
-
 
         self.view_top.GetRenderWindow().Render()
 

@@ -84,7 +84,7 @@ def test_el_butterfly_dibuja_a_lo_sumo_200_curvas_sin_tocar_los_datos():
     p, t, sel = _erp(250)
     antes = sel.copy()
     p._render_butterfly(t, sel, title="x")
-    assert _grafico_del_erp(p).GetNumberOfPlots() == 200
+    assert _grafico_del_erp(p).GetNumberOfPlots() == 200 + 1      # + el promedio en negro
     assert np.array_equal(sel, antes) and sel.shape[0] == 250
 
 

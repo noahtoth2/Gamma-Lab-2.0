@@ -924,6 +924,8 @@ La subcategor\'ia \textbf{\textit{Time}} de la secci\'on \textbf{\textit{Analysi
 
     El diagrama de mariposa permite valorar de un vistazo la consistencia de la respuesta: si las trazas de los distintos \textit{trials} se agrupan en torno al promedio, la respuesta es estable; si se dispersan, el promedio est\'a resumiendo fen\'omenos distintos.
 
+    Sobre el diagrama de mariposa pueden tomarse medidas de pendiente y de amplitud, tanto sobre un \textit{trial} concreto como sobre el promedio, y tambi\'en en su variante \textit{all trials}. El procedimiento se describe en la Secci\'on~\ref{sec:mu_medidas_butterfly}.
+
     \subsubsection*{Componentes}
     Los controles de selecci\'on de \textit{trials} son los mismos que en \textbf{\textit{Average}}: \textbf{\textit{Select all trials}}, \textbf{\textit{Single trial}}, \textbf{\textit{Range}} con sus dos campos, \textbf{\textit{List}} con su \textbf{\textit{Filter\ldots}}, y el bot\'on \textbf{\textit{Generate}}.
 
@@ -1532,6 +1534,22 @@ GammaLab permite tomar medidas cuantitativas directamente sobre cualquier gr\'af
 
     \subsection{La variante Slope (all trials)}
     La entrada \textbf{\textit{Slope (all trials)}} toma los dos puntos una sola vez y aplica el mismo intervalo temporal a todos los \textit{trials}, generando una medida de pendiente por cada uno. Sirve para estudiar c\'omo var\'ia la pendiente de un mismo tramo a lo largo del registro, sin necesidad de repetir la medida \textit{trial} por \textit{trial}. Las filas resultantes se distinguen en la tabla por la columna \textbf{\textit{Graph}}, que indica a qu\'e \textit{trial} corresponde cada una.
+
+    \subsection{Medidas sobre el diagrama de mariposa}
+    \label{sec:mu_medidas_butterfly}
+    Las medidas tambi\'en pueden tomarse sobre el diagrama de mariposa (\textit{Butterfly Plot}) del \textit{plugin} \textbf{\textit{Event Related Potential}}, una vez pulsado \textbf{\textit{Generate}}. Se inician igual que en cualquier otra gr\'afica: desde el men\'u contextual \textbf{\textit{Measurements}} o desde los botones de medida de la cinta \textbf{\textit{Home}}, que act\'uan sobre la gr\'afica que est\'a en pantalla.
+
+    Como el diagrama superpone muchas curvas, el programa decide sobre cu\'al se mide de la siguiente manera:
+
+    \begin{itemize}
+        \item \textbf{Medida de dos puntos:} el primer clic toma la curva m\'as cercana al cursor, ya sea un \textit{trial} o la traza del promedio. El segundo punto se busca sobre esa misma curva, de modo que la medida nunca mezcla dos \textit{trials}. Donde varias curvas se cruzan se toma la que est\'a dibujada encima, que es el promedio.
+        \item \textbf{Identificaci\'on en la tabla:} la columna \textbf{\textit{Graph}} indica \textit{trial k} cuando se midi\'o un \textit{trial} y \textit{average} cuando se midi\'o el promedio.
+        \item \textbf{Variante \textit{all trials}:} \textbf{\textit{Slope (all trials)}} aplica el intervalo elegido a cada uno de los \textit{trials} que se ven en el diagrama en ese momento y genera una fila por \textit{trial}. Todas esas filas aparecen en el panel \textbf{\textit{Results}} y en su exportaci\'on a CSV o Excel.
+    \end{itemize}
+
+    Sobre la gr\'afica, cada pendiente se dibuja como una l\'inea roja y el promedio se mantiene en negro. En la variante \textit{all trials} los dos puntos elegidos se marcan una sola vez con dos l\'ineas verticales grises, y cada \textit{trial} lleva su propia l\'inea roja. Si en pantalla hay m\'as de doce \textit{trials}, las l\'ineas de cada \textit{trial} no se dibujan para que la gr\'afica siga siendo legible, aunque las medidas se calculan y se guardan igual. En ese caso conviene mostrar el diagrama por grupos peque\~nos, por ejemplo de seis \textit{trials}, para ver la l\'inea de cada uno.
+
+    La opci\'on \textbf{\textit{delete last}} borra completa la \'ultima medida \textit{all trials}, es decir, todas sus filas y sus l\'ineas a la vez.
 
     \subsection{Controles de medidas en la cinta Home}
     La secci\'on \textbf{\textit{Home}} de la cinta duplica, de forma m\'as accesible, los controles de gesti\'on de las medidas:

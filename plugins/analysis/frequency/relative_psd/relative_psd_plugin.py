@@ -169,11 +169,12 @@ class Relative_psd_plugin(IPlugin):
         # keep lo/hi consistent
         self.ui.lowFrequencySpinBox.valueChanged.connect(self._sync_range)
         self.ui.highFrequencySpinBox.valueChanged.connect(self._sync_range)
-        self.ui.npersegSpinBox.setRange(0, 500)
+        self.ui.npersegSpinBox.setRange(1, 100_000_000)  # sin tope de digitos: lo limita la longitud de la senal
+        self.ui.npersegSpinBox.setKeyboardTracking(False)  # sincroniza noverlap/nfft al terminar de escribir
         self.ui.npersegSpinBox.setValue(256)
-        self.ui.noverlapSpinBox.setRange(0, 500)
+        self.ui.noverlapSpinBox.setRange(0, 100_000_000)
         self.ui.noverlapSpinBox.setValue(128)
-        self.ui.nfftSpinBox.setRange(0, 500)
+        self.ui.nfftSpinBox.setRange(1, 100_000_000)
         self.ui.nfftSpinBox.setValue(256)
         self.ui.sampleDensitySpinBox.setRange(0, 10000)
         self.ui.sampleDensitySpinBox.setSingleStep(10)
@@ -279,8 +280,23 @@ class Relative_psd_plugin(IPlugin):
         abs_power, rel_power = self._compute_relative_psd(freq, pxx_all, f1, f2, GF)
 
         # UI
-        self.ui.absPowerValue.setText(f"{abs_power: .4e}")
-        self.ui.relPowerValue.setText(f"{rel_power: .4f}")
+        self.ui.absPowerValue.setText(f"{abs_power:.4e}")
+        self.ui.relPowerValue.setText(f"{rel_power:.4f}")
+
+        # Bands beyond Nyquist were silently cut to the last bin: say so
+        nyq = float(fs_eff) / 2.0
+        avisos = []
+        if f1 >= nyq:
+            avisos.append(f"The band [{f1}-{f2}] Hz is above Nyquist ({nyq:.1f} Hz): it has no power.")
+        elif f2 > nyq:
+            avisos.append(f"The band upper limit ({f2} Hz) is above Nyquist ({nyq:.1f} Hz); "
+                          f"it was computed up to {nyq:.1f} Hz.")
+        if nyq < 490.0:
+            avisos.append(f"Total power is defined on 0.5-490 Hz, but with a sample density of "
+                          f"{fs_eff:.0f} Hz it only reaches {nyq:.1f} Hz. Raise 'Sample density' "
+                          f"to at least 980 Hz for MATLAB-comparable relative values.")
+        if avisos:
+            self.alerts.warning("\n\n".join(avisos), "Relative PSD")
 
         # GF solo cambia como se combinan (promedio o todos); entran todos los validos
         self._trials_used = trials_used(p["posiciones"], p["n_trials"], "all" if GF == 1 else "average",

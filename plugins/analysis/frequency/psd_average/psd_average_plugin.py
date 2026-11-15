@@ -124,11 +124,12 @@ class Psd_average_plugin(IPlugin):
         self.ui.clearButton.clicked.connect(self._on_clear_clicked)
         self.ui.lowFrequencySpinBox.valueChanged.connect(self._sync_range)
         self.ui.highFrequencySpinBox.valueChanged.connect(self._sync_range)
-        self.ui.npersegSpinBox.setRange(0, 500)
+        self.ui.npersegSpinBox.setRange(1, 100_000_000)  # sin tope de digitos: lo limita la longitud de la senal
+        self.ui.npersegSpinBox.setKeyboardTracking(False)  # sincroniza noverlap/nfft al terminar de escribir
         self.ui.npersegSpinBox.setValue(256)
-        self.ui.noverlapSpinBox.setRange(0, 500)
+        self.ui.noverlapSpinBox.setRange(0, 100_000_000)
         self.ui.noverlapSpinBox.setValue(128)
-        self.ui.nfftSpinBox.setRange(0, 500)
+        self.ui.nfftSpinBox.setRange(1, 100_000_000)
         self.ui.nfftSpinBox.setValue(256)
         self.ui.sampleDensitySpinBox.setRange(0, 10000)
         self.ui.sampleDensitySpinBox.setSingleStep(10)

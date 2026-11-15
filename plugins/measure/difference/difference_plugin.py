@@ -1,0 +1,265 @@
+# plugins/measure/difference/difference_plugin.py
+"""Results table of the 'difference' measurement: derivative dy/dx of the signal between two points."""
+import csv
+import os
+from datetime import datetime
+from typing import Any, Dict, List
+
+from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtWidgets import QFileDialog, QHeaderView
+
+from core.plugins.interfaces import IPlugin
+from core.plugins.meta import PluginMeta
+from core.utils.rutas import carpeta_inicial
+from core.utils.xlsx_writer import escribir_xlsx
+from plugins.measure.slope.slope_plugin_ui import Ui_Slope
+
+
+def _f(v):
+    try:
+        return None if v is None else float(v)
+    except Exception:
+        return None
+
+
+class DifferenceTableModel(QtCore.QAbstractTableModel):
+    HEADERS = [
+        "ID",                   # 0
+        "Channel",              # 1
+        "Graph",                # 2
+        "Point 1 (x, y)",       # 3
+        "Point 2 (x, y)",       # 4
+        "Window start (x1)",    # 5
+        "Window end (x2)",      # 6
+        "Samples (N)",          # 7
+        "Mean dy/dx",           # 8
+        "Max dy/dx",            # 9
+        "x at max",             # 10
+        "Min dy/dx",            # 11
+        "x at min",             # 12
+        "Timestamp",            # 13
+    ]
+
+    HEADER_TIPS = {
+        0: "Unique measurement ID.",
+        1: "Channel associated with this measurement.",
+        2: "Graph the measurement belongs to (e.g. 'trial k').",
+        3: "Coordinates of the first point (x, y).",
+        4: "Coordinates of the second point (x, y).",
+        5: "First sample of the window.",
+        6: "Last sample of the window.",
+        7: "Number of samples in the window.",
+        8: "Mean of the derivative dy/dx in the window.",
+        9: "Largest value of dy/dx in the window.",
+        10: "X where the largest dy/dx occurs.",
+        11: "Smallest value of dy/dx in the window.",
+        12: "X where the smallest dy/dx occurs.",
+        13: "Timestamp when the measurement was saved.",
+    }
+
+    KEYS = ["id", "ctx_channel", "ctx_graph", None, None, "x1", "x2", "n",
+            "d_mean", "d_max", "x_at_dmax", "d_min", "x_at_dmin", "timestamp"]
+
+    def __init__(self, rows: List[Dict[str, Any]] | None = None, parent=None):
+        super().__init__(parent)
+        self._rows: List[Dict[str, Any]] = rows or []
+
+    def rowCount(self, parent=QtCore.QModelIndex()) -> int:
+        return 0 if parent.isValid() else len(self._rows)
+
+    def columnCount(self, parent=QtCore.QModelIndex()) -> int:
+        return 0 if parent.isValid() else len(self.HEADERS)
+
+    def headerData(self, section, orientation, role=QtCore.Qt.DisplayRole):
+        if orientation == QtCore.Qt.Horizontal:
+            if role == QtCore.Qt.DisplayRole and 0 <= section < len(self.HEADERS):
+                return self.HEADERS[section]
+            if role == QtCore.Qt.ToolTipRole:
+                return self.HEADER_TIPS.get(section)
+        elif role == QtCore.Qt.DisplayRole:
+            return str(section + 1)
+        return None
+
+    @staticmethod
+    def _fmt(v):
+        if isinstance(v, float):
+            return f"{v:.6g}"
+        return "" if v is None else str(v)
+
+    def _fmt_xy(self, x, y):
+        if x is None or y is None:
+            return ""
+        return f"({self._fmt(x)}, {self._fmt(y)})"
+
+    def data(self, index, role=QtCore.Qt.DisplayRole):
+        if not index.isValid() or role not in (QtCore.Qt.DisplayRole, QtCore.Qt.ToolTipRole):
+            return None
+        r = self._rows[index.row()]
+        c = index.column()
+        if c == 3:
+            return self._fmt_xy(r.get("p1x"), r.get("p1y"))
+        if c == 4:
+            return self._fmt_xy(r.get("p2x"), r.get("p2y"))
+        return self._fmt(r.get(self.KEYS[c]))
+
+    def set_rows(self, rows):
+        self.beginResetModel()
+        self._rows = rows or []
+        self.endResetModel()
+
+    def get_all_rows(self):
+        return list(self._rows)
+
+
+class DifferencePlugin(IPlugin):
+
+    def __init__(self, meta: PluginMeta):
+        super().__init__(meta)
+        self.widget: QtWidgets.QWidget | None = None
+        self.ui: Ui_Slope | None = None
+        self.model: DifferenceTableModel | None = None
+
+    def stop(self):
+        self._log("stop()")
+
+    def process(self, data: Any):
+        self._reload_from_store()
+
+    def get_widget(self, parent=None):
+        if self.widget is None:
+            self.ui = Ui_Slope()
+            self.widget = QtWidgets.QWidget(parent)
+            self.alerts.parent = self.widget
+            self.ui.setupUi(self.widget)
+            self.widget.setWindowTitle("Difference Measurements")
+
+            self.model = DifferenceTableModel([])
+            tv = self.ui.tableView
+            tv.setModel(self.model)
+            tv.setSortingEnabled(True)
+            tv.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+            tv.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+            tv.setAlternatingRowColors(True)
+            tv.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+            tv.verticalHeader().setVisible(False)
+            self._reload_from_store()
+        else:
+            self.widget.setParent(parent)
+        return self.widget
+
+    # ---------- DataStore ----------
+    def _reload_from_store(self):
+        rows = self._load_rows_from_store()
+        if self.model:
+            self.model.set_rows(rows)
+        self._notify(f"Difference: {len(rows)} measurements")
+
+    def _load_rows_from_store(self) -> List[Dict[str, Any]]:
+        store = self.get_datastore()
+        if store is None:
+            return []
+        try:
+            raw = store.get("measurements")
+        except Exception:
+            raw = None
+        if not raw or not isinstance(raw, (list, tuple)):
+            return []
+
+        rows: List[Dict[str, Any]] = []
+        for item in raw:
+            if not isinstance(item, dict) or item.get("type") != "difference":
+                continue
+            try:
+                p1 = item.get("p1") or (None, None)
+                p2 = item.get("p2") or (None, None)
+                ctx = item.get("ctx") or {}
+                trial_id = ctx.get("trial_id")
+                graph = ctx.get("graph_id")
+                if isinstance(trial_id, int) and trial_id >= 0:
+                    graph_uid = f"trial {trial_id + 1}"
+                elif isinstance(graph, str) and graph.strip():
+                    graph_uid = graph
+                else:
+                    graph_uid = ""
+                rows.append({
+                    "id": item.get("id"),
+                    "ctx_channel": ctx.get("channel_name"),
+                    "ctx_graph": graph_uid,
+                    "p1x": _f(p1[0]), "p1y": _f(p1[1]), "p2x": _f(p2[0]), "p2y": _f(p2[1]),
+                    "x1": _f(item.get("x1")), "x2": _f(item.get("x2")),
+                    "n": item.get("n"),
+                    "d_mean": _f(item.get("d_mean")),
+                    "d_max": _f(item.get("d_max")), "x_at_dmax": _f(item.get("x_at_dmax")),
+                    "d_min": _f(item.get("d_min")), "x_at_dmin": _f(item.get("x_at_dmin")),
+                    "timestamp": item.get("timestamp") or datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                })
+            except Exception as e:
+                self._log("Invalid row in measurements (difference):", e)
+        return rows
+
+    # ---------- Export ----------
+    def _export_dir(self) -> str:
+        try:
+            store = self.kernel.get_service("DataStore") if self.kernel else None
+            project = store.get("_project_service") if store else None
+            if project is not None and project.is_open:
+                return project.archivos_dir()
+        except Exception:
+            pass
+        return self.settings.get("last_export_dir", carpeta_inicial())
+
+    def _tabla_exportable(self):
+        out = []
+        for r in self.model.get_all_rows():
+            p1 = "" if r.get("p1x") is None else f"({r.get('p1x')},{r.get('p1y')})"
+            p2 = "" if r.get("p2x") is None else f"({r.get('p2x')},{r.get('p2y')})"
+            fila = []
+            for c, key in enumerate(DifferenceTableModel.KEYS):
+                if c == 3:
+                    fila.append(p1)
+                elif c == 4:
+                    fila.append(p2)
+                else:
+                    v = r.get(key)
+                    fila.append("" if v is None else v)
+            out.append(fila)
+        return list(DifferenceTableModel.HEADERS), out
+
+    def export_csv(self):
+        if not self.model:
+            return
+        if not self.model.get_all_rows():
+            self.alerts.warning("No measurements to export.")
+            return
+        default_path = os.path.join(self._export_dir(), "difference_measurements.csv")
+        path, _ = QFileDialog.getSaveFileName(self.widget, "Export difference measurements to CSV",
+                                              default_path, "CSV (*.csv)")
+        if not path:
+            return
+        try:
+            headers, filas = self._tabla_exportable()
+            with open(path, "w", newline="", encoding="utf-8") as f:
+                w = csv.writer(f)
+                w.writerow(headers)
+                w.writerows(filas)
+            self._notify(f"CSV exported successfully: {path}")
+        except Exception as e:
+            self.alerts.error(f"Failed to export CSV:\n{e}")
+
+    def export_xlsx(self):
+        if not self.model:
+            return
+        if not self.model.get_all_rows():
+            self.alerts.warning("No measurements to export.")
+            return
+        default_path = os.path.join(self._export_dir(), "difference_measurements.xlsx")
+        path, _ = QFileDialog.getSaveFileName(self.widget, "Export difference measurements to Excel",
+                                              default_path, "Excel (*.xlsx)")
+        if not path:
+            return
+        try:
+            headers, filas = self._tabla_exportable()
+            escribir_xlsx(path, {"Measurements": (headers, filas)})
+            self._notify(f"Excel exported successfully: {path}")
+        except Exception as e:
+            self.alerts.error(f"Failed to export Excel:\n{e}")

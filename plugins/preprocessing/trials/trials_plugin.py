@@ -2,6 +2,7 @@ import sys
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import QWidget
 import vtk
+import numpy as np
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
 from core.plugins.interfaces import IPlugin
@@ -616,6 +617,23 @@ class TrialsPlugin(IPlugin):
             note=(f"original {idx + 1} de {T}" if len(valid) != T and not discarded else None),
         )
 
+    def _fuente_de_trials(self):
+        """(tiempo, trials (Ns, K), ids 0-based) de los trials válidos del canal en pantalla."""
+        td = self.last_td
+        if td is None:
+            return None
+        M = np.asarray(td.trials, dtype=float)
+        T = M.shape[1]
+        ds = self.get_active_signal(silent=True) if self.mainwin else None
+        ids = list(range(T))
+        if ds is not None:
+            try:
+                ids = ds.get_active_trial_indices(ds.name, td.channel_name) or ids
+            except Exception:
+                pass
+        ids = [i for i in ids if 0 <= i < T]
+        return np.asarray(td.time_rel, dtype=float), M[:, ids], ids
+
     # -------------- Render ----------------------
     def _render_trials(self, td: TrialDataset):
         self._log("_render_trials: enter")
@@ -672,7 +690,9 @@ class TrialsPlugin(IPlugin):
             curr_channel_name = getattr(td, "channel_name", "") or "channel"
 
             graph_uid = f"trial {trial_idx}"
-            print(f"trial idx={trial_idx}")
+            # "All trials" measurements: every valid trial (discarded ones left out),
+            # and only the visible trial gets its line drawn.
+            self.vtk_menu.set_trials_source(self._fuente_de_trials, visible_trial_ids=sel)
             self.vtk_menu.on_view_rebuilt(
                 self.chart,
                 view_id="trials",

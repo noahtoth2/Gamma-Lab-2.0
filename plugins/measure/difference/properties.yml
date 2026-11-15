@@ -1,0 +1,9 @@
+id: "difference_results"
+name: "Difference Results"
+category: "Home"
+subcategory: "Measurements"
+version: "1.0"
+icon: "icn_difference.png"
+logic_class: "DifferencePlugin"
+ui_class: ""
+order: 2
