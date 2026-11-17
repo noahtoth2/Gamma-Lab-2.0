@@ -590,9 +590,9 @@ Persistencia & Inexistente & Proyectos \textit{.glab} con esquema versionado \\
 \hline
 Distribución & \textit{Scripts} de arranque y rutas relativas & Instalador para Windows y rutas absolutas \\
 \hline
-\textit{Plugins} & 16 & 19 (PAC, PPC y \textit{Modulation Index}) \\
+\textit{Plugins} & 16 & 20 (PAC, PPC, \textit{Modulation Index} y \textit{Difference}) \\
 \hline
-Archivos de pruebas & 14 & $\approx$ 70 \\
+Archivos de pruebas & 14 & 80 \\
 \hline
 \end{tabularx}
 \caption{Comparación arquitectónica entre Gamma Lab y Gamma Lab 2.0}
@@ -1491,23 +1491,145 @@ Una matriz de trazabilidad vincula, además, cada uno de los 81 requisitos del S
 %=====================================================================
 \capitulo{RESULTADOS}
 
-\subsection{Resumen de pruebas unitarias}
-\pendiente
+\subsection{Pruebas automáticas}
+\label{sec:resultados_automaticas}
 
-\subsection{Observaciones y hallazgos}
-\pendiente
+Los resultados obtenidos en las pruebas automáticas muestran un sistema estable: de las 917 pruebas ejecutadas el 16 de noviembre de 2026, 912 se aprobaron, 5 terminaron como fallos esperados (Tabla~\ref{tab:resultados_automaticas}).
 
-\subsection{Resumen de pruebas comparativas contra el sistema de referencia}
-\pendiente
+\begin{table}[H]
+\centering
+\scriptsize
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{|>{\raggedright\arraybackslash}X|c|c|c|c|}
+\hline
+\textbf{Frente} & \textbf{Pruebas} & \textbf{Aprobadas} & \textbf{Fallo esperado} & \textbf{Fallidas} \\
+\hline
+Núcleo: unitarias y de integración & 389 & 389 & 0 & 0 \\
+\hline
+Módulos de análisis & 476 & 476 & 0 & 0 \\
+\hline
+Validación frente a BOARD-FTD-PACC & 27 & 22 & 5 & 0 \\
+\hline
+Rendimiento & 25 & 25 & 0 & 0 \\
+\hline
+\textbf{Total} & \textbf{917} & \textbf{912} & \textbf{5} & \textbf{0} \\
+\hline
+\end{tabularx}
+\caption{Resultados de las pruebas automáticas}
+\label{tab:resultados_automaticas}
+\end{table}
 
-\subsection{Observaciones y hallazgos}
-\pendiente
+Las pruebas del núcleo y de los módulos confirman tres resultados principales:
 
-\subsection{Resumen de pruebas de aceptación del usuario}
-\pendiente
+\begin{itemize}
+  \item \textbf{Ejecución en segundo plano:} el cómputo pesado no bloquea la interfaz y puede cancelarse en cualquier momento.
+  \item \textbf{Memoria:} se libera al cerrar un proyecto, al cargar otra señal y al salir de un módulo.
+  \item \textbf{Proyectos:} al guardarlos y abrirlos se conserva todo el trabajo: señal, \textit{trials}, descartes, preprocesamiento, medidas y parámetros.
+\end{itemize}
 
-\subsection{Observaciones y hallazgos}
-\pendiente
+En la validación frente a BOARD-FTD-PACC, \textbf{cinco de los ocho análisis comparados resultaron equivalentes a la referencia}: \textit{Average}, ERP, FFT, \textit{FFT Average} y PSD superan los criterios de estructura, correlación y comparación punto a punto. Los otros tres análisis presentan diferencias ya identificadas y medidas, que son precisamente los 5 fallos esperados de la Tabla~\ref{tab:resultados_automaticas}:
+
+\begin{itemize}
+  \item \textbf{\textit{Wavelet} y \textit{Wavelet Average}} (4 fallos esperados, en correlación y punto a punto). La diferencia es de escala, no de forma: BOARD-FTD-PACC no aplica la normalización de PyWavelets. Al igualar esa convención, la correlación sube de 0,83 a 0,98 para un \textit{trial} y a 0,997 para el promedio.
+  \item \textbf{\textit{PSD Average}} (1 fallo esperado, en correlación). Alcanza 0,93 frente a un umbral de 0,95, y la potencia total coincide dentro del 2\,\%. La diferencia se concentra entre 0 y 3\,Hz y su causa no se ha identificado.
+\end{itemize}
+
+Los módulos nuevos también se validaron. PAC y el índice de modulación reproducen paso a paso las funciones originales de BOARD-FTD-PACC. PPC responde como se espera ante señales sintéticas de respuesta conocida.
+
+En la comparación visual, el usuario calificó como \textit{equivalentes} las gráficas de \textit{Average}, \textit{Wavelet}, PAC y PPC. \hl{[AQUÍ FALTA EL RESULTADO DE LA COMPARACIÓN VISUAL DE ERP, FFT, FFT AVERAGE, PSD, PSD AVERAGE, RELATIVE PSD, WAVELET AVERAGE, PAC ENTRE CANALES Y MODULATION INDEX]}
+
+\subsection{Requisitos no funcionales}
+
+\textbf{De los 27 requisitos de rendimiento, confiabilidad y soporte, 25 se cumplen por completo y 2 con matices} (Sección~\ref{sec:resultados_limitaciones}). La Tabla~\ref{tab:resultados_rendimiento} muestra que los tiempos medidos quedan muy por debajo de los límites.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{|>{\raggedright\arraybackslash}X|c|c|}
+\hline
+\textbf{Operación} & \textbf{Límite} & \textbf{Medido} \\
+\hline
+Arranque de la aplicación & 8\,s & 3,1\,s \\
+\hline
+Carga de un archivo & 2\,s & 0,2\,s \\
+\hline
+Cambio de módulo & 500\,ms & 10 a 310\,ms \\
+\hline
+Transformada \textit{wavelet} de un \textit{trial} & 10\,s & 1,1 a 1,4\,s \\
+\hline
+Comodulograma PAC de $20\times20$ pares & 30\,s & 0,2 a 0,5\,s \\
+\hline
+Exportación de 100\,000 filas & 2\,s & 0,39\,s \\
+\hline
+\end{tabularx}
+\caption{Principales mediciones de rendimiento}
+\label{tab:resultados_rendimiento}
+\end{table}
+
+En memoria, liberar las ventanas gráficas de cada módulo redujo el consumo de 3118\,MB a 2585\,MB al recorrer todos los análisis. La aplicación se distribuye con un instalador para Windows que asocia los archivos \textit{.glab} a Gamma Lab 2.0.
+
+\subsection{Validación con el usuario}
+
+\begin{table}[H]
+\centering
+\scriptsize
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{|l|>{\raggedright\arraybackslash}X|}
+\hline
+\textbf{Métrica} & \textbf{Resultado} \\
+\hline
+Casos completados & \hl{[AQUÍ FALTA EL NÚMERO]} de 10 \\
+\hline
+Tiempo promedio por caso & \hl{[AQUÍ FALTA EL TIEMPO EN MINUTOS]} \\
+\hline
+Errores y solicitudes de ayuda & \hl{[AQUÍ FALTAN LOS TOTALES]} \\
+\hline
+Puntuación SUS (0 a 100) & \hl{[AQUÍ FALTA LA PUNTUACIÓN]} \\
+\hline
+\end{tabularx}
+\caption{Resultados de las pruebas de usabilidad}
+\label{tab:resultados_usabilidad}
+\end{table}
+
+\begin{table}[H]
+\centering
+\scriptsize
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{|>{\raggedright\arraybackslash}X|c|c|}
+\hline
+\textbf{Resultado} & \textbf{Requisitos} & \textbf{Porcentaje} \\
+\hline
+Aceptados & \hl{[AQUÍ FALTA]} & \hl{[AQUÍ FALTA]} \\
+\hline
+Aceptados parcialmente & \hl{[AQUÍ FALTA]} & \hl{[AQUÍ FALTA]} \\
+\hline
+No aceptados & \hl{[AQUÍ FALTA]} & \hl{[AQUÍ FALTA]} \\
+\hline
+\textbf{Total} & \textbf{45} & \textbf{100\,\%} \\
+\hline
+\end{tabularx}
+\caption{Resultados de las pruebas de aceptación}
+\label{tab:resultados_aceptacion}
+\end{table}
+
+En las pruebas participaron \hl{[AQUÍ FALTA EL NÚMERO DE USUARIOS Y SU PERFIL]}. \hl{[AQUÍ FALTAN LOS PRINCIPALES RESULTADOS DE LAS SESIONES: FUNCIONALIDADES MEJOR VALORADAS, CASOS CON MAYOR DIFICULTAD Y MOTIVOS DE LOS REQUISITOS NO ACEPTADOS]}
+
+\subsection{Limitaciones identificadas}
+\label{sec:resultados_limitaciones}
+
+Ninguna de estas limitaciones impide el flujo de análisis:
+
+\begin{itemize}
+  \item \textbf{\textit{PSD Average}:} diferencia residual entre 0 y 3\,Hz, de causa no identificada.
+  \item \textbf{\textit{Wavelet}:} los valores absolutos difieren de BOARD-FTD-PACC por un factor de escala conocido.
+  \item \textbf{Fluidez con tres canales:} la mediana supera los 24 cuadros por segundo exigidos, pero el peor cuadro de algunas corridas baja de ese valor.
+  \item \textbf{Primera apertura de PAC:} puede detener la interfaz entre 270 y 480\,ms, por encima del límite de 300\,ms. Las aperturas siguientes cumplen.
+  \item \textbf{Instalación:} al no tener firma digital, el instalador genera un aviso de Windows que el usuario debe confirmar.
+  \item \textbf{Pantallas pequeñas:} por debajo de 1366 píxeles de ancho, el área de gráficas se reduce notablemente.
+\end{itemize}
+
+\hl{[AQUÍ FALTAN LAS LIMITACIONES QUE SURJAN DE LAS SESIONES CON EL USUARIO]}
 
 %=====================================================================
 \capitulo{CONCLUSIONES}
