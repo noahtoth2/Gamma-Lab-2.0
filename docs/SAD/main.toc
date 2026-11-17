@@ -79,18 +79,18 @@
 \contentsline {subsection}{\numberline {5.3}Vista de despliegue}{41}{subsection.5.3}%
 \contentsline {subsubsection}{\numberline {5.3.1}Propósito}{41}{subsubsection.5.3.1}%
 \contentsline {subsubsection}{\numberline {5.3.2}Notación}{41}{subsubsection.5.3.2}%
-\contentsline {subsubsection}{\numberline {5.3.3}Visión general del modelo}{42}{subsubsection.5.3.3}%
+\contentsline {subsubsection}{\numberline {5.3.3}Visión general del modelo}{41}{subsubsection.5.3.3}%
 \contentsline {subsubsection}{\numberline {5.3.4}Componentes principales}{42}{subsubsection.5.3.4}%
 \contentsline {subsubsection}{\numberline {5.3.5}Servicios de soporte y gestión de datos}{43}{subsubsection.5.3.5}%
 \contentsline {subsubsection}{\numberline {5.3.6}Orquestador del núcleo}{44}{subsubsection.5.3.6}%
 \contentsline {subsubsection}{\numberline {5.3.7}Plugins funcionales}{44}{subsubsection.5.3.7}%
 \contentsline {subsubsection}{\numberline {5.3.8}Documentación de ayuda}{45}{subsubsection.5.3.8}%
-\contentsline {subsubsection}{\numberline {5.3.9}Flujo general}{46}{subsubsection.5.3.9}%
-\contentsline {subsection}{\numberline {5.4}Vista de Procesos}{47}{subsection.5.4}%
-\contentsline {subsubsection}{\numberline {5.4.1}Propósito}{47}{subsubsection.5.4.1}%
+\contentsline {subsubsection}{\numberline {5.3.9}Flujo general}{45}{subsubsection.5.3.9}%
+\contentsline {subsection}{\numberline {5.4}Vista de Procesos}{46}{subsection.5.4}%
+\contentsline {subsubsection}{\numberline {5.4.1}Propósito}{46}{subsubsection.5.4.1}%
 \contentsline {subsubsection}{\numberline {5.4.2}Notación}{47}{subsubsection.5.4.2}%
 \contentsline {subsubsection}{\numberline {5.4.3}Visión general del modelo}{47}{subsubsection.5.4.3}%
-\contentsline {subsubsection}{\numberline {5.4.4}Inicio de la aplicación}{49}{subsubsection.5.4.4}%
+\contentsline {subsubsection}{\numberline {5.4.4}Inicio de la aplicación}{48}{subsubsection.5.4.4}%
 \contentsline {subsubsection}{\numberline {5.4.5}Apertura de proyecto o carga de una señal}{49}{subsubsection.5.4.5}%
 \contentsline {subsubsection}{\numberline {5.4.6}Procesamiento de señales}{49}{subsubsection.5.4.6}%
 \contentsline {subsubsection}{\numberline {5.4.7}Ejecución de análisis y coordinación de tareas}{49}{subsubsection.5.4.7}%
@@ -98,33 +98,33 @@
 \contentsline {subsubsection}{\numberline {5.4.9}Continuación del trabajo, guardado y cierre}{50}{subsubsection.5.4.9}%
 \contentsline {subsection}{\numberline {5.5}Vista f\'isica}{50}{subsection.5.5}%
 \contentsline {subsubsection}{\numberline {5.5.1}Propósito}{50}{subsubsection.5.5.1}%
-\contentsline {subsubsection}{\numberline {5.5.2}Notación}{51}{subsubsection.5.5.2}%
+\contentsline {subsubsection}{\numberline {5.5.2}Notación}{50}{subsubsection.5.5.2}%
 \contentsline {subsubsection}{\numberline {5.5.3}Visi\'on general del modelo}{51}{subsubsection.5.5.3}%
 \contentsline {subsubsection}{\numberline {5.5.4}Componentes internos}{52}{subsubsection.5.5.4}%
-\contentsline {subsubsection}{\numberline {5.5.5}Artefactos externos}{53}{subsubsection.5.5.5}%
-\contentsline {section}{\numberline {6}Atributos de calidad}{54}{section.6}%
-\contentsline {subsection}{\numberline {6.1}Escenarios de calidad}{54}{subsection.6.1}%
-\contentsline {subsubsection}{\numberline {6.1.1}Escenario de Calidad 1: Integración de un Plugin Externo}{54}{subsubsection.6.1.1}%
+\contentsline {subsubsection}{\numberline {5.5.5}Artefactos externos}{52}{subsubsection.5.5.5}%
+\contentsline {section}{\numberline {6}Atributos de calidad}{53}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Escenarios de calidad}{53}{subsection.6.1}%
+\contentsline {subsubsection}{\numberline {6.1.1}Escenario de Calidad 1: Integración de un Plugin Externo}{53}{subsubsection.6.1.1}%
 \contentsline {subsubsection}{\numberline {6.1.2}Escenario de Calidad 2: Carga de Señal de Gran Tamaño}{54}{subsubsection.6.1.2}%
-\contentsline {subsubsection}{\numberline {6.1.3}Escenario de Calidad 3: Manejo de Errores en Tiempo de Ejecución}{55}{subsubsection.6.1.3}%
+\contentsline {subsubsection}{\numberline {6.1.3}Escenario de Calidad 3: Manejo de Errores en Tiempo de Ejecución}{54}{subsubsection.6.1.3}%
 \contentsline {subsubsection}{\numberline {6.1.4}Escenario de Calidad 4: Exportación de Datos o Gráficas}{55}{subsubsection.6.1.4}%
-\contentsline {subsubsection}{\numberline {6.1.5}Escenario de Calidad 5: Uso del Sistema sin Experiencia Técnica}{56}{subsubsection.6.1.5}%
+\contentsline {subsubsection}{\numberline {6.1.5}Escenario de Calidad 5: Uso del Sistema sin Experiencia Técnica}{55}{subsubsection.6.1.5}%
 \contentsline {subsubsection}{\numberline {6.1.6}Escenario de Calidad 6: Rendimiento con Múltiples Señales Cargadas}{56}{subsubsection.6.1.6}%
-\contentsline {subsubsection}{\numberline {6.1.7}Escenario de Calidad 7: Resiliencia ante Archivos Corruptos o Incompatibles}{57}{subsubsection.6.1.7}%
+\contentsline {subsubsection}{\numberline {6.1.7}Escenario de Calidad 7: Resiliencia ante Archivos Corruptos o Incompatibles}{56}{subsubsection.6.1.7}%
 \contentsline {subsubsection}{\numberline {6.1.8}Escenario de Calidad 8: Consistencia entre Datos Ingresados y Gráficas Generadas}{57}{subsubsection.6.1.8}%
 \contentsline {subsection}{\numberline {6.2}Reglas de compatibilidad y versionado}{57}{subsection.6.2}%
-\contentsline {subsection}{\numberline {6.3}M\'etricas y plan de verificaci\'on}{59}{subsection.6.3}%
-\contentsline {subsection}{\numberline {6.4}Plan de evidencia}{60}{subsection.6.4}%
+\contentsline {subsection}{\numberline {6.3}M\'etricas y plan de verificaci\'on}{58}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.4}Plan de evidencia}{59}{subsection.6.4}%
 \contentsline {subsection}{\numberline {6.5}Conclusi\'on}{60}{subsection.6.5}%
 \contentsline {section}{\numberline {7}Trazabilidad de requerimientos y casos de uso}{60}{section.7}%
 \contentsline {subsection}{\numberline {7.1}Fuentes y criterio de construcción}{60}{subsection.7.1}%
-\contentsline {subsection}{\numberline {7.2}De los casos de uso a los requerimientos}{61}{subsection.7.2}%
-\contentsline {subsection}{\numberline {7.3}De los requerimientos a los casos de uso}{62}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.2}De los casos de uso a los requerimientos}{60}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}De los requerimientos a los casos de uso}{61}{subsection.7.3}%
 \contentsline {subsection}{\numberline {7.4}De los casos de uso a las decisiones arquitectónicas}{63}{subsection.7.4}%
 \contentsline {subsection}{\numberline {7.5}Análisis de cobertura}{64}{subsection.7.5}%
-\contentsline {section}{\numberline {8}Anexos}{65}{section.8}%
-\contentsline {subsection}{\numberline {8.1}Anexo A: Relaci\'on con el SRS}{65}{subsection.8.1}%
-\contentsline {subsection}{\numberline {8.2}Anexo B: Relaci\'on con el SDD}{65}{subsection.8.2}%
+\contentsline {section}{\numberline {8}Anexos}{64}{section.8}%
+\contentsline {subsection}{\numberline {8.1}Anexo A: Relaci\'on con el SRS}{64}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}Anexo B: Relaci\'on con el SDD}{64}{subsection.8.2}%
 \contentsline {subsection}{\numberline {8.3}Anexo C: Trazabilidad global de artefactos}{65}{subsection.8.3}%
 \contentsline {subsection}{\numberline {8.4}Anexo D: Diagramas y tablas de referencia}{65}{subsection.8.4}%
 \contentsline {section}{\numberline {9}Referencias}{65}{section.9}%

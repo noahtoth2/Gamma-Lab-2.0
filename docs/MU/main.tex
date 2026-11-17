@@ -27,14 +27,14 @@
     linkcolor=black,
     urlcolor=blue,
     citecolor=black,
-    pdftitle={MU: Gamma Lab},
-    pdfauthor={Equipo Gamma Lab}
+    pdftitle={MU: Gamma Lab 2.0},
+    pdfauthor={Equipo Gamma Lab 2.0}
 }
 
 % ======================= ENCABEZADOS =======================
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[R]{\textbf{MU: GAMMA LAB}}
+\fancyhead[R]{\textbf{MU: GAMMA LAB 2.0}}
 \renewcommand{\headrulewidth}{0.4pt}
 \fancyfoot[C]{\textbf{P\'agina \thepage}}
 \renewcommand{\footrulewidth}{0.4pt}
@@ -129,12 +129,12 @@
     {\large\bfseries MU}
 
     \vspace{1cm}
-    {\Huge\bfseries GammaLab v2.0}
+    {\Huge\bfseries Gamma Lab 2.0}
 
     \vspace{2cm}
 
     \begin{tabular}{@{}ll@{}}
-        \textbf{Proyecto} & Plataforma de an\'alisis y visualizaci\'on de se\~nales neurofisiol\'ogicas Gamma Lab \\
+        \textbf{Proyecto} & Plataforma de an\'alisis y visualizaci\'on de se\~nales neurofisiol\'ogicas Gamma Lab 2.0 \\
         \textbf{Documento} & Manual de Usuario (MU) \\
         \textbf{Versi\'on} & 2.0 \\
         \textbf{Estado} & En elaboraci\'on \\
@@ -153,7 +153,7 @@
 \vfill
 
 \noindent\textbf{Nota de uso.} Documento acad\'emico/interno del equipo de proyecto. No distribuir sin autorizaci\'on.\\
-\noindent\textbf{Trazabilidad.} Este Manual de Usuario describe el funcionamiento pr\'actico de GammaLab v2.0, explica el uso de cada m\'odulo y \textit{plugin} del sistema, y complementa los artefactos t\'ecnicos SRS, SAD, SDD y TD.
+\noindent\textbf{Trazabilidad.} Este Manual de Usuario describe el funcionamiento pr\'actico de Gamma Lab 2.0, explica el uso de cada m\'odulo y \textit{plugin} del sistema, y complementa los artefactos t\'ecnicos SRS, SAD, SDD y TD.
 
 \end{titlepage}
 
@@ -171,12 +171,12 @@
 \section{Introducci\'on}
 
     \subsection{Prop\'osito del documento}
-    El presente \textbf{Manual de Usuario (MU)} tiene como prop\'osito describir el uso pr\'actico de GammaLab v2.0: la organizaci\'on de su interfaz, el recorrido completo de un an\'alisis y el funcionamiento de cada uno de los \textit{plugins} que componen el sistema. A diferencia del \textbf{\textit{Software Design Document} (SDD)}, que documenta c\'omo est\'a construido el \textit{software}, este manual documenta c\'omo se opera.
+    El presente \textbf{Manual de Usuario (MU)} tiene como prop\'osito describir el uso pr\'actico de Gamma Lab 2.0: la organizaci\'on de su interfaz, el recorrido completo de un an\'alisis y el funcionamiento de cada uno de los \textit{plugins} que componen el sistema. A diferencia del \textbf{\textit{Software Design Document} (SDD)}, que documenta c\'omo est\'a construido el \textit{software}, este manual documenta c\'omo se opera.
 
     El documento est\'a redactado para ser le\'ido en el orden de un an\'alisis real: primero la instalaci\'on, luego la interfaz, despu\'es la carga de la se\~nal, el preprocesamiento, el an\'alisis y por \'ultimo la obtenci\'on de medidas y su exportaci\'on. Cada secci\'on de \textit{plugin} sigue siempre la misma estructura (componentes de la pantalla, procedimiento paso a paso y resultados que se obtienen), de modo que tambi\'en pueda consultarse de forma suelta.
 
     \subsection{Alcance}
-    El alcance de este manual comprende la totalidad de las funcionalidades expuestas al usuario en GammaLab v2.0:
+    El alcance de este manual comprende la totalidad de las funcionalidades expuestas al usuario en Gamma Lab 2.0:
 
     \begin{itemize}
         \item \textbf{Instalaci\'on y ejecuci\'on:} requisitos de \textit{hardware} y \textit{software}, instalaci\'on mediante el ejecutable, ejecuci\'on alternativa desde el c\'odigo fuente y resoluci\'on de los problemas m\'as frecuentes.
@@ -214,7 +214,7 @@
     Al finalizar la lectura de este manual, el usuario ser\'a capaz de:
 
     \begin{enumerate}
-        \item Instalar y ejecutar GammaLab v2.0 en un equipo con Windows.
+        \item Instalar y ejecutar Gamma Lab 2.0 en un equipo con Windows.
         \item Cargar se\~nales en formato ABF, EDF o MAT y seleccionar el canal de trabajo.
         \item Segmentar la se\~nal en \textit{trials}, descartar los defectuosos, eliminar artefactos y aplicar un filtro.
         \item Ejecutar an\'alisis en los dominios del tiempo, de la frecuencia y de tiempo--frecuencia, as\'i como el an\'alisis de conectividad entre dos canales.
@@ -228,7 +228,7 @@
 
 \section{Requerimientos del sistema}
 
-Para garantizar un funcionamiento adecuado de GammaLab v2.0 se recomiendan las especificaciones de la Tabla~\ref{tab:mu_requerimientos}. Los requerimientos m\'inimos permiten operar la aplicaci\'on con se\~nales cortas y un n\'umero reducido de \textit{trials}; los recomendados corresponden a un uso habitual con registros largos y an\'alisis tiempo--frecuencia, que son los que m\'as memoria y c\'alculo consumen.
+Para garantizar un funcionamiento adecuado de Gamma Lab 2.0 se recomiendan las especificaciones de la Tabla~\ref{tab:mu_requerimientos}. Los requerimientos m\'inimos permiten operar la aplicaci\'on con se\~nales cortas y un n\'umero reducido de \textit{trials}; los recomendados corresponden a un uso habitual con registros largos y an\'alisis tiempo--frecuencia, que son los que m\'as memoria y c\'alculo consumen.
 
 \begin{center}
 \small
@@ -251,21 +251,21 @@ Python & No se requiere con el instalador; 3.11 para ejecutar desde el c\'odigo 
 Pantalla & 1366 $\times$ 768 & 1920 $\times$ 1080 o superior \\
 \hline
 \end{tabularx}
-\captionof{table}{Requerimientos de \textit{hardware} y \textit{software} de GammaLab v2.0}
+\captionof{table}{Requerimientos de \textit{hardware} y \textit{software} de Gamma Lab 2.0}
 \label{tab:mu_requerimientos}
 \end{center}
 
-\aviso{Sobre la resoluci\'on de pantalla.}{GammaLab reserva un panel lateral fijo de 300 p\'ixeles para los par\'ametros de cada an\'alisis y destina el resto de la ventana al \'area de gr\'aficas. En pantallas de menos de 1366 p\'ixeles de ancho el \'area de gr\'aficas queda muy reducida, sobre todo en los an\'alisis que apilan varios paneles, como \textbf{\textit{PAC Psel}}.}
+\aviso{Sobre la resoluci\'on de pantalla.}{Gamma Lab 2.0 reserva un panel lateral fijo de 300 p\'ixeles para los par\'ametros de cada an\'alisis y destina el resto de la ventana al \'area de gr\'aficas. En pantallas de menos de 1366 p\'ixeles de ancho el \'area de gr\'aficas queda muy reducida, sobre todo en los an\'alisis que apilan varios paneles, como \textbf{\textit{PAC Psel}}.}
 
 \clearpage
 
 \section{Instalaci\'on y ejecuci\'on}
 
-Este apartado describe c\'omo instalar y ejecutar GammaLab v2.0 en sistemas Windows. Existen dos v\'ias. La recomendada para los usuarios finales es el \textbf{instalador ejecutable}, que deja la aplicaci\'on lista para usarse sin necesidad de instalar Python ni ninguna librer\'ia. La segunda, orientada a quienes desarrollan o modifican el sistema, consiste en ejecutar GammaLab desde su c\'odigo fuente con el lanzador \textit{gamma\_lab.bat}.
+Este apartado describe c\'omo instalar y ejecutar Gamma Lab 2.0 en sistemas Windows. Existen dos v\'ias. La recomendada para los usuarios finales es el \textbf{instalador ejecutable}, que deja la aplicaci\'on lista para usarse sin necesidad de instalar Python ni ninguna librer\'ia. La segunda, orientada a quienes desarrollan o modifican el sistema, consiste en ejecutar Gamma Lab 2.0 desde su c\'odigo fuente con el lanzador \textit{gamma\_lab.bat}.
 
     \subsection{Instalaci\'on con el ejecutable (v\'ia recomendada)}
     \label{sec:mu_instalador}
-    GammaLab se distribuye como un instalador para Windows de 64 bits, \textit{GammaLab-Setup-2.0.0.exe}, de unos 216\,MB, que ocupa alrededor de 663\,MB una vez instalado. La gu\'ia oficial de instalaci\'on, con el enlace de descarga vigente y una captura de pantalla de cada paso, est\'a publicada en la siguiente p\'agina, a la que debe dirigirse el usuario para realizar la instalaci\'on:
+    Gamma Lab 2.0 se distribuye como un instalador para Windows de 64 bits, \textit{GammaLab-Setup-2.0.0.exe}, de unos 216\,MB, que ocupa alrededor de 663\,MB una vez instalado. La gu\'ia oficial de instalaci\'on, con el enlace de descarga vigente y una captura de pantalla de cada paso, est\'a publicada en la siguiente p\'agina, a la que debe dirigirse el usuario para realizar la instalaci\'on:
 
     \begin{center}\url{https://garzonlj.github.io/webGammaLab/}\end{center}
 
@@ -280,10 +280,10 @@ Este apartado describe c\'omo instalar y ejecutar GammaLab v2.0 en sistemas Wind
         \item \textbf{Elegir la carpeta de destino.} Por defecto es \textit{C:\textbackslash Program Files\textbackslash GammaLab}; pulse \textbf{Siguiente}.
         \item \textbf{Confirmar la carpeta del men\'u Inicio}, llamada \textit{Gamma Lab}, y pulsar \textbf{Siguiente}.
         \item \textbf{Decidir si se crea un acceso directo en el escritorio.} Desmarque la opci\'on si no lo desea y pulse \textbf{Siguiente}.
-        \item \textbf{Instalar.} Revise el resumen de la configuraci\'on y pulse \textbf{Instalar}. Al terminar, el asistente ofrece abrir GammaLab de inmediato.
+        \item \textbf{Instalar.} Revise el resumen de la configuraci\'on y pulse \textbf{Instalar}. Al terminar, el asistente ofrece abrir Gamma Lab 2.0 de inmediato.
     \end{enumerate}
 
-    Una vez instalada, la aplicaci\'on se abre desde el acceso directo del escritorio o desde el men\'u Inicio. El instalador asocia adem\'as la extensi\'on \textit{.glab} con GammaLab, de modo que un doble clic sobre un archivo de proyecto abre la aplicaci\'on con ese proyecto cargado. Para desinstalarla, utilice la entrada de desinstalaci\'on que se crea en la carpeta \textit{Gamma Lab} del men\'u Inicio o la secci\'on de aplicaciones instaladas de la configuraci\'on de Windows.
+    Una vez instalada, la aplicaci\'on se abre desde el acceso directo del escritorio o desde el men\'u Inicio. El instalador asocia adem\'as la extensi\'on \textit{.glab} con Gamma Lab 2.0, de modo que un doble clic sobre un archivo de proyecto abre la aplicaci\'on con ese proyecto cargado. Para desinstalarla, utilice la entrada de desinstalaci\'on que se crea en la carpeta \textit{Gamma Lab} del men\'u Inicio o la secci\'on de aplicaciones instaladas de la configuraci\'on de Windows.
 
     \aviso{Sobre los avisos de seguridad.}{Los mensajes de \textbf{Descargar de todos modos} y de protecci\'on de Windows se deben a que el instalador es de gran tama\~no y no cuenta con firma digital comercial, no a que contenga c\'odigo malicioso. Descargue el instalador \'unicamente desde el enlace publicado en la gu\'ia oficial.}
 
@@ -304,7 +304,7 @@ Este apartado describe c\'omo instalar y ejecutar GammaLab v2.0 en sistemas Wind
     \end{itemize}
 
     \subsubsection{Instalaci\'on de Python}
-    GammaLab requiere una versi\'on de Python compatible con las librer\'ias cient\'ificas que emplea (PyQt5, QtWebEngine, SciPy y VTK, entre otras). Instale Python desde el sitio oficial:
+    Gamma Lab 2.0 requiere una versi\'on de Python compatible con las librer\'ias cient\'ificas que emplea (PyQt5, QtWebEngine, SciPy y VTK, entre otras). Instale Python desde el sitio oficial:
 
     \begin{center}\url{https://www.python.org/downloads/windows/}\end{center}
 
@@ -333,7 +333,7 @@ Este apartado describe c\'omo instalar y ejecutar GammaLab v2.0 en sistemas Wind
     Con esta v\'ia, para generar un acceso directo en el escritorio, ejecute el archivo \textit{create\_shortcut.bat}. El acceso directo se crea con el nombre y el icono oficiales del proyecto, tomados de la carpeta \textit{assets/logos}.
 
     \subsubsection{Ejecuci\'on manual}
-    Si se prefiere ejecutar GammaLab sin el lanzador, abra una terminal en la carpeta ra\'iz del proyecto y ejecute:
+    Si se prefiere ejecutar Gamma Lab 2.0 sin el lanzador, abra una terminal en la carpeta ra\'iz del proyecto y ejecute:
 
     \begin{center}
     \textit{pip install -r requirements.txt}\\
@@ -367,18 +367,18 @@ Este apartado describe c\'omo instalar y ejecutar GammaLab v2.0 en sistemas Wind
     \label{tab:mu_problemas_instalacion}
     \end{center}
 
-    Por cualquiera de las dos v\'ias, GammaLab queda correctamente instalado y operativo cuando la ventana principal se abre mostrando la pantalla de bienvenida.
+    Por cualquiera de las dos v\'ias, Gamma Lab 2.0 queda correctamente instalado y operativo cuando la ventana principal se abre mostrando la pantalla de bienvenida.
 
 \clearpage
 
-\section{La interfaz de GammaLab}
+\section{La interfaz de Gamma Lab 2.0}
 
 Al iniciar la aplicaci\'on se abre la ventana principal en la secci\'on \textbf{\textit{Home}}, con la pantalla de bienvenida y sin ninguna se\~nal cargada. Esta secci\'on describe las zonas de la ventana y los elementos comunes a todos los \textit{plugins}; las secciones siguientes describen cada herramienta.
 
 \capturaPendiente[1]{6.5cm}
 {Ventana principal reci\'en abierta, en la secci\'on \textbf{\textit{Home}}, sin se\~nal cargada (pantalla de bienvenida).}
 {(1) la barra de t\'itulo con el logo y el r\'otulo \textbf{LAB}; (2) el texto \textbf{\textit{No signal loaded}}; (3) la barra de b\'usqueda con el texto gu\'ia \emph{search function by name}; (4) la cinta de secciones \textbf{\textit{File}}, \textbf{\textit{Home}}, \textbf{\textit{Preprocessing}} y \textbf{\textit{Analysis}}; (5) la barra lateral izquierda con los iconos de \textbf{\textit{Explorer}}, \textbf{\textit{Results}} y \textbf{\textit{Help}}; (6) el \'area central de trabajo con el t\'itulo de bienvenida.}
-{Ventana de bienvenida de GammaLab v2.0}
+{Ventana de bienvenida de Gamma Lab 2.0}
 {fig:mu_bienvenida}
 
 \begin{senalamientos}{fig:mu_bienvenida}
@@ -468,13 +468,13 @@ Al iniciar la aplicaci\'on se abre la ventana principal en la secci\'on \textbf{
         \item \textbf{R\'otulo \textit{EXPLORER}:} encabeza el panel.
         \item \textbf{Carpeta ra\'iz del proyecto:} la carpeta que se eligi\'o al guardar el proyecto.
         \item \textbf{Archivo \textit{.glab}:} el manifiesto del proyecto, con el que se vuelve a abrir el trabajo.
-        \item \textbf{Copia de la se\~nal:} el archivo de la se\~nal que GammaLab copia dentro de la carpeta del proyecto al guardarlo.
+        \item \textbf{Copia de la se\~nal:} el archivo de la se\~nal que Gamma Lab 2.0 copia dentro de la carpeta del proyecto al guardarlo.
     \end{senalamientos}
 
     El \textbf{\textit{Explorer}} puede mostrar varios proyectos a la vez, cada uno con su carpeta en un \'arbol propio, uno debajo de otro. Solo uno es el \textbf{proyecto activo}, el que est\'a cargado en la aplicaci\'on; su carpeta y su archivo \textit{.glab} aparecen en negrita. Las acciones disponibles en el panel son:
 
     \begin{itemize}
-        \item \textbf{Doble clic sobre un \textit{.glab}:} convierte ese proyecto en el activo. Si el proyecto anterior tiene cambios sin guardar, GammaLab pregunta antes con \textbf{\textit{Save}}, \textbf{\textit{Don't Save}} y \textbf{\textit{Cancel}}.
+        \item \textbf{Doble clic sobre un \textit{.glab}:} convierte ese proyecto en el activo. Si el proyecto anterior tiene cambios sin guardar, Gamma Lab 2.0 pregunta antes con \textbf{\textit{Save}}, \textbf{\textit{Don't Save}} y \textbf{\textit{Cancel}}.
         \item \textbf{Doble clic sobre otro archivo:} lo abre con el programa que el sistema tenga asociado.
         \item \textbf{Clic derecho sobre un elemento:} ofrece \textbf{\textit{Rename}}, \textbf{\textit{Copy}}, \textbf{\textit{Paste}} y \textbf{\textit{Delete}}. Sobre la carpeta que contiene el \textit{.glab} aparece adem\'as \textbf{\textit{Duplicate project}}.
         \item \textbf{Clic derecho sobre un espacio vac\'io:} ofrece \textbf{\textit{New Folder}} y \textbf{\textit{Paste}}.
@@ -513,10 +513,10 @@ Al iniciar la aplicaci\'on se abre la ventana principal en la secci\'on \textbf{
         \item El \textbf{panel de par\'ametros}, a la derecha, con el t\'itulo \textbf{\textit{Parameters}}, los campos de configuraci\'on del an\'alisis, el bot\'on de limpieza de par\'ametros y el bot\'on \textbf{\textit{Generate}} que lanza el c\'alculo.
     \end{itemize}
 
-    Al desplazar el cursor sobre una gr\'afica, GammaLab muestra la lectura de la posici\'on del cursor en forma de \textit{X = \ldots\ Y = \ldots}, con el nombre de cada eje cuando est\'a disponible. Esta lectura permite situar un punto antes de tomar una medida.
+    Al desplazar el cursor sobre una gr\'afica, Gamma Lab 2.0 muestra la lectura de la posici\'on del cursor en forma de \textit{X = \ldots\ Y = \ldots}, con el nombre de cada eje cuando est\'a disponible. Esta lectura permite situar un punto antes de tomar una medida.
 
     \subsection{Avisos del sistema}
-    Los mensajes de GammaLab aparecen como tarjetas superpuestas en una esquina de la ventana, con tres niveles distinguibles por su icono y su color:
+    Los mensajes de Gamma Lab 2.0 aparecen como tarjetas superpuestas en una esquina de la ventana, con tres niveles distinguibles por su icono y su color:
 
     \begin{center}
     \small
@@ -538,7 +538,7 @@ Al iniciar la aplicaci\'on se abre la ventana principal en la secci\'on \textbf{
     Cada tarjeta dispone de un bot\'on de cierre con la ayuda contextual \emph{Cerrar}. Las tarjetas de informaci\'on se cierran autom\'aticamente; las de advertencia y de error permanecen hasta que el usuario las cierra, de modo que no pase inadvertido un problema.
 
     \subsection{Indicador de progreso y cancelaci\'on}
-    Los c\'alculos de GammaLab no bloquean la interfaz: se ejecutan en segundo plano y publican su avance. Mientras una operaci\'on est\'a en curso aparece una barra de progreso con el nombre de la operaci\'on, el porcentaje completado y un bot\'on \textbf{Cancelar}. Al pulsarlo, el r\'otulo cambia a \textbf{Cancelando\ldots} hasta que la operaci\'on se detiene de forma ordenada y la aplicaci\'on vuelve a su estado anterior sin resultados parciales.
+    Los c\'alculos de Gamma Lab 2.0 no bloquean la interfaz: se ejecutan en segundo plano y publican su avance. Mientras una operaci\'on est\'a en curso aparece una barra de progreso con el nombre de la operaci\'on, el porcentaje completado y un bot\'on \textbf{Cancelar}. Al pulsarlo, el r\'otulo cambia a \textbf{Cancelando\ldots} hasta que la operaci\'on se detiene de forma ordenada y la aplicaci\'on vuelve a su estado anterior sin resultados parciales.
 
     \capturaPendiente[6]{4.5cm}
     {Barra de progreso durante un c\'alculo largo, por ejemplo \textbf{\textit{Wavelet Average}} sobre muchos \textit{trials}, con una tarjeta de aviso visible.}
@@ -560,7 +560,7 @@ Al iniciar la aplicaci\'on se abre la ventana principal en la secci\'on \textbf{
 
 \section{Gesti\'on de se\~nales y proyectos}
 
-El flujo de trabajo de GammaLab comienza siempre con la carga de una se\~nal. A partir de ese momento, todo lo que el usuario haga (generar \textit{trials}, filtrar, calcular an\'alisis, tomar medidas) puede guardarse en un \textbf{proyecto}, que es el archivo con el que se retoma el trabajo m\'as adelante.
+El flujo de trabajo de Gamma Lab 2.0 comienza siempre con la carga de una se\~nal. A partir de ese momento, todo lo que el usuario haga (generar \textit{trials}, filtrar, calcular an\'alisis, tomar medidas) puede guardarse en un \textbf{proyecto}, que es el archivo con el que se retoma el trabajo m\'as adelante.
 
     \subsection{Men\'u File}
     La entrada \textbf{\textit{File}} de la cinta despliega un men\'u con todas las operaciones de archivo:
@@ -581,7 +581,7 @@ El flujo de trabajo de GammaLab comienza siempre con la carga de una se\~nal. A 
     \hline
     \textbf{\textit{Save as}} & Pide siempre una ubicaci\'on y crea el proyecto en ella. \\
     \hline
-    \textbf{\textit{Close project}} & Cierra un proyecto. Si hay varios abiertos, pregunta cu\'al por el nombre de su \textit{.glab}. Si se cierra el activo con cambios sin guardar, GammaLab pregunta antes con las opciones \textbf{\textit{Save}}, \textbf{\textit{Don't Save}} y \textbf{\textit{Cancel}}. \\
+    \textbf{\textit{Close project}} & Cierra un proyecto. Si hay varios abiertos, pregunta cu\'al por el nombre de su \textit{.glab}. Si se cierra el activo con cambios sin guardar, Gamma Lab 2.0 pregunta antes con las opciones \textbf{\textit{Save}}, \textbf{\textit{Don't Save}} y \textbf{\textit{Cancel}}. \\
     \hline
     \textbf{\textit{Exit}} & Cierra la aplicaci\'on, preguntando igualmente si hay cambios sin guardar. \\
     \hline
@@ -611,7 +611,7 @@ El flujo de trabajo de GammaLab comienza siempre con la carga de una se\~nal. A 
     \begin{itemize}
         \item \textbf{ABF} (\textit{*.abf}), el formato de los registros de electrofisiolog\'ia de Axon Instruments.
         \item \textbf{EDF} (\textit{*.edf}), el formato europeo de intercambio de se\~nales biol\'ogicas.
-        \item \textbf{MAT} (\textit{*.mat}), el formato de MATLAB, que permite reanalizar en GammaLab se\~nales ya preparadas en ese entorno.
+        \item \textbf{MAT} (\textit{*.mat}), el formato de MATLAB, que permite reanalizar en Gamma Lab 2.0 se\~nales ya preparadas en ese entorno.
     \end{itemize}
 
     \subsubsection*{Componentes}
@@ -669,12 +669,12 @@ El flujo de trabajo de GammaLab comienza siempre con la carga de una se\~nal. A 
 
 
     \subsubsection*{El canal activo}
-    Los an\'alisis de GammaLab trabajan sobre los \textit{trials} de un canal. Ese canal, llamado \textbf{canal activo}, no se elige en la lista de canales de \textbf{\textit{Open Signal}}: es el \'ultimo canal para el que se generaron \textit{trials} en \textbf{\textit{Preprocessing} > \textit{Trials}}. Cada canal conserva su propio conjunto de \textit{trials}, de modo que generar los de un segundo canal no borra los del primero, pero s\'i convierte al segundo en el canal activo. Para volver a trabajar sobre el primero, hay que generar de nuevo sus \textit{trials}.
+    Los an\'alisis de Gamma Lab 2.0 trabajan sobre los \textit{trials} de un canal. Ese canal, llamado \textbf{canal activo}, no se elige en la lista de canales de \textbf{\textit{Open Signal}}: es el \'ultimo canal para el que se generaron \textit{trials} en \textbf{\textit{Preprocessing} > \textit{Trials}}. Cada canal conserva su propio conjunto de \textit{trials}, de modo que generar los de un segundo canal no borra los del primero, pero s\'i convierte al segundo en el canal activo. Para volver a trabajar sobre el primero, hay que generar de nuevo sus \textit{trials}.
 
     \aviso{Importante.}{El \textit{plugin} \textbf{PPC} y el modo \textbf{\textit{PAC Psel inter-canal}} trabajan con dos canales a la vez y necesitan que ambos tengan \textit{trials} cortados con los mismos par\'ametros. En \textbf{\textit{PAC Psel inter-canal}}, adem\'as, el canal de fase es el canal activo, por lo que sus \textit{trials} deben generarse en \'ultimo lugar.}
 
     \subsection{Proyectos}
-    Un \textbf{proyecto} de GammaLab es una carpeta que contiene un archivo \textit{.glab} y una copia de la se\~nal analizada. El archivo \textit{.glab} es un manifiesto en formato de texto que registra:
+    Un \textbf{proyecto} de Gamma Lab 2.0 es una carpeta que contiene un archivo \textit{.glab} y una copia de la se\~nal analizada. El archivo \textit{.glab} es un manifiesto en formato de texto que registra:
 
     \begin{itemize}
         \item El nombre del proyecto y la fecha y hora del guardado.
@@ -684,13 +684,13 @@ El flujo de trabajo de GammaLab comienza siempre con la carga de una se\~nal. A 
         \item Todas las medidas de pendiente, de diferencia y de amplitud tomadas sobre las gr\'aficas.
     \end{itemize}
 
-    El proyecto guarda, por tanto, la \emph{receta} del trabajo y no sus resultados num\'ericos: al abrirlo, GammaLab reconstruye los \textit{trials} y vuelve a ejecutar los an\'alisis con los mismos par\'ametros. Esta decisi\'on mantiene los proyectos peque\~nos y garantiza que el resultado que se ve corresponde siempre a la versi\'on actual del c\'odigo de c\'alculo.
+    El proyecto guarda, por tanto, la \emph{receta} del trabajo y no sus resultados num\'ericos: al abrirlo, Gamma Lab 2.0 reconstruye los \textit{trials} y vuelve a ejecutar los an\'alisis con los mismos par\'ametros. Esta decisi\'on mantiene los proyectos peque\~nos y garantiza que el resultado que se ve corresponde siempre a la versi\'on actual del c\'odigo de c\'alculo.
 
     \subsubsection*{C\'omo guardar un proyecto}
     \begin{enumerate}
         \item Seleccione \textbf{\textit{File} > \textit{Save as}}.
         \item Elija la carpeta en la que desea crear el proyecto.
-        \item GammaLab crea la carpeta del proyecto, copia la se\~nal dentro de ella y escribe el archivo \textit{.glab}.
+        \item Gamma Lab 2.0 crea la carpeta del proyecto, copia la se\~nal dentro de ella y escribe el archivo \textit{.glab}.
         \item El nombre del proyecto aparece en la barra de t\'itulo y el panel \textbf{\textit{Explorer}} pasa a mostrar su carpeta.
     \end{enumerate}
 
@@ -700,17 +700,17 @@ El flujo de trabajo de GammaLab comienza siempre con la carga de una se\~nal. A 
     \begin{enumerate}
         \item Seleccione \textbf{\textit{File} > \textit{Open project}}.
         \item Elija el archivo \textit{.glab} del proyecto.
-        \item GammaLab carga la se\~nal copiada en la carpeta del proyecto, reconstruye los \textit{trials}, vuelve a aplicar el filtro si estaba aplicado a los \textit{trials}, recalcula los an\'alisis guardados y restaura las medidas.
+        \item Gamma Lab 2.0 carga la se\~nal copiada en la carpeta del proyecto, reconstruye los \textit{trials}, vuelve a aplicar el filtro si estaba aplicado a los \textit{trials}, recalcula los an\'alisis guardados y restaura las medidas.
     \end{enumerate}
 
-    Si el archivo del proyecto est\'a incompleto o la copia de la se\~nal no se encuentra, GammaLab muestra un aviso de error indicando el motivo y no deja el proyecto a medio abrir.
+    Si el archivo del proyecto est\'a incompleto o la copia de la se\~nal no se encuentra, Gamma Lab 2.0 muestra un aviso de error indicando el motivo y no deja el proyecto a medio abrir.
 
     \subsubsection*{C\'omo crear un proyecto en blanco}
     \begin{enumerate}
         \item Seleccione \textbf{\textit{File} > \textit{New project}}.
         \item Escriba el nombre del proyecto y elija su ubicaci\'on con \textbf{\textit{Browse}}. Debajo se muestra la ruta que se crear\'a, de la forma \textit{ubicaci\'on/nombre/nombre.glab}.
         \item En \textbf{Abrir en}, elija \textbf{Esta ventana} o \textbf{Una ventana nueva}.
-        \item Pulse \textbf{\textit{Create}}. Con \textbf{Esta ventana}, el proyecto se a\~nade al \textbf{\textit{Explorer}} como activo; con \textbf{Una ventana nueva}, se abre otra ventana de GammaLab con el proyecto y la actual no cambia.
+        \item Pulse \textbf{\textit{Create}}. Con \textbf{Esta ventana}, el proyecto se a\~nade al \textbf{\textit{Explorer}} como activo; con \textbf{Una ventana nueva}, se abre otra ventana de Gamma Lab 2.0 con el proyecto y la actual no cambia.
         \item Cargue la se\~nal con \textbf{\textit{File} > \textit{Open signal}}. La se\~nal queda dentro del proyecto en blanco y \textbf{\textit{File} > \textit{Save}} la copia a su carpeta.
     \end{enumerate}
 
@@ -720,16 +720,16 @@ El flujo de trabajo de GammaLab comienza siempre con la carga de una se\~nal. A 
     \begin{enumerate}
         \item Con un proyecto abierto, abra otro con \textbf{\textit{File} > \textit{Open project}} o cree uno con \textbf{\textit{File} > \textit{New project}}.
         \item El nuevo proyecto aparece en el \textbf{\textit{Explorer}} debajo del anterior y pasa a ser el activo. El anterior sigue visible, sin negrita.
-        \item Para volver a un proyecto, haga doble clic sobre su archivo \textit{.glab} en el \textbf{\textit{Explorer}}. GammaLab descarga el proyecto activo, preguntando antes si tiene cambios sin guardar, y carga el elegido.
+        \item Para volver a un proyecto, haga doble clic sobre su archivo \textit{.glab} en el \textbf{\textit{Explorer}}. Gamma Lab 2.0 descarga el proyecto activo, preguntando antes si tiene cambios sin guardar, y carga el elegido.
     \end{enumerate}
 
     \subsubsection*{C\'omo duplicar un proyecto}
     \begin{enumerate}
-        \item En el \textbf{\textit{Explorer}}, haga clic derecho sobre la carpeta del proyecto, la que contiene su \textit{.glab}, y elija \textbf{\textit{Duplicate project}}. Si la carpeta guarda m\'as de un \textit{.glab}, GammaLab pregunta cu\'al duplicar.
+        \item En el \textbf{\textit{Explorer}}, haga clic derecho sobre la carpeta del proyecto, la que contiene su \textit{.glab}, y elija \textbf{\textit{Duplicate project}}. Si la carpeta guarda m\'as de un \textit{.glab}, Gamma Lab 2.0 pregunta cu\'al duplicar.
         \item Si el proyecto tiene cambios sin guardar, elija \textbf{Guardar y duplicar} o \textbf{Duplicar lo guardado}: la copia se hace siempre de lo que est\'a guardado en disco.
         \item Indique el nombre y la ubicaci\'on de la copia. Por defecto se propone \textit{nombre\_copia} junto al original; la copia no puede quedar dentro de la carpeta del proyecto original.
         \item Elija \textbf{Esta ventana} o \textbf{Una ventana nueva} y pulse \textbf{\textit{Duplicate}}.
-        \item GammaLab copia la carpeta completa (la se\~nal, los archivos exportados y las subcarpetas) y renombra el \textit{.glab}. La copia muestra la barra de progreso y puede cancelarse; al cancelarla no queda nada a medio copiar.
+        \item Gamma Lab 2.0 copia la carpeta completa (la se\~nal, los archivos exportados y las subcarpetas) y renombra el \textit{.glab}. La copia muestra la barra de progreso y puede cancelarse; al cancelarla no queda nada a medio copiar.
     \end{enumerate}
 
     \subsubsection*{C\'omo cerrar un proyecto}
@@ -739,9 +739,9 @@ El flujo de trabajo de GammaLab comienza siempre con la carga de una se\~nal. A 
         \item Cerrar un proyecto que no es el activo solo lo quita del \textbf{\textit{Explorer}}. Cerrar el activo libera su se\~nal, y los dem\'as proyectos siguen visibles sin que ninguno quede activo.
     \end{enumerate}
 
-    \aviso{Varias ventanas.}{Cada ventana de GammaLab es independiente y tiene su propio \textbf{\textit{Explorer}}: un proyecto abierto en una ventana no aparece en las dem\'as. Conviene no abrir el mismo proyecto en dos ventanas, porque el \'ultimo guardado reemplaza al otro.}
+    \aviso{Varias ventanas.}{Cada ventana de Gamma Lab 2.0 es independiente y tiene su propio \textbf{\textit{Explorer}}: un proyecto abierto en una ventana no aparece en las dem\'as. Conviene no abrir el mismo proyecto en dos ventanas, porque el \'ultimo guardado reemplaza al otro.}
 
-    \aviso{Cambios sin guardar.}{GammaLab marca el proyecto como modificado en cuanto se genera un \textit{trial}, se ejecuta un an\'alisis o se toma una medida. Al cerrar el proyecto o la aplicaci\'on con cambios pendientes, aparece un di\'alogo con las opciones \textbf{\textit{Save}}, \textbf{\textit{Don't Save}} y \textbf{\textit{Cancel}}.}
+    \aviso{Cambios sin guardar.}{Gamma Lab 2.0 marca el proyecto como modificado en cuanto se genera un \textit{trial}, se ejecuta un an\'alisis o se toma una medida. Al cerrar el proyecto o la aplicaci\'on con cambios pendientes, aparece un di\'alogo con las opciones \textbf{\textit{Save}}, \textbf{\textit{Don't Save}} y \textbf{\textit{Cancel}}.}
 
 \clearpage
 
@@ -810,7 +810,7 @@ La secci\'on \textbf{\textit{Preprocessing}} de la cinta re\'une las tres herram
     \subsubsection*{Revisi\'on y descarte}
     Conviene recorrer los \textit{trials} con \textbf{\textit{Previous}} y \textbf{\textit{Next}} antes de analizar, y descartar con \textbf{\textit{Discard}} los que presenten saturaci\'on, movimiento o artefactos evidentes. Los \textit{trials} descartados dejan de participar en todos los c\'alculos posteriores, de modo que el descarte es la forma m\'as directa de evitar que un registro defectuoso contamine un promedio.
 
-    \aviso{Si no se detecta ning\'un est\'imulo.}{Cuando \textbf{\textit{Generate}} no encuentra marcas, GammaLab muestra un aviso de error. Las dos causas habituales son un \textbf{\textit{Threshold}} demasiado alto para la amplitud real de las marcas y la elecci\'on de un \textbf{\textit{Stim Channel}} equivocado. Revise el canal de est\'imulo en el \'area de gr\'aficas y lea la amplitud de sus marcas con la lectura del cursor antes de fijar el umbral.}
+    \aviso{Si no se detecta ning\'un est\'imulo.}{Cuando \textbf{\textit{Generate}} no encuentra marcas, Gamma Lab 2.0 muestra un aviso de error. Las dos causas habituales son un \textbf{\textit{Threshold}} demasiado alto para la amplitud real de las marcas y la elecci\'on de un \textbf{\textit{Stim Channel}} equivocado. Revise el canal de est\'imulo en el \'area de gr\'aficas y lea la amplitud de sus marcas con la lectura del cursor antes de fijar el umbral.}
 
     \subsection{Remove Artifact}
     El \textit{plugin} \textbf{\textit{Remove Artifact}} corrige los artefactos que quedan dentro de un \textit{trial} que, por lo demas, es aprovechable. Opera sobre un \textit{trial} a la vez y ofrece dos modos de correcci\'on.
@@ -878,7 +878,7 @@ La secci\'on \textbf{\textit{Preprocessing}} de la cinta re\'une las tres herram
         \item Si el resultado es el esperado, pulse \textbf{\textit{Filter}} para aplicarlo a los \textit{trials}.
     \end{enumerate}
 
-    \aviso{Sobre las frecuencias de corte.}{Si las frecuencias no cumplen las condiciones indicadas, GammaLab muestra un aviso de error con los valores normalizados que produjeron el fallo, en lugar de devolver una se\~nal sin sentido. Recuerde que el l\'imite superior real es la mitad de la frecuencia de muestreo de la se\~nal.}
+    \aviso{Sobre las frecuencias de corte.}{Si las frecuencias no cumplen las condiciones indicadas, Gamma Lab 2.0 muestra un aviso de error con los valores normalizados que produjeron el fallo, en lugar de devolver una se\~nal sin sentido. Recuerde que el l\'imite superior real es la mitad de la frecuencia de muestreo de la se\~nal.}
 
 \clearpage
 
@@ -1328,7 +1328,7 @@ La subcategor\'ia \textbf{\textit{Time-Frequency}} re\'une los an\'alisis que de
     \end{senalamientos}
 
 
-    \aviso{Requisito die alineaci\'on.}{Los \textit{trials} de los dos canales deben tener la misma forma, es decir, el mismo n\'umero de muestras y el mismo n\'umero de \textit{trials}. Si no coinciden, GammaLab interrumpe el c\'alculo con un aviso que indica que hay que volver a cortarlos con el mismo umbral, los mismos tiempos y los mismos \textit{trials}, cambiando \'unicamente el canal. Esta comprobaci\'on es deliberada: comparar la fase de un canal con la amplitud de otro solo tiene sentido si ambas series describen los mismos instantes.}
+    \aviso{Requisito die alineaci\'on.}{Los \textit{trials} de los dos canales deben tener la misma forma, es decir, el mismo n\'umero de muestras y el mismo n\'umero de \textit{trials}. Si no coinciden, Gamma Lab 2.0 interrumpe el c\'alculo con un aviso que indica que hay que volver a cortarlos con el mismo umbral, los mismos tiempos y los mismos \textit{trials}, cambiando \'unicamente el canal. Esta comprobaci\'on es deliberada: comparar la fase de un canal con la amplitud de otro solo tiene sentido si ambas series describen los mismos instantes.}
 
     \aviso{Si la se\~nal tiene un solo canal.}{El modo entre canales necesita, por definici\'on, dos canales con \textit{trials}. Con un \'unico canal disponible, utilice \textbf{\textit{PAC Psel}}.}
 
@@ -1448,7 +1448,7 @@ La subcategor\'ia \textbf{\textit{Time-Frequency}} re\'une los an\'alisis que de
 
 \section{Medidas sobre las gr\'aficas}
 
-GammaLab permite tomar medidas cuantitativas directamente sobre cualquier gr\'afica, marcando puntos con el rat\'on. Las medidas se acumulan en tres tablas, una por tipo de medida, se guardan con el proyecto y pueden exportarse.
+Gamma Lab 2.0 permite tomar medidas cuantitativas directamente sobre cualquier gr\'afica, marcando puntos con el rat\'on. Las medidas se acumulan en tres tablas, una por tipo de medida, se guardan con el proyecto y pueden exportarse.
 
     \subsection{Men\'u contextual de las gr\'aficas}
     \label{sec:mu_menu_contextual}
@@ -1555,14 +1555,14 @@ GammaLab permite tomar medidas cuantitativas directamente sobre cualquier gr\'af
         \item Abra la gr\'afica que desea medir.
         \item En la cinta \textbf{\textit{Home}}, pulse el icono del bot\'on \textbf{\textit{Difference}}, o bien elija \textbf{\textit{Measurements} > \textit{Difference / derivative (2 points)}} en el men\'u contextual de la gr\'afica.
         \item Haga clic en el inicio del intervalo y despu\'es en su final.
-        \item GammaLab muestra un aviso con el m\'aximo de la derivada y su posici\'on en X, el m\'inimo y su posici\'on, la media y el identificador de la medida.
+        \item Gamma Lab 2.0 muestra un aviso con el m\'aximo de la derivada y su posici\'on en X, el m\'inimo y su posici\'on, la media y el identificador de la medida.
         \item Sobre la gr\'afica se marca en morado el punto de m\'axima derivada, junto con un tramo corto de su recta tangente, cuya inclinaci\'on es precisamente ese valor m\'aximo.
         \item La fila de la medida aparece en la pesta\~na \textbf{\textit{Difference}} del panel \textbf{\textit{Results}}.
     \end{enumerate}
 
     Para aplicar el mismo intervalo a todos los \textit{trials}, despliegue la flecha situada junto al icono y elija \textbf{\textit{Difference (all trials)}}, o use la entrada \textbf{\textit{Difference / derivative (all trials)}} del men\'u contextual.
 
-    \aviso{Intervalo demasiado corto.}{La derivada necesita al menos dos muestras dentro del intervalo. Si los dos puntos marcados caen sobre la misma muestra o demasiado juntos, GammaLab muestra el aviso \emph{The window needs at least two samples to compute the derivative} y no guarda la medida. Basta repetirla con un intervalo m\'as amplio.}
+    \aviso{Intervalo demasiado corto.}{La derivada necesita al menos dos muestras dentro del intervalo. Si los dos puntos marcados caen sobre la misma muestra o demasiado juntos, Gamma Lab 2.0 muestra el aviso \emph{The window needs at least two samples to compute the derivative} y no guarda la medida. Basta repetirla con un intervalo m\'as amplio.}
 
     Al dibujarse la medida, la vista de la gr\'afica conserva el acercamiento que ten\'ia, de modo que no es necesario volver a ajustar el \textit{zoom}.
 
@@ -1588,7 +1588,7 @@ GammaLab permite tomar medidas cuantitativas directamente sobre cualquier gr\'af
     El grupo \textbf{\textit{Measurements}} contiene tres botones de medida, en este orden: \textbf{\textit{Slope}}, \textbf{\textit{Difference}} y \textbf{\textit{Amplitude}}. Cada uno se compone de dos partes:
 
     \begin{itemize}
-        \item \textbf{Icono:} al pulsarlo se inicia directamente la medida de dos puntos sobre la \'ultima gr\'afica visitada. Si no hay ninguna, GammaLab avisa de que primero debe abrirse una vista con gr\'aficas.
+        \item \textbf{Icono:} al pulsarlo se inicia directamente la medida de dos puntos sobre la \'ultima gr\'afica visitada. Si no hay ninguna, Gamma Lab 2.0 avisa de que primero debe abrirse una vista con gr\'aficas.
         \item \textbf{Flecha:} despliega las dos variantes de la medida. En el bot\'on \textbf{\textit{Difference}} son \textbf{\textit{Difference (2 points)}} y \textbf{\textit{Difference (all trials)}}; en los otros dos botones son las equivalentes de pendiente y de amplitud.
     \end{itemize}
 
@@ -1606,7 +1606,7 @@ GammaLab permite tomar medidas cuantitativas directamente sobre cualquier gr\'af
         \item \textbf{Botones \textit{Slope}, \textit{Difference} y \textit{Amplitude}:} el icono inicia la medida de dos puntos y la flecha ofrece la variante \textit{all trials}. Sus resultados se consultan en la pesta\~na correspondiente del panel \textbf{\textit{Results}}.
         \item \textbf{Bot\'on de borrado:} despliega las acciones \textbf{\textit{delete last}} y \textbf{\textit{delete all}}.
         \item \textbf{Bot\'on de visibilidad:} despliega las acciones \textbf{\textit{Show all}} y \textbf{\textit{Hide all}}, que muestran u ocultan las l\'ineas de todas las medidas.
-        \item \textbf{Control \textit{Zoom}:} abre el panel de acercamiento. Act\'ua sobre la \'ultima gr\'afica visitada; si no hay ninguna, GammaLab avisa de que primero debe abrirse una vista con gr\'aficas.
+        \item \textbf{Control \textit{Zoom}:} abre el panel de acercamiento. Act\'ua sobre la \'ultima gr\'afica visitada; si no hay ninguna, Gamma Lab 2.0 avisa de que primero debe abrirse una vista con gr\'aficas.
         \item \textbf{Panel de \textit{Zoom}:} el porcentaje de acercamiento actual, inicialmente \textbf{100\%}, y los controles para aumentarlo, reducirlo y restaurarlo.
     \end{senalamientos}
 
@@ -1755,7 +1755,7 @@ GammaLab permite tomar medidas cuantitativas directamente sobre cualquier gr\'af
 
 \section{Exportaci\'on de resultados}
 
-GammaLab ofrece dos v\'ias de exportaci\'on: la de gr\'aficas, como im\'agenes, y la de datos, como tablas.
+Gamma Lab 2.0 ofrece dos v\'ias de exportaci\'on: la de gr\'aficas, como im\'agenes, y la de datos, como tablas.
 
     \subsection{Exportaci\'on de im\'agenes}
     Desde el men\'u contextual de cualquier gr\'afica, el submen\'u \textbf{\textit{Export as image}} ofrece los formatos de la Tabla~\ref{tab:mu_formatos_imagen}.

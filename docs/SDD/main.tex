@@ -43,7 +43,7 @@
 \usepackage[hidelinks,plainpages=false]{hyperref}
 \hypersetup{
     pdftitle={SDD: Gamma Lab 2.0},
-    pdfauthor={Equipo Gamma Lab}
+    pdfauthor={Equipo Gamma Lab 2.0}
 }
 
 \onehalfspacing                        % interlineado 1.5
@@ -275,12 +275,12 @@ vean en ellos el anhelo de buscar la verdad y la Justicia''\par}
 \section{INTRODUCCIÓN}
 
     \subsection{Prop\'osito del documento}
-    El presente \textbf{\textit{Software Design Document} (SDD)} tiene como propósito documentar el diseño técnico de GammaLab v2.0, describiendo la organización de sus componentes, las responsabilidades de sus módulos, las relaciones entre ellos y los mecanismos que permiten su interacción. El documento profundiza en las decisiones de diseño que orientan la implementación del sistema, complementando la descripción arquitectónica establecida en el \textbf{\textit{Software Architecture Document} (SAD)} y los requisitos definidos en el \textbf{\textit{Software Requirements Specification} (SRS)}.
+    El presente \textbf{\textit{Software Design Document} (SDD)} tiene como propósito documentar el diseño técnico de Gamma Lab 2.0, describiendo la organización de sus componentes, las responsabilidades de sus módulos, las relaciones entre ellos y los mecanismos que permiten su interacción. El documento profundiza en las decisiones de diseño que orientan la implementación del sistema, complementando la descripción arquitectónica establecida en el \textbf{\textit{Software Architecture Document} (SAD)} y los requisitos definidos en el \textbf{\textit{Software Requirements Specification} (SRS)}.
 
-    Asimismo, el SDD proporciona una referencia técnica para comprender la estructura interna del \textit{software}, analizar sus flujos de ejecución y orientar el desarrollo, mantenimiento y validación de sus funcionalidades.
+    También sirve de referencia técnica para comprender la estructura interna del \textit{software}, analizar sus flujos de ejecución y orientar el desarrollo, mantenimiento y validación de sus funcionalidades.
 
     \subsection{Alcance}
-    El alcance de este documento comprende la descripción de la arquitectura y el diseño detallado de GammaLab v2.0, desde la organización general de sus componentes hasta los elementos técnicos que intervienen en su funcionamiento. Para ello, incluye los siguientes aspectos:
+    El alcance de este documento comprende la descripción de la arquitectura y el diseño detallado de Gamma Lab 2.0, desde la organización general de sus componentes hasta los elementos técnicos que intervienen en su funcionamiento. Para ello, incluye los siguientes aspectos:
 
     \begin{itemize}
         \item \textbf{Arquitectura del sistema:} Descripción de las vistas de escenarios, lógica, de despliegue, de procesos y física, así como de los principales componentes y sus responsabilidades.
@@ -296,24 +296,24 @@ vean en ellos el anhelo de buscar la verdad y la Justicia''\par}
     \begin{itemize}
         \item \textbf{Desarrolladores de \textit{software}:} Proporciona información sobre la estructura interna del sistema, las responsabilidades de las clases, las dependencias entre componentes y los criterios de diseño que orientan la implementación y el mantenimiento.
         \item \textbf{Equipo de QA:} Sirve como referencia para contrastar el diseño y el comportamiento del sistema con los requisitos especificados, así como para identificar posibles inconsistencias entre lo definido y lo implementado.
-        \item \textbf{Directora de tesis:} Permite evaluar la coherencia técnica del diseño, su correspondencia con los requisitos establecidos y el avance de las funcionalidades contempladas para GammaLab v2.0.
+        \item \textbf{Directora de tesis:} Permite evaluar la coherencia técnica del diseño, su correspondencia con los requisitos establecidos y el avance de las funcionalidades contempladas para Gamma Lab 2.0.
         \item \textbf{\textit{Stakeholders}:} Ofrece una descripción técnica general de la solución, sus principales componentes y las funcionalidades que contempla, facilitando la comprensión de su organización y evolución.
     \end{itemize}
 
 \capitulo{ARQUITECTURA}
 
-Esta secci\'on consolida la arquitectura de GammaLab 2.0 desde la perspectiva del \textit{Software Design Document} (SDD), alineada con el \textit{Software Architecture Document} (SAD). Su prop\'osito es ofrecer una visi\'on clara de los componentes, relaciones, flujos y decisiones que soportan el dise\~no e implementaci\'on descritos posteriormente en el Dise\~no Detallado.
+Esta secci\'on consolida la arquitectura de Gamma Lab 2.0 desde la perspectiva del \textit{Software Design Document} (SDD), alineada con el \textit{Software Architecture Document} (SAD). Presenta los componentes, relaciones, flujos y decisiones que soportan el dise\~no e implementaci\'on descritos posteriormente en el Dise\~no Detallado.
 
 A continuaci\'on, se desarrollan las vistas espec\'ificas que articulan la arquitectura hacia el dise\~no e implementaci\'on del sistema.
 
 \subsection{Vista L\'ogica}
 
-La vista l\'ogica describe los componentes m\'as importantes del sistema sin detallar a profundidad su instalaci\'on en hardware. Su objetivo es proporcionar una representaci\'on clara de c\'omo se organizan las responsabilidades y c\'omo interact\'uan los m\'odulos fundamentales de GammaLab 2.0.
+La vista l\'ogica describe los componentes m\'as importantes del sistema sin detallar a profundidad su instalaci\'on en hardware. Muestra c\'omo se organizan las responsabilidades y c\'omo interact\'uan los m\'odulos fundamentales de Gamma Lab 2.0.
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.95\linewidth]{diagrama_clases_sistema_completo.png}
-    \caption{Vista l\'ogica del sistema GammaLab 2.0: n\'ucleo, servicios y familias de \textit{plugins}.}
+    \caption{Vista l\'ogica del sistema Gamma Lab 2.0: n\'ucleo, servicios y familias de \textit{plugins}.}
     \label{fig:sdd_vista_logica}
 \end{figure}
 
@@ -391,12 +391,12 @@ El \textit{Kernel} centraliza el registro y consumo de servicios mediante \texti
 
 \subsection{Vista F\'isica}
 
-La vista f\'isica representa c\'omo se despliega y ejecuta GammaLab 2.0. Presenta los componentes f\'isicos m\'as importantes del sistema, sobre los cuales se instalan los componentes de \textit{software}.
+La vista f\'isica representa c\'omo se despliega y ejecuta Gamma Lab 2.0. Presenta los componentes f\'isicos m\'as importantes del sistema, sobre los cuales se instalan los componentes de \textit{software}.
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.85\linewidth]{diagrama_despliegue_sistema_completo.png}
-    \caption{Vista f\'isica de GammaLab 2.0: estaci\'on \'unica de escritorio y su superficie de entrada/salida.}
+    \caption{Vista f\'isica de Gamma Lab 2.0: estaci\'on \'unica de escritorio y su superficie de entrada/salida.}
     \label{fig:sdd_vista_fisica}
 \end{figure}
 
@@ -455,7 +455,7 @@ La vista de procesos describe el comportamiento din\'amico del sistema completo 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.95\linewidth,height=0.8\textheight,keepaspectratio]{diagrama_actividad_sistema_completo.png}
-    \caption{Flujo maestro de sesi\'on de GammaLab 2.0, con carriles Investigador/Sistema.}
+    \caption{Flujo maestro de sesi\'on de Gamma Lab 2.0, con carriles Investigador/Sistema.}
     \label{fig:sdd_vista_procesos}
 \end{figure}
 
@@ -478,7 +478,7 @@ La navegaci\'on entre secciones, la limpieza de formularios y la ayuda contextua
 
 Las tres vistas anteriores describen el sistema a nivel de componentes. Esta sección baja al nivel en que se escribe el código: qué paquete puede importar a cuál, quién gobierna el ciclo de vida de las extensiones, en qué orden arranca y se cierra la aplicación, cómo se reparte el trabajo entre hilos, cómo se tratan los fallos y qué hay que hacer para añadir una extensión nueva.
 
-Cada apartado se cierra con el estado real de implementación. El \textit{Software Architecture Document} (SAD) prescribe trece decisiones de arquitectura (ADR-01 a ADR-13); varias están implementadas, otras lo están en parte y otras todavía no. Documentar como existente lo que no se ha construido convertiría este documento en una descripción de un sistema imaginario, así que la distinción se mantiene explícita en cada caso.
+Cada apartado se cierra con el estado real de implementación. El \textit{Software Architecture Document} (SAD) prescribe trece decisiones de arquitectura (ADR-01 a ADR-13); varias están implementadas, otras lo están en parte y otras todavía no. Para no presentar como existente lo que no se ha construido, la distinción se indica en cada caso.
 
 \subsubsection{Organización del código y reglas de dependencia}
 
@@ -510,7 +510,7 @@ El código se organiza en cuatro paquetes de primer nivel. La Tabla~\ref{tab:sdd
 \textit{plugins/} & Las extensiones, agrupadas por categoría (\textit{io}, \textit{preprocessing}, \textit{analysis}, \textit{measure}, \textit{faq}). & \textit{Plugins}. \\
 \hline
 
-\textit{test/} & Pruebas automatizadas, con la misma división por responsabilidad (\textit{services\_test}, \textit{plugins\_test}, \textit{ui\_test}, \textit{performance\_test}). & N/A \\
+\textit{test/} & Pruebas automatizadas, con la misma división por responsabilidad (\textit{services\_test}, \textit{plugins\_test} y \textit{performance\_test}). & N/A \\
 \hline
 
 \end{longtable}
@@ -521,12 +521,12 @@ Dentro de \textit{core/} la división es por responsabilidad: \textit{core/kerne
 \paragraph{Reglas de dependencia.} Son tres, y se enuncian en orden de importancia.
 
 \begin{enumerate}
-    \item \textbf{\textit{core/} no importa de \textit{app/} ni de \textit{plugins/}.} Es la regla que sostiene el estilo microkernel: el núcleo tiene que poder existir sin ninguna extensión concreta y sin la ventana principal. Si se invierte, el núcleo deja de ser un núcleo y pasa a ser una capa más del monolito.
+    \item \textbf{\textit{core/} no importa de \textit{app/} ni de \textit{plugins/}.} Es la regla que sostiene el estilo microkernel: el núcleo tiene que poder existir sin ninguna extensión concreta y sin la ventana principal. Si se invirtiera, el núcleo dependería de las extensiones y ya no podría existir sin ellas.
     \item \textbf{Las extensiones no se importan entre sí.} Lo que dos extensiones comparten sube a \textit{core/}; lo que usa una sola se queda en su carpeta. Es la regla que hizo que \textit{gabor.py} pasara del \textit{plugin} de PAC a \textit{core/filters/} cuando PPC empezó a necesitarlo, y la que mantiene a la \textit{wavelet} de Morse dentro de PAC, porque solo PAC la usa.
     \item \textbf{El cómputo no importa de Qt ni de VTK.} El módulo \textit{compute.py} de cada extensión recibe arreglos de NumPy y devuelve arreglos de NumPy. Es lo que permite ejecutarlo en un hilo trabajador y probarlo sin levantar una interfaz gráfica (ADR-04).
 \end{enumerate}
 
-\paragraph{Cómo se verifica.} La primera regla se comprueba automáticamente: basta recorrer los archivos de \textit{core/} y buscar importaciones de \textit{app} o \textit{plugins}. Al momento de redactar esta sección el resultado es \textbf{cero importaciones}, frente a 3 de \textit{app/} hacia los otros paquetes y 32 de \textit{plugins/}, que es la dirección correcta. La tercera regla se comprueba de la misma forma sobre cada \textit{compute.py}, y está cubierta por pruebas: \textit{test/services\_test/test\_gabor\_en\_core.py} verifica con el módulo \textit{ast} que \textit{core/filters/gabor.py} no importe nada de \textit{plugins}, mirando las sentencias de importación y no el texto, porque los comentarios sí nombran a \textit{plugins} y eso es documentación, no acoplamiento.
+\paragraph{Cómo se verifica.} La primera regla se comprueba automáticamente: basta recorrer los archivos de \textit{core/} y buscar importaciones de \textit{app} o \textit{plugins}. Al momento de redactar esta sección el resultado es \textbf{cero importaciones}, frente a 3 de \textit{app/} hacia los otros paquetes y 32 de \textit{plugins/}, que es la dirección correcta. La tercera regla se comprueba de la misma forma sobre cada \textit{compute.py}, y está cubierta por pruebas: \textit{test/services\_test/test\_gabor\_en\_core.py} verifica con el módulo \textit{ast} que \textit{core/filters/gabor.py} no importe nada de \textit{plugins}, a partir de las sentencias de importación y no del texto, porque los comentarios sí mencionan \textit{plugins} sin que eso implique una dependencia.
 
 \paragraph{Correspondencia con las decisiones del SAD.} La Tabla~\ref{tab:sdd_traza_adr} relaciona cada decisión de arquitectura con el apartado de este documento que la desarrolla y con su estado de implementación.
 
@@ -553,7 +553,7 @@ ADR-02 & P1 & Ciclo de vida como máquina de estados gobernada por el \textit{Ke
 \hline
 ADR-03 & P2 & Catálogo de eventos con carga útil tipada & 2.4.2 & \textbf{No implementada} \\
 \hline
-ADR-04 & P3 & Cómputo en un módulo sin dependencias de Qt ni VTK & 2.4.1, 2.4.6 & Parcial (9 de 19 extensiones) \\
+ADR-04 & P3 & Cómputo en un módulo sin dependencias de Qt ni VTK & 2.4.1, 2.4.6 & Parcial (9 de 20 extensiones) \\
 \hline
 ADR-05 & P4 & Descubrimiento declarativo validado & 2.4.2, 2.4.6 & Parcial \\
 \hline
@@ -670,7 +670,7 @@ ADR-13 & N/A & Python, PyQt5 y VTK como base & 2.2 & Implementada \\
 \end{center}
 
 \begin{quote}
-\textbf{Brecha respecto al SAD (ADR-03).} El SAD prescribe un catálogo con carga útil tipada, de modo que un error de tópico se detecte al emitir. Con el canal genérico actual, publicar \textit{"signal\_add"} en lugar de \textit{"signal\_added"} no produce ningún error: simplemente no lo escucha nadie. El código actual ya presenta dos casos de este tipo: \textit{MainWindow}, \textit{IPlugin} y las extensiones \textit{Trials} y \textit{PPC} se suscriben al tópico \textit{signal\_active\_changed}, y \textit{PPC} también a \textit{trials\_changed}, pero ningún componente emite ninguno de los dos, de modo que esas ramas nunca se ejecutan. A ello se suma que la carga útil de \textit{trials\_generated} no es uniforme entre emisores. La tabla anterior documenta el catálogo \textit{de facto}; convertirlo en contrato exige constantes para los tópicos y una estructura declarada por carga útil.
+\textbf{Brecha respecto al SAD (ADR-03).} El SAD prescribe un catálogo con carga útil tipada, de modo que un error de tópico se detecte al emitir. Con el canal genérico actual, publicar \textit{"signal\_add"} en lugar de \textit{"signal\_added"} no produce ningún error y el evento no llega a ningún suscriptor. El código actual ya presenta dos casos de este tipo: \textit{MainWindow}, \textit{IPlugin} y las extensiones \textit{Trials} y \textit{PPC} se suscriben al tópico \textit{signal\_active\_changed}, y \textit{PPC} también a \textit{trials\_changed}, pero ningún componente emite ninguno de los dos, de modo que esas ramas nunca se ejecutan. A ello se suma que la carga útil de \textit{trials\_generated} no es uniforme entre emisores. La tabla anterior documenta el catálogo \textit{de facto}; convertirlo en contrato exige constantes para los tópicos y una estructura declarada por carga útil.
 \end{quote}
 
 \paragraph{Validaciones de carga.} El descubridor exige que el \textit{properties.yml} contenga las ocho claves obligatorias (\textit{id}, \textit{name}, \textit{category}, \textit{subcategory}, \textit{version}, \textit{icon}, \textit{logic\_class}, \textit{ui\_class}) y que la clase declarada en \textit{logic\_class} exista dentro de la carpeta. Lo que \textbf{no} valida, y el SAD prescribe en ADR-05:
@@ -734,7 +734,7 @@ handle.cancelled.connect(partial(self._on_cancelled, handle))
 
 \textbf{Cancelación.} Es cooperativa: se activa un \textit{threading.Event} y el cómputo lo consulta en sus puntos de comprobación. Si no responde en dos segundos, el servicio deja de esperarlo y descarta su resultado, pero el hilo sigue corriendo.
 
-\textbf{Política hilo/proceso.} El SAD prescribe en ADR-09 un orquestador híbrido con un proceso trabajador para los cómputos aislables. \textbf{La implementación usa solo hilos}, y la razón es una medición, no un olvido: el costo de arrancar un proceso y serializar los arreglos hacia él resultó ser de \textbf{1.486\,ms} frente a los \textbf{1.163\,ms} que tarda el cálculo en sí. El proceso costaba más que lo que se quería paralelizar. Como las operaciones pesadas son transformadas de NumPy, que liberan el \textit{GIL} mientras calculan, los hilos sí aprovechan varios núcleos: el reparto de \textit{trials} entre cuatro hilos en PPC rinde entre \textbf{1,8$\times$} y \textbf{2,7$\times$} con resultado idéntico bit a bit. Lo que los hilos no dan es el aislamiento de fallos ni la cancelación forzada, que siguen siendo el argumento a favor de ADR-09 y quedan pendientes.
+\textbf{Política hilo/proceso.} El SAD prescribe en ADR-09 un orquestador híbrido con un proceso trabajador para los cómputos aislables. \textbf{La implementación usa solo hilos}, por una razón medida: el costo de arrancar un proceso y serializar los arreglos hacia él resultó ser de \textbf{1.486\,ms} frente a los \textbf{1.163\,ms} que tarda el cálculo en sí. Arrancar el proceso costaba más que el propio cálculo. Como las operaciones pesadas son transformadas de NumPy, que liberan el \textit{GIL} mientras calculan, los hilos sí aprovechan varios núcleos: el reparto de \textit{trials} entre cuatro hilos en PPC rinde entre \textbf{1,8$\times$} y \textbf{2,7$\times$} con resultado idéntico bit a bit. Lo que los hilos no dan es el aislamiento de fallos ni la cancelación forzada, que siguen siendo el argumento a favor de ADR-09 y quedan pendientes.
 
 \paragraph{Política de memoria.} Cuatro mecanismos, en orden de impacto:
 
@@ -745,7 +745,7 @@ handle.cancelled.connect(partial(self._on_cancelled, handle))
     \item \textbf{Memoización de filtros.} El diseño de los filtros IIR está memoizado y devuelve una copia de los coeficientes, para que ningún consumidor pueda alterar la entrada compartida. Al cambiar de \textit{trial}, el ahorro medido es de \textbf{7,25$\times$}.
 \end{itemize}
 
-\textbf{Liberación determinista.} Al salir de una pestaña, \textit{stop()} desactiva el interactor de VTK de la extensión. Está documentado como defecto abierto que la memoria no se libera por completo al cerrar un proyecto.
+\textbf{Liberación determinista.} Al salir de una pestaña, \textit{stop()} desactiva el interactor de VTK de la extensión. Al cerrar un proyecto o cargar otra señal se liberan la señal anterior y sus derivados (Sección~\ref{sec:sdd_datastore}); las pruebas de \textit{test\_liberar\_senal} y las mediciones del TD verifican que no quede ninguna copia viva de la señal.
 
 \subsubsection{Fallos, registro y mensajes}
 
@@ -789,7 +789,7 @@ Informativo & Registro y barra de estado & Avance de una tarea, resultado de una
 
 \textbf{No hay manejador global de excepciones.} No se instala ningún \textit{sys.\allowbreak excepthook}. Una excepción no capturada en el hilo de interfaz, fuera de los bloques protegidos, termina el proceso sin que el usuario sepa por qué y sin que quede registro.
 
-\textbf{No hay registro estructurado.} El sistema no usa el módulo \textit{logging}: los mensajes salen por \textit{print()}, a través de \textit{IPlugin.\_log()}, que antepone el nombre de la extensión. No hay niveles, ni marca de tiempo, ni archivo, ni rotación. Diagnosticar un fallo que le ocurrió al usuario exige reproducirlo, que es exactamente lo que ADR-12 pretende evitar. La migración está acotada (un \textit{logging.getLogger} por módulo y un \textit{RotatingFileHandler} en el arranque), pero toca todas las llamadas existentes a \textit{print}.
+\textbf{No hay registro estructurado.} El sistema no usa el módulo \textit{logging}: los mensajes salen por \textit{print()}, a través de \textit{IPlugin.\_log()}, que antepone el nombre de la extensión. En la versión instalada, que no tiene consola, esa salida se redirige al archivo \textit{gamma\_lab.log} de la carpeta de datos del usuario, pero sin niveles, marca de tiempo ni rotación. Diagnosticar un fallo que le ocurrió al usuario exige reproducirlo, que es lo que ADR-12 pretende evitar. La migración está acotada (un \textit{logging.getLogger} por módulo y un \textit{RotatingFileHandler} en el arranque), pero toca todas las llamadas existentes a \textit{print}.
 \end{quote}
 
 \subsubsection{Extensibilidad}
@@ -868,7 +868,7 @@ Informativo & Registro y barra de estado & Avance de una tarea, resultado de una
     \item \textit{<nombre>\_plugin.py}: la lógica de coordinación: lee los parámetros, encola, recibe y dibuja.
 \end{itemize}
 
-La separación no es estética. Permite probar el cálculo sin interfaz (las 76 pruebas del cómputo de PPC corren en segundos y sin Qt) y permite ejecutarlo en un hilo trabajador, que es lo que exige la regla de hilos. Nueve de las diecinueve extensiones siguen hoy este patrón; las de frecuencia (\textit{fft}, \textit{psd} y sus promedios) todavía tienen el cálculo dentro de la clase del \textit{plugin}.
+Esta separación permite probar el cálculo sin interfaz (las 84 pruebas del cómputo de PPC corren en segundos y sin Qt) y permite ejecutarlo en un hilo trabajador, que es lo que exige la regla de hilos. Nueve de las veinte extensiones siguen hoy este patrón; las de frecuencia (\textit{fft}, \textit{psd} y sus promedios) todavía tienen el cálculo dentro de la clase del \textit{plugin}.
 
 \paragraph{Puntos de extensión.} Hay tres, de distinta madurez:
 
@@ -883,7 +883,7 @@ La separación no es estética. Permite probar el cálculo sin interfaz (las 76 
 \begin{enumerate}
     \item Crear la carpeta bajo la categoría que corresponda, por ejemplo \textit{plugins/\allowbreak analysis/\allowbreak time\_frequency/\allowbreak <nombre>/}.
     \item Escribir \textit{properties.yml} con las ocho claves y colocar el icono.
-    \item Escribir \textit{compute.py} con el cálculo puro, y sus pruebas en \textit{test/plugins\_test/}. Conviene hacerlo antes que la interfaz: es donde están los errores que importan.
+    \item Escribir \textit{compute.py} con el cálculo puro, y sus pruebas en \textit{test/plugins\_test/}. Conviene hacerlo antes que la interfaz, porque es donde suelen estar los errores de cálculo.
     \item Escribir \textit{<nombre>\_plugin\_ui.py} con los controles y el área del gráfico.
     \item Escribir \textit{<nombre>\_plugin.py}: heredar de \textit{IPlugin}, implementar \textit{get\_widget}, \textit{stop} y \textit{process}, y encolar el cálculo con \textit{run\_task()}, que ya conecta las cuatro señales con su guarda. Solo si se necesita un control más fino se recurre a \textit{submit()} y a la conexión manual descrita en la Sección~2.4.4.
     \item Si el cálculo es compartido con otra extensión, subirlo a \textit{core/filters/} en lugar de duplicarlo.
@@ -896,7 +896,7 @@ No hay que modificar \textit{main.py}, ni el \textit{Kernel}, ni \textit{MainWin
 \capitulo{DISEÑO DETALLADO DE COMPONENTES}
 \label{sec:sdd_componentes}
 
-Esta sección describe las clases que forman GammaLab 2.0: los datos que guardan, las operaciones que ofrecen, las reglas que cumplen y los componentes con los que colaboran. El \textit{Kernel}, el \textit{PluginManager}, el contrato \textit{IPlugin}, el \textit{TaskService} y \textit{PluginAlerts} se describieron en la Sección~\ref{sec:sdd_arq_impl} y aquí solo se referencian.
+Esta sección describe las clases que forman Gamma Lab 2.0: los datos que guardan, las operaciones que ofrecen, las reglas que cumplen y los componentes con los que colaboran. El \textit{Kernel}, el \textit{PluginManager}, el contrato \textit{IPlugin}, el \textit{TaskService} y \textit{PluginAlerts} se describieron en la Sección~\ref{sec:sdd_arq_impl} y aquí solo se referencian.
 
 Los componentes se presentan de abajo hacia arriba, de modo que cada uno se describe después de aquellos en los que se apoya. Primero va el modelo de datos, luego los servicios de soporte que operan sobre él, después los elementos de presentación que muestran la información al usuario y, por último, una vista de conjunto con el diagrama de clases completo.
 
@@ -1308,7 +1308,7 @@ Los elementos de presentación muestran la información al usuario y reciben sus
 \subsubsection{Integración Qt/VTK}
 \label{sec:sdd_qtvtk}
 
-Las gráficas de GammaLab se dibujan con VTK dentro de \textit{widgets} de Qt. Cada extensión crea su propio \textit{widget} VTK, y la ventana principal conserva esos \textit{widgets} al cambiar de módulo para no perder el trabajo del usuario. Esta combinación se apoya en un conjunto de utilidades, ubicadas en \textit{core/utils/}, que resuelven la conversión de datos, el dibujo de series largas, la interacción con el ratón y el manejo de los recursos de las gráficas que no están en pantalla. La Tabla~\ref{tab:sdd_qtvtk} las resume.
+Las gráficas de Gamma Lab 2.0 se dibujan con VTK dentro de \textit{widgets} de Qt. Cada extensión crea su propio \textit{widget} VTK, y la ventana principal conserva esos \textit{widgets} al cambiar de módulo para no perder el trabajo del usuario. Esta combinación se apoya en un conjunto de utilidades, ubicadas en \textit{core/utils/}, que resuelven la conversión de datos, el dibujo de series largas, la interacción con el ratón y el manejo de los recursos de las gráficas que no están en pantalla. La Tabla~\ref{tab:sdd_qtvtk} las resume.
 
 \begin{center}
 \small
@@ -1492,7 +1492,7 @@ La Figura~\ref{fig:sdd_dc_presentacion} muestra los elementos de presentación c
     \label{fig:sdd_diagrama_abrir_proyecto}
 \end{figure}
 
-Este diagrama representa el flujo que sigue GammaLab 2.0 cuando el usuario abre un proyecto desde la opción \textbf{\textit{File} > \textit{Open project}}. El proceso comienza en \textit{MainWindow}, que invoca \textit{\textunderscore{}confirm\_discard\_unsaved\_changes()} para verificar si es posible abandonar el proyecto actual. Es el mismo mecanismo de confirmación descrito en el diagrama de cerrar proyecto: si hay un cálculo en curso o cambios sin guardar, se consulta al usuario, y si la apertura no se autoriza, el proyecto actual se mantiene sin cambios.
+Este diagrama representa el flujo que sigue Gamma Lab 2.0 cuando el usuario abre un proyecto desde la opción \textbf{\textit{File} > \textit{Open project}}. El proceso comienza en \textit{MainWindow}, que invoca \textit{\textunderscore{}confirm\_discard\_unsaved\_changes()} para verificar si es posible abandonar el proyecto actual. Es el mismo mecanismo de confirmación descrito en el diagrama de cerrar proyecto: si hay un cálculo en curso o cambios sin guardar, se consulta al usuario, y si la apertura no se autoriza, el proyecto actual se mantiene sin cambios.
 
 Cuando la apertura se autoriza, \textit{MainWindow} muestra el selector de archivos filtrado por la extensión \textit{.glab}. Si el usuario lo cierra sin elegir un archivo, no se abre nada. Si elige uno, \textit{MainWindow} marca el proyecto como ocupado y envía la lectura a \textit{TaskService} mediante \textit{submit(preparar\_apertura)}. El servicio devuelve inmediatamente un \textit{TaskHandle} y ejecuta el trabajo en un hilo trabajador, de modo que la interfaz permanece disponible y el usuario puede seguir el avance en la barra de progreso.
 
@@ -1518,7 +1518,7 @@ Si la lectura falla (\textit{failed}), \textit{MainWindow} muestra un diálogo c
     \label{fig:sdd_diagrama_guardar_proyecto}
 \end{figure}
 
-Este diagrama representa el flujo que sigue GammaLab 2.0 al usar \textit{save} y \textit{save as} en un proyecto. El proceso comienza cuando el usuario solicita guardar el proyecto desde la interfaz principal \textit{MainWindow}, que llama al método \textit{iniciar\_guardado()} de \textit{ProjectService}. Este servicio verifica que exista una señal activa mediante \textit{DataStore}. Si no hay una señal disponible, se genera un \textit{RuntimeError}, que es capturado por \textit{MainWindow} para informar al usuario y detener el proceso.
+Este diagrama representa el flujo que sigue Gamma Lab 2.0 al usar \textit{save} y \textit{save as} en un proyecto. El proceso comienza cuando el usuario solicita guardar el proyecto desde la interfaz principal \textit{MainWindow}, que llama al método \textit{iniciar\_guardado()} de \textit{ProjectService}. Este servicio verifica que exista una señal activa mediante \textit{DataStore}. Si no hay una señal disponible, se genera un \textit{RuntimeError}, que es capturado por \textit{MainWindow} para informar al usuario y detener el proceso.
 
 Cuando existe una señal cargada, \textit{ProjectService} determina la ruta en la cual se guardará el proyecto. Si la ruta es válida, se utiliza directamente; de lo contrario, se abre el selector de carpetas para que el usuario elija una ubicación. El sistema valida la carpeta seleccionada y, si no está permitida, informa al usuario y permite realizar una nueva selección. Este ciclo se mantiene hasta que la carpeta seleccionada sea válida o el usuario cancele la selección. En este último caso, \textit{iniciar\_guardado} devuelve \textit{None} y \textit{MainWindow} cancela la acción.
 
@@ -1540,7 +1540,7 @@ En caso contrario, si la copia es cancelada o falla, \textit{MainWindow} ejecuta
     \label{fig:sdd_diagrama_cerrar_proyecto}
 \end{figure}
 
-Este diagrama representa el flujo que sigue GammaLab 2.0 cuando el usuario solicita cerrar un proyecto desde la opción \textbf{\textit{File} > \textit{Close project}}. Si hay varios proyectos abiertos, \textit{MainWindow} muestra antes \textit{DialogoCerrarProyecto} para elegir cuál, identificado por el nombre de su \textit{.glab}; cerrar uno que no es el activo solo lo quita de la lista del \textit{Explorer}, sin pasar por el resto del flujo. Para el proyecto activo, el proceso comienza en \textit{MainWindow}, que invoca \textit{\textunderscore{}confirm\_discard\_unsaved\_changes()} para determinar si el cierre puede realizarse de forma segura y si es necesario solicitar una confirmación al usuario.
+Este diagrama representa el flujo que sigue Gamma Lab 2.0 cuando el usuario solicita cerrar un proyecto desde la opción \textbf{\textit{File} > \textit{Close project}}. Si hay varios proyectos abiertos, \textit{MainWindow} muestra antes \textit{DialogoCerrarProyecto} para elegir cuál, identificado por el nombre de su \textit{.glab}; cerrar uno que no es el activo solo lo quita de la lista del \textit{Explorer}, sin pasar por el resto del flujo. Para el proyecto activo, el proceso comienza en \textit{MainWindow}, que invoca \textit{\textunderscore{}confirm\_discard\_unsaved\_changes()} para determinar si el cierre puede realizarse de forma segura y si es necesario solicitar una confirmación al usuario.
 
 En primer lugar, se verifica si hay un cálculo en ejecución o si el proyecto se encuentra en proceso de apertura. Cuando se presenta alguna de estas condiciones, la interfaz muestra un aviso que permite al usuario decidir entre cerrar de todos modos o permanecer en el proyecto. Si el usuario confirma el cierre, \textit{MainWindow} solicita a \textit{TaskService} la cancelación de las tareas y autoriza inmediatamente el cierre. En esta situación no se realiza una consulta adicional sobre los cambios sin guardar. Si el usuario decide quedarse, el método devuelve \textit{False} y el cierre se interrumpe.
 
@@ -1565,7 +1565,7 @@ Si en cualquiera de las validaciones iniciales el cierre es cancelado o no puede
     \label{fig:sdd_diagrama_wavelet}
 \end{figure}
 
-Este diagrama representa el flujo que sigue GammaLab 2.0 al generar un análisis con \textit{Wavelet} a partir de los \textit{trials} de la señal activa. Este flujo comienza con la apertura del \textit{widget} de \textit{wavelet} desde \textit{MainWindow}. Para ello, se solicita al \textit{WaveletPlugin} que inicialice el \textit{plugin} y proporcione su interfaz mediante \textit{get\_widget()}. Una vez disponible el \textit{widget}, el usuario puede seleccionar los parámetros del análisis y ejecutar la opción \textbf{\textit{Generate}}.
+Este diagrama representa el flujo que sigue Gamma Lab 2.0 al generar un análisis con \textit{Wavelet} a partir de los \textit{trials} de la señal activa. Este flujo comienza con la apertura del \textit{widget} de \textit{wavelet} desde \textit{MainWindow}. Para ello, se solicita al \textit{WaveletPlugin} que inicialice el \textit{plugin} y proporcione su interfaz mediante \textit{get\_widget()}. Una vez disponible el \textit{widget}, el usuario puede seleccionar los parámetros del análisis y ejecutar la opción \textbf{\textit{Generate}}.
 
 Al iniciar la generación, el \textit{widget} invoca \textit{on\_create\_wavelet()} en \textit{WaveletPlugin}. El \textit{plugin} consulta la señal activa y verifica que exista un objeto \textit{SignalDataset}. Si no hay una señal activa, se muestra una advertencia y el proceso se detiene. Si existe, se obtienen sus \textit{trials} directamente desde \textit{SignalDataset}, ya que estos pertenecen a la señal activa. Cuando no hay \textit{trials} disponibles, también se informa al usuario y no se continúa con el cálculo.
 
@@ -1582,13 +1582,13 @@ Finalmente, los tres \textit{callbacks} ejecutan \textit{\textunderscore{}termin
 \capitulo{INTERFAZ DE USUARIO}
 \label{sec:sdd_interfaz}
 
-Esta sección presenta la interfaz de GammaLab 2.0 tal como la ve el usuario. Primero se describe la organización de la pantalla principal y sus elementos; después, las pestañas de la barra de navegación en el orden en que suelen usarse: \textit{File}, para cargar señales y gestionar proyectos; \textit{Preprocessing}, para dividir la señal en \textit{trials} y prepararlos; y \textit{Analysis}, con los análisis disponibles. Cada elemento se acompaña de una captura de la aplicación. Los componentes de código que implementan estos elementos se describen en la Sección~\ref{sec:sdd_presentacion}.
+Esta sección presenta la interfaz de Gamma Lab 2.0 tal como la ve el usuario. Primero se describe la organización de la pantalla principal y sus elementos; después, las pestañas de la barra de navegación en el orden en que suelen usarse: \textit{File}, para cargar señales y gestionar proyectos; \textit{Preprocessing}, para dividir la señal en \textit{trials} y prepararlos; y \textit{Analysis}, con los análisis disponibles. Cada elemento se acompaña de una captura de la aplicación. Los componentes de código que implementan estos elementos se describen en la Sección~\ref{sec:sdd_presentacion}.
 
 \subsection{Organización de la pantalla principal}
         \begin{figure}[H]
             \centering
             \includegraphics[width=0.8\textwidth]{home.png}
-            \caption{Organización de la pantalla principal de Gamma Lab}
+            \caption{Organización de la pantalla principal de Gamma Lab 2.0}
             \label{fig:interfaz_principal}
         \end{figure}
 
@@ -1605,14 +1605,14 @@ Esta sección presenta la interfaz de GammaLab 2.0 tal como la ve el usuario. Pr
                         \label{fig:slope}
                     \end{figure}
             \item \textbf{5 - \textit{amplitude}:} opción de la categoría \textit{Measurements} (pestaña \textit{Home}) que permite medir la amplitud de la señal entre dos puntos seleccionados por el usuario sobre la gráfica.
-            \item \textbf{6 - eliminar medida:} permite eliminar la última medición de \textit{slope} o \textit{amplitude} realizada, o bien la totalidad de las mediciones registradas sobre la señal.
+            \item \textbf{6 - eliminar medida:} permite eliminar la última medición de \textit{slope}, \textit{difference} o \textit{amplitude} realizada, o bien la totalidad de las mediciones registradas sobre la señal.
                     \begin{figure}[H]
                      \centering
                      \includegraphics[width=0.5\textwidth]{eliminar.png}
                         \caption{opciones de eliminar medida}
                         \label{fig:eliminarMedida}
                     \end{figure}
-            \item \textbf{7 - mostrar/ocultar:} permite mostrar u ocultar en pantalla las mediciones de \textit{slope} y \textit{amplitude} realizadas previamente sobre la señal, sin necesidad de eliminarlas.
+            \item \textbf{7 - mostrar/ocultar:} permite mostrar u ocultar en pantalla las mediciones de \textit{slope}, \textit{difference} y \textit{amplitude} realizadas previamente sobre la señal, sin necesidad de eliminarlas.
             \item \textbf{8 - \textit{zoom}:} activa o desactiva la función de acercamiento sobre la gráfica de la señal, permitiendo observar con mayor detalle un segmento de la señal y las mediciones realizadas sobre él.
                 \begin{figure}[H]
                      \centering
@@ -1627,7 +1627,7 @@ Esta sección presenta la interfaz de GammaLab 2.0 tal como la ve el usuario. Pr
                         \caption{explorador de archivos desplegado}
                         \label{fig:explorador}
                     \end{figure}
-            \item \textbf{10 - resultados:} despliega, desde la barra lateral izquierda, una ventana inferior con los resultados numéricos de las mediciones de \textit{slope} y \textit{amplitude} realizadas sobre la señal, los cuales pueden exportarse en formato \textit{.csv} o \textit{.xlsx} para su análisis externo.
+            \item \textbf{10 - resultados:} despliega, desde la barra lateral izquierda, una ventana inferior con los resultados numéricos de las mediciones de \textit{slope}, \textit{difference} y \textit{amplitude} realizadas sobre la señal, los cuales pueden exportarse en formato \textit{.csv} o \textit{.xlsx} para su análisis externo.
                     \begin{figure}[H]
                      \centering
                      \includegraphics[width=0.5\textwidth]{resultados.png}
@@ -1648,7 +1648,7 @@ Esta sección presenta la interfaz de GammaLab 2.0 tal como la ve el usuario. Pr
         \begin{figure}[H]
             \centering
             \includegraphics[width=0.8\textwidth]{file.png}
-            \caption{Pestaña \textit{File} de Gamma Lab}
+            \caption{Pestaña \textit{File} de Gamma Lab 2.0}
             \label{fig:file_tab}
         \end{figure}
 
@@ -1687,7 +1687,7 @@ Esta sección presenta la interfaz de GammaLab 2.0 tal como la ve el usuario. Pr
         \begin{figure}[H]
             \centering
             \includegraphics[width=0.8\textwidth]{preprocessing.png}
-            \caption{Pestaña \textit{Preprocessing} de Gamma Lab}
+            \caption{Pestaña \textit{Preprocessing} de Gamma Lab 2.0}
             \label{fig:preprocessing_tab}
         \end{figure}
 
@@ -1797,9 +1797,9 @@ Esta sección presenta la interfaz de GammaLab 2.0 tal como la ve el usuario. Pr
 \capitulo{TRAZABILIDAD Y GESTIÓN DEL DISEÑO}
 \label{sec:sdd_trazabilidad}
 
-Este capítulo relaciona los requisitos y los casos de uso que el sistema cubre con la manera en que se cubrieron y con las pruebas que lo verifican. Las fuentes son el SRS para los requisitos, el SAD para los casos de uso, el código fuente y la hoja de seguimiento del proyecto. El estado corresponde al 1 de noviembre de 2026.
+Este capítulo relaciona los requisitos y los casos de uso que el sistema cubre con la manera en que se cubrieron y con las pruebas que lo verifican. Las fuentes son el SRS para los requisitos, el SAD para los casos de uso, el código fuente y la hoja de seguimiento del proyecto. El estado corresponde al 16 de noviembre de 2026.
 
-De los 81 requisitos del SRS, 81 están cubiertos. De los 23 casos de uso del SAD, 23 están cubiertos; un caso se considera cubierto cuando lo están todos los requisitos que lo componen. La verificación se apoya en 761 pruebas automáticas. En la ejecución del 8 de noviembre de 2026 se aprobaron 755; 5 comparaciones con las referencias de MATLAB quedaron como fallo esperado, con su causa documentada, y 1 prueba falló por estar desactualizada frente a la incorporación de PPC. El detalle se presenta en el TD. Donde un límite de tiempo o de memoria no se presta a una prueba automática, la verificación es una medición, con su cifra. Los nombres de componentes, extensiones y pruebas aparecen entre comillas y en cursiva.
+De los 81 requisitos del SRS, 81 están cubiertos. De los 23 casos de uso del SAD, 23 están cubiertos; un caso se considera cubierto cuando lo están todos los requisitos que lo componen. La verificación se apoya en 917 pruebas automáticas. En la ejecución del 16 de noviembre de 2026 se aprobaron 912 y 5 comparaciones con las referencias de MATLAB quedaron como fallo esperado, con su causa documentada; ninguna prueba falló. El detalle se presenta en el TD. Donde un límite de tiempo o de memoria no se presta a una prueba automática, la verificación es una medición, con su cifra. Los nombres de componentes, extensiones y pruebas aparecen entre comillas y en cursiva.
 
 \subsection{Requisitos cubiertos}
 \label{sec:sdd_req_cubiertos}
@@ -1901,7 +1901,7 @@ La Tabla~\ref{tab:sdd_req_fr} recoge los 45 requisitos funcionales cubiertos y l
 \hline
 \textbf{FR-PAC-14}\newline R62 & \textbf{Mismas visualizaciones que PAC de un canal.} El modo entre canales usa la misma representación que el PAC de un solo canal. & Pruebas automáticas de que ambos modos dibujan los mismos paneles (“\textit{test\_pac\_intercanal\_plugin}”). \\
 \hline
-\textbf{FR-PAC-15}\newline R63 & \textbf{PPC: dos canales y rango de frecuencias.} “\textit{PPC}” permite elegir dos canales y el rango de frecuencias y calcula la coherencia de fase con un estimador corregido. & Pruebas automáticas del cálculo de “\textit{PPC}” y de su ejecución en el servicio de tareas (“\textit{test\_ppc\_core}”, “\textit{test\_ppc\_plugin\_orquestado}”). \\
+\textbf{FR-PAC-15}\newline R63 & \textbf{PPC: dos canales y rango de frecuencias.} “\textit{PPC}” permite elegir dos canales y el rango de frecuencias y calcula la consistencia de fase por pares con un estimador corregido. & Pruebas automáticas del cálculo de “\textit{PPC}” y de su ejecución en el servicio de tareas (“\textit{test\_ppc\_core}”, “\textit{test\_ppc\_plugin\_orquestado}”). \\
 \hline
 \textbf{FR-PAC-16}\newline R64 & \textbf{PPC: mapa de frecuencia y tiempo.} “\textit{PPC}” dibuja la coherencia como un mapa de frecuencia contra tiempo, con el eje de frecuencia logarítmico. & Pruebas automáticas del cálculo y de la transformada de Gabor compartida (“\textit{test\_ppc\_core}”, “\textit{test\_gabor\_en\_core}”). \\
 \hline
