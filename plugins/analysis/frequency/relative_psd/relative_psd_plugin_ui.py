@@ -248,15 +248,20 @@ class Ui_Relative_psd(object):
         self.paramsLayout.addLayout(self.rangeLayout)
 
         # --- Results Section ---
+        # Fija al pie del panel derecho, debajo de los parámetros: siempre a la
+        # vista aunque el cuerpo se desplace. Antes iba en el layout de toda la
+        # ventana, ocupaba todo el ancho bajo la gráfica y los valores se cortaban
+        # en el borde derecho.
         self.resultsSection = QtWidgets.QVBoxLayout()
         self.resultsSection.setObjectName("resultsSection")
+        self.resultsSection.setContentsMargins(0, 8, 0, 8)
 
-        self.resultsLabel = QtWidgets.QLabel(self.layoutWidget)
+        self.resultsLabel = QtWidgets.QLabel(self.rightContainer)
         self.resultsLabel.setObjectName("resultsLabel")
         self.resultsLabel.setProperty("variant", "subtitle")
         self.resultsSection.addWidget(self.resultsLabel)
 
-        self.resultsLine = QtWidgets.QFrame(self.layoutWidget)
+        self.resultsLine = QtWidgets.QFrame(self.rightContainer)
         self.resultsLine.setFrameShape(QtWidgets.QFrame.HLine)
         self.resultsLine.setObjectName("resultsLine")
         self.resultsLine.setProperty("role", "divider")
@@ -266,12 +271,12 @@ class Ui_Relative_psd(object):
         self.absPowerRow = QtWidgets.QHBoxLayout()
         self.absPowerRow.setObjectName("absPowerRow")
 
-        self.absPowerLabel = QtWidgets.QLabel(self.layoutWidget)
+        self.absPowerLabel = QtWidgets.QLabel(self.rightContainer)
         self.absPowerLabel.setObjectName("absPowerLabel")
         self.absPowerLabel.setProperty("variant", "input")
         self.absPowerRow.addWidget(self.absPowerLabel)
 
-        self.absPowerValue = QtWidgets.QLineEdit(self.layoutWidget)
+        self.absPowerValue = QtWidgets.QLineEdit(self.rightContainer)
         self.absPowerValue.setObjectName("absPowerValue")
         self.absPowerValue.setText("0.0")
         self.absPowerValue.setReadOnly(True)
@@ -283,12 +288,12 @@ class Ui_Relative_psd(object):
         self.relPowerRow = QtWidgets.QHBoxLayout()
         self.relPowerRow.setObjectName("relPowerRow")
 
-        self.relPowerLabel = QtWidgets.QLabel(self.layoutWidget)
+        self.relPowerLabel = QtWidgets.QLabel(self.rightContainer)
         self.relPowerLabel.setObjectName("relPowerLabel")
         self.relPowerLabel.setProperty("variant", "input")
         self.relPowerRow.addWidget(self.relPowerLabel)
 
-        self.relPowerValue = QtWidgets.QLineEdit(self.layoutWidget)
+        self.relPowerValue = QtWidgets.QLineEdit(self.rightContainer)
         self.relPowerValue.setObjectName("relPowerValue")
         self.relPowerValue.setText("0.0")
         self.relPowerValue.setReadOnly(True)
@@ -297,8 +302,16 @@ class Ui_Relative_psd(object):
 
         self.resultsSection.addLayout(self.relPowerRow)
 
-        # Add entire section to main layout
-        self.vbox.addLayout(self.resultsSection)
+        # Que el número se lea entero en los 300 px del panel: el cuadro tiene el
+        # ancho de un valor como "-0.0000e-00" y la etiqueta puede partirse en dos
+        # líneas. Antes el cuadro quedaba angosto y se cortaba el primer dígito.
+        for etiqueta, valor in ((self.absPowerLabel, self.absPowerValue),
+                                (self.relPowerLabel, self.relPowerValue)):
+            etiqueta.setWordWrap(True)
+            valor.setMinimumWidth(valor.fontMetrics().horizontalAdvance("-0.0000e-00") + 24)
+
+        # Al pie del panel derecho, debajo del cuerpo desplazable
+        self.rightLayoutOuter.addLayout(self.resultsSection)
 
 
         # --- Spacer ---

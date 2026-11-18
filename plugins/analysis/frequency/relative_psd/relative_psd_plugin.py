@@ -108,17 +108,37 @@ class Relative_psd_plugin(IPlugin):
         self.ui.vbox.removeWidget(self.ui.rightContainer)
         divisor.addWidget(self.ui.plotArea)
         divisor.addWidget(self.ui.rightContainer)
-        divisor.setStretchFactor(0, 3)
-        divisor.setStretchFactor(1, 1)
+        # Como FFT y PSD: el panel tiene un ancho máximo y el resto es de la
+        # gráfica. Sin el tope, el panel se quedaba con casi toda la ventana y la
+        # gráfica quedaba en una columna angosta a la izquierda.
+        self.ui.rightContainer.setMaximumWidth(300)
+        divisor.setStretchFactor(0, 1)
+        divisor.setStretchFactor(1, 0)
         self.ui.vbox.insertWidget(0, divisor, 1)
 
     def _inject_optional_controls(self):
         """Inject optional controls without assuming a specific UI layout."""
-        def _add_form_row(label_text: str, w: QtWidgets.QWidget):
+        def _etiqueta(texto):
+            # Mismo estilo que las demás filas del panel. Sin él, el tema dibuja la
+            # etiqueta en letra grande y la fila se hace más ancha que el panel:
+            # todo lo alineado a la derecha (Window, N-Per-Seg...) quedaba escondido.
+            lab = QtWidgets.QLabel(texto)
+            lab.setProperty("variant", "input")
+            return lab
+
+        def _add_form_row(label_text: str, w: QtWidgets.QWidget, apilada: bool = False):
             # 1) Add to form layout if present
             if hasattr(self.ui, "welchParameters") and isinstance(self.ui.welchParameters, QtWidgets.QVBoxLayout):
-                row_layout = QtWidgets.QHBoxLayout()
-                row_layout.addWidget(QtWidgets.QLabel(label_text))
+                # Apilada: la etiqueta arriba y el control debajo, a todo el ancho,
+                # para una etiqueta larga que junto al control no cabe en 300 px.
+                row_layout = QtWidgets.QVBoxLayout() if apilada else QtWidgets.QHBoxLayout()
+                row_layout.addWidget(_etiqueta(label_text))
+                if apilada:
+                    # El tema limita todos los desplegables a 92 px de texto y
+                    # "All Trials (GF=1)" necesita más: se corta. Este, que va solo
+                    # en su línea, puede usar todo el ancho del panel.
+                    w.setStyleSheet("QComboBox { max-width: 16777215px; }")
+                    w.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
                 row_layout.addWidget(w)
                 self.ui.welchParameters.addLayout(row_layout)
 
@@ -160,7 +180,7 @@ class Relative_psd_plugin(IPlugin):
             gf_cb = QtWidgets.QComboBox()
             gf_cb.addItems(["Average (GF=0)", "All Trials (GF=1)"])
             self.ui.gainFactorComboBox = gf_cb
-            _add_form_row("Calculation Mode (GF)", gf_cb)
+            _add_form_row("Calculation Mode (GF)", gf_cb, apilada=True)
 
     def _wire_ui(self):
         self.ui.calculateRelativePsd.clicked.connect(self._on_calculate_clicked)
