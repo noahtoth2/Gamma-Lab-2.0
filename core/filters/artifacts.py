@@ -113,7 +113,6 @@ def calcular_modificacion(t, trials, *, mode: str, point_a: float, point_b: floa
             else:
                 return None
         else:
-            # blank until A
             i_a = int(np.searchsorted(t, point_a, side="left"))
             i_a = max(0, min(i_a, Ns))
             if i_a > 0:
@@ -134,7 +133,6 @@ def calcular_modificacion(t, trials, *, mode: str, point_a: float, point_b: floa
                 return None
             y = out_active[:, j].copy()
             valid = np.isfinite(y)
-            # Exclude the interval [i_a, i_b) from the fit; we want to bridge over it
             keep = valid.copy()
             keep[i_a:i_b] = False
 
@@ -150,29 +148,21 @@ def calcular_modificacion(t, trials, *, mode: str, point_a: float, point_b: floa
                         ctx.progress(int(100 * (j + 1) / T_act), f"Trial {j + 1}/{T_act}")
                     continue
                 except Exception:
-                    # Fallback to linear interpolation if spline fails
                     pass
 
-            # Linear fallback (uses points outside the interval)
             if x_keep.size >= 2:
                 ya = np.interp(t[i_a], x_keep, y_keep)
                 yb = np.interp(t[i_b-1], x_keep, y_keep)
                 r = np.linspace(0.0, 1.0, i_b - i_a)
                 y[i_a:i_b] = ya + (yb - ya) * r
                 out_active[:, j] = y
-            # else: not enough context to interpolate — leave as-is
             if ctx is not None:
                 ctx.progress(int(100 * (j + 1) / T_act), f"Trial {j + 1}/{T_act}")
     else:
         raise ValueError(f"Modo de modificación desconocido: {mode}.")
 
-    # Smooth NaN segments so later analysis plugins receive finite values
     return _fill_nan_segments(t, out_active)
 
-
-# --------------------------------------------------------------------------
-# Persistencia: la "receta" de una modificación
-# --------------------------------------------------------------------------
 
 def crear_derivado(td):
     """A copy of a TrialDataset that owns its data, to write a preprocessing result into (R79)."""
@@ -180,9 +170,6 @@ def crear_derivado(td):
                                metadata=copy.deepcopy(td.metadata or {}))
 
 
-# Las recetas guardadas antes de la versión 2 escribían B = 0.0 cuando no había B
-# («Cut From The Start»), y B = 0 se leía como «sin B». Desde la 2, «sin B» se
-# guarda como None y B = 0 es un punto válido.
 VERSION_RECETA = 2
 
 

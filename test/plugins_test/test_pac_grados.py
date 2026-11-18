@@ -15,9 +15,6 @@ from plugins.analysis.time_frequency.pac.pac_plugin import Pac_plugin
 grados_de = Pac_plugin._fase_en_grados
 
 
-# ============================================================
-#   El eje
-# ============================================================
 def test_el_eje_queda_entre_0_y_360_y_en_orden():
     (g,) = grados_de(cp.centros_bins())
     assert g.size == cp.NBINS
@@ -48,12 +45,9 @@ def test_no_se_pierde_ni_se_repite_ninguna_fase():
     assert np.unique(g).size == g.size
 
 
-# ============================================================
-#   Los datos viajan con su fase
-# ============================================================
 def test_cada_valor_sigue_en_su_fase():
     fases = cp.centros_bins()
-    valores = np.arange(fases.size, dtype=np.float64)   # etiqueta única por bin
+    valores = np.arange(fases.size, dtype=np.float64)
     g, v = grados_de(fases, valores)
 
     for grado, valor in zip(g, v):
@@ -76,10 +70,8 @@ def test_el_mapa_rota_por_columnas_y_no_por_filas():
     g, m = grados_de(fases, mapa)
 
     assert m.shape == mapa.shape
-    # cada fila conserva sus propios valores: rotar no mezcla frecuencias
     for antes, despues in zip(mapa, m):
         assert np.array_equal(np.sort(antes), np.sort(despues))
-    # y las filas rotan todas igual
     corte = int(np.argmin(np.rad2deg(fases) % 360.0))
     assert np.array_equal(m, np.roll(mapa, -corte, axis=-1))
 
@@ -95,15 +87,12 @@ def test_varias_matrices_a_la_vez_rotan_igual():
     assert np.array_equal(rb, np.roll(b, -corte, axis=-1))
 
 
-# ============================================================
-#   La brújula y el histograma dicen lo mismo
-# ============================================================
 def test_la_brujula_y_el_histograma_coinciden():
     """Un acoplamiento metido a mano en un bin: la fase del vector medio y la
     barra más alta tienen que caer en el mismo grado."""
     fases = cp.centros_bins()
     hist = np.zeros(fases.size)
-    hist[72] = 1.0                      # un solo bin con energía
+    hist[72] = 1.0
 
     vector = cp.vector_medio(hist)
     de_la_brujula = np.rad2deg(np.angle(vector)) % 360.0
@@ -134,14 +123,6 @@ def test_con_datos_de_verdad_la_brujula_cae_sobre_el_maximo():
     assert distancia <= paso, (
         f"la brújula dice {de_la_brujula:.1f}° y el histograma {del_histograma:.1f}°")
 
-
-# ============================================================
-#   La casilla de unidades
-# ============================================================
-# Marcada: grados de 0 a 360. Sin marcar: radianes de −π a π, que es lo que
-# dibuja el `bar(index_pi, ...)` del MATLAB. Lo que no puede pasar es que
-# queden mezcladas, que era el problema original: la brújula en 280,6° y el
-# histograma en −79,4°, el mismo ángulo escrito de dos formas.
 
 class _Casilla:
     def __init__(self, marcada=True):
@@ -245,5 +226,5 @@ def test_sin_interfaz_se_asume_grados():
     p = object.__new__(Pac_plugin)
     p.ui = None
     assert p._en_grados() is True
-    p.ui = object()          # una interfaz sin la casilla
+    p.ui = object()
     assert p._en_grados() is True

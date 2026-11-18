@@ -70,9 +70,6 @@ def con_ruido():
     return mapa(ruido(1), ruido(2))
 
 
-# ============================================================
-#   Lo que MATLAB no consigue
-# ============================================================
 def test_ruido_independiente_da_cero_en_toda_la_banda(con_ruido):
     valores = con_ruido.mapa[~np.isnan(con_ruido.mapa)]
     assert abs(valores.mean()) < 0.05
@@ -102,17 +99,11 @@ def test_el_valor_no_depende_de_cuantas_muestras_entraron():
     estrecha = mapa(a, b, wd=0.05)
     ancha = mapa(a, b, wd=0.40)
 
-    # `wd` es un piso: toca las frecuencias altas, donde la ventana que pide
-    # la fórmula es más corta que él. Abajo manda la frecuencia y las dos
-    # coinciden, así que la comparación va sobre el mínimo, no sobre el máximo.
     assert estrecha.ventanas_s.min() < ancha.ventanas_s.min()
     assert estrecha.n_muestras.max() < ancha.n_muestras.max(), "la N tiene que cambiar"
     assert abs(np.nanmean(estrecha.mapa) - np.nanmean(ancha.mapa)) < 0.1
 
 
-# ============================================================
-#   Que sí encuentra lo que hay
-# ============================================================
 def test_dos_senoidales_con_desfase_fijo():
     fase0 = fases_iniciales(7)
     r = mapa(tono(40.0, fase0, semilla_ruido=70),
@@ -138,7 +129,7 @@ def test_el_mapa_situa_en_el_tiempo_un_desfase_que_cambia():
     b = np.empty_like(a)
     for k, p in enumerate(fase0):
         copia = np.sin(2 * np.pi * 60 * T + p + 0.8) + 0.1 * rng.normal(size=N)
-        copia[mitad:] = rng.normal(size=N - mitad)       # se rompe a la mitad
+        copia[mitad:] = rng.normal(size=N - mitad)
         b[:, k] = copia
 
     r = mapa(a, b)
@@ -148,9 +139,6 @@ def test_el_mapa_situa_en_el_tiempo_un_desfase_que_cambia():
     assert antes > 0.8 and abs(despues) < 0.2
 
 
-# ============================================================
-#   La geometría
-# ============================================================
 def test_la_forma_y_los_ejes(con_ruido):
     r = con_ruido
     assert r.mapa.shape == (N_FREQ, r.tiempos.size)
@@ -181,7 +169,6 @@ def test_la_ventana_de_cada_fila_sigue_la_formula(con_ruido):
     n_ind = int(np.ceil(r.n_objetivo / r.n_trials))
     pedida = 2.0 * r.ciclos * n_ind / r.frecuencias
     esperada = np.clip(pedida, r.ventana_min_s, DUR)
-    # el redondeo a un número impar de muestras mueve la ventana media muestra
     assert np.allclose(r.ventanas_s, esperada, atol=2.0 / FS)
 
 
@@ -202,15 +189,12 @@ def test_las_filas_lentas_pierden_los_bordes_y_no_el_centro():
     """El cono de influencia, que es lo que se ve con `bordes='descartar'`:
     una ventana ancha no cabe pegada al borde."""
     r = mapa(ruido(1), ruido(2), bordes="descartar")
-    lenta = r.mapa[-1]      # la frecuencia más baja, la de ventana más ancha
+    lenta = r.mapa[-1]
     rapida = r.mapa[0]
     assert np.sum(np.isnan(lenta)) > np.sum(np.isnan(rapida))
     assert not np.isnan(lenta[lenta.size // 2]), "el centro siempre tiene que caber"
 
 
-# ============================================================
-#   El rango
-# ============================================================
 def test_el_ppc_vive_entre_menos_uno_y_uno(con_ruido):
     v = con_ruido.mapa[~np.isnan(con_ruido.mapa)]
     assert v.max() <= 1.0 + 1e-12
@@ -231,9 +215,6 @@ def test_la_cota_inferior_es_la_teorica(con_ruido):
     assert np.all(r.mapa[vivas] >= cota[vivas] - 1e-9)
 
 
-# ============================================================
-#   Un solo trial
-# ============================================================
 def test_con_un_trial_sigue_habiendo_mapa():
     """La ventana se ensancha para compensar; no es un NaN plano."""
     r = mapa(ruido(12, n_tr=1), ruido(13, n_tr=1))
@@ -248,9 +229,6 @@ def test_con_un_trial_las_ventanas_son_mas_anchas():
     assert uno.ventanas_s[-1] > muchos.ventanas_s[-1]
 
 
-# ============================================================
-#   El eje de frecuencias
-# ============================================================
 def test_el_eje_logaritmico_esta_repartido_en_logaritmo():
     eje = pc.eje_frecuencias(1.0, 1000.0, n_freq=10, log=True)
     assert eje[0] > eje[-1]
@@ -259,7 +237,7 @@ def test_el_eje_logaritmico_esta_repartido_en_logaritmo():
 
 def test_el_eje_lineal_es_el_de_matlab():
     eje = pc.eje_frecuencias(0.1, 500.0, log=False)
-    assert eje.size == 500                      # ps_FreqSeg = round(fmax - fmin)
+    assert eje.size == 500
     assert np.allclose(np.diff(eje), np.diff(eje)[0])
 
 
@@ -275,9 +253,6 @@ def test_mas_ciclos_piden_mas_filas():
     assert muchas.size > pocas.size
 
 
-# ============================================================
-#   Cancelación y validaciones
-# ============================================================
 class _Cancelado:
     cancelled = True
 
@@ -329,9 +304,6 @@ def test_avisa_cuando_ninguna_frecuencia_cabe_en_el_trial():
         pc.ppc_mapa(None, corto, corto.copy(), FS, FS, 0.2, 0.5, n_freq=5)
 
 
-# ============================================================
-#   El alineamiento de los dos canales
-# ============================================================
 class _TD:
     """Lo justo de un TrialDataset para `validar_alineacion`."""
     def __init__(self, canal, ns=100, t=4, onsets=None, fs=FS, t0=-0.1, t1=0.4):
@@ -364,9 +336,6 @@ def test_el_error_nombra_los_dos_canales():
     assert "CA1" in str(e.value) and "IN 7" in str(e.value)
 
 
-# ============================================================
-#   Una propiedad del PPC que conviene tener fijada
-# ============================================================
 def test_sin_nada_de_ruido_manda_la_fuga_espectral():
     """El PPC solo mira fase, nunca amplitud.
 
@@ -390,13 +359,6 @@ def test_sin_nada_de_ruido_manda_la_fuga_espectral():
     assert fila(sucio, 40.0) > 0.99, "el tono sigue ahí"
     assert abs(fila(sucio, 100.0)) < 0.2, "con 1 % de ruido la fuga desaparece"
 
-
-# ============================================================
-#   Fase 4 — los avisos
-# ============================================================
-# No son adorno: cada uno existe porque sin él alguien leería mal el mapa.
-# Y ninguno abre un diálogo (nº 24 de `problemas-encontrados.md`): son texto
-# que el plugin registra y, si quiere, pone bajo el gráfico.
 
 def junto(r):
     return " || ".join(pc.avisos(r))
@@ -513,9 +475,6 @@ def test_los_avisos_no_lanzan_con_un_resultado_cualquiera(con_ruido):
     assert all(isinstance(a, str) and a for a in pc.avisos(con_ruido))
 
 
-# ============================================================
-#   Auditoría del 25 de octubre: lo que las pruebas no cogían
-# ============================================================
 def test_un_canal_plano_no_devuelve_acoplamiento_perfecto():
     """El falso positivo peor de todos, y el más fácil de enseñar como
     hallazgo: dos canales constantes daban **PPC = 1,0000 en todo el mapa**.
@@ -625,13 +584,6 @@ def test_el_sesgo_residual_es_pequeno_y_va_hacia_abajo():
         f"el sesgo se volvió positivo ({sesgo:+.4f}): la medida estaría "
         f"inventando acoplamiento donde no hay")
 
-
-# ============================================================
-#   Fase 5 — el reparto de los trials entre hilos
-# ============================================================
-# Gana de 1,8x a 2,7x según los trials que haya, medido. Lo que estas pruebas
-# cuidan no es la velocidad —esa se mide aparte— sino que repartir no cambie
-# ni el resultado ni el comportamiento.
 
 def test_el_reparto_da_identico_bit_a_bit():
     """Cada trial es independiente y `map_ordenado` devuelve en orden, así que
@@ -760,7 +712,6 @@ def test_el_defecto_de_matlab_no_vuelve_con_fmin_muy_bajo():
     assert r.ventanas_s[i] * r.frecuencias[i] < 1.0, "la ventana no llega a un ciclo"
     assert abs(np.nanmean(r.mapa[i])) < 0.15, "ahí es donde MATLAB daba 1,000000"
 
-    # y ninguna fila de todo el mapa se despega
     por_fila = np.nanmean(r.mapa, axis=1)
     assert np.nanmax(np.abs(por_fila)) < 0.25
     assert not np.any(np.isclose(r.mapa[~np.isnan(r.mapa)], 1.0, atol=1e-6))
@@ -781,14 +732,6 @@ def test_dos_senoidales_sin_relacion_se_quedan_en_el_suelo():
     assert np.nanmax(np.abs(np.nanmean(r.mapa[bajas], axis=1))) < 0.1
 
 
-# ============================================================
-#   Los dos modos de borde
-# ============================================================
-# `descartar` deja el cono en blanco; `recortar` corta la ventana contra el
-# borde y llena el mapa. Lo segundo es legítimo —el enrollado revuelve la fase
-# de los dos canales por separado, así que su diferencia sigue siendo
-# aleatoria— pero solo si la N de esas celdas se cuenta de verdad.
-
 def test_recortar_llena_el_mapa():
     a, b = ruido(100), ruido(101)
     lleno = mapa(a, b, bordes="recortar")
@@ -805,7 +748,6 @@ def test_recortar_no_inventa_acoplamiento():
     cono = mapa(a, b, bordes="descartar")
 
     assert abs(np.nanmean(lleno.mapa)) < 0.05
-    # y los extremos no se despegan del centro
     borde = lleno.mapa[:, :4]
     centro = lleno.mapa[:, lleno.tiempos.size // 2 - 2:lleno.tiempos.size // 2 + 2]
     assert abs(np.nanmean(borde) - np.nanmean(centro)) < 0.1
@@ -820,10 +762,8 @@ def test_la_n_por_celda_baja_en_los_extremos():
     nominal = r.n_muestras[:, None]
 
     assert np.nanmin(r.n_por_celda) < np.nanmax(r.n_por_celda)
-    # el centro conserva la ventana entera
     medio = r.tiempos.size // 2
     assert np.allclose(r.n_por_celda[:, medio], r.n_muestras)
-    # y la primera columna no puede declarar mas de lo que promedio
     assert np.all(r.n_por_celda[:, 0] <= nominal[:, 0] + 1e-9)
 
 

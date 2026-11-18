@@ -21,26 +21,13 @@ from plugins.analysis.time_frequency.pac import compute as cp
 from plugins.analysis.time_frequency.pac.pac_plugin_ui import Ui_Pac
 
 
-# ===========================================================
-# === La brujula polar, como la `compass` de MATLAB
-# ===========================================================
-# VTK no trae grafico polar: `vtkChartXY` solo sabe de ejes cartesianos.
-# Antes la brujula se dibujaba encima de uno —dos circulos, una cruz y la
-# flecha—, lo que daba la forma pero no el instrumento: los ejes mostraban
-# numeros de abscisa y ordenada, y el angulo solo salia en el titulo, y en
-# RADIANES. MATLAB dibuja radios cada 30 grados rotulados en GRADOS, anillos
-# de magnitud con su valor, y ningun eje cartesiano a la vista.
-#
-# Aqui se pinta a mano con el `painter` de VTK a traves de `vtkPythonItem`,
-# que es la via que la libreria ofrece para dibujo propio dentro de la escena.
-# El gris de la rejilla y el azul de la flecha, los mismos que ya usaba el resto
 GRIS_REJILLA = (205, 205, 205)
 GRIS_TEXTO = (0.35, 0.35, 0.35)
 AZUL = (40, 90, 190)
 AZUL_TENUE = (90, 150, 230)
 
-ANILLOS_OBJETIVO = 4      # cuantos anillos de magnitud se buscan
-PASO_GRADOS = 30          # un radio cada 30 grados, como MATLAB
+ANILLOS_OBJETIVO = 4
+PASO_GRADOS = 30
 
 
 def pasos_de_magnitud(rmax, objetivo=ANILLOS_OBJETIVO):
@@ -87,7 +74,6 @@ class BrujulaPolar:
         self.item = vtk.vtkPythonItem()
         self.item.SetPythonObject(self)
 
-    # --- lo que `_reacomodar` necesita, para tratarla como a los demas graficos
     def SetAutoSize(self, _valor):
         return None
 
@@ -97,7 +83,6 @@ class BrujulaPolar:
     def GetTitle(self):
         return self.titulo
 
-    # --- el radio de la rejilla
     def radio(self):
         """El mayor entre |parte real| y |parte imaginaria|, como MATLAB.
 
@@ -113,7 +98,6 @@ class BrujulaPolar:
         r = max(candidatos)
         return r if np.isfinite(r) and r > 0 else 1.0
 
-    # --- la interfaz de vtkPythonItem
     def Initialize(self, _vtk_self):
         return True
 
@@ -121,28 +105,18 @@ class BrujulaPolar:
         try:
             self._pintar(painter)
         except Exception:
-            # Una excepcion dentro del Paint de VTK no tiene a donde propagarse:
-            # dejaria la escena a medias o tumbaria el proceso. Mejor no dibujar.
             return True
         return True
 
-    # ------------------------------------------------------------------ dibujo
     def _pintar(self, painter):
         x0, y0, ancho, alto = self._rect
         if ancho <= 1 or alto <= 1:
             return
-        # El título tiene su propia franja arriba y el círculo se centra debajo.
-        # Antes el círculo se escalaba con todo el alto y su radio se fijaba con el
-        # máximo, pero el anillo exterior queda por encima del máximo (0,006 para un
-        # vector de 0,0054): el círculo, el «90» y su valor subían hasta el título y
-        # se montaban con él, y en recuadros apaisados se salían por arriba y abajo.
         titulo_alto = 26.0 if self.titulo else 0.0
         area = alto - titulo_alto
         cx, cy = x0 + ancho / 2.0, y0 + area / 2.0
         rmax = self.radio()
         magnitudes = pasos_de_magnitud(rmax)
-        # El anillo exterior y los rótulos de grados (a 1,12 veces su radio, con
-        # margen para el texto) tienen que caber en el área, a lo ancho y a lo alto.
         borde = min(ancho / 2.0 - 22.0, area / 2.0 - 12.0) / 1.12
         if borde <= 4.0:
             return
@@ -152,7 +126,6 @@ class BrujulaPolar:
         pluma = painter.GetPen()
         painter.GetBrush().SetOpacity(0)
 
-        # --- anillos de magnitud
         pluma.SetColor(*GRIS_REJILLA)
         pluma.SetWidth(1.0)
         angulos = np.linspace(0.0, 2.0 * np.pi, 181)
@@ -160,14 +133,12 @@ class BrujulaPolar:
             r = m * escala
             self._poli(painter, cx + r * np.cos(angulos), cy + r * np.sin(angulos))
 
-        # --- radios cada 30 grados
         borde = magnitudes[-1] * escala
         for grados in range(0, 360, PASO_GRADOS):
             rad = np.deg2rad(grados)
             self._poli(painter, [cx, cx + borde * np.cos(rad)],
                        [cy, cy + borde * np.sin(rad)])
 
-        # --- las etiquetas
         texto = painter.GetTextProp()
         texto.SetColor(*GRIS_TEXTO)
         texto.SetFontSize(12)
@@ -179,7 +150,6 @@ class BrujulaPolar:
             painter.DrawString(float(cx + borde * 1.12 * np.cos(rad)),
                                float(cy + borde * 1.12 * np.sin(rad)), rotulo)
 
-        # Los valores de magnitud, entre el radio de 60 y el de 90 como MATLAB
         texto.SetFontSize(11)
         rad_etiqueta = np.deg2rad(75)
         for m in magnitudes:
@@ -187,7 +157,6 @@ class BrujulaPolar:
             painter.DrawString(float(cx + r * np.cos(rad_etiqueta)),
                                float(cy + r * np.sin(rad_etiqueta)), f"{m:g}")
 
-        # --- los vectores por grupo, detras y mas tenues
         pluma.SetWidth(1.4)
         for w in self.extra:
             if np.isfinite(w.real) and np.isfinite(w.imag):
@@ -196,7 +165,6 @@ class BrujulaPolar:
                 self._poli(painter, [cx, cx + w.real * escala], [cy, cy + w.imag * escala])
         pluma.SetOpacity(255)
 
-        # --- la flecha
         v = self.vector
         if np.isfinite(v.real) and np.isfinite(v.imag):
             pluma.SetColor(*AZUL)
@@ -205,14 +173,11 @@ class BrujulaPolar:
             self._poli(painter, [cx, px], [cy, py])
             theta = np.angle(v)
             largo = 0.12 * lado
-            for desvio in (+2.6, -2.6):      # ~150 grados a cada lado del eje
+            for desvio in (+2.6, -2.6):
                 self._poli(painter, [px, px + largo * np.cos(theta + desvio)],
                            [py, py + largo * np.sin(theta + desvio)])
 
-        # --- el titulo, arriba del todo
         if self.titulo:
-            # Se achica si no cabe a lo ancho (unos 0,55 tamaños por carácter),
-            # para no invadir el gráfico de al lado en un recuadro angosto.
             tamano = int(min(13, max(9, (ancho - 16.0) / (0.55 * len(self.titulo)))))
             texto.SetFontSize(tamano)
             texto.SetColor(0.15, 0.15, 0.15)
@@ -252,8 +217,6 @@ def titulo_de(vector, n_extra=0, en_grados=True):
     angulo = np.angle(v) % (2.0 * np.pi)
     medida = (f"{np.rad2deg(angulo):.1f}°" if en_grados
               else f"{angulo:.3f} rad")
-    # «no normalizada»: la magnitud escala con la amplitud de la señal (multiplicar
-    # la señal por 0,01 la multiplica por 0,01). No es un índice de 0 a 1.
     return f"Vector medio{sufijo} — magnitud {abs(v):.4f} (no normalizada), fase {medida}"
 
 
@@ -274,8 +237,8 @@ class Pac_plugin(IPlugin):
         self.vtk_widget = None
         self._context_view = None
         self._charts = []
-        self._altos = []          # la altura de cada grafico, en el mismo orden
-        self._cuadrados = []      # los que hay que dibujar cuadrados (las brujulas)
+        self._altos = []
+        self._cuadrados = []
         self._brujula = None
         self._mapa_chart = None
         self._histograma_chart = None
@@ -286,13 +249,10 @@ class Pac_plugin(IPlugin):
         self._calculando = False
         self.vtk_menu = None
         self._params_en_curso = None
-        self._restaurando = False        # apply_analysis_params recalcula al abrir un proyecto
-        self._corrida_restaura = False   # la ejecucion en curso viene de una restauracion
-        self._ultimo = None      # parametros + resultado de la ultima ejecucion
+        self._restaurando = False
+        self._corrida_restaura = False
+        self._ultimo = None
 
-    # =====================================================
-    # === Ciclo de vida
-    # =====================================================
     def process(self, data):
         if self.vtk_widget and self.vtk_widget.GetRenderWindow():
             interactor = self.vtk_widget.GetRenderWindow().GetInteractor()
@@ -329,7 +289,6 @@ class Pac_plugin(IPlugin):
         return self.widget
 
     def _init_controls(self):
-        # Desde 1: con 0 no hay densidad a la que submuestrear
         self.ui.sampleDensitySpinBox.setRange(1, 1_000_000)
         self.ui.sampleDensitySpinBox.setSingleStep(100)
         for spin in (self.ui.lowFrequencySpinBox, self.ui.highFrequencySpinBox,
@@ -346,9 +305,6 @@ class Pac_plugin(IPlugin):
         decisión del dibujo. Volver a lanzar PAC Average por cambiar una
         etiqueta serían 17 segundos de espera para el mismo resultado.
         """
-        # `vtk_widget` tiene que existir: durante la restauración de un proyecto
-        # la casilla se marca antes de que haya escena donde dibujar, y sin esta
-        # guarda el intento acaba en un diálogo de error.
         if self._calculando or not self._ultimo or self.vtk_widget is None:
             return
         try:
@@ -379,9 +335,6 @@ class Pac_plugin(IPlugin):
         self.ui.colorRangeCheckBox.setChecked(False)
         self._actualizar_selector_trial()
 
-    # =====================================================
-    # === Selector de trial
-    # =====================================================
     def _n_trials(self) -> int:
         try:
             trials = self.get_active_trials()
@@ -445,9 +398,6 @@ class Pac_plugin(IPlugin):
         else:
             self.ui.trialTotalLabel.setText(f"de {n}" if n else "sin trials")
 
-        # El selector de canal cuelga de aquí: esto ya se dispara al cambiar de
-        # tipo y al cambiar los datos, que son los dos momentos en que la lista
-        # de canales puede quedar desfasada.
         self._actualizar_selector_canal()
 
     def _trials_de_la_corrida(self, n: int) -> dict:
@@ -457,7 +407,7 @@ class Pac_plugin(IPlugin):
             return trials_used([self.ui.trialSpinBox.value()], n, "single")
         if tipo == "PAC Average":
             return trials_used(None, n, "average")
-        return trials_used(None, n, "all")   # Psel concatena todos
+        return trials_used(None, n, "all")
 
     def current_trial_state(self):
         _, td = self._active_trials_quiet()
@@ -482,9 +432,6 @@ class Pac_plugin(IPlugin):
             self.ui.trialSpinBox.setValue(nuevo)
             self.on_create_pac()
 
-    # =====================================================
-    # === Lógica principal
-    # =====================================================
     def on_create_pac(self):
         self._corrida_restaura, self._restaurando = self._restaurando, False
         tasks = self.kernel.get_service("TaskService") if self.kernel else None
@@ -521,15 +468,11 @@ class Pac_plugin(IPlugin):
         a2 = float(self.ui.ampHighFrequencySpinBox.value())
         tipo = self.ui.pacTypeComboBox.currentText()
 
-        # La casilla muestra 1 para el primer trial, como MATLAB; aquí se resta
-        # uno porque Python indexa desde cero.
         indice = self.ui.trialSpinBox.value() - 1
         if self._usa_un_solo_trial() and not (0 <= indice < datos.shape[1]):
             self.alerts.warning(f"El trial {indice + 1} no existe; hay {datos.shape[1]}.")
             return
 
-        # El segundo canal, solo en el modo entre canales. Los ciclos y la fase
-        # siguen saliendo del canal activo; de este sale la amplitud.
         canal_fase = getattr(trials, "channel_name", "")
         canal_amp = ""
         datos_amplitud = None
@@ -558,18 +501,12 @@ class Pac_plugin(IPlugin):
                 self.alerts.error(
                     f"No se pudo obtener la matriz de trials de '{canal_amp}': {e}")
                 return
-            # Que las dos matrices tengan la misma forma no basta: con un descarte
-            # distinto en cada canal coinciden y aun así el trial i de una no es el
-            # trial i de la otra. Se exige el mismo corte y los mismos trials, con
-            # la misma comprobación que PPC.
             try:
                 validar_alineacion(trials, td_amp)
             except ValueError as e:
                 self.alerts.error(str(e))
                 return
 
-        # Un canal sin señal no impide calcular, pero el mapa en z siempre enseña
-        # manchas y parecería un resultado. Se avisa sin bloquear.
         for td_revisar in (trials, td_amp):
             aviso = canal_sin_senal(td_revisar) if td_revisar is not None else None
             if aviso:
@@ -587,11 +524,8 @@ class Pac_plugin(IPlugin):
             "trial": (indice + 1) if self._usa_un_solo_trial() else "todos",
         }
         if tipo == self.PSEL_INTER:
-            # Que quede en la exportacion: sin esto, dos corridas del mismo
-            # canal de fase contra canales de amplitud distintos son iguales.
             self._params_en_curso["canal_amplitud"] = canal_amp
         self._trials_en_curso = self._trials_de_la_corrida(datos.shape[1])
-        # Texto legible en la exportacion (una fila por parametro)
         self._params_en_curso["trials_usados"] = self._trials_en_curso["label"]
 
         tasks.cancel_all_from(self.meta.id)
@@ -604,9 +538,6 @@ class Pac_plugin(IPlugin):
 
         comun = dict(fs_calculado=fs_calculado, fs=fs, p1=p1, p2=p2, a1=a1, a2=a2)
         if self._es_psel(tipo):
-            # Psel concatena todos los trials, asi que recibe la matriz entera.
-            # `data_amplitud` es None salvo entre canales, y con None el calculo
-            # es identico bit a bit al de siempre.
             handle = tasks.submit(cp.pac_psel, owner=self.meta.id, data=datos,
                                   data_amplitud=datos_amplitud,
                                   canal_fase=canal_fase or None,
@@ -624,8 +555,6 @@ class Pac_plugin(IPlugin):
         handle.failed.connect(partial(self._on_pac_failed, handle))
         handle.cancelled.connect(partial(self._on_pac_cancelled, handle))
 
-        # R55: the VTK widget is built while the worker computes, so the first
-        # drawing does not pay for it when the result arrives
         QtCore.QTimer.singleShot(0, self._preparar_vtk)
 
     def _preparar_vtk(self):
@@ -670,8 +599,6 @@ class Pac_plugin(IPlugin):
             self.ensure_vtk()
             usados = getattr(self, "_trials_en_curso", None) or {}
             etiqueta_trials = usados.get("label", "")
-            # R55: `_actualizar_menu` ya vuelve a dibujar al apuntar el menú a los
-            # gráficos nuevos; dibujar antes también es pagar el render dos veces
             menu_dibuja = (self.vtk_menu is not None
                            and getattr(self.vtk_menu, "measure_service", None) is not None)
             if self._es_psel(tipo):
@@ -702,23 +629,13 @@ class Pac_plugin(IPlugin):
             self._terminar_calculo()
             self.process("Done")
 
-    # =====================================================
-    # === VTK
-    # =====================================================
-    # Alturas en pixeles de cada grafico. Son seis y no caben en el panel, asi
-    # que el area de dibujo va dentro de un QScrollArea y se desliza.
     ALTO_MAPA = 300
     ALTO_HISTOGRAMA = 170
-    LADO_BRUJULA = 320        # cuadrado: si no, los circulos salen elipses
+    LADO_BRUJULA = 320
     ALTO_SENAL = 150
-    ALTO_CICLOS = 180         # las pilas de ciclos de PAC Psel
+    ALTO_CICLOS = 180
     HUECO = 52
-    # Cuantas trazas individuales se dibujan en las pilas de ciclos. Con datos
-    # reales salen cientos y un vtkChartXY con cientos de series deja la
-    # interfaz inservible; el promedio se calcula sobre todas.
     MAX_TRAZAS_CICLOS = 100
-    # Las marcas del eje logaritmico, las mismas del MATLAB: `v_YTick = [1.5,
-    # 2, 2.5]` etiquetadas con `round(10.^v_YTick)` -> 32, 100 y 316 Hz.
     MARCAS_LOG = (1.5, 2.0, 2.5)
     FONDO = (0.98, 0.98, 0.98)
 
@@ -731,9 +648,6 @@ class Pac_plugin(IPlugin):
             lay.setContentsMargins(0, 0, 0, 0)
             lay.setSpacing(0)
 
-        # Seis graficos apilados no caben en la altura del panel. En vez de
-        # encogerlos hasta volverlos ilegibles, el area de dibujo crece y se
-        # desliza: cada grafico conserva su altura util.
         self._scroll = QScrollArea(contenedor)
         self._scroll.setWidgetResizable(True)
         self._scroll.setFrameShape(QScrollArea.NoFrame)
@@ -807,11 +721,6 @@ class Pac_plugin(IPlugin):
 
         self._charts_senal = []
         if r.n_trials > 1:
-            # PAC Average: `f_Phase_PAC_Average` pone bajo el mapa un
-            # `plot(cos(index_pi))` como referencia de fase, y **no dibuja
-            # ninguna senal**. Antes aqui salian los cuatro paneles del PRIMER
-            # trial bajo un titulo que decia "promedio", lo que invita a leer
-            # como promediado algo que no lo es.
             eje_ref = self._eje_de_fase(r.fases)[0]
             coseno = np.cos(np.deg2rad(eje_ref) if self._en_grados() else eje_ref)
             chart = self._grafico_senal(eje_ref, coseno,
@@ -819,13 +728,6 @@ class Pac_plugin(IPlugin):
             self._charts.append(chart)
             self._altos.append(self.ALTO_SENAL)
         else:
-            # PAC de un trial: los cuatro paneles comparten el eje de tiempo,
-            # como el `linkaxes(ax,'x')` de MATLAB.
-            # La fase instantánea se dibuja en grados de 0 a 360, igual que el
-            # histograma, la brújula y los mapas. Es la misma serie: `angle` la
-            # devuelve en radianes de −π a π y aquí solo se reexpresa, así que
-            # el diente de sierra salta ahora en el pico del ritmo lento (0°) y
-            # no en el valle.
             for etiqueta, unidad, serie in (
                     ("Original", "Amplitud", r.senal),
                     ("Filtrada en fase", "Amplitud", r.banda_fase),
@@ -838,8 +740,6 @@ class Pac_plugin(IPlugin):
                 self._altos.append(self.ALTO_SENAL)
 
         for chart in self._charts:
-            # La brujula es un `vtkPythonItem` envuelto en una clase de Python
-            # que entiende SetSize: a la escena va el item, no el envoltorio.
             escena.AddItem(getattr(chart, "item", chart))
         self._ajustar_alto_del_lienzo()
         self._reacomodar()
@@ -875,19 +775,14 @@ class Pac_plugin(IPlugin):
                 self._charts_senal.append(chart)
             return chart
 
-        # Entre canales cada panel lleva el nombre del canal del que sale. El
-        # MATLAB dibuja la pila de gamma sin un solo rótulo, y es precisamente
-        # eso lo que impide saber qué señal se está mirando.
         de_fase = f" · {r.canal_fase}" if r.inter_canal and r.canal_fase else ""
         de_amp = f" · {r.canal_amplitud}" if r.inter_canal and r.canal_amplitud else ""
 
-        # 1-2. La señal concatenada y su banda de fase, con el eje compartido
         for etiqueta, serie in ((f"Original{de_fase}", r.senal),
                                 (f"Filtrada en fase{de_fase}", r.senal_filtrada)):
             agregar(self._grafico_senal(r.tiempo, serie, etiqueta),
                     self.ALTO_SENAL, es_senal=True)
 
-        # 3-5. Las tres pilas de ciclos con su promedio encima
         for etiqueta, pila, promedio, color in (
                 (f"Ciclos en la banda de fase{de_fase}",
                  r.ciclos_theta, r.promedio_theta, (200, 30, 30)),
@@ -897,8 +792,6 @@ class Pac_plugin(IPlugin):
                  r.ciclos_gamma, None, (20, 20, 20))):
             agregar(self._grafico_ciclos(pila, promedio, etiqueta, color), self.ALTO_CICLOS)
 
-        # 6-7. El mapa fase/frecuencia en escala logarítmica, y debajo el coseno
-        # de referencia que el MATLAB dibuja para situar la fase
         eje_psel, mapa_psel = self._eje_de_fase(r.fases, r.mapa)
         self._mapa_chart = agregar(
             self._grafico_mapa_log(mapa_psel, r.frecuencias, eje_psel,
@@ -911,31 +804,24 @@ class Pac_plugin(IPlugin):
             eje_psel, np.cos(np.deg2rad(eje_psel) if self._en_grados() else eje_psel),
             "Referencia: cos(fase)", "cos"), self.ALTO_SENAL)
 
-        # 8-9. El tiempo-frecuencia promedio y el promedio del ritmo lento debajo
         agregar(self._grafico_mapa_log(r.mapa_tf, r.frecuencias, r.tiempo_tf,
                                        "Tiempo/frecuencia promedio", "Tiempo (s)"),
                 self.ALTO_MAPA)
         agregar(self._grafico_senal(r.tiempo_tf, r.promedio_theta,
                                     "Promedio del ritmo lento"), self.ALTO_SENAL)
 
-        # 10. El histograma
         self._histograma_chart = agregar(self._grafico_histograma(r), self.ALTO_HISTOGRAMA)
 
-        # 11. La brújula del vector medio
         self._brujula = agregar(self._grafico_brujula(r), self.LADO_BRUJULA, cuadrado=True)
 
-        # 12. El promedio sin filtrar, que el MATLAB dibuja aparte
         agregar(self._grafico_senal(np.arange(r.promedio_full.size) / r.fs_efectiva,
                                     r.promedio_full, "Promedio sin filtrar"),
                 self.ALTO_SENAL)
 
-        # 13. La brújula con los 16 vectores por grupo de bins, más el medio
         agregar(self._grafico_brujula(r, extra=r.vectores_por_grupo),
                 self.LADO_BRUJULA, cuadrado=True)
 
         for chart in self._charts:
-            # La brujula es un `vtkPythonItem` envuelto en una clase de Python
-            # que entiende SetSize: a la escena va el item, no el envoltorio.
             escena.AddItem(getattr(chart, "item", chart))
         self._ajustar_alto_del_lienzo()
         self._reacomodar()
@@ -972,7 +858,7 @@ class Pac_plugin(IPlugin):
             linea = agregar_linea(chart, x, np.nan_to_num(pila[:, c]), "Muestra", f"c{c}",
                                   n_max=MAX_PUNTOS_DETALLE)
             linea.SetWidth(0.6)
-            linea.SetColor(150, 170, 200, 70)      # tenue: son el fondo
+            linea.SetColor(150, 170, 200, 70)
             linea.LegendVisibilityOff()
 
         if promedio is not None:
@@ -1018,8 +904,6 @@ class Pac_plugin(IPlugin):
         img.SetDimensions(n_x, n_freq, 1)
         img.SetSpacing(paso_x, paso_y, 1.0)
         img.SetOrigin(float(x[0]), log_min, 0.0)
-        # `remuestrear_en_log` ya devuelve la fila 0 en la frecuencia mas baja,
-        # que es como VTK dibuja hacia arriba: aqui no hay que voltear nada.
         img.GetPointData().SetScalars(numpy_support.numpy_to_vtk(
             np.ascontiguousarray(datos).ravel(), deep=True, array_type=vtk.VTK_FLOAT))
         img.Modified()
@@ -1070,15 +954,11 @@ class Pac_plugin(IPlugin):
         img.SetSpacing(paso_fase, paso_freq, 1.0)
         img.SetOrigin(float(fases[0]), f_min, 0.0)
 
-        # La fila 0 del mapa es la frecuencia mas alta (el eje viene descendente);
-        # se voltea para que el dibujo crezca hacia arriba.
         plano = np.ascontiguousarray(mapa[::-1, :]).ravel()
         img.GetPointData().SetScalars(
             numpy_support.numpy_to_vtk(plano, deep=True, array_type=vtk.VTK_FLOAT))
         img.Modified()
 
-        # R33: sin rango manual, el mínimo y el máximo del mapa, como el `[]` que
-        # f_Phase_PAC pasa a f_ImageMatrix
         vmin, vmax = limites_color(mapa, *leer_rango(self.ui))
         lut = self._tabla_jet(vmin, vmax)
 
@@ -1090,9 +970,6 @@ class Pac_plugin(IPlugin):
         chart.SetTitle(f"{titulo} — mapa fase/frecuencia")
         chart.GetAxis(vtk.vtkAxis.BOTTOM).SetTitle(f"Fase ({self._unidad_de_fase()})")
         chart.GetAxis(vtk.vtkAxis.LEFT).SetTitle("Frecuencia (Hz)")
-        # FIXED: si no, VTK redondea el rango hacia afuera y deja franjas vacias
-        # a los lados —el eje llegaba a 400 grados cuando los datos terminan en
-        # 360, y a 600 Hz cuando llegan a 500—.
         eje_x = chart.GetAxis(vtk.vtkAxis.BOTTOM)
         eje_x.SetBehavior(vtk.vtkAxis.FIXED)
         eje_x.SetRange(float(fases[0]), float(fases[-1] + paso_fase))
@@ -1195,11 +1072,8 @@ class Pac_plugin(IPlugin):
         El cálculo sigue en radianes de principio a fin; esto es solo el dibujo.
         """
         grados = np.rad2deg(np.asarray(fases_rad, dtype=np.float64)) % 360.0
-        # El modulo deja basura de coma flotante donde tendria que haber un cero
-        # clavado, porque −π y π son el mismo punto del circulo: 2,5e−14 grados.
-        # No afecta al dibujo, pero sale escrita en el CSV.
         grados[np.isclose(grados, 0.0, atol=1e-9) | np.isclose(grados, 360.0, atol=1e-9)] = 0.0
-        corte = int(np.argmin(grados))          # donde queda el 0 tras envolver
+        corte = int(np.argmin(grados))
         rotadas = tuple(np.roll(np.asarray(m), -corte, axis=eje) for m in matrices)
         return (np.roll(grados, -corte),) + rotadas
 
@@ -1219,11 +1093,6 @@ class Pac_plugin(IPlugin):
         chart.SetShowLegend(False)
         chart.GetAxis(vtk.vtkAxis.BOTTOM).SetTitle(f"Fase ({self._unidad_de_fase()})")
 
-        # MATLAB acerca el eje Y al rango de los datos con un 10% de margen, en
-        # vez de arrancar en cero:
-        #     set(gca,'YLim',[(minh1 - dis1*0.1) (maxh1 + dis1*0.1)])
-        # Importa: con estos valores —de ~19 a ~46— dibujar desde cero aplasta
-        # la variacion y el histograma parece plano.
         finitos = valores[np.isfinite(valores)]
         if finitos.size:
             minimo, maximo = float(finitos.min()), float(finitos.max())
@@ -1256,8 +1125,6 @@ class Pac_plugin(IPlugin):
     def _grafico_senal(self, tiempo, serie, etiqueta, unidad="Amplitud"):
         n = min(len(tiempo), len(serie))
         chart = vtk.vtkChartXY()
-        # Con todas las muestras, como Trials: al acercar debe verse la señal
-        # con su definición completa (con 2000 puntos se perdía detalle).
         linea = agregar_linea(chart, np.asarray(tiempo[:n]), np.nan_to_num(np.asarray(serie[:n])),
                               "Tiempo", etiqueta, n_max=MAX_PUNTOS_DETALLE)
         linea.SetWidth(1.0)
@@ -1319,8 +1186,6 @@ class Pac_plugin(IPlugin):
             y -= h
             chart.SetAutoSize(False)
             if chart in self._cuadrados:
-                # Cuadrada y centrada: con el ancho completo los circulos
-                # saldrian como elipses y la flecha apuntaria a un angulo falso.
                 lado = float(min(h, ancho - 2 * margen_x))
                 chart.SetSize(vtk.vtkRectf(float((ancho - lado) / 2), float(y), lado, lado))
             else:
@@ -1328,9 +1193,6 @@ class Pac_plugin(IPlugin):
                                            float(ancho - 2 * margen_x), float(h)))
             y -= self.HUECO
 
-    # =====================================================
-    # === Exportación
-    # =====================================================
     def _actualizar_menu(self):
         """Apunta el menú contextual a los gráficos y al canal actuales."""
         if self.vtk_menu is None:
@@ -1352,9 +1214,6 @@ class Pac_plugin(IPlugin):
         p = self._ultimo["parametros"]
         n = self._num
 
-        # Los ángulos se exportan en grados de 0 a 360, los mismos que se ven en
-        # pantalla: si el histograma dibuja una barra en 280° y el CSV la pone en
-        # −1,39, parecen dos corridas distintas.
         grados, histograma = self._eje_de_fase(r.fases, r.histograma)
         _, mapa = self._eje_de_fase(r.fases, r.mapa)
         sufijo = "grados" if self._en_grados() else "rad"
@@ -1390,9 +1249,6 @@ class Pac_plugin(IPlugin):
             return
         self.vtk_menu.export_service.export_sections(self._secciones_resultado(), fmt)
 
-    # =====================================================
-    # === Guardar y restaurar el análisis en el proyecto
-    # =====================================================
     def get_analysis_params(self) -> dict:
         return {
             "pac_type": self.ui.pacTypeComboBox.currentText(),
@@ -1420,7 +1276,7 @@ class Pac_plugin(IPlugin):
         self.ui.ampHighFrequencySpinBox.setValue(params.get("a2", d["a2"]))
         self.ui.degreesCheckBox.setChecked(bool(params.get("en_grados", True)))
         restaurar_rango(self.ui, params)
-        self._actualizar_selector_trial()   # esto repuebla el selector de canal
+        self._actualizar_selector_trial()
         idx_canal = self.ui.ampChannelComboBox.findText(params.get("canal_amplitud", ""))
         if idx_canal >= 0:
             self.ui.ampChannelComboBox.setCurrentIndex(idx_canal)

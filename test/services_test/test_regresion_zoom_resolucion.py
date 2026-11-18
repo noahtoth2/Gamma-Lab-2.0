@@ -30,7 +30,6 @@ def test_los_tramos_cubren_toda_la_serie_sin_dejar_huecos(n):
     idx = indices_reducidos(y)
     assert len(idx) <= MAX_PUNTOS + 2
     assert idx[0] == 0 and idx[-1] == n - 1
-    # Dos puntos dibujados seguidos nunca quedan más lejos que dos tramos
     tramo = -(-n // (MAX_PUNTOS // 2))
     hueco = int(np.max(np.diff(idx)))
     assert hueco <= 2 * tramo, (
@@ -119,11 +118,6 @@ def test_los_ciclos_de_pac_se_dibujan_completos():
     assert filas == [3000] * 6, f"filas dibujadas por serie: {filas}"
 
 
-# ============================================================
-#   3. La rueda acercaba también el eje Y y la señal se perdía
-# ============================================================
-# Con 15 pasos sobre un trial, la ventana vertical quedaba en 0,006 mV y la señal
-# ocupaba 0,085 mV: solo el 10 % de las muestras caía dentro y se veían rayas.
 from PyQt5.QtCore import Qt  # noqa: E402
 
 from core.utils.ajuste_vertical import AjusteVertical  # noqa: E402
@@ -131,7 +125,7 @@ from core.utils.vtk_context_menu import EJE_X, EJE_Y, VTKContextMenu  # noqa: E4
 
 
 def _menu(chart):
-    menu = VTKContextMenu.__new__(VTKContextMenu)     # solo la lógica del zoom
+    menu = VTKContextMenu.__new__(VTKContextMenu)
     menu.chart = chart
     return menu
 
@@ -157,7 +151,7 @@ def test_el_modo_elegido_en_el_menu_no_se_pierde_con_la_rueda():
 def _senal_lenta_y_rapida(n=45454):
     t = np.arange(n) / FS - 0.5
     y = 0.08 * np.sin(2 * np.pi * 2 * t) + 0.002 * np.sin(2 * np.pi * 300 * t)
-    return t, np.round(y / 0.0025) * 0.0025            # cuantizada como el conversor
+    return t, np.round(y / 0.0025) * 0.0025
 
 
 def _vista_con_rueda(chart):
@@ -178,7 +172,7 @@ def _vista_con_rueda(chart):
 
     def rueda(n):
         for _ in range(n):
-            x, y = menu._ejes_del_zoom(chart)           # lo que hace custom_wheel_event
+            x, y = menu._ejes_del_zoom(chart)
             chart.SetAxisZoom(EJE_X, x)
             chart.SetAxisZoom(EJE_Y, y)
             menu._ajuste_de(chart, x and not y)
@@ -214,7 +208,7 @@ def test_reset_devuelve_el_eje_y_que_puso_el_plugin():
     sm.agregar_linea(chart, t, y, "t", "y", n_max=MAX_PUNTOS_DETALLE)
     eje_y = chart.GetAxis(EJE_Y)
     eje_y.SetBehavior(vtk.vtkAxis.FIXED)
-    eje_y.SetRange(-0.2, 0.2)                           # p. ej. el margen del histograma de PAC
+    eje_y.SetRange(-0.2, 0.2)
     menu, rueda, _rw = _vista_con_rueda(chart)
     rueda(10)
     assert _ventanas(chart)[1] != (-0.2, 0.2)
@@ -227,7 +221,7 @@ def test_sin_zoom_el_ajuste_no_toca_el_eje_y():
     t, y = _senal_lenta_y_rapida(5000)
     sm.agregar_linea(chart, t, y, "t", "y", n_max=MAX_PUNTOS_DETALLE)
     chart.GetAxis(EJE_Y).SetRange(-1.0, 1.0)
-    AjusteVertical.de(chart)                            # creado pero no activado
+    AjusteVertical.de(chart)
     chart.GetAxis(EJE_X).SetRange(0.0, 0.1)
     assert _ventanas(chart)[1] == (-1.0, 1.0)
 
@@ -249,12 +243,6 @@ def test_el_boton_mas_de_la_cinta_acerca_el_tiempo_y_reset_lo_devuelve():
     assert np.allclose(_ventanas(chart)[0], (x0, x1)), "antes el eje X quedaba fijo y Reset no lo devolvía"
 
 
-# ============================================================
-#   4. En PAC la rueda bajaba la página mientras hacía zoom
-# ============================================================
-# PAC apila sus paneles en un lienzo alto dentro de un QScrollArea. El gráfico
-# hacía zoom pero dejaba el evento sin aceptar, y Qt se lo pasaba al contenedor:
-# la página bajaba y el gráfico se iba de la vista.
 from types import SimpleNamespace as _NS  # noqa: E402
 
 
@@ -280,7 +268,7 @@ def _pila_como_pac(alto=1200):
     rw.SetOffScreenRendering(1)
     rw.SetSize(800, alto)
     graficos = []
-    for y0 in (alto - 16 - 300, alto - 16 - 300 - 52 - 170):     # mapa arriba, histograma debajo
+    for y0 in (alto - 16 - 300, alto - 16 - 300 - 52 - 170):
         ch = vtk.vtkChartXY()
         ch.SetAutoSize(False)
         h = 300 if not graficos else 170
@@ -304,7 +292,7 @@ def test_la_rueda_sobre_un_grafico_no_baja_la_pagina_y_entre_graficos_si(app=Non
     menu.vtk_widget = widget
     menu._install_wheel_shortcuts()
 
-    sobre_el_mapa = _RuedaFalsa(400, 16 + 150)            # coordenadas de Qt: y desde arriba
+    sobre_el_mapa = _RuedaFalsa(400, 16 + 150)
     widget.wheelEvent(sobre_el_mapa)
     assert llamadas, "la rueda le llega a VTK para el zoom"
     assert sobre_el_mapa.aceptado is True, "aceptado: el contenedor no baja la página"

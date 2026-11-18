@@ -6,9 +6,6 @@ from core.model.trial_dataset import TrialDataset
 
 EndMode = Literal["fixed", "until_next_onset"]
 
-# ============ Threshold units ============
-# The threshold is compared against the raw stimulus channel, in that channel's
-# own unit. The UI shows it in mV, so it is converted here before detecting.
 _MV_TO_UNIT = {"v": 1e-3, "mv": 1.0, "uv": 1e3, "µv": 1e3, "μv": 1e3, "nv": 1e6}
 
 
@@ -18,7 +15,6 @@ def mv_to_unit(value_mv: float, unit: str) -> Optional[float]:
     factor = _MV_TO_UNIT.get((unit or "").strip().lower())
     return None if factor is None else float(value_mv) * factor
 
-# ============ Onsets ============
 def _detect_onsets_abs(
     signal: np.ndarray,
     threshold: float,
@@ -43,7 +39,6 @@ def _detect_onsets_abs(
     return rising
 
 
-# ============ General assemble ============
 def _assemble_trials_general(
     trials: np.ndarray,
     stim_per_trial: int,
@@ -165,14 +160,12 @@ def cut_trials_single_channel(
     trig_ch = stim_channel if stim_channel is not None else channel
     if not (0 <= trig_ch < C): raise ValueError(f"stim_channel out of range (C={C})")
 
-    y_trig = ds.signals[trig_ch].astype(np.float64, copy=False)  # detect onsets
-    y_tgt  = ds.signals[channel].astype(np.float64, copy=False)  # cut
+    y_trig = ds.signals[trig_ch].astype(np.float64, copy=False)
+    y_tgt  = ds.signals[channel].astype(np.float64, copy=False)
 
     if debug:
         trig_name = ds.channel_names[trig_ch] if trig_ch < len(ds.channel_names) else f"ch{trig_ch}"
         tgt_name  = ds.channel_names[channel] if channel < len(ds.channel_names) else f"ch{channel}"
-        #print(f"\n[TRIALS] fs={fs} N={N} target='{tgt_name}' stim='{trig_name}' "
-        #     f"thr={threshold} t0={t0} t1={t1} mode={end_mode} S={stim_expected} isi={inter_stim_time}")
 
     if stim_expected is not None and int(stim_expected) <= 0:
         print(f"[TRIALS] No expected stimuli (S={stim_expected})")
@@ -187,13 +180,13 @@ def cut_trials_single_channel(
             trials=trials, onsets_s=[], isi_s=[],
             metadata={
                 "end_mode": end_mode,
-                "stim_per_trial": 0,          # <- important to keep a trace
+                "stim_per_trial": 0,
                 "stim_detected": 0,
                 "trials_built": 1,
                 "stim_channel_index": int(trig_ch),
                 "stim_channel_name": (ds.channel_names[trig_ch] if trig_ch < len(ds.channel_names) else f"ch{trig_ch}"),
                 "pad_value": float(pad_value),
-                "note": "forced_no_stim",     # <- clear mark of the forced flow
+                "note": "forced_no_stim",
             },
         )
         
@@ -220,12 +213,6 @@ def cut_trials_single_channel(
             },
         )
 
-    # 2) Grouping for cutting
-    # El ensamblado del paso 7 agrupa de a S columnas, así que necesita una
-    # columna por estímulo. Antes solo se cortaba por estímulo en
-    # 'until_next_onset'; en 'fixed' se cortaba ya agrupado y el paso 7 volvía a
-    # agrupar: 40 estímulos con S=2 daban 10 trials en vez de 20, y los onsets se
-    # vaciaban por no cuadrar con el número de trials. Venía de Gamma Lab 1.0.
     force_per_onset_for_assemble = bool(
         (inter_stim_time and inter_stim_time > 0)
         and (stim_expected and stim_expected > 1)
@@ -234,18 +221,14 @@ def cut_trials_single_channel(
         1 if not (stim_expected and stim_expected > 0) else int(stim_expected)
     )
 
-    # 3) Groups and windows
     group_starts = _group_onsets_indices(K, stim_per_trial_for_cut)
     windows, Ns = _compute_windows(onsets_all, N, fs, t0, t1, end_mode, group_starts, stim_per_trial_for_cut)
 
-    # 4) Extract matrix
     trials = _extract_trials_matrix(y_tgt, windows, Ns, pad_value)
 
-    # 5) Relative time axis
     time_rel = (np.arange(Ns, dtype=np.int64) / fs).astype(np.float64) + t0
     t1_report = float(time_rel[-1]) if time_rel.size else 0.0
 
-    # 6) Onsets/ISI per group
     first_onsets = [onsets_all[s] for s in group_starts]
     onsets_s_sel = [float(i) / fs for i in first_onsets]
 
@@ -261,7 +244,6 @@ def cut_trials_single_channel(
             isi_detail_s.append([])
             isi_mean_s.append(0.0)
 
-    # 7) Optional assemble
     if (stim_expected and stim_expected >= 2) and (inter_stim_time and inter_stim_time > 0):
         trials = _assemble_trials_general(
             trials, stim_per_trial=int(stim_expected), tis=float(inter_stim_time), fs=fs,
@@ -287,7 +269,6 @@ def cut_trials_single_channel(
         time_rel = (np.arange(Ns_new, dtype=np.int64) / fs).astype(np.float64) + t0
         t1_report = float(time_rel[-1]) if time_rel.size else 0.0
 
-    # 8) Sanity check: onsets_s vs T
     if len(onsets_s_sel) not in (0, trials.shape[1]):
         if debug: print(f"[WARN] onsets_s len={len(onsets_s_sel)} != T={trials.shape[1]}. Emptied.")
         onsets_s_sel = []
@@ -318,7 +299,6 @@ def cut_trials_single_channel(
     )
 
 
-# ============ Revisión de un corte ============
 def revisar_corte(td, estimulo=None, unidad: str = "", umbral=None) -> list:
     """Avisos sobre un corte recién hecho. No cambia nada; devuelve frases en español.
 
@@ -359,7 +339,7 @@ def revisar_corte(td, estimulo=None, unidad: str = "", umbral=None) -> list:
                 texto += (f" El umbral es {actual} y el canal de estímulo llega a "
                           f"{pico:.4g} {unidad}: prueba con la mitad del pulso, unos {sugerido}.")
         avisos.append(texto)
-        return avisos           # un solapamiento aquí sería consecuencia de lo mismo
+        return avisos
 
     if (td.metadata or {}).get("end_mode", "fixed") == "fixed":
         fs = float(td.sampling_rate)
@@ -416,7 +396,6 @@ def canal_sin_senal(td):
             f"el ruido del equipo, no actividad.")
 
 
-# ============ Alineación entre dos canales ============
 def validar_alineacion(td1, td2):
     """Los dos canales tienen que venir del **mismo corte** y tener los **mismos trials**.
 

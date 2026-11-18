@@ -57,19 +57,16 @@ def cortar(ds, canal, activar=True):
 def dos_canales():
     ds = senal_con_estimulos()
     cortar(ds, "IN 7")
-    cortar(ds, "CA1")          # CA1 queda activo
+    cortar(ds, "CA1")
     return ds
 
 
-# ============================================================
-#   La comprobación compartida
-# ============================================================
 def test_descartes_distintos_con_la_misma_forma_se_rechazan(dos_canales):
     ds = dos_canales
     ds.discard_trial(ds.name, "CA1", 1)
     ds.discard_trial(ds.name, "IN 7", 3)
     a, b = ds.get_active_trials(ds.name, "CA1"), ds.get_active_trials(ds.name, "IN 7")
-    assert a.trials.shape == b.trials.shape          # lo único que PAC miraba
+    assert a.trials.shape == b.trials.shape
     with pytest.raises(ValueError, match="descartaron trials distintos"):
         validar_alineacion(a, b)
 
@@ -92,9 +89,6 @@ def test_ppc_usa_la_misma_funcion_que_core():
     assert cp.validar_alineacion is validar_alineacion
 
 
-# ============================================================
-#   PAC Psel entre canales no calcula con trials desemparejados
-# ============================================================
 class _Valor:
     def __init__(self, v):
         self._v = v
@@ -168,9 +162,6 @@ def test_pac_entre_canales_no_calcula_con_descartes_distintos(dos_canales):
     assert "descartaron trials distintos" in p.alerts.errores[0]
 
 
-# ============================================================
-#   PPC no cambia el canal activo
-# ============================================================
 def test_ppc_corta_el_canal_que_falta_sin_cambiar_el_canal_activo(qt_app):
     ds = senal_con_estimulos()
     cortar(ds, "CA1")
@@ -189,5 +180,5 @@ def test_ppc_corta_el_canal_que_falta_sin_cambiar_el_canal_activo(qt_app):
     finally:
         tareas.cancel_all_from("ppc")
 
-    assert ds.get_active_trials(ds.name, "IN 7") is not None      # PPC sí lo cortó
+    assert ds.get_active_trials(ds.name, "IN 7") is not None
     assert ds.get_active_trials(ds.name, None).channel_name == "CA1"

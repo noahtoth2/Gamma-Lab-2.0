@@ -15,29 +15,24 @@ class Ui_Filter(object):
         self.main_splitter.setObjectName("main_splitter")
         self.mainWindow.addWidget(self.main_splitter)
 
-        # === Center: Splitter with 2 graphic zones ===
         self.splitter = QtWidgets.QSplitter(Filter)
         self.splitter.setOrientation(QtCore.Qt.Vertical)
         self.splitter.setObjectName("splitter")
         self.main_splitter.addWidget(self.splitter)
 
-        # Up: Filtered signal
         self.filteredSignal = QtWidgets.QFrame(self.splitter)
         self.filteredSignal.setObjectName("filteredSignal")
         self.filteredSignal.setFrameShape(QtWidgets.QFrame.StyledPanel)
 
-        # Down: Filtered trial
         self.filteredTrial = QtWidgets.QFrame(self.splitter)
         self.filteredTrial.setObjectName("filteredTrial")
         self.filteredTrial.setFrameShape(QtWidgets.QFrame.StyledPanel)
 
-        # === Right: Parameters panel (fixed header + scrollable body) ===
         self.rightContainer = QtWidgets.QWidget(self.main_splitter)
         self.rightLayoutOuter = QtWidgets.QVBoxLayout(self.rightContainer)
         self.rightLayoutOuter.setContentsMargins(8, 0, 8, 0)
         self.rightLayoutOuter.setSpacing(0)
 
-        # --- Header: Parameters + clear + Filter (always visible, not scrollable) ---
         self.headerLayout = QtWidgets.QHBoxLayout()
 
         self.parametersLabel = QtWidgets.QLabel(self.rightContainer)
@@ -68,7 +63,6 @@ class Ui_Filter(object):
         self.paramsLine.setProperty("role", "section-divider")
         self.rightLayoutOuter.addWidget(self.paramsLine)
 
-        # --- Scrollable body (only scrolls if the panel is squeezed, e.g. by Results) ---
         self.scrollArea = QtWidgets.QScrollArea(self.rightContainer)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
@@ -86,7 +80,6 @@ class Ui_Filter(object):
         self.scrollArea.setWidget(self.layoutWidget)
         self.rightLayoutOuter.addWidget(self.scrollArea)
 
-        # === Filters ===
         self.filtersLabel = QtWidgets.QLabel(self.layoutWidget)
         self.filtersLabel.setObjectName("filtersLabel")
         self.filtersLabel.setProperty("variant", "subtitle")
@@ -107,7 +100,6 @@ class Ui_Filter(object):
         self.typeSelectComboBox.setObjectName("typeSelectComboBox")
         self.paramsLayout.addWidget(self.typeSelectComboBox)
 
-        # === Frecuency (Hz) (two columns, side by side) ===
         self.frequencyLabel = QtWidgets.QLabel(self.layoutWidget)
         self.frequencyLabel.setObjectName("frequencyLabel")
         self.frequencyLabel.setProperty("variant", "subtitle")
@@ -145,7 +137,6 @@ class Ui_Filter(object):
 
         self.paramsLayout.addLayout(self.frequencyBodyRow)
 
-        # === Order ===
         self.orderLabel = QtWidgets.QLabel(self.layoutWidget)
         self.orderLabel.setObjectName("orderLabel")
         self.orderLabel.setProperty("variant", "subtitle")
@@ -162,7 +153,6 @@ class Ui_Filter(object):
         self.orderSpinBox.setAlignment(QtCore.Qt.AlignCenter)
         self.paramsLayout.addWidget(self.orderSpinBox)
 
-        # === Actions: the header "Filter" filters the trials (R79); these two are secondary ===
         self.actionsLabel = QtWidgets.QLabel(self.layoutWidget)
         self.actionsLabel.setObjectName("actionsLabel")
         self.actionsLabel.setProperty("variant", "subtitle")
@@ -174,7 +164,6 @@ class Ui_Filter(object):
         self.actionsLine.setProperty("role", "divider")
         self.paramsLayout.addWidget(self.actionsLine)
 
-        # Same outlined style as the trial navigation buttons (#trialNavButton)
         self.previewButton = QtWidgets.QPushButton(self.layoutWidget)
         self.previewButton.setObjectName("trialNavButton")
         self.previewButton.setMinimumHeight(32)
@@ -189,7 +178,6 @@ class Ui_Filter(object):
 
         self.main_splitter.widget(1).setMaximumWidth(300)
 
-        # Size splitter
         self.main_splitter.setStretchFactor(0, 1)
         self.main_splitter.setStretchFactor(1, 0)
 

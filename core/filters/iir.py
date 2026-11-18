@@ -16,12 +16,11 @@ from functools import lru_cache
 import numpy as np
 from scipy.signal import butter, cheb2ord, cheby2, hilbert, sosfilt
 
-ORDEN_BUTTERWORTH = 8        # el que fija f_Phase_PAC para las señales que dibuja
+ORDEN_BUTTERWORTH = 8
 
-# Los valores por defecto de f_GetIIRFilter cuando no se le pasa orden ni tipo.
-RIZADO_BANDA_PASO = 0.5      # s_Rp, en dB
-ATENUACION_RECHAZO = 100.0   # s_Rs, en dB
-SEPARACION_HZ = 0.5          # s_Space: a que distancia quedan los bordes de rechazo
+RIZADO_BANDA_PASO = 0.5
+ATENUACION_RECHAZO = 100.0
+SEPARACION_HZ = 0.5
 
 
 def _escala_decimal(f):
@@ -52,9 +51,6 @@ def tope_banda_alta(fs):
     return fs / 2.0 - SEPARACION_HZ
 
 
-# Cuantos disenos distintos se recuerdan. El indice de modulacion con los
-# valores por defecto pide 278 (100 de fase + 178 de amplitud); PAC Psel, 2.
-# Cada entrada son unos cientos de bytes, asi que 2.048 son un par de MB.
 _MAX_FILTROS_EN_CACHE = 2048
 
 
@@ -86,11 +82,6 @@ def _disenar(fs, f1, f2):
     with np.errstate(over="ignore", invalid="ignore"):
         sos = cheby2(orden, ATENUACION_RECHAZO, wst, btype="band", output="sos")
 
-    # Con bandas muy anchas el orden automatico se dispara y el diseno degenera:
-    # salen coeficientes no finitos y el filtrado devuelve NaN en todas las
-    # muestras, sin avisar. Medido: a 2.000 Hz, [25, 250] da orden 181 y funciona,
-    # pero [25, 400] da 219 y ya esta roto. Mas vale fallar aqui con un mensaje
-    # claro que entregar un resultado lleno de NaN.
     if not np.all(np.isfinite(sos)):
         raise ValueError(
             f"No se pudo diseñar un filtro Chebyshev II estable para la banda "

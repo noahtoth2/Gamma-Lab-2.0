@@ -23,12 +23,12 @@ def calcular_fft_average(X, fs, target_fs, per_trial=False, ctx=None):
     fs_eff = fs / srt
     Xds = X[::srt, :] if srt > 1 else X
     Ns_eff = Xds.shape[0]
-    mFourier = np.fft.fft(Xds, n=Ns_eff, axis=0)[: (Ns_eff // 2) + 1, :]     # (Nf, T)
+    mFourier = np.fft.fft(Xds, n=Ns_eff, axis=0)[: (Ns_eff // 2) + 1, :]
     mag = np.abs(mFourier).astype(np.float64)
     freq = np.linspace(0.0, fs_eff / 2.0, mFourier.shape[0])
     if per_trial:
         return freq, mag, fs_eff
-    return freq, np.nanmean(mag, axis=1)[:, None], fs_eff              # (Nf, 1): same plotter
+    return freq, np.nanmean(mag, axis=1)[:, None], fs_eff
 from plugins.analysis.frequency.fft_average.fft_average_plugin_ui import Ui_Fft_Average
 from core.utils.submuestreo import agregar_columna
 
@@ -73,7 +73,6 @@ class Fft_average_plugin(IPlugin):
         return self.widget
         
 
-    ## === UI === ##
     def _wire_ui(self):
         self._log("wire ui")
         self.ui.calculateFftAvgButton.clicked.connect(self._on_calculate_clicked)
@@ -89,8 +88,6 @@ class Fft_average_plugin(IPlugin):
         self.ui.highFrequencySpinBox.setValue(500.0)
         self.ui.lowFrequencySpinBox.setDecimals(2)
         self.ui.lowFrequencySpinBox.setRange(0.0, 10000)
-        # Sync low/high only when the user finishes typing: while typing "100", the "1" was
-        # momentarily below the low limit and dragged it down
         self.ui.lowFrequencySpinBox.setKeyboardTracking(False)
         self.ui.highFrequencySpinBox.setKeyboardTracking(False)
         self.ui.lowFrequencySpinBox.setSingleStep(1.0)
@@ -103,7 +100,6 @@ class Fft_average_plugin(IPlugin):
 
     def _on_calculate_clicked(self):
             self._log("_on_calculate_clicked()")
-            # 1) Load trials from the active signal
             fs, X, ch_name = self._load_trials_from_store()
             if X is None or fs is None:
                 self._notify("FFT Average: no trials in the active signal.")
@@ -112,14 +108,12 @@ class Fft_average_plugin(IPlugin):
             if X is None:
                 return
 
-            # 2) UI parameters
-            target_fs = float(self.ui.sampleDensitySpinBox.value())  # 0 = no resampling
+            target_fs = float(self.ui.sampleDensitySpinBox.value())
             lo = float(self.ui.lowFrequencySpinBox.value())
             hi = float(self.ui.highFrequencySpinBox.value())
             if lo > hi:
                 lo, hi = hi, lo
 
-            # 3) FFT in the TaskService (R71), 4) plot when it finishes
             self.run_task(calcular_fft_average, partial(self._on_fft_average_done, ch_name, lo, hi, total, posiciones),
                           X=X, fs=fs, target_fs=target_fs, per_trial=False)
 
@@ -132,7 +126,6 @@ class Fft_average_plugin(IPlugin):
             self.publish_current_trial()
             self.mark_project_dirty()
 
-    # ====== Project save/restore ======
     def get_analysis_params(self) -> dict:
         return {
             "sample_density": self.ui.sampleDensitySpinBox.value(),
@@ -158,7 +151,6 @@ class Fft_average_plugin(IPlugin):
                 self.ui.lowFrequencySpinBox.setValue(hi)
         self._log(f"range sync: low={lo}, high={hi}")
     
-        # ------- VTK -------
     def _ensure_vtk(self):
         self._log("ensure_vtk(): enter")
         self.vtk_interactor = QVTKRenderWindowInteractor(self.ui.plotArea)
@@ -178,7 +170,6 @@ class Fft_average_plugin(IPlugin):
         self._log("ensure_vtk(): scheduled init")
 
       
-    # ====== DATA ======
     def _load_trials_from_store(self):
         """
         Find the active signal in the DataStore and return:
@@ -197,7 +188,7 @@ class Fft_average_plugin(IPlugin):
             return None, None, None
 
         fs = float(getattr(td, "sampling_rate", 0.0))
-        X  = np.asarray(getattr(td, "trials", None), dtype=np.float64)  # (Ns, T)
+        X  = np.asarray(getattr(td, "trials", None), dtype=np.float64)
         ch = getattr(td, "channel_name", "")
         if X is None or X.ndim != 2 or fs <= 0:
             self._log("Invalid TrialDataset (fs<=0 or trials not 2D).")
@@ -206,7 +197,6 @@ class Fft_average_plugin(IPlugin):
         self._log(f"Trials: Ns={X.shape[0]}, T={X.shape[1]}, fs={fs}")
         return fs, X, ch
     
-    # ====== FFT - AVERAGE ======
     def _compute_fft_average(self, X: np.ndarray, fs: float, target_fs: float, *, per_trial: bool = False):
         """
         MATLAB-style FFT with optional averaging across trials.
@@ -223,7 +213,6 @@ class Fft_average_plugin(IPlugin):
         self._log(f"FFT_AVG: fs_eff={fs_eff:.3f} Hz, Nf={freq.size}, T={X.shape[1]}, per_trial={per_trial}")
         return freq, mag_out, fs_eff
 
-    # ====== Plot in VTK ======
     def _plot_fft_average(self, freq: np.ndarray, mag: np.ndarray, ch_name: str, lo: float, hi: float, fs_eff: float):
         """
         Build a vtkTable using trials_matrix_to_vtk_table(freq, mag)
@@ -239,9 +228,8 @@ class Fft_average_plugin(IPlugin):
         sel = (freq >= lo) & (freq <= hi)
         self._log(f"Plot bins: {sel.sum()} of {freq.size}")
         freq_v = freq[sel]
-        mag_v  = mag[sel, :]  # (Nf_sel, T)
+        mag_v  = mag[sel, :]
 
-        # Limit number of displayed curves
         MAX_PLOTS = 200
         if mag_v.shape[1] > MAX_PLOTS:
             self._log(f"There are {mag_v.shape[1]} trials → showing {MAX_PLOTS}")
@@ -249,7 +237,6 @@ class Fft_average_plugin(IPlugin):
 
         table = trials_matrix_to_vtk_table(freq_v, mag_v)
 
-        # Create clean chart
         scene = self.vtk_view.GetScene()
         scene.ClearItems()
         self.chart = vtk.vtkChartXY()
@@ -267,14 +254,12 @@ class Fft_average_plugin(IPlugin):
         except Exception:
             pass
         
-        # One plot per column
         num_cols = table.GetNumberOfColumns()
         print(f"num_cols={num_cols}")
         for c in range(1, num_cols):
             plot = agregar_columna(self.chart, table, c)
             plot.SetWidth(1.0)
 
-           # --- Context menu ---
 
         try:
             self.vtk_menu = VTKContextMenu(self.chart, self.vtk_interactor, self.active_signal.name, ch_name,self.meta.id,  parent=self.widget)

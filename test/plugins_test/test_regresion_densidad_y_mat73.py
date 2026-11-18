@@ -22,9 +22,6 @@ from core.services.fileio_service import FileIOService
 FS = 1000.0
 
 
-# ============================================================
-#   Densidad de muestreo 0
-# ============================================================
 def test_tasa_efectiva_con_densidad_cero_lo_explica():
     with pytest.raises(ValueError, match="densidad de muestreo debe ser mayor que cero"):
         tasa_efectiva(10000.0, 0)
@@ -52,13 +49,13 @@ class _Spin:
     def setRange(self, a, b):
         self.rango = (a, b)
 
-    def __getattr__(self, nombre):          # setSingleStep, setDecimals, ...
+    def __getattr__(self, nombre):
         return lambda *a, **k: None
 
 
 def _ui_con_spins():
     ui = MagicMock(sampleDensitySpinBox=_Spin(), sampleFqSpinBox=_Spin())
-    ui.trialSpinBox.value.return_value = 1      # el selector de trial lo compara con un entero
+    ui.trialSpinBox.value.return_value = 1
     return ui
 
 
@@ -97,7 +94,6 @@ def test_wavelet_con_densidad_cero_avisa_en_vez_de_reventar(ruta, clase):
                        version="1.0", icon="x.png", logic_class=clase))
     assert p.params["sample_density_range"][0] >= 1
 
-    # Aunque llegara un 0 (un proyecto viejo, otro camino), el cálculo no revienta
     tareas = MagicMock()
     p.kernel = SimpleNamespace(get_service=lambda clave: tareas if clave == "TaskService" else None)
     p.alerts = MagicMock()
@@ -117,9 +113,6 @@ def test_wavelet_con_densidad_cero_avisa_en_vez_de_reventar(ruta, clase):
     assert any("densidad" in str(c.args[0]) for c in p.alerts.warning.call_args_list)
 
 
-# ============================================================
-#   .mat v7.3
-# ============================================================
 def escribir_mat73(ruta, variables):
     """Un .mat v7.3 de verdad: HDF5 con la cabecera de MATLAB en el bloque de usuario.
     Cada variable va en la forma de MATLAB; HDF5 la guarda traspuesta, como MATLAB."""
@@ -138,7 +131,7 @@ def cargar(ruta):
 
 def test_una_matriz_de_muestras_por_canales_da_un_canal_por_columna(tmp_path):
     n = 1000
-    datos = np.column_stack([np.arange(n) + 10_000 * k for k in range(3)]).astype(float)   # n × 3
+    datos = np.column_stack([np.arange(n) + 10_000 * k for k in range(3)]).astype(float)
     escribir_mat73(tmp_path / "a.mat", {"datos": (datos, "double")})
     ds = cargar(tmp_path / "a.mat")
     assert ds.channel_names == ["datos_ch1", "datos_ch2", "datos_ch3"]
@@ -148,7 +141,7 @@ def test_una_matriz_de_muestras_por_canales_da_un_canal_por_columna(tmp_path):
 
 
 def test_una_matriz_de_canales_por_muestras_tambien(tmp_path):
-    datos = np.vstack([np.arange(800.0), -np.arange(800.0)])             # 2 × 800
+    datos = np.vstack([np.arange(800.0), -np.arange(800.0)])
     escribir_mat73(tmp_path / "b.mat", {"x": (datos, "double")})
     ds = cargar(tmp_path / "b.mat")
     assert ds.signals.shape == (2, 800)

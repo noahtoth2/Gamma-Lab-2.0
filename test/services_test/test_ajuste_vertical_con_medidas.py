@@ -13,7 +13,7 @@ from core.services.measurement_service import SesionDeMedicion
 from core.utils.ajuste_vertical import AjusteVertical, rango_visible_y
 from core.utils.submuestreo import agregar_linea
 
-T = np.arange(-0.05, 4.0, 0.0001)        # 40 500 muestras, fs = 10 kHz
+T = np.arange(-0.05, 4.0, 0.0001)
 
 
 def _trial():
@@ -32,7 +32,6 @@ def _grafico():
     y = _trial()
     agregar_linea(ch, T, y, "time", "trial_1").SetLabel("Trial 1")
     rw.Render()
-    # zoom en el tiempo con el ajuste vertical activo, como la rueda
     ajuste = AjusteVertical.de(ch)
     ajuste.activar()
     ch.GetAxis(vtk.vtkAxis.BOTTOM).SetRange(1.0, 1.9)
@@ -49,7 +48,7 @@ def _rango_y(ch):
 def test_medir_no_estira_el_eje_mv(tipo):
     view, ch, y = _grafico()
     antes = _rango_y(ch)
-    assert antes[1] - antes[0] < 0.5                     # escala de la señal, en mV
+    assert antes[1] - antes[0] < 0.5
     svc = SesionDeMedicion(Mock(), view, lambda: ch, lambda k, d=None: [], lambda k, v: None)
     svc.alerts = Mock()
     svc.trials_source = lambda: (T, y[:, None], [0])
@@ -59,7 +58,6 @@ def test_medir_no_estira_el_eje_mv(tipo):
     svc._current["p2"] = (1.42, 0.0)
     svc._finalize()
     view.GetRenderWindow().Render()
-    # mover el tiempo vuelve a disparar el ajuste: tampoco debe contar la derivada
     ch.GetAxis(vtk.vtkAxis.BOTTOM).SetRange(1.05, 1.85)
     view.GetRenderWindow().Render()
     lo, hi = _rango_y(ch)

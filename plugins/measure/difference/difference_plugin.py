@@ -1,4 +1,3 @@
-# plugins/measure/difference/difference_plugin.py
 """Results table of the 'difference' measurement: derivative dy/dx of the signal between two points."""
 import csv
 import os
@@ -24,20 +23,20 @@ def _f(v):
 
 class DifferenceTableModel(QtCore.QAbstractTableModel):
     HEADERS = [
-        "ID",                   # 0
-        "Channel",              # 1
-        "Graph",                # 2
-        "Point 1 (x, y)",       # 3
-        "Point 2 (x, y)",       # 4
-        "Window start (x1)",    # 5
-        "Window end (x2)",      # 6
-        "Samples (N)",          # 7
-        "Max dy/dx",            # 8
-        "x at max",             # 9
-        "Min dy/dx",            # 10
-        "x at min",             # 11
-        "Mean dy/dx",           # 12
-        "Timestamp",            # 13
+        "ID",
+        "Channel",
+        "Graph",
+        "Point 1 (x, y)",
+        "Point 2 (x, y)",
+        "Window start (x1)",
+        "Window end (x2)",
+        "Samples (N)",
+        "Max dy/dx",
+        "x at max",
+        "Min dy/dx",
+        "x at min",
+        "Mean dy/dx",
+        "Timestamp",
     ]
 
     HEADER_TIPS = {
@@ -147,7 +146,6 @@ class DifferencePlugin(IPlugin):
             self.widget.setParent(parent)
         return self.widget
 
-    # ---------- DataStore ----------
     def _reload_from_store(self):
         rows = self._load_rows_from_store()
         if self.model:
@@ -197,7 +195,6 @@ class DifferencePlugin(IPlugin):
                 self._log("Invalid row in measurements (difference):", e)
         return rows
 
-    # ---------- Export ----------
     def _export_dir(self) -> str:
         try:
             store = self.kernel.get_service("DataStore") if self.kernel else None

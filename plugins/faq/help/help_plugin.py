@@ -27,13 +27,21 @@ class HelpPlugin(IPlugin):
             self.ui.setupUi(self.widget)
             self.init_buttons()
 
-            # Cargar PDF
-            pdf_path = os.path.join(os.path.dirname(__file__), "MU_GAMMA_LAB.pdf")
-            self.load_pdf(pdf_path)
+            self.load_pdf(self.manual_path())
         else:
             self.widget.setParent(parent)
 
         return self.widget
+
+    @staticmethod
+    def manual_path():
+        """Manual de usuario: el compilado en docs/MU si existe (desarrollo),
+        si no la copia empaquetada junto al plugin (instalador)."""
+        here = os.path.dirname(os.path.abspath(__file__))
+        repo_manual = os.path.join(here, "..", "..", "..", "docs", "MU", "main.pdf")
+        if os.path.exists(repo_manual):
+            return os.path.normpath(repo_manual)
+        return os.path.join(here, "MU_GAMMA_LAB.pdf")
 
     def load_pdf(self, pdf_path):
         """Carga el PDF en el QWebEngineView."""
@@ -54,5 +62,5 @@ class HelpPlugin(IPlugin):
             lambda: webbrowser.open("https://youtube.com/playlist?list=PLTiLHF2jqOJZLib1CLtq1JnGZeNTktVmm&si=6JOE_WovbWcczJy2")
         )
         self.ui.downloadButton.clicked.connect(
-            lambda: webbrowser.open("https://github.com/GAMMA-BOARD-FTD-PACC/gamma-lab-desktop-app/releases")
+            lambda: webbrowser.open("https://garzonlj.github.io/webGammaLab/")
         )

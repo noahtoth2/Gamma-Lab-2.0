@@ -56,7 +56,6 @@ def current_ranges(chart):
 
 def _interp(p, p_min, p_max, v_min, v_max, log):
     v = v_min + (p - p_min) * (v_max - v_min) / (p_max - p_min)
-    # Con escala logaritmica el eje guarda log10 del valor
     return 10.0 ** v if log else v
 
 

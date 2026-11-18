@@ -1,4 +1,3 @@
-# test/performance_test/test_compute_bench.py
 """
 Benchmarks del tiempo de cómputo numérico puro que corre cada plugin de análisis
 al hacer clic en "Calcular". Hoy fft, fft_average, psd, psd_average, relative_psd
@@ -85,10 +84,6 @@ def t_rel(td):
     return np.asarray(td.time_rel, dtype=np.float64)
 
 
-# ---------------------------------------------------------------------
-# FFT (espectro de magnitud sin ventana, sin QThread hoy)
-# ---------------------------------------------------------------------
-
 def test_bench_fft_compute(X, fs):
     plug = Fft_plugin(_meta("fft", "FFT", "frequency", "Fft_plugin"))
     stats = time_block(plug._compute_fft, X, fs, 1000.0, reps=5, warmup=1)
@@ -101,10 +96,6 @@ def test_bench_fft_average_compute(X, fs):
     record("fft_average._compute_fft_average (todos los trials)", stats)
 
 
-# ---------------------------------------------------------------------
-# PSD (Welch, sin QThread hoy)
-# ---------------------------------------------------------------------
-
 def test_bench_psd_compute(X, fs):
     plug = Psd_plugin(_meta("psd", "PSD", "frequency", "Psd_plugin"))
     stats = time_block(
@@ -115,10 +106,6 @@ def test_bench_psd_compute(X, fs):
 
 
 def test_bench_psd_average_compute(X, fs):
-    # Nota: a diferencia de psd/relative_psd, psd_average._compute_psd no tiene
-    # parámetro `detrend`, y limpia los NaN de su entrada in-place (copy=False) --
-    # por eso se le pasa una copia fresca de X en cada repetición, en vez de
-    # reutilizar la fixture `X` compartida.
     plug = Psd_average_plugin(_meta("psd_average", "PSD Average", "frequency", "Psd_average_plugin"))
 
     def run_once():
@@ -141,10 +128,6 @@ def test_bench_relative_psd_compute(X, fs):
     record("relative_psd._compute_psd (todos los trials, Welch)", stats_full)
 
 
-# ---------------------------------------------------------------------
-# Wavelet CWT (el plugin individual no tiene QThread; el promedio sí)
-# ---------------------------------------------------------------------
-
 def test_bench_wavelet_single_trial_cwt(X, t_rel):
     plug = Wavelet_plugin(_meta("wavelet", "Wavelet", "time_frequency", "Wavelet_plugin"))
     sig = X[:, 0]
@@ -164,7 +147,7 @@ def test_bench_wavelet_average_cwt_all_trials(X, t_rel):
     """
     plug = Wavelet_average_plugin(_meta("wavelet_average", "Wavelet Average", "time_frequency", "Wavelet_average_plugin"))
     fs_calc = round(1.0 / (t_rel[1] - t_rel[0]), 3)
-    n_trials = min(X.shape[1], 20)  # tope para que la suite se mantenga rápida; ajustar si hace falta
+    n_trials = min(X.shape[1], 20)
 
     def compute_all_trials():
         for k in range(n_trials):

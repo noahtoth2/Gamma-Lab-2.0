@@ -13,7 +13,7 @@ import vtk
 from core.services.measurement_service import SesionDeMedicion
 from core.utils.submuestreo import agregar_linea, rango_x_completo, restablecer_vista
 
-T = np.arange(-0.1, 3.0, 0.001)          # 3100 muestras: más que MAX_PUNTOS, se reduce
+T = np.arange(-0.1, 3.0, 0.001)
 
 
 def _grafico():
@@ -43,7 +43,7 @@ def _rango_x(ch):
 def test_reset_view_vuelve_al_registro_completo_tras_un_zoom():
     view, ch = _grafico()
     _zoom(view, ch)
-    assert ch.GetPlot(0).GetInput().GetNumberOfRows() < 400     # recortada al tramo visible
+    assert ch.GetPlot(0).GetInput().GetNumberOfRows() < 400
     restablecer_vista(ch)
     view.GetRenderWindow().Render()
     lo, hi = _rango_x(ch)
@@ -75,4 +75,4 @@ def test_reset_de_un_grafico_sin_series_reducidas_no_cambia():
     view.GetScene().AddItem(ch)
     agregar_linea(ch, np.linspace(0, 1, 50), np.linspace(0, 1, 50))
     assert rango_x_completo(ch) is None
-    restablecer_vista(ch)                     # solo RecalculateBounds, sin errores
+    restablecer_vista(ch)

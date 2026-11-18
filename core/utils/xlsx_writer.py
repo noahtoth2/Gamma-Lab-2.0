@@ -68,12 +68,12 @@ def _celda(ref, v):
     if isinstance(v, bool):
         return f'<c r="{ref}" t="b"><v>{int(v)}</v></c>'
     if isinstance(v, (int, float)):
-        if isinstance(v, float):               # incluye np.float64, cuyo repr no es un número
+        if isinstance(v, float):
             v = float(v)
             if not math.isfinite(v):
                 return ""
         return f'<c r="{ref}"><v>{v!r}</v></c>'
-    try:                                   # NumPy: float64, int64, bool_
+    try:
         import numpy as np
         if isinstance(v, np.bool_):
             return f'<c r="{ref}" t="b"><v>{int(v)}</v></c>'

@@ -56,10 +56,9 @@ class ArbolProyecto(QTreeView):
     def __init__(self, carpeta: Path, parent=None):
         super().__init__(parent)
         self.carpeta = Path(carpeta)
-        self._glab_activo = None  # clave del .glab activo si está en esta carpeta
+        self._glab_activo = None
 
         self.modelo = QFileSystemModel(self)
-        # Permite renombrar, mover y borrar desde el árbol (por defecto es de solo lectura).
         self.modelo.setReadOnly(False)
         self.modelo.directoryLoaded.connect(self._al_cargar_directorio)
         self.modelo.rowsInserted.connect(self._al_insertar_filas)
@@ -71,12 +70,10 @@ class ArbolProyecto(QTreeView):
         self.setIndentation(14)
         self.setIconSize(QSize(16, 16))
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        # En la barra lateral solo sirve la columna del nombre.
         for col in range(1, 4):
             self.setColumnHidden(col, True)
         self.setEditTriggers(QAbstractItemView.EditKeyPressed)
 
-        # Arrastrar archivos entre carpetas para moverlos.
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
         self.setDropIndicatorShown(True)
@@ -86,7 +83,6 @@ class ArbolProyecto(QTreeView):
 
         self._mostrar_carpeta()
 
-    # ---------- raíz: la carpeta del proyecto, sin sus hermanas ----------
     def _mostrar_carpeta(self):
         self.modelo.setRootPath(str(self.carpeta.parent))
         indice = self.modelo.index(str(self.carpeta))
@@ -110,7 +106,6 @@ class ArbolProyecto(QTreeView):
         if clave_ruta(self.modelo.filePath(padre)) == clave_ruta(self.carpeta.parent):
             self._ocultar_hermanas(padre)
 
-    # ---------- proyecto activo ----------
     def marcar_activo(self, glab_activo):
         """`glab_activo`: ruta del .glab activo, o None. Solo cuenta si está en esta carpeta."""
         clave = None

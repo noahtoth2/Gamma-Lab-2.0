@@ -15,22 +15,12 @@ class FileIOService:
         channel_count = abf.channelCount
         print(f"Detected channel count: {channel_count}")
 
-        # pyabf ya tiene el archivo entero en memoria: `abf.data` es la matriz
-        # (canales, muestras) y `abf.sweepX` el eje de tiempo. Copiar ambos
-        # duplicaba los datos —medido: el working set crecia al doble del tamano
-        # de los arreglos (problema nº 12)—. Como el objeto `abf` muere al salir
-        # de aqui, basta con quedarse con sus arreglos en lugar de copiarlos:
-        # NumPy los mantiene vivos y nadie mas los referencia.
         print("Reading channels:")
         if abf.sweepCount == 1:
-            # Con una sola sweep, abf.data[ch] es exactamente la sweep 0 del canal.
             signals = abf.data
             for ch in range(channel_count):
                 print(f"  Channel {ch}: {signals.shape[1]} points")
         else:
-            # Con varias sweeps hay que armar la matriz con la sweep 0 de cada
-            # canal, que no coincide con abf.data. Se escribe en un arreglo ya
-            # reservado para no apilar copias al final.
             abf.setSweep(sweepNumber=0, channel=0)
             primer_canal = abf.sweepY
             n_muestras = len(primer_canal)
@@ -47,7 +37,6 @@ class FileIOService:
                 signals[ch, :] = y
                 print(f"  Channel {ch}: {len(y)} points")
 
-        # Se toma al final y sin copiar: ningun setSweep posterior lo altera.
         abf.setSweep(sweepNumber=0, channel=0)
         time_data = abf.sweepX
         print(f"Obtained time data, length: {len(time_data)}")
@@ -91,13 +80,6 @@ class FileIOService:
             C = edf.signals_in_file
             print(f"Detected channel count: {C}")
 
-            # Primero solo la cabecera: nombres, unidades, frecuencias y largos.
-            # Asi se puede decidir la forma de la matriz y reservarla antes de
-            # leer datos. Antes se leian los C canales a una lista y se apilaban
-            # con np.stack, lo que dejaba la lista y la copia apilada vivas a la
-            # vez: el doble de memoria (problema nº 12). En el camino de
-            # remuestreo era peor, porque `signals_raw` seguia vivo mientras se
-            # construia `resampled`: hasta el triple.
             channel_names = []
             units = []
             fs_list = []
@@ -142,8 +124,6 @@ class FileIOService:
                 N = int(np.floor(T_common * sampling_rate))
                 time = np.arange(N, dtype=np.float64) / sampling_rate
 
-                # Se interpola canal por canal directo en la fila que le toca,
-                # de modo que solo un canal crudo esta vivo a la vez.
                 signals = np.empty((C, N), dtype=np.float64)
                 for i in range(C):
                     sig = edf.readSignal(i)
@@ -186,7 +166,6 @@ class FileIOService:
         print(f"\n=== Loading MAT file: {file_path} ===")
 
         try:
-            # Try classic format first
             mat_data = loadmat(file_path)
             valid_keys = [k for k in mat_data.keys() if not k.startswith("__")]
             print("File loaded with scipy.io.loadmat")
@@ -210,13 +189,11 @@ class FileIOService:
             if raw.ndim == 1:
                 signals = raw.reshape(1, -1)
             else:
-                # MATLAB files from this lab store samples x channels (far more
-                # samples than channels); the model expects channels x samples.
                 signals = raw.T if raw.shape[0] >= raw.shape[1] else raw
 
             C, N = signals.shape
             channel_names = [f"ch{i + 1}" for i in range(C)]
-            sampling_rate = 1.0  # .mat files don't carry it (R80); corrected via CU-018
+            sampling_rate = 1.0
             time_data = np.arange(N, dtype=np.float64) / sampling_rate
 
             ds = SignalDataset(
@@ -240,10 +217,6 @@ class FileIOService:
                 keys = list(f.keys())
                 print(f"Found variables (HDF5): {keys}")
 
-                # Cada vector numérico es un canal y cada matriz, varios. Antes cada
-                # variable se aplanaba en un solo canal: una matriz de 3 canales quedaba
-                # como un canal con los tres seguidos, y los escalares (fs) y los textos
-                # entraban como canales rellenos de NaN.
                 channels = []
                 channel_names = []
 
@@ -256,7 +229,6 @@ class FileIOService:
                     clase = clase.decode(errors="replace") if isinstance(clase, bytes) else str(clase)
                     arr = np.array(data)
 
-                    # MATLAB guarda los textos como uint16 con MATLAB_class='char'
                     if clase == "char" or not np.issubdtype(arr.dtype, np.number):
                         print(f"  Variable {key} ignorada (no numérica: {clase or arr.dtype})")
                         continue
@@ -264,9 +236,6 @@ class FileIOService:
                         print(f"  Variable {key} ignorada (forma {arr.shape}: no es un vector ni una matriz)")
                         continue
 
-                    # HDF5 guarda las variables de MATLAB traspuestas: arr.T tiene la forma
-                    # de MATLAB. Como en el formato clásico, el eje más largo es el de las
-                    # muestras (muestras × canales en los archivos del laboratorio).
                     raw = np.asarray(arr, dtype=np.float64).T
                     if raw.ndim == 1:
                         filas = raw.reshape(1, -1)
@@ -285,14 +254,12 @@ class FileIOService:
                 if not channels:
                     raise ValueError("No se encontró ningún vector ni matriz numérica en el archivo .mat (v7.3).")
 
-                # Normalize length (pad with NaN to equalize)
                 max_len = max(len(ch) for ch in channels)
                 padded = [np.pad(ch, (0, max_len - len(ch)), constant_values=np.nan) for ch in channels]
                 signals = np.stack(padded, axis=0)
 
-                # Generate a dummy time axis if not present
                 time_data = np.arange(max_len, dtype=float)
-                sampling_rate = 1.0  # unknown
+                sampling_rate = 1.0
 
                 ds = SignalDataset(
                     name=Path(file_path).name,

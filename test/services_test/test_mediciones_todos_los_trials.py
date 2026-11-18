@@ -25,7 +25,7 @@ def _trials():
     """3 trials lineales con pendientes 1, 2 y 3 sobre t = 0..1 s."""
     t = np.linspace(0.0, 1.0, 101)
     M = np.column_stack([1.0 * t, 2.0 * t, 3.0 * t])
-    return t, M, [4, 7, 9]           # ids 0-based arbitrarios: se conservan
+    return t, M, [4, 7, 9]
 
 
 def _medir(svc, tipo, x1, x2):
@@ -35,7 +35,6 @@ def _medir(svc, tipo, x1, x2):
     svc._finalize()
 
 
-# ---------------- derivada ----------------
 def test_la_derivada_de_una_recta_es_su_pendiente():
     t = np.linspace(0, 2, 201)
     r = derivative_in_window(t, 5.0 * t + 1.0, 0.5, 1.5)
@@ -52,13 +51,12 @@ def test_la_derivada_de_un_seno_es_un_coseno():
 
 
 def test_la_derivada_es_diff_de_y_entre_diff_de_x():
-    # como diff en MATLAB: una derivada entre cada par de muestras, en el punto medio
     x = np.array([0.0, 0.1, 0.2, 0.3, 0.4])
     y = np.array([0.0, 1.0, 1.5, 4.5, 4.0])
     r = derivative_in_window(x, y, 0.0, 0.4)
-    assert r["d_max"] == pytest.approx(30.0)            # (4.5 - 1.5) / 0.1
-    assert r["x_at_dmax"] == pytest.approx(0.25)        # entre 0.2 y 0.3
-    assert r["y_at_dmax"] == pytest.approx(3.0)         # sobre la señal, entre 1.5 y 4.5
+    assert r["d_max"] == pytest.approx(30.0)
+    assert r["x_at_dmax"] == pytest.approx(0.25)
+    assert r["y_at_dmax"] == pytest.approx(3.0)
     assert r["d_min"] == pytest.approx(-5.0)
     assert r["d_mean"] == pytest.approx(np.mean(np.diff(y) / np.diff(x)))
 
@@ -76,7 +74,6 @@ def test_la_derivada_necesita_dos_muestras():
     assert derivative_in_window([0.0, 1.0], [0.0, 1.0], 0.4, 0.6) is None
 
 
-# ---------------- all trials ----------------
 def test_all_trials_sin_trials_en_la_vista_no_arranca():
     svc, _ = _sesion(contexto={"plugin": "fft"})
     assert svc.start("slope_all_trials") is False
@@ -147,7 +144,7 @@ def test_las_lineas_solo_se_dibujan_para_los_trials_en_pantalla():
     assert len(meds) == 3
     ids = _lineas(svc)
     assert meds[1]["id"] in ids and meds[0]["id"] not in ids and meds[2]["id"] not in ids
-    assert sum(i.startswith("batch:") for i in ids) == 2          # P1 y P2, una sola vez
+    assert sum(i.startswith("batch:") for i in ids) == 2
 
 
 def _color(ov):
@@ -192,7 +189,7 @@ def test_con_muchos_trials_en_pantalla_solo_se_marcan_los_dos_puntos():
     svc, almacen = _sesion(trials_source=fuente)
     _con_grafico(svc, ids)
     _medir(svc, "slope_all_trials", 0.2, 0.8)
-    assert len(almacen["measurements"]) == 30                      # se miden todos
+    assert len(almacen["measurements"]) == 30
     assert len(_lineas(svc)) == 2 and all(i.startswith("batch:") for i in _lineas(svc))
     assert "groups of 6" in svc.alerts.info.call_args.args[0]
 
@@ -201,7 +198,7 @@ def test_borrar_la_ultima_borra_todo_el_all_trials():
     svc, almacen = _sesion(trials_source=_trials)
     _con_grafico(svc, [4, 7, 9])
     svc.start("slope"); svc._current["p1"] = (0.0, 0.0); svc._current["p2"] = (1.0, 1.0)
-    svc._finalize()                                                 # una medición suelta antes
+    svc._finalize()
     _medir(svc, "slope_all_trials", 0.2, 0.8)
     assert len(almacen["measurements"]) == 4
     assert svc.remove_last_measurement() is True
@@ -219,5 +216,5 @@ def test_difference_de_una_traza():
     (m,) = almacen["measurements"]
     assert m["type"] == "difference" and m["d_mean"] == pytest.approx(4.0)
     kw = svc._add_overlay_for_points.call_args.kwargs
-    assert not kw.get("right_axis") and len(kw["points"]) == 2          # tangente, sin eje derecho
+    assert not kw.get("right_axis") and len(kw["points"]) == 2
     assert svc._add_overlay_for_points.call_args.args[1] == pytest.approx((m["x_at_dmax"], m["y_at_dmax"]))

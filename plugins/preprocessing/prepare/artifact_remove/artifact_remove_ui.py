@@ -5,30 +5,25 @@ class Ui_ArtifactRemove(object):
     def setupUi(self, ArtifactRemove):
         ArtifactRemove.setObjectName("ArtifactRemove")
 
-        # === Main layout ===
         self.mainWindow = QtWidgets.QHBoxLayout(ArtifactRemove)
         self.mainWindow.setObjectName("mainWindow")
         self.mainWindow.setSpacing(0)
 
-        # === Splitter ===
         self.splitter = QtWidgets.QSplitter(ArtifactRemove)
         self.splitter.setOrientation(QtCore.Qt.Horizontal)
         self.splitter.setObjectName("splitter")
         self.mainWindow.addWidget(self.splitter)
 
-        # === Left Plot Area ===
         self.plotArea = QtWidgets.QFrame(self.splitter)
         self.plotArea.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.plotArea.setFrameShadow(QtWidgets.QFrame.Raised)
         self.plotArea.setObjectName("plotArea")
 
-        # === Right: Parameters panel (fixed header + scrollable body) ===
         self.rightContainer = QtWidgets.QWidget(self.splitter)
         self.rightLayoutOuter = QtWidgets.QVBoxLayout(self.rightContainer)
         self.rightLayoutOuter.setContentsMargins(8, 0, 8, 0)
         self.rightLayoutOuter.setSpacing(0)
 
-        # --- Header: Parameters + clear + Remove (always visible, not scrollable) ---
         self.headerLayout = QtWidgets.QHBoxLayout()
 
         self.parametersLabel = QtWidgets.QLabel(self.rightContainer)
@@ -59,7 +54,6 @@ class Ui_ArtifactRemove(object):
         self.paramsLine.setProperty("role", "section-divider")
         self.rightLayoutOuter.addWidget(self.paramsLine)
 
-        # --- Scrollable body (only scrolls if the panel is squeezed, e.g. by Results) ---
         self.scrollArea = QtWidgets.QScrollArea(self.rightContainer)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
@@ -77,7 +71,6 @@ class Ui_ArtifactRemove(object):
         self.scrollArea.setWidget(self.layoutWidget)
         self.rightLayoutOuter.addWidget(self.scrollArea)
 
-        # === Total Trials / Current Trial readout ===
         self.totalTrialsRow = QtWidgets.QHBoxLayout()
         self.totalTrialsLabel = QtWidgets.QLabel(self.layoutWidget)
         self.totalTrialsLabel.setObjectName("totalTrialsLabel")
@@ -108,8 +101,6 @@ class Ui_ArtifactRemove(object):
         self.currentTrialRow.addWidget(self.currentTrialValueBox)
         self.paramsLayout.addLayout(self.currentTrialRow)
 
-        # Kept for the plugin's existing status text (not shown in the reference layout,
-        # but the plugin logic still writes richer "Viewing Valid X/Y..." text into it).
         self.trial_status_label = QtWidgets.QLabel(self.layoutWidget)
         self.trial_status_label.setObjectName("trial_status_label")
         self.trial_status_label.setAlignment(QtCore.Qt.AlignCenter)
@@ -117,7 +108,6 @@ class Ui_ArtifactRemove(object):
         self.trial_status_label.setVisible(False)
         self.paramsLayout.addWidget(self.trial_status_label)
 
-        # === Mode ===
         self.modeLabel = QtWidgets.QLabel(self.layoutWidget)
         self.modeLabel.setObjectName("modeLabel")
         self.modeLabel.setProperty("variant", "subtitle")
@@ -139,7 +129,6 @@ class Ui_ArtifactRemove(object):
         self.mode_combo.setObjectName("mode_combo")
         self.paramsLayout.addWidget(self.mode_combo)
 
-        # === Points (two columns, side by side) ===
         self.pointsLabel = QtWidgets.QLabel(self.layoutWidget)
         self.pointsLabel.setObjectName("pointsLabel")
         self.pointsLabel.setProperty("variant", "subtitle")
@@ -177,7 +166,6 @@ class Ui_ArtifactRemove(object):
 
         self.paramsLayout.addLayout(self.pointsBodyRow)
 
-        # === Trials (navigation, at the bottom like the other Preprocessing panels) ===
         self.trialsLabel = QtWidgets.QLabel(self.layoutWidget)
         self.trialsLabel.setObjectName("trialsLabel")
         self.trialsLabel.setProperty("variant", "subtitle")
@@ -204,9 +192,8 @@ class Ui_ArtifactRemove(object):
 
         self.paramsLayout.addLayout(self.navigationLayout)
 
-        # R79: removing an artifact creates a derived set; this goes back to the original trials
         self.restore_button = QtWidgets.QPushButton(self.layoutWidget)
-        self.restore_button.setObjectName("trialNavButton")      # same outlined style as Previous / Next
+        self.restore_button.setObjectName("trialNavButton")
         self.restore_button.setMinimumHeight(32)
         self.paramsLayout.addWidget(self.restore_button)
 
@@ -214,15 +201,12 @@ class Ui_ArtifactRemove(object):
 
         self.splitter.setSizes([700, 300])
 
-        # --- Stretch configuration (responsive panel) ---
         self.splitter.setStretchFactor(0, 1)
         self.splitter.setStretchFactor(1, 0)
 
-        # --- Retranslate & connections ---
         self.retranslateUi(ArtifactRemove)
         QtCore.QMetaObject.connectSlotsByName(ArtifactRemove)
 
-        # --- Behavior ---
         self.mode_combo.addItems(["Interpolate Interval", "Cut From The Start"])
         self.point_a.setValidator(QtGui.QDoubleValidator())
         self.point_b.setValidator(QtGui.QDoubleValidator())

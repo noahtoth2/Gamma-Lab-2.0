@@ -29,12 +29,11 @@ def limites_color(Z, manual=False, vmin=0.0, vmax=1.0, por_defecto=None):
     if por_defecto is not None:
         return float(por_defecto[0]), float(por_defecto[1])
     with warnings.catch_warnings():
-        warnings.simplefilter("ignore", RuntimeWarning)       # todo NaN
+        warnings.simplefilter("ignore", RuntimeWarning)
         lo, hi = float(np.nanmin(Z)), float(np.nanmax(Z))
     if not (np.isfinite(lo) and np.isfinite(hi)):
         return 0.0, 1.0
     if hi <= lo:
-        # Un mapa plano: se abre un poco para que la escala tenga largo
         d = abs(lo) * 0.01 or 1.0
         return lo - d, hi + d
     return lo, hi

@@ -2,7 +2,6 @@ import numpy as np
 import pytest
 from pathlib import Path
 
-# --- Real pipeline imports (core app services & plugins) ---
 from core.services.fileio_service import FileIOService
 from core.filters import trials as tr
 from core.model.trial_dataset import TrialDataset
@@ -10,55 +9,31 @@ from core.plugins.meta import PluginMeta
 from plugins.analysis.frequency.psd.psd_plugin import Psd_plugin
 
 
-# ============================================================
-#                  GLOBAL CONFIG / TEST DATA
-# ============================================================
-
-# Base directory for test data files
 BASE_DIR = Path(__file__).resolve().parents[2] / "test" / "data"
 
-# Input ABF file
 ABF_PATH = BASE_DIR / "17308005.abf"
 
-# MATLAB reference CSV
 MATLAB_CSV = BASE_DIR / "psd_data_matlab.csv"
 
 
-# ============================================================
-#                 TRIALS DIVISION PARAMETERS
-# ============================================================
-
-# Channel where the signal of interest is stored
 TARGET_CHANNEL = 0
 
-# Channel used to detect stimulus onsets
 STIM_CHANNEL = 1
 
-# Threshold to detect a stimulus event
 THRESHOLD = 0.7
 
-# Time window around each stimulus (in seconds)
-T0 = -0.05     # Start time relative to stimulus
-T1 = 4.00      # End time relative to stimulus
+T0 = -0.05
+T1 = 4.00
 
-# How to decide the end of a trial
 END_MODE = "until_next_onset"
 
-# Expected number of stimuli per trial (sanity check inside filter)
 STIM_EXPECTED = 1
 
-# Inter-stimulus interval (used by the cutting logic)
 ISI = 0.0
 
-# Value used to pad trials if needed
 PAD_VALUE = 0.0
 
 
-# ============================================================
-#                 PSD / WELCH PARAMETERS
-# ============================================================
-
-# Default PSD parameters
 TARGET_FS = 1000.0
 WIN = "hamming"
 NPERSEG = 1024
@@ -69,25 +44,14 @@ F_LO = 0.0
 F_HI = 500.0
 
 
-# ============================================================
-#                 NUMERICAL COMPARISON PARAMETERS
-# ============================================================
+K_EXPECTED = 60
 
-# Expected number of columns (trials) in the PSD matrix
-K_EXPECTED = 60          # 60 trials → 60 columns
-
-# Minimum acceptable Pearson correlation per column (trial)
 MIN_CORR = 0.88
 
-# Fractional test parameters
-FRAC_MIN_PASS = 0.95     # At least 95% of points must be within tolerance
-FRAC_ATOL = 0.0001         # Absolute tolerance (adjust if too strict)
-FRAC_RTOL = 0.0         # Relative tolerance
+FRAC_MIN_PASS = 0.95
+FRAC_ATOL = 0.0001
+FRAC_RTOL = 0.0
 
-
-# ============================================================
-#           MATLAB CSV LOADING HELPER (PER-TRIAL PSD)
-# ============================================================
 
 def load_csv_matlab_psd(path: Path) -> np.ndarray:
     """
@@ -100,15 +64,10 @@ def load_csv_matlab_psd(path: Path) -> np.ndarray:
     M = np.asarray(M, dtype=np.float64)
 
     if M.ndim == 1:
-        # If for some reason it is 1D, treat as a single curve.
         M = M.reshape(-1, 1)
 
     return M
 
-
-# ============================================================
-#                    NUMPY HELPER FUNCTIONS
-# ============================================================
 
 def crop_rows_to_min(A: np.ndarray, B: np.ndarray):
     """
@@ -158,7 +117,6 @@ def diff_debug_report_fraction(A, B, within, tol_mat, label_a="APP", label_b="MA
     excess = np.full_like(diffs, np.nan, dtype=float)
     excess[over_mask] = diffs[over_mask] - tol_mat[over_mask]
 
-    # Worst violating point (ignoring NaNs).
     flat_idx = np.nanargmax(excess)
     r, c = np.unravel_index(flat_idx, excess.shape)
     worst_excess = float(excess[r, c])
@@ -166,16 +124,13 @@ def diff_debug_report_fraction(A, B, within, tol_mat, label_a="APP", label_b="MA
     worst_tol = float(tol_mat[r, c])
     va, vb = float(A[r, c]), float(B[r, c])
 
-    # Aggregated statistics by column (avoid all-NaN warnings).
     by_col_counts = np.nansum(over_mask, axis=0)
     with np.errstate(all="ignore", invalid="ignore"):
         by_col_maxexc = np.nanmax(excess, axis=0)
 
-    # Filter columns that actually have violations.
     cols = np.where(by_col_counts > 0)[0]
     topk = []
     if cols.size > 0:
-        # Sort by (#violations desc, max_excess desc).
         order = np.lexsort((-by_col_maxexc[cols], -by_col_counts[cols]))[::-1]
         for idx in order[:topk_cols]:
             cidx = int(cols[idx])
@@ -238,14 +193,11 @@ def assert_points_within_tolerance_fraction(
     B = np.asarray(B, dtype=float)
     A, B = crop_rows_to_min(A, B)
 
-    # Only evaluate points where both matrices are finite.
     valid = np.isfinite(A) & np.isfinite(B)
     total = int(np.sum(valid))
     if total == 0:
-        # Nothing to compare: silently accept.
         return
 
-    # Choose which matrix is used as "reference" in the tolerance formula.
     ref_mat = A if ref.upper() == "A" else B
     tol_mat = atol + rtol * np.abs(ref_mat)
 
@@ -255,10 +207,8 @@ def assert_points_within_tolerance_fraction(
     ratio = passed / float(total)
 
     if ratio >= min_pass_ratio:
-        # Enough points are within tolerance → test passes.
         return
 
-    # Build a detailed report to help debugging failures.
     lines = []
     lines.append(msg or "Fractional tolerance check failed")
     lines.append(f"[frac] shape {label_a}={A.shape}, {label_b}={B.shape}")
@@ -274,10 +224,6 @@ def assert_points_within_tolerance_fraction(
     )
     raise AssertionError("\n".join(lines))
 
-
-# ============================================================
-#                TEST FOR PSD PLUGIN
-# ============================================================
 
 class PsdDouble(Psd_plugin):
     """
@@ -310,10 +256,6 @@ class PsdDouble(Psd_plugin):
         self.vtk_view = None
 
 
-# ============================================================
-#                        FIXTURES
-# ============================================================
-
 @pytest.fixture(scope="class")
 def ds():
     """
@@ -323,7 +265,6 @@ def ds():
     fio = FileIOService()
     sd = fio.load_abf(str(ABF_PATH))
 
-    # Ensure we work with float64 for better numerical stability.
     sd.signals = sd.signals.astype(np.float64, copy=False)
     sd.time = sd.time.astype(np.float64, copy=False)
 
@@ -359,7 +300,7 @@ def app_psd(td):
     """
     plug = PsdDouble()
 
-    X = np.asarray(td.trials, dtype=np.float64)   # (Ns, T)
+    X = np.asarray(td.trials, dtype=np.float64)
     fs = float(td.sampling_rate)
 
     freq, power_all, fs_eff = plug._compute_psd(
@@ -372,7 +313,6 @@ def app_psd(td):
         int(NFFT),
         DETREND,
     )
-    # power_all: (Nf, K_trials)
 
     print(
         "APP PSD: freq.shape =",
@@ -398,11 +338,6 @@ def matlab_psd_matrix():
     return M
 
 
-# ============================================================
-#                   INTEGRATION TEST SUITE
-#          APP PSD per trial vs MATLAB Reference
-# ============================================================
-
 @pytest.mark.skipif(not ABF_PATH.exists(), reason="ABF file not found")
 @pytest.mark.skipif(not MATLAB_CSV.exists(), reason="MATLAB CSV not found")
 class TestPsdABFVsMatlab:
@@ -417,9 +352,6 @@ class TestPsdABFVsMatlab:
          absolute and relative tolerance.
     """
 
-    # --------------------------------------------------------
-    # Helper to match MATLAB orientation to the APP matrix
-    # --------------------------------------------------------
     def _orient_matlab_like_app(self, power_app, M):
         """
         Return M with the same orientation (Nf, K) as power_app.
@@ -433,19 +365,14 @@ class TestPsdABFVsMatlab:
         if M.shape[1] == Nf_app:
             return M.T
 
-        # Fallback: choose the orientation with larger number of rows
-        # as a best guess for the frequency dimension.
         return M if M.shape[0] >= M.shape[1] else M.T
 
-    # --------------------------------------------------------
-    # 1. Structure / length checks
-    # --------------------------------------------------------
     def test_shape_and_columns(self, app_psd, matlab_psd_matrix):
         """
         Both matrices must have K=60 columns (one per trial) and
         at least one frequency row.
         """
-        _, power_app = app_psd          # (Nf_app, K_app)
+        _, power_app = app_psd
         M_use = self._orient_matlab_like_app(power_app, matlab_psd_matrix)
 
         assert power_app.ndim == 2 and M_use.ndim == 2
@@ -457,9 +384,6 @@ class TestPsdABFVsMatlab:
         )
         assert power_app.shape[0] >= 1 and M_use.shape[0] >= 1
 
-    # --------------------------------------------------------
-    # 2. Correlation per column (trial)
-    # --------------------------------------------------------
     def test_correlation_by_column(self, app_psd, matlab_psd_matrix):
         """
         Check Pearson correlation per trial (column) with threshold
@@ -469,7 +393,6 @@ class TestPsdABFVsMatlab:
         _, power_app = app_psd
         M_use = self._orient_matlab_like_app(power_app, matlab_psd_matrix)
 
-        # We expect exactly 60 columns (trials).
         assert power_app.shape[1] == K_EXPECTED and M_use.shape[1] == K_EXPECTED
 
         C = corr_by_col(power_app, M_use)
@@ -489,9 +412,6 @@ class TestPsdABFVsMatlab:
             )
             pytest.fail(msg)
 
-    # --------------------------------------------------------
-    # 3. Pointwise comparison with tolerance (allows outliers)
-    # --------------------------------------------------------
     def test_pointwise_fraction_allowing_outliers(self, app_psd, matlab_psd_matrix):
         """
         Require that at least FRAC_MIN_PASS of valid points satisfy:
@@ -504,7 +424,6 @@ class TestPsdABFVsMatlab:
         _, power_app = app_psd
         M_use = self._orient_matlab_like_app(power_app, matlab_psd_matrix)
 
-        # We expect exactly 60 columns (trials).
         assert power_app.shape[1] == K_EXPECTED and M_use.shape[1] == K_EXPECTED
 
         A, B = crop_rows_to_min(power_app, M_use)

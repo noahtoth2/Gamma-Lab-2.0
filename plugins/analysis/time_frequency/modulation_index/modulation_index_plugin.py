@@ -18,7 +18,7 @@ from plugins.analysis.time_frequency.modulation_index.modulation_index_plugin_ui
 
 class Modulation_index_plugin(IPlugin):
     DEFAULTS = {
-        "sample_fq": 1000,     # en MATLAB MI lee ResampleFr, que vale 1000
+        "sample_fq": 1000,
         "fq_p1": 0.1,
         "fq_p2": 10.0,
         "p_step": 0.1,
@@ -28,8 +28,6 @@ class Modulation_index_plugin(IPlugin):
     }
 
     ALTO_COMODULOGRAMA = 420
-    # El fondo del lienzo. Se usa dos veces: al pintar el renderizador y como
-    # color de los NaN, que van transparentes y por tanto lo dejan ver.
     FONDO = (0.98, 0.98, 0.98)
 
     def __init__(self, meta):
@@ -44,9 +42,6 @@ class Modulation_index_plugin(IPlugin):
         self._ultimo = None
         self._contexto = {}
 
-    # =====================================================
-    # === Ciclo de vida
-    # =====================================================
     def process(self, data):
         if self.vtk_widget and self.vtk_widget.GetRenderWindow():
             interactor = self.vtk_widget.GetRenderWindow().GetInteractor()
@@ -76,7 +71,6 @@ class Modulation_index_plugin(IPlugin):
         return self.widget
 
     def _init_controls(self):
-        # Desde 1: con 0 no hay densidad a la que submuestrear
         self.ui.sampleFqSpinBox.setRange(1, 1_000_000)
         self.ui.sampleFqSpinBox.setSingleStep(100)
         for spin in (self.ui.fqP1SpinBox, self.ui.fqP2SpinBox,
@@ -105,9 +99,6 @@ class Modulation_index_plugin(IPlugin):
         self.ui.aStepSpinBox.setValue(d["a_step"])
         self._actualizar_selector_trial()
 
-    # =====================================================
-    # === Selector de trial
-    # =====================================================
     def _n_trials(self) -> int:
         try:
             trials = self.get_active_trials()
@@ -142,9 +133,6 @@ class Modulation_index_plugin(IPlugin):
             self.ui.trialSpinBox.setValue(nuevo)
             self.on_create_mi()
 
-    # =====================================================
-    # === Lógica principal
-    # =====================================================
     def on_create_mi(self):
         tasks = self.kernel.get_service("TaskService") if self.kernel else None
         if tasks is None:
@@ -273,14 +261,11 @@ class Modulation_index_plugin(IPlugin):
         if sin_datos > 0:
             hasta = r.frecuencias_amplitud[r.bandas_calculadas - 1]
             if r.limite_matlab:
-                # El tope de 178 de f_PAC_sing. La interfaz ya no lo usa: solo
-                # llega aqui desde las pruebas que reproducen la referencia.
                 avisos.append(
                     f"Solo se calcularon las primeras {r.bandas_calculadas} "
                     f"frecuencias de amplitud, hasta {hasta:g} Hz; las otras "
                     f"{sin_datos} quedan sin datos. Es el límite fijo de MATLAB.")
             else:
-                # Aqui el recorte no es de MATLAB: esas bandas no admiten filtro.
                 avisos.append(
                     f"Se calcularon {r.bandas_calculadas} de las "
                     f"{r.frecuencias_amplitud.size} frecuencias de amplitud, hasta "
@@ -290,8 +275,6 @@ class Modulation_index_plugin(IPlugin):
                     f"frecuencia de muestreo.")
 
         if r.ciclos_banda_lenta < cm.CICLOS_MINIMOS_FASE:
-            # MATLAB no comprueba esto; es un anadido para no leer ruido como
-            # acoplamiento. El calculo no cambia.
             p_minima = cm.CICLOS_MINIMOS_FASE / r.duracion_s if r.duracion_s > 0 else 0.0
             avisos.append(
                 f"El trial dura {r.duracion_s:.2f} s y la frecuencia de fase más baja "
@@ -306,9 +289,6 @@ class Modulation_index_plugin(IPlugin):
         if avisos:
             self.alerts.warning("\n\n".join(avisos), "Índice de modulación")
 
-    # =====================================================
-    # === VTK
-    # =====================================================
     def ensure_vtk(self):
         if self.vtk_widget is not None and self._context_view is not None:
             return
@@ -339,7 +319,6 @@ class Modulation_index_plugin(IPlugin):
         self._context_view.GetRenderer().SetBackground(*self.FONDO)
         self.vtk_widget.Initialize()
         self.vtk_widget.Start()
-        # Este panel no tiene menu contextual, que es quien suele instalarla
         CursorReadout.attach(self.vtk_widget, lambda: getattr(self, "_charts", []))
 
         self.vtk_menu = VTKContextMenu(
@@ -364,12 +343,6 @@ class Modulation_index_plugin(IPlugin):
         amplitud en la y."""
         datos = np.asarray(r.mi_norm, dtype=np.float32)
         finitos = datos[np.isfinite(datos)]
-        # Los NaN se quedan como NaN: mas abajo la tabla de color los pinta
-        # transparentes y dejan ver el fondo. Es lo que hace `imagesc` en
-        # f_ImageMatrix, y la diferencia no es estetica: rellenarlos con el
-        # minimo los disfrazaba de "acoplamiento bajo" cuando lo que pasa es
-        # que ahi no se calculo nada. Con los valores por defecto eso son 803
-        # de las 981 filas, el 82 % del grafico.
         vmin = float(finitos.min()) if finitos.size else 0.0
         vmax = float(finitos.max()) if finitos.size else 1.0
         if vmax <= vmin:
@@ -384,13 +357,10 @@ class Modulation_index_plugin(IPlugin):
         img.SetDimensions(n_fase, n_amp, 1)
         img.SetSpacing(paso_x, paso_y, 1.0)
         img.SetOrigin(float(fp[0]), float(fa[0]), 0.0)
-        # La fila 0 es la frecuencia de amplitud mas baja y VTK dibuja de abajo
-        # hacia arriba, asi que no hay que voltear nada.
         img.GetPointData().SetScalars(numpy_support.numpy_to_vtk(
             np.ascontiguousarray(datos).ravel(), deep=True, array_type=vtk.VTK_FLOAT))
         img.Modified()
 
-        # `jet`, el mismo mapa de colores que usa f_ImageMatrix
         lut = vtk.vtkColorTransferFunction()
         for fraccion, (rr, gg, bb) in zip(
                 (0.0, 0.125, 0.375, 0.625, 0.875, 1.0),
@@ -426,9 +396,6 @@ class Modulation_index_plugin(IPlugin):
             float(margen), float(alto - margen - self.ALTO_COMODULOGRAMA),
             float(ancho - 2 * margen), float(self.ALTO_COMODULOGRAMA)))
 
-    # =====================================================
-    # === Exportación
-    # =====================================================
     def _actualizar_menu(self):
         if self.vtk_menu is None:
             return
@@ -470,9 +437,6 @@ class Modulation_index_plugin(IPlugin):
             return
         self.vtk_menu.export_service.export_sections(self._secciones_resultado(), fmt)
 
-    # =====================================================
-    # === Guardar y restaurar el análisis en el proyecto
-    # =====================================================
     def get_analysis_params(self) -> dict:
         return {
             "sample_fq": self.ui.sampleFqSpinBox.value(),

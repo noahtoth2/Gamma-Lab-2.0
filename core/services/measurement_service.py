@@ -69,60 +69,42 @@ class SesionDeMedicion:
         self._debug = False
         self._PICK_RADIUS_PX = pick_radius_px
 
-        # Optional callback invoked whenever the measurement list changes
-        # (save/delete/clear), so the UI (e.g. the Results panel) can refresh live.
         self.on_change = None
 
-        # ---- interaction state ----
         self._state = 'idle'
-        self._current = None        # {'type','p1','p2'}
-        # Curve chosen with P1 when the chart has several (butterfly): extra ctx for the record
+        self._current = None
         self._picked_ctx = None
         self._down_pos = None
 
-        # ---- axes/ranges (frozen when choosing P1) ----
-        self._ref_axes = None       # {'x': axis, 'y': axis}
-        self._saved_ranges = None   # {'x': (min,max), 'y': (min,max)}
+        self._ref_axes = None
+        self._saved_ranges = None
         self._invert_y = False
 
-        # ---- data for snapping ----
-        self._ref_data = None       # {'xs': [...], 'ys': [...]}
+        self._ref_data = None
 
-        # ---- left-button actions (temporary suspension) ----
         self._saved_actions = {}
 
-        # ---- currently visible overlays ----
         self._overlay_enabled = True
-        # each item: {'id','chart','table','line_plot','points_plot'}
         self._overlays = []
 
-        # ---- current context (for filtering/repainting) ----
         self._context = {
-            "view_id": None,      # e.g., "trials", "erp", "fft", "psd", "average", "loader"
-            "graph_id": None,     # XY chart UID (if several in the view)
-            "trial_id": None,     # int or None
-            "channel_name": None, # "CA1", "Fp1", ...
-            "plugin": None,       # "trials", "erp", "fft", "psd", "open_signal", ...
-            "domain": None,       # "time" | "frequency" | "other"
+            "view_id": None,
+            "graph_id": None,
+            "trial_id": None,
+            "channel_name": None,
+            "plugin": None,
+            "domain": None,
         }
 
-        # line color palette
         self._palette = [
             (30, 144, 255), (220, 20, 60), (50, 205, 50), (255, 140, 0),
             (148, 0, 211), (0, 191, 255), (255, 99, 71), (0, 128, 128),
         ]
         self._palette_i = 0
 
-        # ---- every trial of the view (for the "all trials" measurements) ----
-        # Callable returning (time (Ns,), trials (Ns, T), trial_ids [0-based, len T]) or None.
-        # Each plot of a chart only keeps its own column, so the chart alone cannot
-        # give the other trials: the plugin that owns the view provides them here.
         self.trials_source = None
-        # 0-based trial ids drawn right now (None = no filter). Overlays of trials
-        # that are not on screen (another group of the butterfly) are not drawn.
         self.visible_trial_ids = None
 
-    # ====================== Context & navigation ======================
 
     def set_context(self, *, view_id=None, graph_id=None, trial_id=None, channel_name=None, plugin=None, domain=None):
         if view_id is not None:      self._context["view_id"] = view_id
@@ -135,7 +117,7 @@ class SesionDeMedicion:
     def _context_matches(self, curr, other) -> bool:
         for key in ("view_id", "graph_id", "trial_id", "channel_name", "plugin", "domain"):
             a = curr.get(key); b = other.get(key)
-            if a is None or b is None:    # compare only if both have it
+            if a is None or b is None:
                 continue
             if a != b:
                 return False
@@ -159,7 +141,6 @@ class SesionDeMedicion:
         Rebuild overlays for ALL measurements whose ctx metadata matches
         the current context.
         """
-        # clear current visuals
         self.clear_visual_overlays()
 
         ctx = self._context.copy()
@@ -209,7 +190,6 @@ class SesionDeMedicion:
             self._add_overlay_for_points(mid, m.get("p1"), m.get("p2"), render=render,
                                          color=self.SLOPE_COLOR if m.get("type") == "slope" else None)
 
-    # ====================== Public API (measurement) ======================
 
     def _dbg(self, *a):
         if self._debug:
@@ -281,7 +261,6 @@ class SesionDeMedicion:
         if self._state == 'idle':
             return
 
-        # click vs drag
         if self._down_pos is not None:
             dx = abs(sx - self._down_pos[0]); dy = abs(sy - self._down_pos[1])
             self._down_pos = None
@@ -300,7 +279,6 @@ class SesionDeMedicion:
             self._save_axes_ranges()
             self._load_reference_data_for_pick(ch)
 
-            # --- DEBUG ---
             rect = self._plot_rect_pixels()
             self._dbg("waiting_p1:",
                     "rect=", rect,
@@ -311,7 +289,6 @@ class SesionDeMedicion:
                 self.alerts.warning("There is no series data to select points.")
                 self.cancel(); return
 
-            # Several curves (butterfly, trials of a PSD...): take the one clicked, and keep it for P2
             self._picked_ctx = None
             series = self._series_of_chart(ch)
             if len(series) > 1:
@@ -352,7 +329,6 @@ class SesionDeMedicion:
             self._finalize()
             return
 
-    # ====================== several curves (butterfly) ======================
 
     def _overlay_plot_keys(self):
         keys = set()
@@ -430,14 +406,12 @@ class SesionDeMedicion:
                 if sp is None:
                     continue
                 d2 = (sp[0] - sx_click) ** 2 + (sp[1] - sy_click) ** 2
-                # On a tie the later curve wins: it is the one drawn on top (the average)
                 if best_d2 is None or d2 <= best_d2:
                     best_d2 = d2; best = (s, (float(xs[idx]), float(ys[idx])))
         if best is not None and best_d2 <= self._PICK_RADIUS_PX ** 2:
             return best
         return None
 
-    # ====================== axes/ranges & transforms ======================
 
     def _get_current_ranges(self):
         """Always read current chart ranges (after zoom/pan)."""
@@ -493,7 +467,6 @@ class SesionDeMedicion:
             return None
         x_min_px, x_max_px, y_min_px, y_max_px = rect
 
-        # Prefer live chart ranges; use saved as fallback
         rng = self._get_current_ranges() or self._saved_ranges
         if rng is None:
             return None
@@ -527,7 +500,6 @@ class SesionDeMedicion:
         if sx < x_min_px or sx > x_max_px or sy < y_min_px or sy > y_max_px:
             return None
 
-        # Prefer live chart ranges; use saved as fallback
         rng = self._get_current_ranges() or self._saved_ranges
         if rng is None:
             return None
@@ -547,12 +519,10 @@ class SesionDeMedicion:
             y_val = y_min + (y_max - sy) * (y_max - y_min) / dyp
         return float(x_val), float(y_val)
 
-    # ====================== data for snapping ======================
 
     def _load_reference_data_for_pick(self, chart):
         print("\n[MEAS][_load_reference_data_for_pick] >>>")
 
-        # 1) Reference plot
         ref_plot = None
         try:
             n = chart.GetNumberOfPlots()
@@ -565,7 +535,6 @@ class SesionDeMedicion:
             if pl is not None:
                 ref_plot = pl
                 break
-        # On a butterfly, the 2-point measurements are taken on the average curve
         for i in range(n):
             pl = chart.GetPlot(i)
             try:
@@ -578,7 +547,6 @@ class SesionDeMedicion:
             self._ref_data = None
             return
 
-        # 2) Table
         try:
             table = tabla_de(ref_plot)
         except Exception:
@@ -587,7 +555,6 @@ class SesionDeMedicion:
             self._ref_data = None
             return
 
-        # Utilities
         def _col_by_name(tbl, name: str):
             if not name:
                 return None
@@ -596,7 +563,6 @@ class SesionDeMedicion:
             except Exception:
                 return None
 
-        # Columns dump (debug)
         try:
             ncols = table.GetNumberOfColumns()
         except Exception:
@@ -610,7 +576,6 @@ class SesionDeMedicion:
                 cols.append(f"col{c}?")
         print(f"[MEAS] columns={cols}")
 
-        # Plot label & context
         try:
             lbl = ref_plot.GetLabel() or ""
         except Exception:
@@ -619,7 +584,6 @@ class SesionDeMedicion:
         ctx_tid = ctx.get("trial_id", None)
         print(f"[MEAS] ctx.trial_id={ctx_tid}  plot.label='{lbl}'")
 
-        # 3) X selection: common time names, else column 0
         x_candidates = ["time", "Time (s)", "Time", "t", "x"]
         x_arr = None
         x_src = None
@@ -643,11 +607,9 @@ class SesionDeMedicion:
                 return
         print(f"[MEAS] X picked -> name='{x_arr.GetName() if hasattr(x_arr,'GetName') else '?'}' src={x_src}")
 
-        # 4) Y selection
         y_arr = None
         y_reason = None
 
-        # (A) Trials path: use trial_{tid+1} when trial_id is provided
         if ctx_tid is not None and isinstance(ctx_tid, int) and ctx_tid >= 0:
             guess = f"trial_{ctx_tid+1}"
             try:
@@ -659,7 +621,6 @@ class SesionDeMedicion:
                 pass
             print(f"[MEAS] Y(A) context guess -> {y_reason or 'no-match'}")
 
-        # (B) Non-trials (or if (A) failed): pick **second column** (index 1)
         if y_arr is None:
             if ncols < 2:
                 print("[MEAS] ERROR: expected at least 2 columns (time + series).")
@@ -674,7 +635,6 @@ class SesionDeMedicion:
                 return
         print(f"[MEAS] Y picked -> name='{y_arr.GetName() if hasattr(y_arr,'GetName') else '?'}' reason={y_reason}")
 
-        # 5) Build ref_data using min length
         try:
             nrows = min(x_arr.GetNumberOfTuples(), y_arr.GetNumberOfTuples())
         except Exception as e:
@@ -689,10 +649,8 @@ class SesionDeMedicion:
                 xs.append(float(x_arr.GetValue(i)))
                 ys.append(float(y_arr.GetValue(i)))
             except Exception:
-                # skip non-convertible rows
                 continue
 
-        # Sort by X and minimally de-duplicate
         pairs = sorted(zip(xs, ys), key=lambda t: t[0])
         xs2, ys2, last = [], [], None
         for x, y in pairs:
@@ -710,52 +668,50 @@ class SesionDeMedicion:
 
     def _pick_nearest_data_point(self, sx_click, sy_click):
         if not self._ref_data or not self._ref_data.get('xs'):
-            self._dbg("pick: missing ref_data")  # DEBUG
+            self._dbg("pick: missing ref_data")
             return None
 
         rect = self._plot_rect_pixels()
         if rect is None:
-            self._dbg("pick: rect=None")  # DEBUG
+            self._dbg("pick: rect=None")
             return None
         x_min_px, x_max_px, y_min_px, y_max_px = rect
         if not (x_min_px <= sx_click <= x_max_px and y_min_px <= sy_click <= y_max_px):
-            self._dbg(f"pick: click outside rect {sx_click,sy_click} vs {rect}")  # DEBUG
+            self._dbg(f"pick: click outside rect {sx_click,sy_click} vs {rect}")
             return None
 
         guess = self._screen_to_plot(sx_click, sy_click)
         if guess is None:
-            self._dbg("pick: screen_to_plot=None")  # DEBUG
+            self._dbg("pick: screen_to_plot=None")
             return None
         xg, yg = guess
-        self._dbg(f"pick: guess plot=({xg:.6f},{yg:.6f})")  # DEBUG
+        self._dbg(f"pick: guess plot=({xg:.6f},{yg:.6f})")
 
         xs = self._ref_data['xs']; ys = self._ref_data['ys']
         import bisect
         i = bisect.bisect_left(xs, xg)
         cand_idx = [max(0, i-2), max(0, i-1), min(len(xs)-1, i), min(len(xs)-1, i+1)]
         seen=set(); cand_idx=[c for c in cand_idx if not (c in seen or seen.add(c))]
-        self._dbg("pick: cand_idx=", cand_idx)  # DEBUG
+        self._dbg("pick: cand_idx=", cand_idx)
 
         best = None; best_d2 = None
         for idx in cand_idx:
             sp = self._plot_to_screen(xs[idx], ys[idx])
             if sp is None:
-                self._dbg(f"pick: idx={idx} sp=None")  # DEBUG
+                self._dbg(f"pick: idx={idx} sp=None")
                 continue
             sx, sy = sp
             d2 = (sx - sx_click)**2 + (sy - sy_click)**2
-            self._dbg(f"pick: idx={idx} data=({xs[idx]:.6f},{ys[idx]:.6f}) -> screen=({sx:.1f},{sy:.1f}) d2={d2:.1f}")  # DEBUG
+            self._dbg(f"pick: idx={idx} data=({xs[idx]:.6f},{ys[idx]:.6f}) -> screen=({sx:.1f},{sy:.1f}) d2={d2:.1f}")
             if best_d2 is None or d2 < best_d2:
                 best_d2 = d2; best = (xs[idx], ys[idx])
 
         thr = self._PICK_RADIUS_PX * self._PICK_RADIUS_PX
-        self._dbg(f"pick: best_d2={best_d2} thr={thr}")  # DEBUG
+        self._dbg(f"pick: best_d2={best_d2} thr={thr}")
         if best is not None and best_d2 <= thr:
             return best
         return None
 
-
-    # ====================== persistence ======================
 
     def _save_measurement(self, result, p1, p2, override_ctx=None):
         t = str(result.get("type", "measure"))
@@ -814,9 +770,6 @@ class SesionDeMedicion:
         return meas_id
 
 
-
-    # ====================== measurement finalization ======================
-
     def _finalize(self):
         cur = self._current or {}
         if not (cur.get('p1') and cur.get('p2')):
@@ -872,7 +825,6 @@ class SesionDeMedicion:
         except Exception:
             pass
 
-    # ---- one trace ----
 
     def _finalize_slope_single(self, x1, y1, x2, y2):
         result = two_point_metrics((x1, y1), (x2, y2), kind='slope')
@@ -948,7 +900,7 @@ class SesionDeMedicion:
         except Exception:
             pass
 
-    DIFF_COLOR = (128, 0, 200)      # difference: point of maximum derivative and its tangent
+    DIFF_COLOR = (128, 0, 200)
 
     @staticmethod
     def _difference_overlay_fields(result):
@@ -966,7 +918,6 @@ class SesionDeMedicion:
         self._load_reference_data_for_pick(ch)
         return bool(self._ref_data and self._ref_data.get('xs'))
 
-    # ---- every trial ----
 
     def _all_trials_data(self):
         """(t, M (Ns, T), ids 0-based) from the view, or from the chart columns as fallback."""
@@ -983,7 +934,6 @@ class SesionDeMedicion:
                 M = np.asarray(M, dtype=np.float64)
                 if M.ndim == 2 and M.shape[0] == t.size and M.shape[1] == len(ids):
                     return t, M, [int(i) for i in ids]
-        # Fallback: whatever trial_k columns the chart's plots hold
         ch = self.get_active_chart()
         if not ch:
             return None
@@ -1090,10 +1040,9 @@ class SesionDeMedicion:
         except Exception:
             pass
 
-    # ---- drawing of an "all trials" batch ----
 
-    MAX_TRIAL_LINES = 12      # more lines than this on one chart cannot be read
-    SLOPE_COLOR = (220, 0, 0)  # slope lines are red; the butterfly average is black
+    MAX_TRIAL_LINES = 12
+    SLOPE_COLOR = (220, 0, 0)
 
     def _trial_colors(self, chart):
         """trial_id (0-based) -> (r, g, b) of the curve labelled 'Trial k' on the chart."""
@@ -1162,7 +1111,6 @@ class SesionDeMedicion:
                     self._add_overlay_for_points(m.get("id"), m.get("p1"), m.get("p2"),
                                                  color=color, width=2.0, dashed=False, markers=False,
                                                  batch=batch, render=False)
-        # P1 / P2 once for the whole batch
         lo, hi = self._y_span(ch, recs)
         for tag, x in (("x1", recs[0]["p1"][0]), ("x2", recs[0]["p2"][0])):
             self._add_overlay_for_points(f"batch:{batch}:{tag}", (x, lo), (x, hi),
@@ -1170,8 +1118,6 @@ class SesionDeMedicion:
                                          batch=batch, render=False)
         return draw_lines
 
-
-    # ====================== left-button blocking ======================
 
     def _suspend_left_actions(self, suspend: bool):
         ch = self.get_active_chart()
@@ -1198,7 +1144,6 @@ class SesionDeMedicion:
                     pass
             self._saved_actions = {}
 
-    # ====================== OVERLAYS ======================
 
     def _vtk_has_set_visible(self, plot) -> bool:
         return hasattr(plot, "SetVisible")
@@ -1211,7 +1156,6 @@ class SesionDeMedicion:
                 plot.SetVisible(bool(visible)); return
             except Exception:
                 pass
-        # fallback
         if visible:
             try: chart.AddPlotInstance(plot)
             except Exception: pass
@@ -1282,7 +1226,7 @@ class SesionDeMedicion:
         line_plot.SetUseIndexForXSeries(False)
         if right_axis:
             try:
-                ch.SetPlotCorner(line_plot, 1)          # bottom X + right Y
+                ch.SetPlotCorner(line_plot, 1)
                 ax_r = ch.GetAxis(vtk.vtkAxis.RIGHT)
                 ax_r.SetVisible(True)
                 ax_r.SetTitle("dy/dx")
@@ -1293,7 +1237,6 @@ class SesionDeMedicion:
         except Exception:
             pass
 
-        # P1 / P2 markers, always on the signal axes
         points_plot = None
         if markers:
             points_plot = ch.AddPlot(vtk.vtkChart.POINTS)
@@ -1306,7 +1249,6 @@ class SesionDeMedicion:
             points_plot.SetInputData(tbl_markers, 0, 1)
             points_plot.SetUseIndexForXSeries(False)
 
-        # Measurement lines are not data: they must not stretch the auto-fitted Y axis
         for pl in (line_plot, points_plot):
             if pl is not None:
                 try:
@@ -1350,7 +1292,6 @@ class SesionDeMedicion:
             pass
         return True
 
-    # ====================== Public deletions ======================
 
     def remove_last_measurement(self):
         if not self._overlays:
@@ -1358,7 +1299,6 @@ class SesionDeMedicion:
         last = self._overlays[-1]
         batch = last.get("batch")
         if batch:
-            # an "all trials" measurement is deleted as a whole (every trial + its two lines)
             for ov in [o for o in self._overlays if o.get("batch") == batch]:
                 self._overlays.remove(ov)
                 self._detach_overlay(ov)
@@ -1387,9 +1327,7 @@ class SesionDeMedicion:
         return ok
 
     def clear_all_measurements(self):
-        # limpia visual
         self.clear_visual_overlays()
-        # limpia datastore
         self.ds_set("measurements", [])
         self._notify_change()
         return True
@@ -1411,7 +1349,7 @@ class SesionDeMedicion:
         if self._state != 'idle':
             self.cancel() 
             
-    def _dump_chart_state(self, tag=""):  # REMOVE WHEN LOGGING NO LONGER NEEDED
+    def _dump_chart_state(self, tag=""):
         ch = self.get_active_chart()
         if not ch:
             print(f"[MEAS] {tag} chart=None"); return
@@ -1419,7 +1357,6 @@ class SesionDeMedicion:
             nplots = ch.GetNumberOfPlots()
         except Exception:
             nplots = -1
-        # axes
         try:
             ax_x = ch.GetAxis(vtk.vtkAxis.BOTTOM)
             ax_y = ch.GetAxis(vtk.vtkAxis.LEFT)
@@ -1427,7 +1364,6 @@ class SesionDeMedicion:
             yr = (ax_y.GetMinimum(), ax_y.GetMaximum())
         except Exception:
             xr = yr = None
-        # chart rect in pixels
         try:
             p1 = ch.GetPoint1(); p2 = ch.GetPoint2()
             rect = (p1.GetX(), p2.GetX(), p1.GetY(), p2.GetY())
@@ -1436,7 +1372,6 @@ class SesionDeMedicion:
 
         print(f"[MEAS] {tag} plots={nplots} xr={xr} yr={yr} rect={rect}")
 
-        # Quick list of labels/rows to see which plots exist
         try:
             for i in range(nplots):
                 pl = ch.GetPlot(i)
@@ -1453,7 +1388,6 @@ class SesionDeMedicion:
                     rows = tbl.GetNumberOfRows() if tbl else None
                 except Exception:
                     pass
-                # type (LINE/POINTS) if available
                 ptype = None
                 try:
                     ptype = pl.GetPlotType()
@@ -1478,7 +1412,6 @@ class SesionDeMedicion:
         return amplitude_in_window(xs, ys, x1, x2)
     
     def _nearest_index(self, x_target):
-        # requires self._ref_data loaded (sorted xs)
         xs = self._ref_data.get('xs') if self._ref_data else None
         if not xs:
             return None
@@ -1486,7 +1419,6 @@ class SesionDeMedicion:
         cand = []
         if i > 0: cand.append(i-1)
         if i < len(xs): cand.append(i)
-        # choose the closest in X
         best_i, best_d = None, None
         for j in cand:
             d = abs(xs[j] - x_target)
@@ -1528,11 +1460,8 @@ class SesionDeMedicion:
             y1 = float(col.GetValue(i1))
             y2 = float(col.GetValue(i2))
 
-            # standard "slope" metric using utilities
             res = two_point_metrics((t1, y1), (t2, y2), kind='slope')
-            # add useful metadata
             res["trial_name"] = name
-            # map trial_k (1-based) to trial_id (0-based)
             try:
                 k = int(name.split("_")[1])
                 trial_id_zero_based = k - 1

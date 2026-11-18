@@ -105,12 +105,9 @@ class CursorReadout(QObject):
         self._overlay = None
         self._last_text = None
 
-        # Prioridad baja: corre despues de los observadores de la medicion y
-        # no devuelve nada, asi que no interfiere con ellos.
         self._observer = observar(vtk_widget, "MouseMoveEvent", self._on_mouse_move, -1.0)
         vtk_widget.installEventFilter(self)
 
-    # ---------- eventos ----------
     def _on_mouse_move(self, obj, evt):
         try:
             sx, sy = obj.GetEventPosition()
@@ -125,7 +122,6 @@ class CursorReadout(QObject):
             x_title, y_title = axis_titles(chart)
             self._show(xy, x_title, y_title, plot_rect_pixels(chart))
         except Exception:
-            # Nunca romper la interaccion del grafico por la lectura
             self._show(None)
 
     def eventFilter(self, obj, event):
@@ -142,10 +138,8 @@ class CursorReadout(QObject):
             return []
         if not isinstance(charts, (list, tuple)):
             charts = [charts]
-        # Solo graficos con ejes (la brujula de PAC es un vtkPythonItem)
         return [c for c in charts if c is not None and hasattr(c, "GetAxis") and hasattr(c, "GetPoint1")]
 
-    # ---------- salida ----------
     def _status_label(self):
         try:
             win = self._widget.window()
@@ -173,7 +167,6 @@ class CursorReadout(QObject):
             lbl = QLabel(self._widget)
             lbl.setObjectName("cursorOverlayLabel")
             lbl.setAttribute(Qt.WA_TransparentForMouseEvents, True)
-            # Nativa para quedar por encima del render OpenGL de VTK
             lbl.setAttribute(Qt.WA_NativeWindow, True)
             lbl.hide()
             self._overlay = lbl

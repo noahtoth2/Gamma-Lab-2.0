@@ -1,4 +1,3 @@
-# ui/vtk_context_menu.py
 from PyQt5.QtWidgets import QMenu, QApplication
 from PyQt5.QtCore import Qt
 from vtk import vtkChartXY, vtkChart, vtkAxis
@@ -9,7 +8,7 @@ from core.utils.cursor_readout import CursorReadout
 from core.utils.vtk_observers import observar, _estado
 from core.utils.submuestreo import restablecer_vista
 
-EJE_X, EJE_Y = vtkAxis.BOTTOM, vtkAxis.LEFT   # SetAxisZoom recibe el eje de VTK: LEFT es 0 y BOTTOM es 1
+EJE_X, EJE_Y = vtkAxis.BOTTOM, vtkAxis.LEFT
 
 
 class VTKContextMenu:
@@ -20,7 +19,7 @@ class VTKContextMenu:
     - Delegation to services: ExportService and MeasurementService
     - Extended context for measurements (view_id, trial_id, channel_name, plugin, domain, graph_id)
     """
-    kernel = None   # se asigna al arrancar (main.py): de él salen los servicios compartidos (R69)
+    kernel = None
 
     _CLICK_EPS = 8
     _PICK_RADIUS_PX = 20
@@ -46,32 +45,27 @@ class VTKContextMenu:
         self.plugin_name = plugin_name
 
         self._measurements_enabled = bool(measurements_enabled)
-        self._measure_scope = dict(measure_scope or {})   # defensive copy
+        self._measure_scope = dict(measure_scope or {})
 
         self.custom_actions = []
         self._datastore = None
         self._debug = True
 
-        # Un widget tiene un solo menu vivo: el que lo reemplaza retira al anterior (R58)
         anterior = getattr(self.vtk_widget, "_gamma_menu", None)
         if anterior is not None and anterior is not self:
             anterior.liberar()
         self.vtk_widget._gamma_menu = self
 
-        # Wire zoom/mouse
         antes = len(_estado(self.vtk_widget)["items"])
         self._install_wheel_shortcuts()
         self._install_mouse_observers()
         self._observadores = _estado(self.vtk_widget)["items"][antes:]
 
-        # X/Y readout under the cursor (one observer per widget, even if the
-        # plugin recreates this menu on every render)
         try:
             CursorReadout.attach(self.vtk_widget, self._get_charts)
         except Exception as e:
             self._log("CursorReadout attach error:", e)
 
-        # Zoom con la rueda: en las señales, solo el tiempo (ver _ejes_del_zoom)
         for ch in self._get_charts():
             if ch:
                 ch.SetZoomWithMouseWheel(True)
@@ -79,11 +73,9 @@ class VTKContextMenu:
                 ch.SetAxisZoom(EJE_X, x)
                 ch.SetAxisZoom(EJE_Y, y)
 
-        # Context menu
         self.vtk_widget.setContextMenuPolicy(Qt.CustomContextMenu)
         self.vtk_widget.customContextMenuRequested.connect(self.show_menu)
 
-        # Servicios compartidos del núcleo (R69): una sola instancia de cada uno
         def _get_names():
             return (self.signal_name or "signal",
                     self.channel_name or None,
@@ -123,7 +115,6 @@ class VTKContextMenu:
         if getattr(self.vtk_widget, "_gamma_menu", None) is self:
             self.vtk_widget._gamma_menu = None
 
-    # ---------- utils ----------
     def _log(self, *args):
         if self._debug:
             print(*args)
@@ -148,7 +139,6 @@ class VTKContextMenu:
         graficos = self._get_charts()
         return graficos[0] if graficos else None
 
-    # ---------- public setters ----------
     def set_signal_name(self, name):
         self.signal_name = name
 
@@ -212,7 +202,6 @@ class VTKContextMenu:
         except Exception:
             pass
 
-    # ---------- wheel ----------
     def _install_wheel_shortcuts(self):
         old_wheel_event = self.vtk_widget.wheelEvent
         self._rueda_previa = old_wheel_event
@@ -228,11 +217,6 @@ class VTKContextMenu:
                 ch.SetAxisZoom(EJE_Y, y)
                 self._ajuste_de(ch, x and not y)
             old_wheel_event(event)
-            # Sobre el área de dibujo de un gráfico la rueda es zoom: se acepta el
-            # evento. Si queda sin aceptar, Qt se lo pasa al contenedor, y PAC (que
-            # apila sus paneles en un QScrollArea) bajaba la página mientras hacía
-            # zoom: el gráfico se iba de la vista. Fuera de los gráficos —los
-            # huecos entre paneles, la brújula— la rueda sigue moviendo la página.
             if self._grafico_bajo(event) is not None:
                 event.accept()
             else:
@@ -247,7 +231,7 @@ class VTKContextMenu:
             ratio = getattr(type(self.vtk_widget), "_getPixelRatio", None)
             escala = float(ratio()) if callable(ratio) else 1.0
             x = pos.x() * escala
-            y = (self.vtk_widget.height() - pos.y() - 1) * escala      # VTK cuenta desde abajo
+            y = (self.vtk_widget.height() - pos.y() - 1) * escala
         except Exception:
             return None
         for ch in self._get_charts():
@@ -290,7 +274,6 @@ class VTKContextMenu:
         else:
             ajuste.activo = False
 
-    # ---------- menu ----------
     def add_action(self, text, callback):
         self.custom_actions.append((text, callback))
 
@@ -306,14 +289,12 @@ class VTKContextMenu:
     def show_menu(self, pos):
         menu = QMenu()
 
-        # Zoom
         zoom_menu = menu.addMenu("Zoom")
         zoom_menu.addAction("Horizontal (X)", lambda: self.set_zoom_mode("x"))
         zoom_menu.addAction("Vertical (Y)",   lambda: self.set_zoom_mode("y"))
         zoom_menu.addAction("Both axes (X+Y)", lambda: self.set_zoom_mode("xy"))
         zoom_menu.addAction("Reset view", self.reset_zoom)
 
-        # Measurements
         measure_menu = menu.addMenu("Measurements")
         can_measure = self._measurements_enabled and self._can_measure_current_chart()
         idle = self.measure_service.state == 'idle'
@@ -340,12 +321,11 @@ class VTKContextMenu:
         act_delete_all = measure_menu.addAction("Delete ALL measurements", self.measure_service.clear_all_measurements)
         act_delete_all.setEnabled(can_measure)
 
-        # Export
         menu.addSeparator()
         export_img_menu = menu.addMenu("Export as image")
         export_img_menu.addAction("png",  lambda: self.export_service.export_image("png"))
         export_img_menu.addAction("jpg",  lambda: self.export_service.export_image("jpg"))
-        export_img_menu.addAction("jpeg", lambda: self.export_service.export_image("jpeg"))  # fix: 'jpegpg' -> 'jpeg'
+        export_img_menu.addAction("jpeg", lambda: self.export_service.export_image("jpeg"))
         export_img_menu.addAction("bmp",  lambda: self.export_service.export_image("bmp"))
         export_img_menu.addAction("tiff", lambda: self.export_service.export_image("tiff"))
         export_img_menu.addSeparator()
@@ -357,7 +337,6 @@ class VTKContextMenu:
         export_table_menu.addAction("json", lambda: self.export_service.export_table("json"))
         export_table_menu.addAction("xlsx", lambda: self.export_service.export_table("xlsx"))
 
-        # Acciones personalizadas
         if self.custom_actions:
             menu.addSeparator()
             for text, cb in self.custom_actions:
@@ -365,14 +344,12 @@ class VTKContextMenu:
 
         menu.exec_(self.vtk_widget.mapToGlobal(pos))
 
-    # ---------- export ----------
     def export_image(self, fmt: str, filename: str = None):
         self.export_service.export_image(fmt, filename)
 
     def export_table(self, fmt: str, filename: str = None):
         self.export_service.export_table(fmt, filename)
 
-    # ---------- zoom ----------
     def set_zoom_mode(self, mode):
         """Modo de la rueda elegido en el menú; dura hasta que el plugin rehace el menú."""
         self._modo_zoom = mode
@@ -385,7 +362,6 @@ class VTKContextMenu:
                 ch.SetAxisZoom(EJE_X, False); ch.SetAxisZoom(EJE_Y, True)
             elif mode == "xy":
                 ch.SetAxisZoom(EJE_X, True);  ch.SetAxisZoom(EJE_Y, True)
-            # «Horizontal (X)»: el eje Y sigue a los datos. Con Y o X+Y lo maneja el usuario.
             self._ajuste_de(ch, mode == "x")
 
     def reset_zoom(self):
@@ -394,7 +370,7 @@ class VTKContextMenu:
             if ajuste is not None:
                 ajuste.restaurar()
             try:
-                restablecer_vista(ch)   # también cuando el zoom dejó las series recortadas al tramo visible
+                restablecer_vista(ch)
             except AttributeError:
                 pass
         try:
@@ -437,7 +413,6 @@ class VTKContextMenu:
         except Exception:
             pass
 
-    # ---------- eventos mouse ----------
     def _install_mouse_observers(self):
         observar(self.vtk_widget, "LeftButtonPressEvent", self._on_left_press, 1.0)
         observar(self.vtk_widget, "LeftButtonReleaseEvent", self._on_left_release, 1.0)
@@ -460,7 +435,6 @@ class VTKContextMenu:
             return
         return 1
 
-    # ---------- hooks/contexto ----------
     def rebuild_measurement_overlays(self):
         if hasattr(self, "measure_service") and self.measure_service:
             self.measure_service.rebuild_overlays_for_current_context()

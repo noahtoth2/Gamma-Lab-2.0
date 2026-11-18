@@ -237,9 +237,6 @@ def sale_del_programa():
 
 
 def test_systemexit_en_la_tarea_no_bloquea_la_cola(qt_app):
-    # SystemExit hereda de BaseException, no de Exception. Hasta el 30 de
-    # septiembre de 2026 se escapaba: la tarea no emitia ninguna senal y la
-    # siguiente nunca arrancaba.
     svc = TaskService()
     rec = Recorder(svc.submit(sale_del_programa, owner="p1"))
     rec2 = Recorder(svc.submit(suma, owner="p2", a=4, b=4))
@@ -275,11 +272,6 @@ print(len(hechas), len(svc._threads))
 
 
 def test_muchas_tareas_cortas_no_tumban_la_aplicacion():
-    # Hasta el 30 de septiembre de 2026 el servicio soltaba cada QThread apenas
-    # llegaba su resultado, a veces antes de que el hilo saliera, y Qt abortaba
-    # el proceso ("QThread: Destroyed while thread is still running"). Con 3.000
-    # tareas pasaba en 13 de 20 corridas. Corre en un proceso aparte para que,
-    # si vuelve, falle esta prueba y no se caiga toda la sesion de pytest.
     n = 10_000
     env = dict(os.environ, QT_FORCE_STDERR_LOGGING="1")
     r = subprocess.run([sys.executable, "-c", _MUCHAS_TAREAS, str(n)],

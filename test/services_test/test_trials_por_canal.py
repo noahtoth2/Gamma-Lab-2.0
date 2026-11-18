@@ -45,9 +45,6 @@ def trials_de(canal, indice, semilla):
         onsets_s=[1.0, 2.0, 3.0, 4.0])
 
 
-# ============================================================
-#   Pedir por nombre
-# ============================================================
 def test_los_dos_canales_se_guardan_y_los_dos_se_pueden_pedir():
     ds = señal()
     ca1, in7 = trials_de("CA1", 0, 1), trials_de("IN 7", 1, 2)
@@ -94,9 +91,6 @@ def test_regenerar_un_canal_no_borra_el_otro():
     assert len(ds.get_all_trials_datasets()) == 2
 
 
-# ============================================================
-#   Sin nombre: lo de siempre, que no se puede romper
-# ============================================================
 def test_sin_nombre_sigue_devolviendo_el_ultimo_canal():
     ds = señal()
     ds.add_trial_dataset(trials_de("CA1", 0, 1))
@@ -125,9 +119,6 @@ def test_sin_trials_devuelve_none_con_y_sin_nombre():
     assert ds.get_active_trials(ARCHIVO, "CA1") is None
 
 
-# ============================================================
-#   Los descartes siguen siendo por canal
-# ============================================================
 def test_los_descartes_de_un_canal_no_tocan_al_otro():
     ds = señal()
     ds.add_trial_dataset(trials_de("CA1", 0, 1))
@@ -156,9 +147,6 @@ def test_la_cache_no_mezcla_los_dos_canales():
     assert ds.get_active_trials(ARCHIVO, "IN 7").trials.shape[1] == T
 
 
-# ============================================================
-#   El acceso desde un plugin
-# ============================================================
 class _PluginDePrueba(IPlugin):
     """Lo mínimo para instanciar IPlugin: los tres métodos abstractos vacíos."""
     def stop(self): pass

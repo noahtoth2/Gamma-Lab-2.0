@@ -87,7 +87,7 @@ def test_si_el_usuario_vuelve_antes_no_se_libera(qapp):
     raiz, (v,) = _modulo()
     stub = _ventana_principal(raiz, libera=True)
     MainWindow.clear_plugin_area(stub)
-    stub.active_plugin_widget = raiz        # volvio al modulo antes de que corriera
+    stub.active_plugin_widget = raiz
     qapp.processEvents()
     assert v.finalizada == 0
 

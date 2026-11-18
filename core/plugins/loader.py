@@ -14,7 +14,7 @@ def _ensure_root_on_path() -> None:
     Add the project root to sys.path so imports like `interfaces`
     work when loading modules by path.
     """
-    root = Path(__file__).resolve().parents[2]  # .../gamma-lab-desktop-app
+    root = Path(__file__).resolve().parents[2]
     sroot = str(root)
     if sroot not in sys.path:
         sys.path.insert(0, sroot)
@@ -39,10 +39,8 @@ def _import_class_from_dir(dirpath: Path, class_name: str) -> Type[IPlugin]:
     _ensure_root_on_path()
 
     candidates: List[Path] = []
-    # 1) Priority: plugin.py if present
     if (dirpath / "plugin.py").exists():
         candidates.append(dirpath / "plugin.py")
-    # 2) Any other .py in the folder (except __init__.py)
     for p in dirpath.glob("*.py"):
         if p.name in ("plugin.py", "__init__.py"):
             continue
@@ -51,7 +49,6 @@ def _import_class_from_dir(dirpath: Path, class_name: str) -> Type[IPlugin]:
     last_err = None
     for pyfile in candidates:
         try:
-            # Unique module name to avoid collisions
             mod_name = f"plg_{dirpath.name}_{pyfile.stem}"
             spec = importlib.util.spec_from_file_location(mod_name, pyfile)
             if not spec or not spec.loader:
@@ -75,10 +72,8 @@ def discover(plugins_root: Path) -> List[Tuple[PluginMeta, Type[IPlugin]]]:
     """
     results: List[Tuple[PluginMeta, Type[IPlugin]]] = []
 
-    # Find all plugin definitions
     for yml in plugins_root.rglob("properties.yml"):
         folder = yml.parent
-        # Ignore junk folders
         if any(part == "__pycache__" for part in folder.parts):
             continue
         try:

@@ -1,4 +1,3 @@
-# test/performance_test/test_kernel_bench.py
 """
 Benchmarks del "kernel" de Gamma Lab (core/kernel.py) y del sistema de plugins
 (core/plugins/loader.py, core/plugins/manager.py) -- es decir, el costo real de
@@ -99,10 +98,6 @@ def test_bench_kernel_bootstrap_completo():
     record(f"kernel.bootstrap_completo (discover+load_all+register, {n_plugins} plugins)", stats)
     assert n_plugins > 0
 
-
-# ---------------------------------------------------------------------
-# Overhead propio del Kernel, aislado de la instanciación de cada plugin
-# ---------------------------------------------------------------------
 
 class _PluginFalso:
     """

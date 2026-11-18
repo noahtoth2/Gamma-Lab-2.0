@@ -42,9 +42,6 @@ def _rango_lut(chart):
     return tuple(round(v, 9) for v in chart.emf_color.GetRange())
 
 
-# ============================================================
-#   El rango automático y los cuadros
-# ============================================================
 def test_un_registro_en_voltios_no_queda_en_un_solo_color():
     Z = np.linspace(2.7e-10, 1.49e-4, 1000).reshape(10, 100)
     lo, hi = limites_color(Z)
@@ -96,9 +93,6 @@ def test_restaurar_un_rango_chico_no_lo_pierde(app):
     assert leer_rango(ui) == (True, pytest.approx(1e-6), pytest.approx(3e-5))
 
 
-# ============================================================
-#   PPC
-# ============================================================
 def _ppc(app):
     from core.plugins.meta import PluginMeta
     from plugins.analysis.time_frequency.ppc.ppc_plugin import Ppc_plugin
@@ -133,7 +127,7 @@ def test_ppc_con_rango_manual_recolorea_sin_perder_el_zoom(app):
     p.render_resultado(_resultado_ppc())
     chart = p._chart
     eje = chart.GetAxis(vtk.vtkAxis.BOTTOM)
-    eje.SetRange(1.0, 1.5)                                   # zoom
+    eje.SetRange(1.0, 1.5)
     p.ui.colorRangeCheckBox.setChecked(True)
     p.ui.colorMinSpinBox.setValue(0.2)
     p.ui.colorMaxSpinBox.setValue(0.8)
@@ -156,9 +150,6 @@ def test_ppc_avisa_un_rango_invalido_y_guarda_el_rango_en_el_proyecto(app):
     assert (params["color_manual"], params["color_min"], params["color_max"]) == (True, 0.6, 0.4)
 
 
-# ============================================================
-#   PAC
-# ============================================================
 def _pac(app):
     from plugins.analysis.time_frequency.pac.pac_plugin import Pac_plugin
     from plugins.analysis.time_frequency.pac.pac_plugin_ui import Ui_Pac
@@ -185,7 +176,6 @@ def _mapa_pac(p):
 def test_pac_sin_rango_manual_usa_el_minimo_y_maximo_del_mapa(app):
     p = _pac(app)
     chart, mapa = _mapa_pac(p)
-    # el mapa se dibuja en float32: se compara con esa precisión
     assert _rango_lut(chart) == pytest.approx((mapa.min(), mapa.max()), rel=1e-6)
     assert p.ui.colorMaxSpinBox.value() == pytest.approx(mapa.max(), abs=1e-4)
 
@@ -219,9 +209,6 @@ def test_pac_guarda_y_restaura_el_rango(app):
     assert "guardar_rango" in fuente, "el rango va en los parámetros del proyecto"
 
 
-# ============================================================
-#   Wavelet: cambiar el color ya no pierde el zoom
-# ============================================================
 def test_wavelet_cambiar_el_rango_conserva_el_zoom(app):
     from core.plugins.meta import PluginMeta
     from plugins.analysis.time_frequency.wavelet.wavelet_plugin import Wavelet_plugin
@@ -233,7 +220,7 @@ def test_wavelet_cambiar_el_rango_conserva_el_zoom(app):
     p.ui.setupUi(p.widget)
     p.alerts = MagicMock()
     p._context_view = _vista()
-    p.vtk_widget = SimpleNamespace()        # el menú contextual no hace falta aquí
+    p.vtk_widget = SimpleNamespace()
     T, F = np.linspace(0, 1, 200), np.linspace(2, 40, 20)
     Z = np.random.default_rng(2).random((20, 200))
     p.render_scalogram(T, F, Z)

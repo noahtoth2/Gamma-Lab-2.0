@@ -51,7 +51,6 @@ def esperar(condicion, ms=30000):
     return condicion()
 
 
-# ------------------------------------------- el doble de la interfaz
 class _Senal:
     """Lo que el plugin le pide a un `clicked`."""
     def __init__(self):
@@ -166,7 +165,6 @@ class _UiFalsa:
         self.plotArea = None
 
 
-# ------------------------------------------------------------------ montaje
 def trials_de(canal, indice, semilla, ns=NS, t=T, onsets=None):
     rng = np.random.default_rng(semilla)
     return TrialDataset(
@@ -221,8 +219,6 @@ def plugin_con(ds, tareas):
     p.kernel = kernel
     p.mainwin = _MainWin(kernel)
     p.ui = _UiFalsa()
-    # El dibujo no se prueba aquí: no hay ventana ni OpenGL en el doble. Se
-    # sustituye por un registro de lo que se habría dibujado.
     p.dibujados = []
     p.ensure_vtk = lambda: None
     p.render_resultado = p.dibujados.append
@@ -235,7 +231,6 @@ def listo(qt_app):
     tareas = TaskService()
     ds = señal_con(trials_de("CA1", 0, 1), trials_de("IN 7", 1, 2))
     p = plugin_con(ds, tareas)
-    # una banda chica, para que la prueba no tarde
     p.ui.lowFrequencySpinBox.setValue(20.0)
     p.ui.highFrequencySpinBox.setValue(120.0)
     p.ui.sampleDensitySpinBox.setValue(int(FS))
@@ -243,9 +238,6 @@ def listo(qt_app):
     tareas.cancel_all_from("ppc")
 
 
-# ============================================================
-#   El panel
-# ============================================================
 def test_los_dos_combos_arrancan_en_canales_distintos(listo):
     """El PPC de un canal consigo mismo vale 1 y no mide nada, así que el valor
     por omisión no puede ser el mismo en los dos."""
@@ -288,7 +280,7 @@ def test_genera_los_trials_del_otro_canal_con_la_misma_receta(qt_app):
     assert nuevo is not None and nuevo.channel_name == "IN 7"
     assert np.asarray(nuevo.trials).shape == np.asarray(td.trials).shape
     assert ds.get_active_trials(ds.name, "IN 7") is not None
-    cp.validar_alineacion(td, nuevo)   # mismo corte: no lanza
+    cp.validar_alineacion(td, nuevo)
 
 
 def test_los_valores_por_omision_son_los_del_matlab(listo):
@@ -301,9 +293,6 @@ def test_los_valores_por_omision_son_los_del_matlab(listo):
     assert p.ui.cyclesSpinBox.value() == pytest.approx(3.0)
 
 
-# ============================================================
-#   Encola, no bloquea
-# ============================================================
 def test_el_calculo_corre_fuera_del_hilo_de_la_interfaz(listo):
     """Es el punto del orquestador. Si corriera aquí, la ventana se congelaría
     los 2 a 5 segundos que tarda con trials de verdad."""
@@ -382,7 +371,7 @@ def test_los_avisos_se_registran_sin_abrir_dialogos(listo):
     p.alerts.warning = lambda m: dialogos.append(m)
     p.alerts.error = lambda m: dialogos.append(m)
 
-    p.ui.lowFrequencySpinBox.setValue(1.0)   # en trials de 2 s, poco respaldo abajo
+    p.ui.lowFrequencySpinBox.setValue(1.0)
     p.on_create_ppc()
     assert esperar(lambda: p._ultimo is not None)
 
@@ -392,9 +381,6 @@ def test_los_avisos_se_registran_sin_abrir_dialogos(listo):
     assert dialogos == []
 
 
-# ============================================================
-#   Las cuatro guardas
-# ============================================================
 def test_un_resultado_que_llega_tarde_se_descarta(listo):
     """Al cambiar un parámetro se encola otra tarea y la anterior puede seguir
     viva un instante. Sin la guarda, su resultado sobreescribe el nuevo."""
@@ -403,7 +389,7 @@ def test_un_resultado_que_llega_tarde_se_descarta(listo):
     viejo = p._handle
     assert viejo is not None
 
-    p._handle = object()           # como si ya hubiera otra en curso
+    p._handle = object()
     p._on_ppc_done(viejo, "basura")
     assert p._ultimo is None, "el resultado viejo no puede guardarse"
 
@@ -418,7 +404,7 @@ def test_un_fallo_abre_dialogo_y_libera_el_boton(listo):
     errores = []
     p.alerts.error = errores.append
 
-    p.ui.highFrequencySpinBox.setValue(FS * 5)     # pasa del Nyquist
+    p.ui.highFrequencySpinBox.setValue(FS * 5)
     p.on_create_ppc()
     assert esperar(lambda: bool(errores))
     assert "Nyquist" in errores[0]
@@ -433,9 +419,6 @@ def test_salir_de_la_pestana_cancela_lo_que_este_en_vuelo(listo):
     assert p.ui.createPpcButton.isEnabled()
 
 
-# ============================================================
-#   Lo que se dice antes de encolar
-# ============================================================
 def test_sin_receta_para_el_otro_canal_avisa_y_no_encola(qt_app):
     """CA1 tiene trials pero sin parámetros de corte guardados: no hay de dónde
     copiar la receta para IN 7."""
@@ -484,15 +467,6 @@ def test_sin_servicio_de_tareas_lo_dice(qt_app):
     assert errores and "tareas" in errores[0]
 
 
-# ============================================================
-#   El contrato de nombres con la interfaz
-# ============================================================
-# Se comprueba leyendo los dos archivos, sin levantar Qt. Es lo que más
-# probablemente se rompa cuando se reemplace el andamio por la interfaz de
-# verdad: si allí un widget se llama distinto, esto falla y dice cuál.
-
-# `setupUi` no es un widget sino el metodo que los crea; es lo unico que el
-# plugin le pide a `self.ui` que no sea un control.
 NO_SON_WIDGETS = {"setupUi"}
 
 
@@ -530,9 +504,6 @@ def test_el_doble_de_la_prueba_ofrece_lo_mismo_que_el_plugin_usa():
     assert not faltan, f"al doble de la interfaz le faltan: {faltan}"
 
 
-# ============================================================
-#   El dibujo
-# ============================================================
 def test_el_resultado_se_manda_a_dibujar(listo):
     """`_on_ppc_done` llama a `render_resultado` con el resultado del cálculo."""
     p, _, _ = listo

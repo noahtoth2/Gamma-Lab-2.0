@@ -11,7 +11,6 @@ N_TRIALS, N_MUESTRAS = 6, 50
 
 
 def _trials():
-    # el trial k vale k en todas las muestras: el promedio delata cuáles entraron
     datos = np.tile(np.arange(1, N_TRIALS + 1, dtype=float), (N_MUESTRAS, 1))
     return TrialDataset(source="x.abf", sampling_rate=50.0, channel_index=0, channel_name="a", unit="mV",
                         t0=0.0, t1=1.0, time_rel=np.linspace(0, 1, N_MUESTRAS), trials=datos,

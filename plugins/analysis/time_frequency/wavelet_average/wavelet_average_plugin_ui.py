@@ -6,28 +6,23 @@ import os
 
 class Ui_Wavelet_Average(object):
     def setupUi(self, Wavelet_Average):
-        # Set main window properties
         Wavelet_Average.setObjectName("Wavelet_Average")
 
-        # Main layout with horizontal orientation
         self.mainWindow = QtWidgets.QHBoxLayout(Wavelet_Average)
         self.mainWindow.setObjectName("mainWindow")
         self.mainWindow.setSpacing(0)
 
-        # Splitter to divide the areas into left (plot) and right (panel)
         self.splitter = QtWidgets.QSplitter(Wavelet_Average)
         self.splitter.setOrientation(QtCore.Qt.Horizontal)
         self.splitter.setObjectName("splitter")
         self.mainWindow.addWidget(self.splitter)
 
-        # Left area: Placeholder for Plot
         self.plotArea = QtWidgets.QFrame(self.splitter)
         self.plotArea.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.plotArea.setFrameShadow(QtWidgets.QFrame.Raised)
         self.plotArea.setObjectName("plotArea")
         self.plotArea.setMinimumWidth(520)
 
-        # --- Right area: Panel (fixed header + scrollable body) ---
         self.rightContainer = QtWidgets.QWidget(self.splitter)
         self.rightContainer.setObjectName("rightContainer")
 
@@ -35,7 +30,6 @@ class Ui_Wavelet_Average(object):
         self.rightLayoutOuter.setContentsMargins(8, 0, 8, 0)
         self.rightLayoutOuter.setSpacing(0)
 
-        # ===== Header: Parameters + clear + Create Wavelet (always visible) =====
         self.headerLayout = QtWidgets.QHBoxLayout()
         self.headerLayout.setContentsMargins(0, 0, 0, 5)
 
@@ -68,7 +62,6 @@ class Ui_Wavelet_Average(object):
         self.paramsLine.setProperty("role", "section-divider")
         self.rightLayoutOuter.addWidget(self.paramsLine)
 
-        # ===== Scrollable body =====
         self.scrollArea = QtWidgets.QScrollArea(self.rightContainer)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
@@ -78,7 +71,6 @@ class Ui_Wavelet_Average(object):
         self.layoutWidget = QtWidgets.QWidget()
         self.layoutWidget.setObjectName("layoutWidget")
 
-        # Vertical layout for parameter controls
         self.paramsLayout = QtWidgets.QVBoxLayout(self.layoutWidget)
         self.paramsLayout.setObjectName("paramsLayout")
         self.paramsLayout.setContentsMargins(0, 10, 0, 0)
@@ -89,7 +81,6 @@ class Ui_Wavelet_Average(object):
 
         self.splitter.widget(1).setMaximumWidth(300)
 
-        # === Sample Density ===
         self.sampleDensity = QtWidgets.QVBoxLayout()
         self.sampleDensity.setObjectName("sampleDensity")
 
@@ -120,7 +111,6 @@ class Ui_Wavelet_Average(object):
         self.sampleDensity.addLayout(self.sampleDensityInput)
         self.paramsLayout.addLayout(self.sampleDensity)
 
-        # === Frequency Range ===
         self.rangeLayout = QtWidgets.QVBoxLayout()
         self.rangeLayout.setObjectName("rangeLayout")
 
@@ -143,7 +133,6 @@ class Ui_Wavelet_Average(object):
         self.frequencyLabel.setProperty("variant", "input")
         self.frequencyLayout.addWidget(self.frequencyLabel)
 
-        # Low Frequency
         self.lowFqLayout = QtWidgets.QHBoxLayout()
         self.lowFqLayout.setObjectName("lowFqLayout")
 
@@ -164,7 +153,6 @@ class Ui_Wavelet_Average(object):
 
         self.frequencyLayout.addLayout(self.lowFqLayout)
 
-        # High Frequency
         self.highFqLayout = QtWidgets.QHBoxLayout()
         self.highFqLayout.setObjectName("highFqLayout")
 
@@ -188,7 +176,6 @@ class Ui_Wavelet_Average(object):
         self.rangeLayout.addLayout(self.frequencyLayout)
         self.paramsLayout.addLayout(self.rangeLayout)
 
-        # === Wavelet ===
         self.waveletLayout = QtWidgets.QVBoxLayout()
         self.waveletLayout.setObjectName("waveletLayout")
 
@@ -219,7 +206,6 @@ class Ui_Wavelet_Average(object):
         self.waveletLayout.addLayout(self.cyclesLayout)
         self.paramsLayout.addLayout(self.waveletLayout)
 
-        # === Scalogram ===
         self.scalogramLayout = QtWidgets.QVBoxLayout()
         self.scalogramLayout.setObjectName("scalogramLayout")
 
@@ -237,7 +223,6 @@ class Ui_Wavelet_Average(object):
         self.normScaleLayout = QtWidgets.QVBoxLayout()
         self.normScaleLayout.setObjectName("normScaleLayout")
 
-        # Normalize
         self.normalizeLayout = QtWidgets.QHBoxLayout()
         self.normalizeLayout.setObjectName("normalizeLayout")
 
@@ -268,7 +253,6 @@ class Ui_Wavelet_Average(object):
         self.normTypeLayout.addWidget(self.normalizeComboBox)
         self.normScaleLayout.addLayout(self.normTypeLayout)
 
-        # Scale
         self.scaleLayout = QtWidgets.QHBoxLayout()
         self.scaleLayout.setObjectName("scaleLayout")
 
@@ -304,10 +288,8 @@ class Ui_Wavelet_Average(object):
         self.scalogramLayout.addLayout(self.normScaleLayout)
         self.paramsLayout.addLayout(self.scalogramLayout)
 
-        # --- Spacer ---
         self.paramsLayout.addStretch(1)
 
-        # Size splitter
         self.splitter.setStretchFactor(0, 1)
         self.splitter.setStretchFactor(1, 0)
 

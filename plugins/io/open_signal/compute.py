@@ -44,8 +44,6 @@ def cargar_senal(ctx, ruta, fileio=None):
             f"Formato no soportado: {extension or '(sin extensión)'}. "
             f"Se admiten {', '.join(EXTENSIONES)}.")
 
-    # La lectura entra en código C de pyabf/pyedflib y no vuelve hasta terminar,
-    # así que la cancelación solo puede atenderse en los extremos.
     if ctx.cancelled:
         return None
 

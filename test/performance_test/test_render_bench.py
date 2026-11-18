@@ -1,4 +1,3 @@
-# test/performance_test/test_render_bench.py
 """
 Benchmarks del camino de renderizado VTK del mapa 2D (heatmap) que usan wavelet,
 wavelet_average y erp. Los tres construyen un vtkImageData llamando a
@@ -77,14 +76,10 @@ def td(ds):
     )
 
 
-# ---------------------------------------------------------------------
-# wavelet (1 trial) -- render_scalogram
-# ---------------------------------------------------------------------
-
 def test_bench_wavelet_render_scalogram(td):
     meta = _meta("wavelet", "Wavelet", "analysis", "time_frequency", "Wavelet_plugin")
     plug = Wavelet_plugin(meta)
-    plug.vtk_widget = True  # solo se verifica que sea "truthy" antes de renderizar
+    plug.vtk_widget = True
     plug._context_view = _offscreen_context_view()
 
     t = np.asarray(td.time_rel, dtype=float)
@@ -98,10 +93,6 @@ def test_bench_wavelet_render_scalogram(td):
     record(f"wavelet.render_scalogram ({scalo.shape[0]}x{scalo.shape[1]} puntos)", stats)
 
 
-# ---------------------------------------------------------------------
-# wavelet_average -- render_scalogram (escalograma promediado, mismo camino de render)
-# ---------------------------------------------------------------------
-
 def test_bench_wavelet_average_render_scalogram(td):
     meta = _meta("wavelet_average", "Wavelet Average", "analysis", "time_frequency", "Wavelet_average_plugin")
     plug = Wavelet_average_plugin(meta)
@@ -110,7 +101,7 @@ def test_bench_wavelet_average_render_scalogram(td):
 
     t = np.asarray(td.time_rel, dtype=float)
     fs_calc = round(1.0 / (t[1] - t[0]), 3)
-    n_trials = min(td.trials.shape[1], 10)  # mantener el costo del CWT bajo; lo que se mide es el render
+    n_trials = min(td.trials.shape[1], 10)
 
     scalo = None
     for k in range(n_trials):
@@ -124,14 +115,10 @@ def test_bench_wavelet_average_render_scalogram(td):
     record(f"wavelet_average.render_scalogram ({scalo.shape[0]}x{scalo.shape[1]} puntos)", stats)
 
 
-# ---------------------------------------------------------------------
-# erp -- _render_heatmap (butterfly/heatmap de todos los trials)
-# ---------------------------------------------------------------------
-
 def test_bench_erp_render_heatmap(td):
     meta = _meta("erp", "ERP", "analysis", "time", "Erp_plugin")
     plug = Erp_plugin(meta)
-    plug.alerts.parent = None  # alertas solo por consola, sin widget real
+    plug.alerts.parent = None
     plug.widget = None
     plug.vtk_top = None
     plug.active_signal = None
@@ -139,7 +126,7 @@ def test_bench_erp_render_heatmap(td):
     plug.view_bot = _offscreen_context_view()
 
     t = np.asarray(td.time_rel, dtype=float)
-    sel = np.nan_to_num(np.asarray(td.trials, dtype=float).T, nan=0.0, posinf=0.0, neginf=0.0)  # (K trials, Tn muestras)
+    sel = np.nan_to_num(np.asarray(td.trials, dtype=float).T, nan=0.0, posinf=0.0, neginf=0.0)
     print(f"[perf] forma de entrada del heatmap erp: {sel.shape} ({sel.size} puntos antes del downsample interno)")
 
     stats = time_block(plug._render_heatmap, t, sel, reps=3, warmup=1)

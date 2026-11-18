@@ -1,16 +1,10 @@
-# test/trials_test/test_trials.py
 import math
 import numpy as np
 import pytest
 
-# SUT
 import core.filters.trials as tr
 from core.model.signal_dataset import SignalDataset
 
-
-# ---------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------
 
 def impulse_train(length, idxs, amp=1.0):
     x = np.zeros(length, dtype=float)
@@ -64,10 +58,6 @@ def _asdict(x):
     }
 
 
-# ---------------------------------------------------------------------
-# _detect_onsets_abs
-# ---------------------------------------------------------------------
-
 def test_detect_onsets_abs_no_crossings():
     x = np.zeros(100)
     idxs = tr._detect_onsets_abs(x, threshold=0.5)
@@ -92,12 +82,6 @@ def test_detect_onsets_abs_multiple_crossings_mixed_sign():
     assert idxs.tolist() == [10, 55, 90]
 
 
-
-# ---------------------------------------------------------------------
-# _compute_windows (fixed / until_next_onset)
-# windows items are tuples: (a_clip, b_clip, lead_pad)
-# ---------------------------------------------------------------------
-
 def test_compute_windows_fixed_basic_clipping_and_ns():
     fs = 1000.0
     N = 2000
@@ -121,7 +105,6 @@ def test_compute_windows_fixed_basic_clipping_and_ns():
     n0 = int(round(t0 * fs))
     assert a_clip == max(0, onsets[0] + n0)
     assert b_clip == min(N, a_clip + Ns)
-    # accept native int or NumPy integer
     assert isinstance(lead_pad, (int, np.integer))
 
 
@@ -130,7 +113,7 @@ def test_compute_windows_until_next_onset_groups_and_last_to_end():
     N = 2000
     onsets = np.array([100, 300, 500, 700])
     t0 = -0.01
-    group_starts = [0, 2]  # two groups: [0..1], [2..3]
+    group_starts = [0, 2]
     S = 2
 
     windows, Ns = tr._compute_windows(
@@ -138,7 +121,7 @@ def test_compute_windows_until_next_onset_groups_and_last_to_end():
         N=N,
         fs=fs,
         t0=t0,
-        t1=0.0,  # ignored in this mode
+        t1=0.0,
         end_mode="until_next_onset",
         group_starts=group_starts,
         stim_per_trial_for_cut=S
@@ -155,17 +138,11 @@ def test_compute_windows_until_next_onset_groups_and_last_to_end():
     assert Ns == max(b0 - a0, b1 - a1)
 
 
-# ---------------------------------------------------------------------
-# _extract_trials_matrix
-# ---------------------------------------------------------------------
-
 def test_extract_trials_matrix_alignment_and_padding():
     y = np.arange(100, dtype=float)
-    # We want a lead_pad of 2 for the first column:
-    # start index = a_clip - a_orig -> 2  => a_orig = a_clip - 2 = 8
     windows = [
-        (10, 25, 8),   # unclipped a = 8  -> lead_pad = 2
-        (50, 60, 50),  # unclipped a = 50 -> lead_pad = 0
+        (10, 25, 8),
+        (50, 60, 50),
     ]
     Ns = 20
     pad = np.nan
@@ -173,27 +150,19 @@ def test_extract_trials_matrix_alignment_and_padding():
     M = tr._extract_trials_matrix(y_tgt=y, windows=windows, Ns=Ns, pad_value=pad)
     assert M.shape == (Ns, 2)
 
-    # Column 0 starts with 2 NaNs (lead_pad)
     assert np.isnan(M[0, 0]) and np.isnan(M[1, 0])
-    # Then the real data from y[10:25] (15 samples)
     np.testing.assert_allclose(M[2:2 + 15, 0], y[10:25])
-    # Tail padded
     assert np.all(np.isnan(M[17:, 0]))
 
-    # Column 1 starts at offset 0 (no lead pad), contains 10 samples then pad
     np.testing.assert_allclose(M[0:10, 1], y[50:60])
     assert np.all(np.isnan(M[10:, 1]))
 
-
-# ---------------------------------------------------------------------
-# _assemble_trials_general
-# ---------------------------------------------------------------------
 
 def test_assemble_trials_general_groups_three_per_trial():
     fs = 1000.0
     pad = np.nan
     Ns_in = 5
-    raw = np.arange(Ns_in * 6, dtype=float).reshape(Ns_in, 6)  # 6 columns
+    raw = np.arange(Ns_in * 6, dtype=float).reshape(Ns_in, 6)
     S = 3
     out = tr._assemble_trials_general(
         trials=raw,
@@ -203,17 +172,11 @@ def test_assemble_trials_general_groups_three_per_trial():
         pad_value=pad,
         debug=False
     )
-    # Expect 6/3 = 2 output columns
     assert out.shape[1] == 2
-    # Rows follow implementation: head_len = min(floor(tis*fs), Ns_in)
     head_len = min(int(math.floor(0.1 * fs)), Ns_in)
     expected_rows = head_len + (S - 1) * Ns_in
     assert out.shape[0] == expected_rows
 
-
-# ---------------------------------------------------------------------
-# cut_trials_single_channel (end-to-end) — using REAL SignalDataset
-# ---------------------------------------------------------------------
 
 def test_cut_trials_no_stimuli_returns_single_column():
     fs = 1000.0
@@ -257,7 +220,7 @@ def test_cut_trials_forced_no_stimulus_even_with_triggers():
         t0=0.0,
         t1=0.5,
         end_mode="fixed",
-        stim_expected=0,        # force no-stim
+        stim_expected=0,
         inter_stim_time=0.0,
         pad_value=np.nan,
         debug=False,
@@ -294,7 +257,7 @@ def test_cut_trials_single_stim_fixed_window_alignment_and_ns():
     Ns = int(round((t1 - t0) * fs))
     assert trials.shape == (Ns, len(on))
 
-    n0 = int(round(t0 * fs))  # negative
+    n0 = int(round(t0 * fs))
     zero_idx = -n0 if -n0 < Ns else Ns - 1
     for k, onset in enumerate(on):
         col_val = trials[zero_idx, k]
@@ -316,7 +279,7 @@ def test_cut_trials_single_stim_until_next_onset_variable_lengths():
         stim_channel=1,
         threshold=0.5,
         t0=-0.01,
-        t1=0.0,  # ignored
+        t1=0.0,
         end_mode="until_next_onset",
         stim_expected=1,
         inter_stim_time=0.0,
@@ -327,14 +290,12 @@ def test_cut_trials_single_stim_until_next_onset_variable_lengths():
     trials = R["trials"]
     assert trials.shape[1] == 3
 
-    # At least one earlier column should be shorter than the max-length column → expect some NaNs somewhere
     assert np.isnan(trials[:, 0]).any() or np.isnan(trials[:, 1]).any()
 
 
 def test_cut_trials_multi_stim_assemble_ok():
     fs = 1000.0
     N = 4000
-    # 2 trials, each with 3 stimuli, equally spaced by 100 ms
     on = [500, 600, 700, 2500, 2600, 2700]
     sig0 = sine(N, f=12, fs=fs)
     sig1 = impulse_train(N, on, amp=1.0)
@@ -364,8 +325,8 @@ def test_cut_trials_stim_channel_differs_from_target_channel():
     fs = 1000.0
     N = 3000
     on = [500, 1500, 2500]
-    sig0 = sine(N, f=7, fs=fs)          # target
-    sig1 = impulse_train(N, on, 1.0)    # stim
+    sig0 = sine(N, f=7, fs=fs)
+    sig1 = impulse_train(N, on, 1.0)
     ds = make_signal_dataset(np.vstack([sig0, sig1]), fs)
 
     res = tr.cut_trials_single_channel(
@@ -388,10 +349,6 @@ def test_cut_trials_stim_channel_differs_from_target_channel():
         assert abs(R["trials"][zero_idx, k] - ds.signals[0, onset]) < 1e-6
 
 
-
-# ---------------------------------------------------------------------
-# Threshold shown in mV, applied in the stimulus channel's unit
-# ---------------------------------------------------------------------
 @pytest.mark.parametrize("unit, expected", [
     ("mV", 0.7), ("V", 0.0007), ("uV", 700.0), ("\u00b5V", 700.0), ("nV", 700000.0),
     (" mv ", 0.7),

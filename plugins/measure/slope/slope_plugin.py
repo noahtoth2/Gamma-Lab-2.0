@@ -1,4 +1,3 @@
-# plugins/measure/slope/slope_plugin.py
 import os
 from core.utils.rutas import carpeta_inicial
 import csv
@@ -19,16 +18,16 @@ class SlopeTableModel(QtCore.QAbstractTableModel):
     Table model for slope measurements.
     """
     HEADERS = [
-        "ID",                 # 0
-        "Channel",            # 1  <-- ctx.channel_name
-        "Graph",          # 2  <-- ctx.graph_id
-        "Point 1 (x, y)",     # 3
-        "Point 2 (x, y)",     # 4
-        "Δx",                 # 5
-        "Δy",                 # 6
-        "Slope (m)",          # 7
-        "Distance",           # 8
-        "Timestamp",          # 9
+        "ID",
+        "Channel",
+        "Graph",
+        "Point 1 (x, y)",
+        "Point 2 (x, y)",
+        "Δx",
+        "Δy",
+        "Slope (m)",
+        "Distance",
+        "Timestamp",
     ]
 
     HEADER_TIPS = {
@@ -107,24 +106,17 @@ class SlopeTableModel(QtCore.QAbstractTableModel):
         return list(self._rows)
 
 
-# ----------------------------
-# Slope Plugin
-# ----------------------------
 class SlopePlugin(IPlugin):
 
     def __init__(self, meta: PluginMeta):
         super().__init__(meta)
 
 
-        # UI
         self.widget: QtWidgets.QWidget | None = None
         self.ui: Ui_Slope | None = None
 
-        # Table model
         self.model: SlopeTableModel | None = None
 
-
-    # ---------- Lifecycle ----------
 
     def stop(self):
         self._log("stop()")
@@ -133,7 +125,6 @@ class SlopePlugin(IPlugin):
         self._log("process(): refreshing table")
         self._reload_from_store()
 
-    # ---------- UI ----------
     def get_widget(self, parent=None):
         if self.widget is None:
             self._log("get_widget(): creating UI")
@@ -142,7 +133,6 @@ class SlopePlugin(IPlugin):
             self.alerts.parent = self.widget
             self.ui.setupUi(self.widget)
 
-            # Model + table setup
             self.model = SlopeTableModel([])
             tv = self.ui.tableView
             tv.setModel(self.model)
@@ -153,13 +143,11 @@ class SlopePlugin(IPlugin):
             tv.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
             tv.verticalHeader().setVisible(False)
 
-            # Initial load
             self._reload_from_store()
         else:
             self.widget.setParent(parent)
         return self.widget
 
-    # ---------- DataStore ----------
     def _reload_from_store(self):
         rows = self._load_slope_rows_from_store()
         if self.model:
@@ -175,12 +163,10 @@ class SlopePlugin(IPlugin):
             ctx_channel = ctx.channel_name
             ctx_graph   = ctx.graph_id
         """
-        # Get DataStore service
         store = self.get_datastore()
         if store is None:
             return []
 
-        # Raw list
         raw = None
         for key in ("measurements", "meassurements"):
             try:
@@ -255,7 +241,6 @@ class SlopePlugin(IPlugin):
 
         return rows
 
-    # ---------- Export ----------
     def _export_dir(self) -> str:
         """Default export folder: the open project's 'archivos' folder, else last used dir."""
         try:
@@ -309,7 +294,6 @@ class SlopePlugin(IPlugin):
         try:
             with open(path, "w", newline="", encoding="utf-8") as f:
                 w = csv.writer(f)
-                # Header: same order as UI
                 headers, filas = self._tabla_exportable()
                 w.writerow(headers)
                 w.writerows(filas)
