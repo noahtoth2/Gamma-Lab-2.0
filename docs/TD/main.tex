@@ -32,7 +32,7 @@
 \usepackage{ragged2e}
 \usepackage{float}
 \usepackage[hidelinks,plainpages=false]{hyperref}
-\hypersetup{pdftitle={TD: Gamma Lab 2.0}, pdfauthor={Equipo Gamma Lab}}
+\hypersetup{pdftitle={TD: Gamma Lab 2.0}, pdfauthor={Equipo Gamma Lab 2.0}}
 
 \onehalfspacing
 \setlength{\parindent}{1.0cm}
@@ -150,11 +150,11 @@
 
 \section{INTRODUCCIÓN}
 
-El presente \textit{Test Document} (TD) describe el plan de pruebas de GammaLab 2.0 y reúne los resultados obtenidos al ejecutarlo. GammaLab 2.0 conserva la arquitectura de \textit{microkernel} de la versión anterior: un núcleo de servicios esenciales al que se conectan extensiones, o \textit{plugins}, que aportan cada técnica de análisis. Sobre esa base, la segunda versión corrige las limitaciones identificadas en la primera, incorpora el análisis de acoplamiento fase-amplitud (PAC), el índice de modulación y la consistencia de fase entre canales (PPC), introduce la gestión de proyectos y traslada el cómputo pesado a un servicio de tareas del núcleo.
+El presente \textit{Test Document} (TD) describe el plan de pruebas de Gamma Lab 2.0 y reúne los resultados obtenidos al ejecutarlo. Gamma Lab 2.0 conserva la arquitectura de \textit{microkernel} de la versión anterior: un núcleo de servicios esenciales al que se conectan extensiones, o \textit{plugins}, que aportan cada técnica de análisis. Sobre esa base, la segunda versión corrige las limitaciones identificadas en la primera, incorpora el análisis de acoplamiento fase-amplitud (PAC), el índice de modulación y la consistencia de fase entre canales (PPC), introduce la gestión de proyectos y traslada el cómputo pesado a un servicio de tareas del núcleo.
 
 El plan de pruebas se organiza en seis frentes: las pruebas unitarias y de integración de los servicios del núcleo; las pruebas de los módulos de análisis; la validación de los resultados frente al sistema de referencia BOARD-FTD-PACC; la verificación de los requisitos no funcionales mediante pruebas y mediciones de rendimiento; las pruebas de usabilidad, y las pruebas de aceptación del usuario. Los cuatro primeros frentes son automáticos o medidos por el equipo de desarrollo, y sus resultados se presentan en este documento. Los dos últimos requieren la participación del usuario del Laboratorio de Electrofisiología y, a la fecha de esta versión del documento, se encuentran pendientes de ejecución; por ello, sus casos y cuadros de registro se presentan preparados para diligenciarse durante las sesiones con el usuario.
 
-Este documento toma como punto de partida el TD de GammaLab 1.0 \cite{td2025}, del que conserva la estructura y el formato de los cuadros de aceptación, y se apoya en la especificación de requisitos (SRS), en el documento de arquitectura (SAD) y en el documento de diseño (SDD) de la presente versión.
+Este documento toma como punto de partida el TD de Gamma Lab \cite{td2025}, del que conserva la estructura y el formato de los cuadros de aceptación, y se apoya en la especificación de requisitos (SRS), en el documento de arquitectura (SAD) y en el documento de diseño (SDD) de la presente versión.
 
 \capitulo{ALCANCE}
 
@@ -185,7 +185,7 @@ Las pruebas se centran en la funcionalidad crítica del sistema y en la experien
 \begin{itemize}
     \item Disponibilidad de la señal \textit{17308005.abf}, suministrada por el laboratorio, y de las referencias numéricas exportadas desde BOARD-FTD-PACC, que se conservan en la carpeta \textit{test/data} del repositorio.
     \item Disponibilidad del usuario del Laboratorio de Electrofisiología para las sesiones de usabilidad y de aceptación.
-    \item Instalación de GammaLab 2.0 mediante su instalador en el equipo en que se realicen las pruebas con el usuario.
+    \item Instalación de Gamma Lab 2.0 mediante su instalador en el equipo en que se realicen las pruebas con el usuario.
 \end{itemize}
 
 \subsection{Herramientas}
@@ -197,23 +197,23 @@ Las pruebas se centran en la funcionalidad crítica del sistema y en la experien
 \end{itemize}
 
 \subsection{Entorno de ejecución de las pruebas automáticas}
-Las pruebas automáticas y las mediciones se ejecutaron en el equipo descrito en la Tabla~\ref{tab:td_entorno}, con el comando \textit{python -m pytest test} desde la carpeta raíz del repositorio.
+Las pruebas automáticas se ejecutaron con el comando \textit{python -m pytest test} desde la carpeta raíz del repositorio, en los equipos descritos en la Tabla~\ref{tab:td_entorno}. Los resultados de las Secciones~\ref{sec:td_resumen} a~\ref{sec:td_validacion} corresponden a la ejecución del 16 de noviembre de 2026; las mediciones de tiempo de la Sección~\ref{sec:td_rendimiento} se tomaron en la ejecución del 8 de noviembre de 2026.
 
 \begin{center}
 \small
-\begin{tabularx}{\textwidth}{|p{0.30\textwidth}|X|}
+\begin{tabularx}{\textwidth}{|p{0.24\textwidth}|X|X|}
 \hline
-\textbf{Elemento} & \textbf{Valor} \\
+\textbf{Elemento} & \textbf{Ejecución de la suite} & \textbf{Mediciones de rendimiento} \\
 \hline
-Procesador & Intel Core i5-11400H a 2,70\,GHz \\
+Procesador & Intel Core i7-1255U & Intel Core i5-11400H a 2,70\,GHz \\
 \hline
-Memoria RAM & 32\,GB \\
+Memoria RAM & 24\,GB & 32\,GB \\
 \hline
-Sistema operativo & Windows 11, 64 bits \\
+Sistema operativo & Windows 11, 64 bits & Windows 11, 64 bits \\
 \hline
-Intérprete & Python 3.12.1 \\
+Intérprete & Python 3.13.7 & Python 3.12.1 \\
 \hline
-Fecha de la ejecución & 8 de noviembre de 2026 \\
+Fecha de la ejecución & 16 de noviembre de 2026 & 8 de noviembre de 2026 \\
 \hline
 \end{tabularx}
 \captionof{table}{Entorno de ejecución de las pruebas automáticas}
@@ -222,7 +222,7 @@ Fecha de la ejecución & 8 de noviembre de 2026 \\
 \capitulo{ORGANIZACIÓN DE LAS PRUEBAS Y RESUMEN DE RESULTADOS}
 \label{sec:td_resumen}
 
-La suite automática reside en la carpeta \textit{test} del repositorio y se divide en tres subcarpetas: \textit{services\_test}, con las pruebas de los servicios del núcleo; \textit{plugins\_test}, con las pruebas de los módulos de análisis y las comparaciones con el sistema de referencia, y \textit{performance\_test}, con las pruebas de rendimiento. La Tabla~\ref{tab:td_resumen} resume el resultado de la ejecución del 8 de noviembre de 2026.
+La suite automática reside en la carpeta \textit{test} del repositorio y se divide en tres subcarpetas: \textit{services\_test}, con las pruebas de los servicios del núcleo; \textit{plugins\_test}, con las pruebas de los módulos de análisis y las comparaciones con el sistema de referencia, y \textit{performance\_test}, con las pruebas de rendimiento. La Tabla~\ref{tab:td_resumen} resume el resultado de la ejecución del 16 de noviembre de 2026.
 
 \begin{center}
 \small
@@ -230,15 +230,15 @@ La suite automática reside en la carpeta \textit{test} del repositorio y se div
 \hline
 \textbf{Frente de prueba} & \textbf{Suites} & \textbf{Pruebas} & \textbf{Aprobadas} & \textbf{Fallo esperado} & \textbf{Fallidas} \\
 \hline
-Unitarias y de integración del núcleo (Sección~\ref{sec:td_unitarias}) & 34 & 292 & 291 & 0 & 1 \\
+Unitarias y de integración del núcleo (Sección~\ref{sec:td_unitarias}) & 42 & 389 & 389 & 0 & 0 \\
 \hline
-Módulos de análisis (Sección~\ref{sec:td_modulos}) & 16 & 417 & 417 & 0 & 0 \\
+Módulos de análisis (Sección~\ref{sec:td_modulos}) & 23 & 476 & 476 & 0 & 0 \\
 \hline
 Validación frente a BOARD-FTD-PACC (Sección~\ref{sec:td_validacion}) & 9 & 27 & 22 & 5 & 0 \\
 \hline
 Rendimiento (Sección~\ref{sec:td_rendimiento}) & 6 & 25 & 25 & 0 & 0 \\
 \hline
-\textbf{Total} & \textbf{65} & \textbf{761} & \textbf{755} & \textbf{5} & \textbf{1} \\
+\textbf{Total} & \textbf{80} & \textbf{917} & \textbf{912} & \textbf{5} & \textbf{0} \\
 \hline
 \end{tabularx}
 \captionof{table}{Resumen de la ejecución de la suite automática}
@@ -247,7 +247,7 @@ Rendimiento (Sección~\ref{sec:td_rendimiento}) & 6 & 25 & 25 & 0 & 0 \\
 
 Una prueba con \textbf{fallo esperado} es una prueba que se mantiene en la suite para documentar una diferencia conocida y explicada: se ejecuta en cada corrida y, si algún día dejara de fallar, la suite lo advertiría. Las 5 pruebas en esta condición corresponden a comparaciones con las referencias de MATLAB cuya causa se analiza en la Sección~\ref{sec:td_diferencias}.
 
-La única prueba fallida, \textit{test\_el\_orden\_de\_botones\_viene\_de\_los\_metadatos}, de la suite \textit{test\_plugin\_sin\_tocar\_nucleo}, no revela un defecto del sistema sino una prueba desactualizada: comprueba el orden de los botones de la subcategoría tiempo-frecuencia esperando cuatro extensiones (PAC, índice de modulación, \textit{Wavelet} y \textit{Wavelet Average}), y desde la incorporación de PPC la subcategoría tiene cinco. La prueba debe actualizarse para incluir a PPC en la lista esperada.
+Ninguna prueba falla. En la ejecución del 8 de noviembre de 2026 fallaba \textit{test\_el\_orden\_de\_botones\_viene\_de\_los\_metadatos}, de la suite \textit{test\_plugin\_sin\_tocar\_nucleo}, porque esperaba cuatro extensiones en la subcategoría tiempo-frecuencia y desde la incorporación de PPC hay cinco; la prueba se actualizó para incluir a PPC y ahora se aprueba. Frente a esa ejecución, la suite incorpora además 15 suites nuevas con 156 pruebas, en su mayoría de regresión, que fijan correcciones hechas después del 8 de noviembre: 8 en el núcleo (97 pruebas) y 7 en los módulos de análisis (59 pruebas).
 
 Las pruebas de usabilidad (Sección~\ref{sec:td_usabilidad}) y de aceptación del usuario (Sección~\ref{sec:td_uat}) son manuales y se encuentran pendientes de ejecución.
 \capitulo{PRUEBAS UNITARIAS Y DE INTEGRACIÓN}
@@ -278,6 +278,8 @@ La Tabla~\ref{tab:td_servicios} presenta cada suite, lo que verifica y su result
 \hline
 \caption{Resultados de las pruebas unitarias y de integración del núcleo} \label{tab:td_servicios} \\
 \endlastfoot
+\textit{test\_ajuste\_vertical\_con\_medidas} & Con el ajuste vertical activo tras un \textit{zoom}, la derivada de \textit{difference} y las líneas de medida no estiran el eje en mV. & 5 & 5 & Aprobada \\
+\hline
 \textit{test\_apertura\_proyecto} & La apertura de un proyecto lee el archivo fuera del hilo de interfaz y el guardado no vuelve a copiar la señal (R04). & 5 & 5 & Aprobada \\
 \hline
 \textit{test\_artifact\_remove\_orquestador} & \textit{Remove Artifact} calcula a través del servicio de tareas sin modificar los datos compartidos ni crear hilos propios. & 6 & 6 & Aprobada \\
@@ -316,13 +318,25 @@ La Tabla~\ref{tab:td_servicios} presenta cada suite, lo que verifica y su result
 \hline
 \textit{test\_measurement} & Servicio de medición: estados, identificadores, contexto, cálculos y limpieza. & 28 & 28 & Aprobada \\
 \hline
+\textit{test\_mediciones\_todos\_los\_trials} & Mediciones de pendiente, amplitud y diferencia sobre todos los \textit{trials}, con una fila por \textit{trial}, y cálculo de la derivada de \textit{difference}. & 17 & 17 & Aprobada \\
+\hline
 \textit{test\_medidas\_artefacto} & Las medidas del segmento se calculan y se piden confirmar antes de modificarlo (R40). & 6 & 6 & Aprobada \\
+\hline
+\textit{test\_medir\_sobre\_butterfly} & Al medir sobre el \textit{Butterfly}, el clic toma la curva más cercana, sea un \textit{trial} o el promedio. & 7 & 7 & Aprobada \\
 \hline
 \textit{test\_niveles\_de\_mensaje} & Cada situación usa el nivel de severidad que le corresponde (R02). & 5 & 5 & Aprobada \\
 \hline
 \textit{test\_persistencia\_artifact\_remove} & Las modificaciones de \textit{Remove Artifact} se conservan al guardar y abrir el proyecto. & 15 & 15 & Aprobada \\
 \hline
-\textit{test\_plugin\_sin\_tocar\_nucleo} & Una extensión nueva se guarda con el proyecto y se ordena desde su \textit{properties.yml} sin modificar el núcleo (R77). & 4 & 3 & 1 fallida \\
+\textit{test\_plugin\_sin\_tocar\_nucleo} & Una extensión nueva se guarda con el proyecto y se ordena desde su \textit{properties.yml} sin modificar el núcleo (R77). & 4 & 4 & Aprobada \\
+\hline
+\textit{test\_regresion\_avisos} & Avisos de estímulos irregulares, de \textit{trials} solapados y de canales sin señal, y la barra de progreso sigue a la tarea que está en ejecución. & 14 & 14 & Aprobada \\
+\hline
+\textit{test\_regresion\_cierre\_y\_apertura} & Cerrar con un cálculo en curso ofrece guardar, cerrar cancela una apertura en curso y reabrir un proyecto no lo marca como modificado. & 12 & 12 & Aprobada \\
+\hline
+\textit{test\_regresion\_trials\_y\_artefactos} & Los descartes de un canal no se pierden al cortar otro, el modo de \textit{trials} fijos agrupa una sola vez y \textit{Blank Interval} con B igual a 0 solo afecta ese tramo. & 16 & 16 & Aprobada \\
+\hline
+\textit{test\_regresion\_zoom\_resolucion} & Al hacer \textit{zoom} no se pierde definición: \textit{Trials} y PAC dibujan todas las muestras y la rueda actúa sobre el eje que corresponde. & 21 & 21 & Aprobada \\
 \hline
 \textit{test\_resultados\_xlsx} & Los paneles de resultados de pendiente y amplitud exportan a Excel. & 4 & 4 & Aprobada \\
 \hline
@@ -342,6 +356,8 @@ La Tabla~\ref{tab:td_servicios} presenta cada suite, lo que verifica y su result
 \hline
 \textit{test\_trials\_por\_canal} & Consulta de los \textit{trials} de un canal concreto, y no solo del último generado (R68). & 12 & 12 & Aprobada \\
 \hline
+\textit{test\_vista\_tras\_medir} & Medir tras un \textit{zoom} no desplaza la vista y \textit{Reset view} vuelve al registro completo. & 5 & 5 & Aprobada \\
+\hline
 \textit{test\_vtk\_observers} & Los observadores de VTK se retiran al salir del módulo y se reponen al volver (R58). & 6 & 6 & Aprobada \\
 \hline
 \textit{test\_xlsx\_writer} & El escritor propio de archivos \textit{.xlsx} produce libros válidos y rápidos (R51). & 7 & 7 & Aprobada \\
@@ -350,7 +366,7 @@ La Tabla~\ref{tab:td_servicios} presenta cada suite, lo que verifica y su result
 \end{center}
 
 \subsection{Análisis de resultados}
-Las 292 pruebas de este frente se aprobaron, con la única excepción de la prueba desactualizada descrita en la Sección~\ref{sec:td_resumen}. Destacan tres conjuntos. Las pruebas del servicio de tareas y de su integración con la interfaz confirman que el cómputo pesado se ejecuta fuera del hilo de interfaz, que solo corre una tarea a la vez y que la cancelación es cooperativa. Las pruebas de liberación de la señal y de las ventanas gráficas verifican que la memoria se recupera al cerrar un proyecto, al cargar otra señal y al salir de un módulo. Por último, las pruebas de proyectos comprueban que el guardado y la apertura conservan la señal, los \textit{trials}, los descartes, el preprocesamiento, las medidas y los parámetros de los análisis.
+Las 389 pruebas de este frente se aprobaron. Destacan cuatro conjuntos. Las pruebas del servicio de tareas y de su integración con la interfaz confirman que el cómputo pesado se ejecuta fuera del hilo de interfaz, que solo corre una tarea a la vez y que la cancelación es cooperativa. Las pruebas de liberación de la señal y de las ventanas gráficas verifican que la memoria se recupera al cerrar un proyecto, al cargar otra señal y al salir de un módulo. Por último, las pruebas de proyectos comprueban que el guardado y la apertura conservan la señal, los \textit{trials}, los descartes, el preprocesamiento, las medidas y los parámetros de los análisis. Finalmente, las suites de regresión (\textit{test\_regresion\_*}) fijan los defectos corregidos después de la ejecución del 8 de noviembre, de modo que cualquier cambio que los reintroduzca sea detectado.
 \capitulo{PRUEBAS DE LOS MÓDULOS DE ANÁLISIS}
 \label{sec:td_modulos}
 
@@ -386,6 +402,8 @@ Cada módulo de análisis separa el cálculo, que recibe y devuelve arreglos num
 \hline
 \textit{test\_erp\_compute} & Cálculo del mapa de calor de ERP, separado del dibujo. & 13 & 13 & Aprobada \\
 \hline
+\textit{test\_erp\_grupos\_butterfly} & En el \textit{Butterfly} de ERP el promedio se dibuja encima en negro, puede ocultarse y los \textit{trials} se muestran por grupos. & 5 & 5 & Aprobada \\
+\hline
 \textit{test\_erp\_vtk\_llenado} & El llenado vectorizado del mapa de calor de ERP produce el mismo resultado que el llenado elemento por elemento (R59). & 7 & 7 & Aprobada \\
 \hline
 \textit{test\_escalograma\_rango\_color} & El rango de valores de color del escalograma puede fijarse manualmente (R33). & 7 & 7 & Aprobada \\
@@ -406,6 +424,18 @@ Cada módulo de análisis separa el cálculo, que recibe y devuelve arreglos num
 \hline
 \textit{test\_ppc\_plugin\_orquestado} & Ejecución de PPC a través del servicio de tareas, con progreso y cancelación. & 23 & 23 & Aprobada \\
 \hline
+\textit{test\_regresion\_alineacion\_entre\_canales} & PAC entre canales y PPC rechazan pares de canales con descartes distintos, y PPC no cambia el canal activo al cortar el canal que le falta. & 6 & 6 & Aprobada \\
+\hline
+\textit{test\_regresion\_densidad\_y\_mat73} & Una densidad de muestreo igual a 0 se rechaza con un aviso en lugar de cerrar la aplicación, y los archivos \textit{.mat} v7.3 se leen con un canal por columna. & 11 & 11 & Aprobada \\
+\hline
+\textit{test\_regresion\_etiqueta\_psd} & El rótulo del eje de las tres extensiones de PSD toma la unidad del canal. & 8 & 8 & Aprobada \\
+\hline
+\textit{test\_regresion\_rango\_color\_mapas} & Rango de color de \textit{Wavelet}, \textit{Wavelet Average}, PAC y PPC: registros en voltios, rangos pequeños, conservación del \textit{zoom} y persistencia en el proyecto (R33). & 13 & 13 & Aprobada \\
+\hline
+\textit{test\_regresion\_wavelet\_densidad\_completa} & \textit{Wavelet} con la densidad completa del archivo: cálculo repartido entre hilos con resultado idéntico, dibujo por zonas al hacer \textit{zoom}, progreso y cancelación. & 8 & 8 & Aprobada \\
+\hline
+\textit{test\_relative\_psd\_correcciones} & PSD relativa frente a una señal de potencia conocida, aviso de resolución insuficiente, campos de banda y gráfica. & 8 & 8 & Aprobada \\
+\hline
 \textit{test\_relative\_psd\_exportacion} & Exportación numérica de la PSD relativa: parámetros, potencias y fracción por banda (R05). & 4 & 4 & Aprobada \\
 \hline
 \textit{test\_submuestreo\_wavelet} & Submuestreo de la señal antes de la transformada \textit{wavelet} y uso de la tasa efectiva. & 20 & 20 & Aprobada \\
@@ -414,12 +444,12 @@ Cada módulo de análisis separa el cálculo, que recibe y devuelve arreglos num
 \end{center}
 
 \subsection{Análisis de resultados}
-Las 417 pruebas de este frente se aprobaron. El volumen se concentra en los módulos nuevos de la versión 2.0: 124 pruebas para el núcleo de PAC, 84 para el de PPC y 27 para el índice de modulación, que verifican cada paso del cálculo y su respuesta ante entradas que comprometen el resultado, como bandas fuera del rango de Nyquist, canales no alineados o \textit{trials} demasiado cortos.
+Las 476 pruebas de este frente se aprobaron. El volumen se concentra en los módulos nuevos de la versión 2.0: 124 pruebas para el núcleo de PAC, 84 para el de PPC y 27 para el índice de modulación, que verifican cada paso del cálculo y su respuesta ante entradas que comprometen el resultado, como bandas fuera del rango de Nyquist, canales no alineados o \textit{trials} demasiado cortos.
 \capitulo{PRUEBAS DE VALIDACIÓN FRENTE AL SISTEMA DE REFERENCIA}
 \label{sec:td_validacion}
 
 \subsection{Objetivo}
-La intención de estas pruebas es comparar los resultados de GammaLab 2.0 con los del sistema de referencia BOARD-FTD-PACC, para garantizar la exactitud de los análisis y documentar con precisión las diferencias que existen entre ambas implementaciones.
+La intención de estas pruebas es comparar los resultados de Gamma Lab 2.0 con los del sistema de referencia BOARD-FTD-PACC, para garantizar la exactitud de los análisis y documentar con precisión las diferencias que existen entre ambas implementaciones.
 
 \subsection{Implementación}
 Para estas pruebas se utilizó la señal \textit{17308005.abf}, suministrada por el laboratorio, que cuenta con dos canales. En ambos sistemas se emplearon los mismos parámetros de segmentación:
@@ -474,19 +504,19 @@ PSD & 0,88 & 0,0001 & Aprobada & Aprobada & Aprobada \\
 \end{longtable}
 \end{center}
 
-\textit{Average}, ERP, FFT, \textit{FFT Average} y PSD superan los tres criterios. \textit{PSD Average} supera la estructura y la comparación punto a punto, pero no el umbral de correlación. \textit{Wavelet} y \textit{Wavelet Average} superan la estructura, pero no la correlación ni la comparación punto a punto. Estas cinco comparaciones se mantienen en la suite como fallos esperados, porque su causa está identificada y medida, como se explica a continuación.
+\textit{Average}, ERP, FFT, \textit{FFT Average} y PSD superan los tres criterios. \textit{PSD Average} supera la estructura y la comparación punto a punto, pero no el umbral de correlación. \textit{Wavelet} y \textit{Wavelet Average} superan la estructura, pero no la correlación ni la comparación punto a punto. Estas cinco comparaciones se mantienen en la suite como fallos esperados, porque su causa está identificada y medida, salvo una diferencia residual de \textit{PSD Average} entre 0 y 3\,Hz, como se explica a continuación.
 
 \subsection{Análisis de las diferencias}
 \label{sec:td_diferencias}
 La suite \textit{test\_referencias\_matlab\_wavelet\_psd}, cuyas 3 pruebas se aprobaron, fija numéricamente las diferencias con la referencia, de modo que cualquier cambio en el cálculo que las agrande sea detectado:
 
 \begin{itemize}
-    \item \textbf{Transformada \textit{wavelet}.} BOARD-FTD-PACC entrega la amplitud sin la normalización por la raíz de la escala que aplica la librería PyWavelets, y con un factor de escala de unas 2,05 veces. Al dividir el escalograma de GammaLab entre la raíz de la escala y multiplicarlo por dos, la correlación global con la referencia sube de 0,83 a 0,98 para un \textit{trial} y a 0,997 para el promedio. La diferencia es, por tanto, de convención de amplitud y no de forma del escalograma.
-    \item \textbf{PSD promedio.} GammaLab retira la tendencia constante de cada segmento antes de transformarlo, que es el comportamiento por defecto de SciPy, y BOARD-FTD-PACC no lo hace. Sin retirarla, la potencia total coincide con la referencia dentro del 1\,\% y el espectro en escala logarítmica correlaciona 0,999; la diferencia restante se concentra en los primeros intervalos de frecuencia, entre 0 y 3\,Hz.
+    \item \textbf{Transformada \textit{wavelet}.} BOARD-FTD-PACC entrega la amplitud sin la normalización por la raíz de la escala que aplica la librería PyWavelets, y con un factor de escala de unas 2,05 veces. Al dividir el escalograma de Gamma Lab 2.0 entre la raíz de la escala y multiplicarlo por dos, la correlación global con la referencia sube de 0,83 a 0,98 para un \textit{trial} y a 0,997 para el promedio. La diferencia es, por tanto, de convención de amplitud y no de forma del escalograma.
+    \item \textbf{PSD promedio.} Inicialmente, Gamma Lab 2.0 retiraba la tendencia constante de cada segmento antes de transformarlo, que es el comportamiento por defecto de SciPy, mientras que BOARD-FTD-PACC y la extensión PSD no lo hacen. El cálculo se corrigió para no retirarla, con lo que la correlación lineal con la referencia subió de 0,58 a 0,93, todavía por debajo del umbral de 0,95. La potencia total coincide con la referencia dentro del 2\,\% y el espectro en escala logarítmica correlaciona por encima de 0,995; la diferencia restante se concentra en los primeros intervalos de frecuencia, entre 0 y 3\,Hz, y su causa no se ha identificado.
 \end{itemize}
 
 \subsection{Validación de PAC, índice de modulación y PPC}
-Los módulos nuevos de la versión 2.0 se validaron de forma distinta. PAC y el índice de modulación se portaron de las funciones de BOARD-FTD-PACC, y sus pruebas (124 para PAC y 27 para el índice de modulación) verifican cada paso del cálculo frente al comportamiento del código de referencia, incluidos los filtros IIR, la transformada de Morse y la agrupación de la amplitud por fase. PPC, en cambio, se aparta deliberadamente de la referencia: BOARD-FTD-PACC calcula un valor de bloqueo de fase cuyo sesgo hace que las frecuencias bajas aparezcan perfectamente acopladas con independencia de los datos, mientras que GammaLab calcula la consistencia de fase por pares sobre muestras independientes. Por ello, sus 84 pruebas de núcleo no se comparan con la referencia sino con señales sintéticas de verdad conocida: dos canales con desfase constante deben dar consistencia alta, y canales independientes, consistencia cercana a cero.
+Los módulos nuevos de la versión 2.0 se validaron de forma distinta. PAC y el índice de modulación se portaron de las funciones de BOARD-FTD-PACC, y sus pruebas (124 para PAC y 27 para el índice de modulación) verifican cada paso del cálculo frente al comportamiento del código de referencia, incluidos los filtros IIR, la transformada de Morse y la agrupación de la amplitud por fase. PPC, en cambio, se aparta deliberadamente de la referencia: BOARD-FTD-PACC calcula un valor de bloqueo de fase cuyo sesgo hace que las frecuencias bajas aparezcan perfectamente acopladas con independencia de los datos, mientras que Gamma Lab 2.0 calcula la consistencia de fase por pares sobre muestras independientes. Por ello, sus 84 pruebas de núcleo no se comparan con la referencia sino con señales sintéticas de verdad conocida: dos canales con desfase constante deben dar consistencia alta, y canales independientes, consistencia cercana a cero.
 
 \subsection{Comparación visual con el usuario}
 Como complemento de la comparación numérica, el usuario revisará las gráficas de cada análisis en ambos sistemas. La Tabla~\ref{tab:td_visual} queda preparada para registrar esa revisión.
@@ -507,7 +537,7 @@ Como complemento de la comparación numérica, el usuario revisará las gráfica
 \hline
 \caption{Registro de la comparación visual con el usuario} \label{tab:td_visual} \\
 \endlastfoot
-\textit{Average} & \rule{0pt}{2.2em} & \casilla{} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
+\textit{Average} & El usuario aprobó el funcionamiento del plugin Average en Gamma Lab 2.0 & \casilla{x} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
 \hline
 ERP & \rule{0pt}{2.2em} & \casilla{} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
 \hline
@@ -521,17 +551,17 @@ PSD & \rule{0pt}{2.2em} & \casilla{} Equivalente \newline \casilla{} Diferencia 
 \hline
 \textit{Relative PSD} & \rule{0pt}{2.2em} & \casilla{} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
 \hline
-\textit{Wavelet} & \rule{0pt}{2.2em} & \casilla{} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
+\textit{Wavelet} & El usuario aprobó el funcionamiento del plugin Wavelet en Gamma Lab 2.0 & \casilla{x} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
 \hline
 \textit{Wavelet Average} & \rule{0pt}{2.2em} & \casilla{} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
 \hline
-PAC & El usuario aprobo el funcionamiento del plugin PAC en Gamma Lab 2.0 & \casilla{x} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
+PAC & El usuario aprobó el funcionamiento del plugin PAC en Gamma Lab 2.0 & \casilla{x} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
 \hline
 PAC entre canales & \rule{0pt}{2.2em} & \casilla{} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
 \hline
 \textit{Modulation Index} & \rule{0pt}{2.2em} & \casilla{} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
 \hline
-PPC & El usuario aprobo el funcionamiento del plugin PPC en Gamma Lab 2.0 & \casilla{x} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
+PPC & El usuario aprobó el funcionamiento del plugin PPC en Gamma Lab 2.0 & \casilla{x} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
 \hline
 \end{longtable}
 \end{center}
@@ -669,7 +699,7 @@ NFR-S-03 (R69) & Servicios compartidos registrados en el núcleo & Prueba autom�
 \hline
 NFR-S-04 (R70) & Cómputo pesado por un servicio del núcleo & Pruebas automáticas del servicio de tareas y del patrón de uso (\textit{test\_task\_service}, \textit{test\_run\_task}). & Cumple. \\
 \hline
-NFR-S-05 (R77) & Nuevo \textit{plugin} sin modificar el núcleo & Pruebas automáticas con una extensión de prueba que se guarda, se restaura y se ordena sin tocar el núcleo (\textit{test\_plugin\_sin\_tocar\_nucleo}). & Cumple; una de sus cuatro pruebas falla por estar desactualizada (Sección~\ref{sec:td_resumen}). \\
+NFR-S-05 (R77) & Nuevo \textit{plugin} sin modificar el núcleo & Pruebas automáticas con una extensión de prueba que se guarda, se restaura y se ordena sin tocar el núcleo (\textit{test\_plugin\_sin\_tocar\_nucleo}). & Cumple. \\
 \hline
 \end{longtable}
 \end{center}
@@ -677,7 +707,7 @@ NFR-S-05 (R77) & Nuevo \textit{plugin} sin modificar el núcleo & Pruebas autom�
 \label{sec:td_usabilidad}
 
 \subsection{Objetivo}
-Estas pruebas evalúan la facilidad con que los investigadores del laboratorio completan las tareas habituales de su flujo de trabajo en GammaLab 2.0, y si la reorganización de la interfaz resuelve los problemas observados en las pruebas de usabilidad de la versión 1.0. Verifican, en particular, los requisitos de usabilidad NFR-U-01 a NFR-U-09.
+Estas pruebas evalúan la facilidad con que los investigadores del laboratorio completan las tareas habituales de su flujo de trabajo en Gamma Lab 2.0, y si la reorganización de la interfaz resuelve los problemas observados en las pruebas de usabilidad de la versión 1.0. Verifican, en particular, los requisitos de usabilidad NFR-U-01 a NFR-U-09.
 
 \subsection{Metodología}
 Cada sesión es individual y la conduce un moderador del equipo. El participante recibe la descripción de cada tarea, la realiza sin instrucciones adicionales y se le pide expresar en voz alta lo que piensa mientras trabaja. El moderador solo interviene si el participante solicita ayuda, y registra cada solicitud. Por cada caso se registran cuatro métricas: si la tarea se completó, el tiempo empleado, los errores cometidos y las solicitudes de ayuda. Al terminar los casos, el participante diligencia el cuestionario de satisfacción SUS (\textit{System Usability Scale}) \cite{brooke1996}.
@@ -688,7 +718,7 @@ Cada sesión es individual y la conduce un moderador del equipo. El participante
 \small
 \begin{tabularx}{\textwidth}{|X|X|X|X|X|}
 \hline
-\textbf{Equipo} & \textbf{Procesador} & \textbf{RAM} & \textbf{Sistema operativo} & \textbf{Versión de GammaLab} \\
+\textbf{Equipo} & \textbf{Procesador} & \textbf{RAM} & \textbf{Sistema operativo} & \textbf{Versión de Gamma Lab} \\
 \hline
 \rule{0pt}{2em} & & & & 2.0, instalada con \textit{GammaLab-Setup-2.0.0.exe} \\
 \hline
@@ -698,6 +728,49 @@ Cada sesión es individual y la conduce un moderador del equipo. El participante
 \end{center}
 
 Los datos de prueba son la señal \textit{17308005.abf} y, a elección del participante, señales propias del laboratorio con los parámetros de su protocolo.
+
+\subsection{Verificación automática previa}
+\label{sec:td_ut_automatica}
+Antes de las sesiones con el usuario se comprobó que el comportamiento descrito en el resultado esperado de cada caso está respaldado por la suite automática. La Tabla~\ref{tab:td_ut_automatica} relaciona cada caso con las suites que lo cubren, todas aprobadas en la ejecución del 16 de noviembre de 2026, y con los tiempos de las operaciones que involucra, medidos en esa misma ejecución con las pruebas de \textit{performance\_test} (mediana de varias repeticiones, equipo de la Tabla~\ref{tab:td_entorno}). Esta verificación no sustituye la sesión: el tiempo empleado, los errores, las solicitudes de ayuda y la satisfacción del participante solo pueden obtenerse con el usuario.
+
+\begin{center}
+\footnotesize
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.07\textwidth}|>{\raggedright\arraybackslash}p{0.30\textwidth}|>{\raggedright\arraybackslash}p{0.33\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|}
+\hline
+\textbf{Caso} & \textbf{Suites que lo respaldan} & \textbf{Comportamiento verificado} & \textbf{Tiempo medido} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Caso} & \textbf{Suites que lo respaldan} & \textbf{Comportamiento verificado} & \textbf{Tiempo medido} \\
+\hline
+\endhead
+\hline
+\endfoot
+\hline
+\caption{Respaldo automático de los casos de prueba de usabilidad} \label{tab:td_ut_automatica} \\
+\endlastfoot
+UT-01 & \textit{test\_ayudas\_controles}, \textit{test\_correcciones\_interaccion}, \textit{test\_instalacion\_rutas} & Todo control tiene descripción emergente; el panel de bienvenida aparece solo en el primer arranque; los ajustes se guardan en la carpeta del usuario. No se verifican de forma automática la pantalla de inicio ni los iconos. & Arranque del núcleo con 20 extensiones: 66\,ms \\
+\hline
+UT-02 & \textit{test\_fileio\_abf}, \textit{test\_regresion\_zoom\_resolucion}, \textit{test\_correcciones\_interaccion}, \textit{test\_indicadores\_ui} & Lectura del archivo ABF; el \textit{zoom} actúa sobre el eje elegido sin perder definición; la lectura del cursor cae en el punto de la señal más cercano. & Lectura de \textit{17308005.abf}: 56,5\,ms; tabla VTK de la señal: 37,3\,ms \\
+\hline
+UT-03 & \textit{test\_trials}, \textit{test\_trials\_por\_canal}, \textit{test\_regresion\_trials\_y\_artefactos}, \textit{test\_indicadores\_ui} & Segmentación con canal de estímulo y umbral en mV; descartes por canal; el indicador muestra el \textit{trial} en curso y su estado. & Corte de 60 \textit{trials} de 30\,501 muestras: 28,6\,ms \\
+\hline
+UT-04 & \textit{test\_medidas\_artefacto}, \textit{test\_artifact\_remove\_orquestador}, \textit{test\_persistencia\_artifact\_remove}, \textit{test\_trials\_derivados} & Las medidas del segmento no modifican los datos; cancelar no escribe nada; la remoción no toca los \textit{trials} originales y descartar el derivado los devuelve. & --- \\
+\hline
+UT-05 & \textit{test\_trials\_derivados}, \textit{test\_correcciones\_interaccion} & El filtro crea un conjunto derivado sin modificar el original y los análisis leen el derivado; el selector solo ofrece los filtros implementados. No hay una prueba específica de que \textit{Preview} no modifique los \textit{trials}. & Filtro de la señal completa: 57,3\,ms; de un \textit{trial}: 4,2\,ms \\
+\hline
+UT-06 & \textit{test\_pac\_core}, \textit{test\_pac\_grados}, \textit{test\_run\_task}, \textit{test\_regresion\_avisos} & Cálculo de PAC en sus modos; la brújula del vector medio coincide con el histograma; el progreso de la tarea llega a la extensión. & --- \\
+\hline
+UT-07 & \textit{test\_pac\_intercanal\_plugin}, \textit{test\_pac\_intercanal}, \textit{test\_ppc\_plugin\_orquestado}, \textit{test\_ppc\_core}, \textit{test\_regresion\_alineacion\_entre\_canales} & El selector del canal de amplitud aparece solo en el modo entre canales, excluye el canal activo y explica el origen de fase y amplitud; PPC rechaza canales repetidos o desalineados. & --- \\
+\hline
+UT-08 & \textit{test\_measurement}, \textit{test\_mediciones\_todos\_los\_trials}, \textit{test\_resultados\_xlsx}, \textit{test\_xlsx\_writer}, \textit{test\_emf\_export}, \textit{test\_export} & Flujos completos de pendiente y amplitud; exportación de resultados a Excel, del escalograma a EMF y de su tabla a CSV. & Dibujo del escalograma: 127\,ms \\
+\hline
+UT-09 & \textit{test\_task\_service}, \textit{test\_run\_task}, \textit{test\_cancelacion\_al\_cambiar\_seccion}, \textit{test\_regresion\_avisos} & Cancelación cooperativa; cambiar de sección cancela las tareas del módulo abandonado; un resultado tardío se descarta; la barra sigue a la tarea en ejecución. & \textit{Wavelet Average} sobre 20 \textit{trials}: 5,1\,s \\
+\hline
+UT-10 & \textit{test\_guardado\_proyecto}, \textit{test\_apertura\_proyecto}, \textit{test\_regresion\_cierre\_y\_apertura}, \textit{test\_correcciones\_interaccion} & Guardado por pasos; el cierre se comunica y pide confirmación; la apertura restaura señal, \textit{trials}, descartes y recetas sin marcar el proyecto como modificado. & --- \\
+\hline
+\end{longtable}
+\end{center}
 
 \subsection{Casos de prueba}
 
@@ -721,9 +794,9 @@ Los datos de prueba son la señal \textit{17308005.abf} y, a elección del parti
 \hline
 \textbf{Requisitos relacionados} & NFR-U-04, NFR-U-05, NFR-U-07, NFR-U-08, NFR-U-09 \\
 \hline
-\textbf{Descripción} & Evaluar si un investigador que abre GammaLab por primera vez comprende la organización de la interfaz y encuentra las funcionalidades sin ayuda externa. \\
+\textbf{Descripción} & Evaluar si un investigador que abre Gamma Lab 2.0 por primera vez comprende la organización de la interfaz y encuentra las funcionalidades sin ayuda externa. \\
 \hline
-\textbf{Datos y acciones de entrada} & Abrir GammaLab desde el acceso directo; leer el panel de bienvenida; recorrer las secciones \textit{Home}, \textit{Preprocessing} y \textit{Analysis}; situar el cursor sobre tres controles de cualquier módulo y leer su descripción emergente. \\
+\textbf{Datos y acciones de entrada} & Abrir Gamma Lab 2.0 desde el acceso directo; leer el panel de bienvenida; recorrer las secciones \textit{Home}, \textit{Preprocessing} y \textit{Analysis}; situar el cursor sobre tres controles de cualquier módulo y leer su descripción emergente. \\
 \hline
 \textbf{Resultado esperado} & La pantalla de inicio informa el avance de la carga; el panel de bienvenida aparece solo en el primer arranque; cada funcionalidad tiene icono y cada control muestra su descripción emergente. \\
 \hline
@@ -1273,10 +1346,10 @@ El participante califica cada afirmación de la Tabla~\ref{tab:td_sus} de 1 (tot
 \label{sec:td_uat}
 
 \subsection{Objetivo}
-El objetivo de estas pruebas es verificar que GammaLab 2.0 cumple los requisitos funcionales y las expectativas del usuario, validando su desempeño en condiciones reales de uso y determinando si el sistema está listo para emplearse en el trabajo de análisis del laboratorio.
+El objetivo de estas pruebas es verificar que Gamma Lab 2.0 cumple los requisitos funcionales y las expectativas del usuario, validando su desempeño en condiciones reales de uso y determinando si el sistema está listo para emplearse en el trabajo de análisis del laboratorio.
 
 \subsection{Implementación}
-El usuario ejecuta, con señales del laboratorio y con los parámetros de su flujo de trabajo, la funcionalidad asociada a cada uno de los 45 requisitos funcionales del SRS. Por cada requisito se diligencia un cuadro con la retroalimentación del usuario, el comportamiento observado en la versión 2.0 y el resultado de la prueba, que puede ser \textbf{aceptado}, \textbf{aceptado parcialmente} o \textbf{no aceptado}. El campo \textit{Antes} describe, cuando se conoce, el comportamiento de GammaLab 1.0 según su TD \cite{td2025} y la matriz de requisitos, para hacer visible el cambio entre versiones. Las pruebas se realizan en el equipo de la Tabla~\ref{tab:td_ut_entorno}.
+El usuario ejecuta, con señales del laboratorio y con los parámetros de su flujo de trabajo, la funcionalidad asociada a cada uno de los 45 requisitos funcionales del SRS. Por cada requisito se diligencia un cuadro con la retroalimentación del usuario, el comportamiento observado en la versión 2.0 y el resultado de la prueba, que puede ser \textbf{aceptado}, \textbf{aceptado parcialmente} o \textbf{no aceptado}. El campo \textit{Antes} describe, cuando se conoce, el comportamiento de Gamma Lab según su TD \cite{td2025} y la matriz de requisitos, para hacer visible el cambio entre versiones. Las pruebas se realizan en el equipo de la Tabla~\ref{tab:td_ut_entorno}.
 
 \subsection{Cuadros de aceptación}
 
@@ -1297,11 +1370,11 @@ FR-IO-01 (R08) & Persistir la señal cargada & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema persiste la señal cargada, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{La versión 1.0 dejaba de mostrar la señal abierta al cambiar entre funcionalidades.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -1338,11 +1411,11 @@ FR-IO-02 (R80) & Cargar señales ABF, EDF y MAT & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema carga señales en los formatos ABF, EDF y MAT, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{La versión 1.0 cargaba archivos ABF y EDF; la lectura de archivos MAT no estaba disponible.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -1379,11 +1452,11 @@ FR-IO-03 (R07) & Guardar un proyecto & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema puede guardar un proyecto en un archivo con la extensión .glab que registre el nombre y la ruta del archivo de señal de origen junto con el trabajo realizado sobre ella, sin incluir los datos de la señal dentro de ese archivo, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{La versión 1.0 no tenía el concepto de proyecto: el avance se perdía al cerrar la aplicación.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -1420,11 +1493,11 @@ FR-IO-04 (R78) & Abrir un proyecto guardado & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema abre un proyecto guardado, restaurando la señal referenciada y el trabajo registrado en él, e informar cuando el archivo de señal referenciado ya no esté disponible, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{La versión 1.0 no permitía retomar un trabajo guardado, porque no existía la gestión de proyectos.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -1461,11 +1534,11 @@ FR-IO-05 (R05) & Exportar los resultados de los análisis & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema exporta los resultados de la sección de análisis en los formatos Excel, CSV, JSON, JPEG, JPG, PNG y TIFF, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -1502,11 +1575,11 @@ FR-IO-06 (R09) & Una sola columna X en el CSV & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema exporta a CSV una única columna de eje X cuando todas las series comparten el mismo eje, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El archivo CSV repetía una columna de eje X por cada serie, aunque todas compartieran el mismo eje.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -1543,11 +1616,11 @@ FR-IO-07 (R28) & Nombre de exportación descriptivo & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema asigna un nombre de exportación en el que se incluya el nombre de la señal, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Los archivos exportados no incluían el nombre de la señal, lo que dificultaba identificarlos cuando se realizaban varias exportaciones.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -1584,11 +1657,11 @@ FR-UI-01 (R01) & Cortar la señal en \textit{trials} & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema permite realizar cortes de la señal, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -1625,11 +1698,11 @@ FR-UI-02 (R24) & Modificar un \textit{trial} ya creado & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema permite modificar un conjunto de \textit{trials} ya creado, regenerándolo con otros parámetros, descartando \textit{trials} o aplicándole preprocesamiento, sin alterar el conjunto original, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -1666,11 +1739,11 @@ FR-UI-03 (R25) & Restablecer parámetros por defecto & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema restablece a sus valores por defecto todos los parámetros de una funcionalidad mediante un botón Clear, presente en cada funcionalidad que se ejecute con un botón, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Para ensayar otra configuración había que corregir los parámetros campo por campo o salir del módulo y volver a entrar.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -1707,11 +1780,11 @@ FR-UI-04 (R26) & Valores X/Y bajo el cursor & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema muestra los valores de los ejes X y Y correspondientes al punto de la señal sobre el que se posiciona el cursor, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{La gráfica mostraba la forma de la señal, pero no permitía leer valores concretos sin exportar los datos.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -1748,11 +1821,11 @@ FR-UI-05 (R27) & Elegir los \textit{trials} de cada análisis & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema permite escoger qué \textit{trials} participan en cada análisis y descartar los que no deban usarse, conservándolos en el conjunto, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -1789,11 +1862,11 @@ FR-UI-06 (R29) & Ajustar la frecuencia de muestreo & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema ajusta el tiempo de muestreo, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{La frecuencia de muestreo era un valor predefinido que el usuario no podía corregir.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -1830,11 +1903,11 @@ FR-UI-07 (R30) & \textit{Zoom} en todas las direcciones & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema tiene \textit{zoom} en todas las direcciones, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El \textit{zoom} estaba limitado a un solo eje.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -1871,11 +1944,11 @@ FR-UI-08 (R31) & Mostrar el umbral en \textit{mV} & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema muestra el umbral en mV, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -1912,11 +1985,11 @@ FR-UI-09 (R32) & Mostrar \textit{Butterfly} explícitamente & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema muestra \textit{Butterfly} explicitamente, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El diagrama \textit{Butterfly} existía dentro del módulo ERP, pero no estaba señalado como tal en la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -1953,11 +2026,11 @@ FR-UI-10 (R36) & Promediar todos los \textit{trials} & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema realiza el promedio en todos los \textit{trials}, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -1994,11 +2067,11 @@ FR-UI-11 (R37) & Indicar el \textit{trial} actual & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema indica en todo momento en qué \textit{trial} se está trabajando, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{La interfaz no indicaba sobre qué \textit{trial} se estaba trabajando.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -2035,11 +2108,11 @@ FR-UI-12 (R38) & Indicar qué \textit{trials} participan & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema indica qué \textit{trials} participan en cada operación, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -2076,11 +2149,11 @@ FR-UI-13 (R40) & Remover un artefacto con medidas & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema remueve un artefacto con medidas, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -2117,11 +2190,11 @@ FR-UI-14 (R41) & Promediar los \textit{trials} seleccionados & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema promedia los \textit{trials} específicos que el usuario seleccione, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -2158,11 +2231,11 @@ FR-UI-15 (R68) & \textit{Trials} identificados por archivo y canal & Investigado
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema identifica cada conjunto de \textit{trials} por la pareja (archivo, canal) y devolver los \textit{trials} del canal solicitado, sin reemplazarlo por el último generado, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al pedir los \textit{trials} de un canal, el sistema ignoraba el canal y devolvía siempre el último conjunto generado, lo que impedía analizar más de un canal.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -2199,11 +2272,11 @@ FR-WV-01 (R33) & Escala y rango de color del escalograma & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema permite elegir el tipo de escala del escalograma de \textit{wavelet} y ajustar el rango de valores representado, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El escalograma tenía una escala fija, sin posibilidad de ajustar el rango de valores representado.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -2240,11 +2313,11 @@ FR-WV-02 (R34) & Normalizar el escalograma & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema normaliza el escalograma de \textit{wavelet} según el método que elija el usuario, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{La normalización del escalograma tenía una implementación incorrecta.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -2281,11 +2354,11 @@ FR-WV-03 (R35) & Exportar el escalograma en EMF & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema exporta \textit{wavelet} en EMF, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{La versión 1.0 no permitía exportar el escalograma en formato EMF.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -2322,11 +2395,11 @@ FR-PAC-01 (R13) & Ejecutar el análisis PAC & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema ejecuta el análisis de acoplamiento fase-amplitud (PAC) sobre una señal electrofisiológica cargada en el sistema, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Funcionalidad nueva: la versión 1.0 no incluía el análisis de acoplamiento fase-amplitud (PAC).} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -2363,11 +2436,11 @@ FR-PAC-02 (R14) & Banda de la fase & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema selecciona la banda de frecuencia correspondiente a la fase para el análisis PAC, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Funcionalidad nueva: la versión 1.0 no incluía el análisis de acoplamiento fase-amplitud (PAC).} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -2404,11 +2477,11 @@ FR-PAC-03 (R15) & Banda de la amplitud & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema selecciona la banda de frecuencia correspondiente a la amplitud para el análisis PAC, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Funcionalidad nueva: la versión 1.0 no incluía el análisis de acoplamiento fase-amplitud (PAC).} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -2445,11 +2518,11 @@ FR-PAC-04 (R16) & Intervalo temporal o \textit{trials} del análisis & Investiga
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema permite definir el intervalo temporal (o los \textit{trials}) sobre el cual se ejecutará el análisis PAC, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Funcionalidad nueva: la versión 1.0 no incluía el análisis de acoplamiento fase-amplitud (PAC).} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -2486,11 +2559,11 @@ FR-PAC-05 (R17) & Calcular el acoplamiento por fase y frecuencia & Investigador 
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema calcula, para la banda de fase seleccionada y el rango de amplitud seleccionado, un mapa de acoplamiento fase-frecuencia mediante transformada, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Funcionalidad nueva: la versión 1.0 no incluía el análisis de acoplamiento fase-amplitud (PAC).} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -2527,11 +2600,11 @@ FR-PAC-06 (R18) & Mapa de acoplamiento fase-frecuencia & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema representa los resultados del análisis PAC mediante un mapa fase-frecuencia (fase en el eje X, frecuencia de amplitud en el eje Y), sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Funcionalidad nueva: la versión 1.0 no incluía el análisis de acoplamiento fase-amplitud (PAC).} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -2568,11 +2641,11 @@ FR-PAC-07 (R19) & Distribución de amplitud según la fase & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema representa la distribución de amplitud en función de la fase (histograma de fase) obtenida durante el análisis PAC, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Funcionalidad nueva: la versión 1.0 no incluía el análisis de acoplamiento fase-amplitud (PAC).} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -2609,11 +2682,11 @@ FR-PAC-08 (R20) & Vector de acoplamiento medio & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema calcula y mostrar el valor del vector de acoplamiento medio (magnitud y ángulo) derivado del histograma de fase, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Funcionalidad nueva: la versión 1.0 no incluía el análisis de acoplamiento fase-amplitud (PAC).} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -2650,11 +2723,11 @@ FR-PAC-09 (R21) & Exportar los números de PAC & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema exporta los resultados numéricos del análisis PAC de un canal, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Funcionalidad nueva: la versión 1.0 no incluía el análisis de acoplamiento fase-amplitud (PAC).} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -2691,11 +2764,11 @@ FR-PAC-10 (R22) & Exportar las gráficas de PAC & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema exporta las representaciones gráficas generadas durante el análisis PAC de un canal, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Funcionalidad nueva: la versión 1.0 no incluía el análisis de acoplamiento fase-amplitud (PAC).} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -2732,11 +2805,11 @@ FR-PAC-11 (R23) & Guardar los parámetros de cada ejecución & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema almacena los parámetros utilizados en cada ejecución del análisis PAC junto con sus resultados, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Funcionalidad nueva: la versión 1.0 no incluía el análisis de acoplamiento fase-amplitud (PAC).} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -2773,11 +2846,11 @@ FR-PAC-12 (R60) & Elegir el canal de fase y el de amplitud & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema permite seleccionar dos canales de la misma señal: uno como fuente de fase y otro como fuente de amplitud, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Funcionalidad nueva: la versión 1.0 no incluía el análisis de acoplamiento fase-amplitud (PAC).} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -2814,11 +2887,11 @@ FR-PAC-13 (R61) & Mapa de acoplamiento entre canales & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema calcula el mapa de acoplamiento fase-frecuencia entre el canal de fase y el canal de amplitud seleccionados, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Funcionalidad nueva: la versión 1.0 no incluía el análisis de acoplamiento fase-amplitud (PAC).} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -2855,11 +2928,11 @@ FR-PAC-14 (R62) & Mismas visualizaciones que PAC de un canal & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema representa los resultados del análisis PAC inter-canal con las mismas visualizaciones que el PAC de un canal, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Funcionalidad nueva: la versión 1.0 no incluía el análisis de acoplamiento fase-amplitud (PAC).} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -2890,17 +2963,17 @@ FR-PAC-15 (R63) & PPC: dos canales y rango de frecuencias & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Descripción}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El sistema debe permitir seleccionar dos canales y un rango de frecuencias para calcular la coherencia de fase entre ellos.} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El sistema debe permitir seleccionar dos canales y un rango de frecuencias para calcular la consistencia de fase por pares entre ellos.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Criterios de aceptación}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema permite seleccionar dos canales y un rango de frecuencias para calcular la coherencia de fase entre ellos, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema permite seleccionar dos canales y un rango de frecuencias para calcular la consistencia de fase por pares entre ellos, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Funcionalidad nueva: la versión 1.0 no incluía el análisis de consistencia de fase entre canales (PPC).} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -2931,17 +3004,17 @@ FR-PAC-16 (R64) & PPC: mapa de frecuencia y tiempo & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Descripción}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El sistema debe representar la coherencia de fase mediante un mapa tiempo-frecuencia.} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El sistema debe representar la consistencia de fase por pares mediante un mapa tiempo-frecuencia.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Criterios de aceptación}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema representa la coherencia de fase mediante un mapa tiempo-frecuencia, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema representa la consistencia de fase por pares mediante un mapa tiempo-frecuencia, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Funcionalidad nueva: la versión 1.0 no incluía el análisis de consistencia de fase entre canales (PPC).} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -2972,17 +3045,17 @@ FR-PAC-17 (R65) & Exportar los números de PPC y del PAC entre canales & Investi
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Descripción}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El sistema debe exportar los resultados numéricos del análisis PAC inter-canal y de coherencia de fase (PPC).} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El sistema debe exportar los resultados numéricos del análisis PAC inter-canal y de consistencia de fase por pares (PPC).} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Criterios de aceptación}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema exporta los resultados numéricos del análisis PAC inter-canal y de coherencia de fase (PPC), sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema exporta los resultados numéricos del análisis PAC inter-canal y de consistencia de fase por pares (PPC), sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Funcionalidad nueva: la versión 1.0 no incluía el análisis de consistencia de fase entre canales (PPC).} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -3013,17 +3086,17 @@ FR-PAC-18 (R66) & Exportar las gráficas de PPC y del PAC entre canales & Invest
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Descripción}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El sistema debe exportar las representaciones gráficas del análisis PAC inter-canal y de coherencia de fase (PPC) como imagen.} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El sistema debe exportar las representaciones gráficas del análisis PAC inter-canal y de consistencia de fase por pares (PPC) como imagen.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Criterios de aceptación}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema exporta las representaciones gráficas del análisis PAC inter-canal y de coherencia de fase (PPC) como imagen, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema exporta las representaciones gráficas del análisis PAC inter-canal y de consistencia de fase por pares (PPC) como imagen, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Funcionalidad nueva: la versión 1.0 no incluía el análisis de consistencia de fase entre canales (PPC).} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -3060,11 +3133,11 @@ FR-PAC-19 (R75) & PAC Psel segmenta por ciclo de la onda lenta & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema segmenta la señal filtrada en la banda de frecuencia rápida tomando cada ciclo de la onda lenta como una época, y superponer todas las épocas en una misma gráfica de tipo butterfly con la fase del ciclo lento en el eje X, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Funcionalidad nueva: la versión 1.0 no incluía el análisis de acoplamiento fase-amplitud (PAC).} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -3101,11 +3174,11 @@ FR-PAC-20 (R76) & Filtro Butterworth pasa-banda de fase cero & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al ejecutar la funcionalidad con señales reales del laboratorio, el usuario comprueba que el sistema aplica sobre la señal activa un filtro Butterworth pasa-banda de fase cero, con frecuencia de corte inferior, frecuencia de corte superior y orden configurables por el usuario, sin errores y con un resultado coherente con lo que muestra la interfaz.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (GammaLab 1.0)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{La versión 1.0 aplicaba el filtro Butterworth; los filtros elíptico y Chebyshev provocaban bloqueos de la aplicación.} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (GammaLab 2.0, observado durante la prueba)}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
 \hline
@@ -3333,9 +3406,9 @@ NFR-S-05 & R77 & Nuevo \textit{plugin} sin modificar el núcleo & Pruebas autom�
 \end{longtable}
 \end{center}
 \capitulo{CONCLUSIONES}
-La suite automática de GammaLab 2.0 consta de 761 pruebas, de las cuales 755 se aprobaron, 5 se mantienen como fallos esperados con su causa documentada y 1 falla por estar desactualizada frente a la incorporación de PPC. Frente a la versión 1.0, cuyo TD reportó 60 pruebas unitarias \cite{td2025}, la cobertura se amplió a todos los servicios del núcleo, a los módulos nuevos de análisis y a los requisitos no funcionales.
+La suite automática de Gamma Lab 2.0 consta de 917 pruebas, de las cuales 912 se aprobaron y 5 se mantienen como fallos esperados con su causa documentada; ninguna falla. Frente a la versión 1.0, cuyo TD reportó 60 pruebas unitarias \cite{td2025}, la cobertura se amplió a todos los servicios del núcleo, a los módulos nuevos de análisis y a los requisitos no funcionales.
 
-La validación frente a BOARD-FTD-PACC confirma la equivalencia de \textit{Average}, ERP, FFT, \textit{FFT Average} y PSD. En \textit{PSD Average} y en la transformada \textit{wavelet} las diferencias se explican por decisiones de implementación concretas, medidas y documentadas, y no por errores de cálculo. Los requisitos de rendimiento se cumplen con dos matices: el peor cuadro durante la interacción con tres canales y la primera apertura del módulo PAC.
+La validación frente a BOARD-FTD-PACC confirma la equivalencia de \textit{Average}, ERP, FFT, \textit{FFT Average} y PSD. En la transformada \textit{wavelet} las diferencias se explican por una convención de amplitud distinta, medida y documentada, y no por errores de cálculo. En \textit{PSD Average} la corrección de la tendencia acercó el resultado a la referencia, pero queda una diferencia entre 0 y 3\,Hz cuya causa no se ha identificado. Los requisitos de rendimiento se cumplen con dos matices: el peor cuadro durante la interacción con tres canales y la primera apertura del módulo PAC.
 
 Quedan pendientes las pruebas de usabilidad y de aceptación con el usuario del laboratorio, cuyos casos y cuadros se encuentran preparados en las Secciones~\ref{sec:td_usabilidad} y~\ref{sec:td_uat}, así como la actualización de la prueba \textit{test\_el\_orden\_de\_botones\_viene\_de\_los\_metadatos}.
 

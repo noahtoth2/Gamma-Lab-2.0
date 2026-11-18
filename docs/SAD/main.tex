@@ -27,14 +27,14 @@
     linkcolor=black,
     urlcolor=blue,
     citecolor=black,
-    pdftitle={SAD: Gamma Lab},
-    pdfauthor={Equipo Gamma Lab}
+    pdftitle={SAD: Gamma Lab 2.0},
+    pdfauthor={Equipo Gamma Lab 2.0}
 }
 
 % ======================= ENCABEZADOS =======================
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[R]{\textbf{SAD: GAMMA LAB}}
+\fancyhead[R]{\textbf{SAD: GAMMA LAB 2.0}}
 \renewcommand{\headrulewidth}{0.4pt}
 \fancyfoot[C]{\textbf{P\'agina \thepage}}
 \renewcommand{\footrulewidth}{0.4pt}
@@ -204,18 +204,18 @@ vean en ellos el anhelo de buscar la verdad y la Justicia''\par}
 
 \subsection{Prop\'osito}
 El presente documento tiene como propósito definir y documentar la arquitectura
- de GammaLab v2.0, estableciendo los principios, decisiones y lineamientos que 
- orientan su evolución respecto a GammaLab v1.0. Para ello, describe la estructura 
+ de Gamma Lab 2.0, estableciendo los principios, decisiones y lineamientos que 
+ orientan su evolución respecto a Gamma Lab. Para ello, describe la estructura 
  arquitectónica de la solución, sus componentes principales, las relaciones entre 
  ellos y las decisiones que permiten soportar la incorporación de nuevas capacidades 
  de análisis de señales EEG, mejorar el rendimiento del sistema y facilitar su evolución y 
  extensibilidad. Asimismo, presenta las vistas arquitectónicas bajo el modelo 4+1 y establece 
  los criterios necesarios para evaluar que la arquitectura propuesta responda a los atributos 
  de calidad definidos para el sistema, manteniendo coherencia con los requerimientos y objetivos 
- establecidos para GammaLab v2.0.
+ establecidos para Gamma Lab 2.0.
 
 \subsection{Alcance}
-Este documento abarca la arquitectura de Gamma Lab v2.0. En primer lugar,
+Este documento abarca la arquitectura de Gamma Lab 2.0. En primer lugar,
 presenta el contexto del sistema: la arquitectura de partida de Gamma Lab
 v1.0, el diagnóstico de sus limitaciones y las restricciones de software,
 hardware y datos que condicionan el diseño. A continuación, identifica a los
@@ -258,7 +258,7 @@ DI & Dependency Injection. T\'ecnica para resolver dependencias desde un contene
 MVP / MVC & Patrones de separaci\'on de interfaz y l\'ogica (Model--View--Presenter / Model--View--Controller). \\
 Adapter & Patr\'on para estandarizar interfaces incompatibles. \\
 Caching & Estrategia para evitar recalcular o recomponer estructuras de datos. \\
-Python & Lenguaje de programaci\'on principal de \textit{Gamma Lab}. \\
+Python & Lenguaje de programaci\'on principal de \textit{Gamma Lab 2.0}. \\
 PyQt5 & Framework de interfaz gr\'afica basado en Qt para Python. \\
 VTK & Visualization Toolkit. Biblioteca para visualizaci\'on cient\'ifica 2D/3D. \\
 QVTK & Interfaz \texttt{QVTKRenderWindowInteractor} para incrustar VTK en aplicaciones Qt. \\
@@ -270,12 +270,12 @@ GUI Toolkit & Conjunto de herramientas para construir interfaces gr\'aficas (Qt,
 \end{longtable}
 
 \subsection{Audiencia}
-Este documento está dirigido al equipo de desarrollo, así como a cualquier stakeholder con formación técnica que requiera comprender las decisiones arquitectónicas del sistema. Asimismo, está orientado a todos los investigadores y personas del Laboratorio de Electrofisiología de la Universidad de Colombia que estén interesados en conocer la estructura interna, los principios de diseño y los mecanismos de GammaLab v2.0 para el uso, mantenimiento y futuros cambios.
+Este documento está dirigido al equipo de desarrollo, así como a cualquier stakeholder con formación técnica que requiera comprender las decisiones arquitectónicas del sistema. También está dirigido a los investigadores y demás personas del Laboratorio de Electrofisiología de la Universidad Nacional de Colombia que estén interesados en conocer la estructura interna, los principios de diseño y los mecanismos de Gamma Lab 2.0 para el uso, mantenimiento y futuros cambios.
 
 \subsection{Referencias relacionadas}
 Este SAD se alinea con:
 \begin{itemize}[nosep]
-    \item \textbf{SRS de Gamma Lab}: requisitos funcionales y no funcionales del sistema.
+    \item \textbf{SRS de Gamma Lab 2.0}: requisitos funcionales y no funcionales del sistema.
 \end{itemize}
 
 Las referencias t\'ecnicas externas (PyQt, VTK, NumPy, EDF/ABF, YAML).
@@ -285,7 +285,7 @@ Las referencias t\'ecnicas externas (PyQt, VTK, NumPy, EDF/ABF, YAML).
 
 \subsection{Visión General}
 
-Gamma Lab está construido sobre una arquitectura de microkernel, en la que un núcleo mínimo (Kernel) coordina la aplicación y la funcionalidad de dominio se delega en plugins independientes. El núcleo actúa como registro de servicios y de extensiones, y ofrece además un canal de eventos para comunicar los componentes. Los 16 plugins actuales se descubren automáticamente durante el arranque a partir de un descriptor declarativo (\texttt{properties.yml}). Cada uno implementa el contrato común \texttt{IPlugin}, y todos acceden al estado de la aplicación a través de un servicio compartido, el \texttt{DataStore}.
+Gamma Lab está construido sobre una arquitectura de microkernel, en la que un núcleo mínimo (Kernel) coordina la aplicación y la funcionalidad de dominio se delega en plugins independientes. El núcleo actúa como registro de servicios y de extensiones, y ofrece además un canal de eventos para comunicar los componentes. Los 16 plugins de la versión 1.0 se descubren automáticamente durante el arranque a partir de un descriptor declarativo (\texttt{properties.yml}). Cada uno implementa el contrato común \texttt{IPlugin}, y todos acceden al estado de la aplicación a través de un servicio compartido, el \texttt{DataStore}.
 
 
 Teniendo en cuenta que Gamma Lab 2.0 parte de una base funcional y arquitectónica ya construida, se llevó a cabo un diagnóstico de la arquitectura inicial con el propósito de evaluar su estado actual, identificar las limitaciones de la implementación existente y reconocer oportunidades de mejora. Los resultados de este análisis se presentan en las siguientes secciones.
@@ -293,7 +293,7 @@ Teniendo en cuenta que Gamma Lab 2.0 parte de una base funcional y arquitectóni
 \subsubsection{Núcleo con pocas responsabilidades y contratos débiles}
 \label{sec:diag_nucleo}
 
-En Gamma Lab 1.0 el núcleo se limita a ser un registro pasivo: mantiene dos diccionarios, uno de plugins y otro de servicios, y un canal de eventos genérico. No asume responsabilidades propias del estilo microkernel, como gestionar el ciclo de vida de las extensiones, mediar su comunicación o verificar sus dependencias. El resultado es un \textit{anemic kernel}: el núcleo existe estructuralmente, pero no gobierna el comportamiento del sistema en tiempo de ejecución.
+En Gamma Lab el núcleo se limita a ser un registro pasivo: mantiene dos diccionarios, uno de plugins y otro de servicios, y un canal de eventos genérico. No asume responsabilidades propias del estilo microkernel, como gestionar el ciclo de vida de las extensiones, mediar su comunicación o verificar sus dependencias. El resultado es un \textit{anemic kernel}: el núcleo existe estructuralmente, pero no gobierna el comportamiento del sistema en tiempo de ejecución.
 
 La carencia más visible es la ausencia de gestión del ciclo de vida. Aunque \texttt{Kernel} dispone de \texttt{stop\_plugins()}, ningún componente lo invoca y no existen estados ni transiciones que permitan controlar las extensiones. En consecuencia, el cierre de la aplicación no garantiza la liberación ordenada de recursos como contextos gráficos e hilos en ejecución, ni es posible descargar o recargar una extensión sin reiniciar el sistema.
 
@@ -325,9 +325,9 @@ Por último, los recursos gráficos siguen la misma lógica de retención. Cada 
 \subsubsection{Concurrencia y procesos pesados}
 \label{sec:diag_concurrencia}
 
-GammaLab 1.0 no define un modelo de concurrencia a nivel arquitectónico. Por defecto, todo el procesamiento se ejecuta de forma síncrona en el hilo principal, el mismo que atiende el bucle de eventos de la interfaz gráfica. Por lo que, ante operaciones de varios segundos o minutos, el usuario no puede distinguir un procesamiento en curso de un fallo.
+Gamma Lab no define un modelo de concurrencia a nivel arquitectónico. Por defecto, todo el procesamiento se ejecuta de forma síncrona en el hilo principal, el mismo que atiende el bucle de eventos de la interfaz gráfica. Por eso, ante operaciones de varios segundos o minutos, el usuario no puede distinguir un procesamiento en curso de un fallo.
 
-La concurrencia aparece solo como una decisión local de cada plugin. De los 16 plugins, únicamente dos delegan su cálculo en un hilo secundario, y cada uno lo hace con un patrón distinto:
+La concurrencia aparece solo como una decisión local de cada plugin. De sus 16 plugins, únicamente dos delegan su cálculo en un hilo secundario, y cada uno lo hace con un patrón distinto:
 
 \begin{itemize}
     \item El promedio de \textit{wavelets} hereda de \texttt{QThread}.
@@ -344,7 +344,7 @@ Por último, el sistema carece de control de admisión. Antes de ejecutar un pro
 \subsubsection{Tolerancia a fallos y Observabilidad}
 \label{sec:diag_fallos}
 
-Gamma Lab se ejecuta en un único proceso sin fronteras de aislamiento entre ellos. Un error nativo en VTK, un \texttt{MemoryError} o una excepción no capturada dentro de un \textit{slot} de Qt terminan con la aplicación completa, porque no existe un manejador global (\texttt{sys.excepthook}) que lo impida. El usuario pierde así todas las señales, segmentaciones y correcciones de la sesión. El cargador omite en silencio los plugins que fallan al importarse, y el núcleo mantiene registrados aquellos cuya inicialización falló. Los errores no se corrigen, solo se ocultan: el sistema continúa en un estado inconsistente y el usuario se encuentra con funcionalidades ausentes o con comportamientos erráticos, sin una explicación.
+Gamma Lab se ejecuta en un único proceso sin fronteras de aislamiento entre sus componentes. Un error nativo en VTK, un \texttt{MemoryError} o una excepción no capturada dentro de un \textit{slot} de Qt terminan con la aplicación completa, porque no existe un manejador global (\texttt{sys.excepthook}) que lo impida. El usuario pierde así todas las señales, segmentaciones y correcciones de la sesión. El cargador omite en silencio los plugins que fallan al importarse, y el núcleo mantiene registrados aquellos cuya inicialización falló. Así, los errores quedan ocultos: el sistema continúa en un estado inconsistente y el usuario se encuentra con funcionalidades ausentes o con comportamientos erráticos, sin una explicación.
 
 Estas fallas son difíciles de diagnosticar por la ausencia de observabilidad. El sistema no utiliza un mecanismo de registro estructurado. La información se emite con llamadas a \texttt{print}, sin niveles de severidad, marcas de tiempo ni identificación del componente de origen. Además, como la aplicación se ejecuta desde una consola, esa salida no se persiste y se pierde justamente cuando ocurre un cierre inesperado. Ante un fallo reportado no existe un registro que permita reconstruir qué operación se ejecutaba ni en qué estado estaba el sistema, por lo que el diagnóstico depende de reproducir manualmente el error.
 
@@ -355,7 +355,7 @@ Estas fallas son difíciles de diagnosticar por la ausencia de observabilidad. E
 \subsubsection{Software}
 Las siguientes condiciones tecnológicas forman parte del punto de partida del sistema:
 \begin{itemize}[nosep]
-    \item GammaLab está desarrollado en Python y se ejecuta sobre CPython, su intérprete de referencia.
+    \item Gamma Lab está desarrollado en Python y se ejecuta sobre CPython, su intérprete de referencia.
     \item La interfaz gráfica está construida con el \textit{framework} Qt, mediante el enlace para Python PyQt5 (versión 5.15).
     \item La visualización de señales y resultados se realiza con la librería VTK, que utiliza OpenGL como motor de renderizado.
     \item La arquitectura base del sistema es un microkernel, en el que un núcleo central coordina un conjunto de plugins.
@@ -398,14 +398,14 @@ Las características de los datos que procesa el sistema también condicionan su
 
 \subsubsection{Identificación de los interesados}
 
-Un \textit{stakeholder} es toda persona o entidad que afecta el desarrollo de GammaLab v2.0 o se ve afectada por él. La identificación que se presenta a continuación es coherente con la estructura organizacional y la distribución de roles definidas en el PMP: el Laboratorio de Electrofisiología de la Universidad Nacional de Colombia actúa como cliente, usuario final y validador; la directora del proyecto actúa como \textit{Product Owner} y puente entre el cliente y el equipo; y el equipo de desarrollo, conformado por cuatro estudiantes con un integrante que asume funciones equivalentes a \textit{Scrum Master}, ejecuta el trabajo técnico. A ellos se suman los revisores académicos del trabajo de grado, que evalúan el producto final, y la comunidad científica, beneficiaria indirecta por la naturaleza de código abierto del sistema (licencia MIT).
+Un \textit{stakeholder} es toda persona o entidad que afecta el desarrollo de Gamma Lab 2.0 o se ve afectada por él. La identificación que se presenta a continuación es coherente con la estructura organizacional y la distribución de roles definidas en el PMP: el Laboratorio de Electrofisiología de la Universidad Nacional de Colombia actúa como cliente, usuario final y validador; la directora del proyecto actúa como \textit{Product Owner} y puente entre el cliente y el equipo; y el equipo de desarrollo, conformado por cuatro estudiantes con un integrante que asume funciones equivalentes a \textit{Scrum Master}, ejecuta el trabajo técnico. A ellos se suman los revisores académicos del trabajo de grado, que evalúan el producto final, y la comunidad científica, beneficiaria indirecta por la naturaleza de código abierto del sistema (licencia MIT).
 
 \begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.3cm}
                   >{\raggedright\arraybackslash}p{2.7cm}
                   >{\raggedright\arraybackslash}p{5.7cm}
                   >{\raggedright\arraybackslash}p{3.0cm}@{}}
 
-\caption{Stakeholders de GammaLab v2.0, rol según el PMP y necesidades que condicionan la arquitectura} \label{tab:stakeholders} \\
+\caption{Stakeholders de Gamma Lab 2.0, rol según el PMP y necesidades que condicionan la arquitectura} \label{tab:stakeholders} \\
 \toprule
 \textbf{Stakeholder} &
 \textbf{Rol en el proyecto} &
@@ -456,7 +456,7 @@ Soporte, Rendimiento.
 &
 Evalúan el cumplimiento de los entregables y de los objetivos.
 &
-Verificar el cumplimiento de los requisitos y de la metodología, y poder constatar con evidencia cuantitativa la mejora de GammaLab v2.0 respecto a la versión~1.0.
+Verificar el cumplimiento de los requisitos y de la metodología, y poder constatar con evidencia cuantitativa la mejora de Gamma Lab 2.0 respecto a la versión~1.0.
 &
 Rendimiento, Confiabilidad (verificabilidad).
 \\[0.3cm]
@@ -474,7 +474,7 @@ Soporte, Confiabilidad.
 
 \subsubsection{Cómo se interpreta la tabla}
 
-La distinción entre el Laboratorio y la directora es deliberada. El Laboratorio es quien usa el sistema y valida los resultados; la directora, en su rol de \textit{Product Owner}, canaliza y prioriza esas necesidades ante el equipo. Por ello, los requisitos del Laboratorio se tratan como \textbf{requisitos primarios}, mientras que los de los demás interesados cumplen una función de gobierno (directora y revisores) o de sostenibilidad (equipo y comunidad). El equipo de desarrollo es, además, quien convive con las consecuencias de la arquitectura a largo plazo, razón por la cual su interés en la extensibilidad y la mantenibilidad pesa tanto como el del usuario final en la usabilidad.
+El Laboratorio y la directora se tratan como interesados distintos. El Laboratorio es quien usa el sistema y valida los resultados; la directora, en su rol de \textit{Product Owner}, canaliza y prioriza esas necesidades ante el equipo. Por ello, los requisitos del Laboratorio se tratan como \textbf{requisitos primarios}, mientras que los de los demás interesados cumplen una función de gobierno (directora y revisores) o de sostenibilidad (equipo y comunidad). El equipo de desarrollo es, además, quien convive con las consecuencias de la arquitectura a largo plazo, razón por la cual su interés en la extensibilidad y la mantenibilidad pesa tanto como el del usuario final en la usabilidad.
 
 La Tabla~\ref{tab:stakeholders_calidad} resume qué atributos de calidad importan a cada interesado. Un círculo lleno ($\bullet$) indica un interés principal, derivado directamente de sus necesidades; un círculo vacío ($\circ$) indica un interés secundario.
 
@@ -521,7 +521,7 @@ El PMP define criterios de éxito cuantificables para el proyecto. No todos son 
 \bottomrule
 \endlastfoot
 
-Mejora de al menos 20--30\,\% en los tiempos de procesamiento respecto a GammaLab v1.0, derivada de la paralelización.
+Mejora de al menos 20--30\,\% en los tiempos de procesamiento respecto a Gamma Lab, derivada de la paralelización.
 &
 Rendimiento
 &
@@ -573,7 +573,7 @@ La clasificación sigue el modelo FURPS+ \cite{eeles2001} adoptado por el SRS, d
                   >{\raggedright\arraybackslash}p{4.8cm}
                   >{\raggedright\arraybackslash}p{2.2cm}@{}}
 
-\caption{Resumen de los atributos de calidad de GammaLab v2.0} \label{tab:resumen_atributos} \\
+\caption{Resumen de los atributos de calidad de Gamma Lab 2.0} \label{tab:resumen_atributos} \\
 \toprule
 \textbf{Atributo} &
 \textbf{Qué garantiza} &
@@ -667,7 +667,7 @@ Cada atributo se desarrolla a continuación en cuatro partes: por qué importa, 
 
 \subsubsection{Usabilidad}
 
-\textbf{Por qué importa.} El diferenciador del producto, según el PMP, es ser la única herramienta gratuita con interfaz gráfica intuitiva que no requiere programar. Si el investigador necesita asistencia para operar el sistema, ese diferenciador se pierde. La usabilidad es, por tanto, el criterio con el que el Laboratorio validará el producto en la Fase~4.
+\textbf{Por qué importa.} El diferenciador del producto, según el PMP, es ser una herramienta gratuita, con interfaz gráfica y que no requiere programar. Si el investigador necesita asistencia para operar el sistema, ese diferenciador se pierde. La usabilidad es, por tanto, el criterio con el que el Laboratorio validará el producto en la Fase~4.
 
 \textbf{Qué se exige.} Toda operación que tarde más de 1~s debe mostrar progreso (NFR-U-03); los mensajes deben diferenciar información, advertencia y error (NFR-U-01); el resultado debe mostrarse en la misma pantalla en que se solicitó (NFR-U-02); cada control relevante debe tener una descripción emergente (NFR-U-07) e icono (NFR-U-04); las funcionalidades de edición deben concentrarse en \textit{Home} (NFR-U-08); y el sistema debe dar la bienvenida a usuarios nuevos y mostrar una pantalla de inicio durante la carga (NFR-U-05, NFR-U-09).
 
@@ -682,7 +682,7 @@ Cada atributo se desarrolla a continuación en cuatro partes: por qué importa, 
 
 \subsubsection{Soporte}
 
-\textbf{Por qué importa.} GammaLab v2.0 nace como una evolución de la versión~1.0 y se concibe para seguir creciendo: nuevos análisis, nuevos formatos y nuevas necesidades de otros laboratorios. El Soporte agrupa lo necesario para que ese crecimiento no degrade lo ya construido, y es el atributo que más interesa al equipo de desarrollo y a la comunidad que reutilice el código.
+\textbf{Por qué importa.} Gamma Lab 2.0 nace como una evolución de la versión~1.0 y se concibe para seguir creciendo: nuevos análisis, nuevos formatos y nuevas necesidades de otros laboratorios. El Soporte agrupa lo necesario para que ese crecimiento no degrade lo ya construido, y es el atributo que más interesa al equipo de desarrollo y a la comunidad que reutilice el código.
 
 \textbf{Qué se exige.} Un nuevo plugin de análisis debe poder incorporarse registrándolo en el núcleo, sin modificar el núcleo ni los plugins existentes (NFR-S-05); ningún módulo debe alcanzar la estructura interna de los datos, sino usar una vía pública única para leer, modificar e invalidar los trials (NFR-S-02); los servicios compartidos de exportación, medición y ajustes deben ser entregados por el núcleo con una única instancia (NFR-S-03); la ejecución pesada debe pasar por un servicio de tareas (NFR-S-04); y el sistema debe poder instalarse con un ejecutable que registre la extensión de proyecto \texttt{.glab} (NFR-S-01).
 
@@ -755,14 +755,14 @@ El servicio de tareas incorpora la notificación de progreso como parte de su co
 \subsection{Supuestos}
 \label{sec:supuestos}
 
-Un supuesto es una condición que se considera cierta durante el diseño sin que el sistema pueda garantizarla. Documentarlos es importante porque, si alguno deja de cumplirse, las decisiones que dependen de él deben revisarse. Por eso, la Tabla~\ref{tab:supuestos} registra, para cada supuesto, su fuente y la consecuencia de que no se cumpla. Las restricciones que limitan el diseño, a diferencia de los supuestos, se establecen en la Sección~\ref{sec:limitaciones} (\textit{Limitaciones del sistema}).
+Un supuesto es una condición que se considera cierta durante el diseño sin que el sistema pueda garantizarla. Se documentan porque, si alguno deja de cumplirse, las decisiones que dependen de él deben revisarse. Por eso, la Tabla~\ref{tab:supuestos} registra, para cada supuesto, su fuente y la consecuencia de que no se cumpla. Las restricciones que limitan el diseño, a diferencia de los supuestos, se establecen en la Sección~\ref{sec:limitaciones} (\textit{Limitaciones del sistema}).
 
 \begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.1cm}
                   >{\raggedright\arraybackslash}p{6.2cm}
                   >{\raggedright\arraybackslash}p{1.9cm}
                   >{\raggedright\arraybackslash}p{5.5cm}@{}}
 
-\caption{Supuestos de GammaLab v2.0, su fuente y su impacto} \label{tab:supuestos} \\
+\caption{Supuestos de Gamma Lab 2.0, su fuente y su impacto} \label{tab:supuestos} \\
 \toprule
 \textbf{ID} &
 \textbf{Supuesto} &
@@ -902,7 +902,7 @@ Sería necesario rediseñar el núcleo, con impacto en el alcance y el cronogram
 \\[0.15cm]
 
 A-14 &
-Los módulos desarrollados por terceros respetan la arquitectura modular y las interfaces definidas por GammaLab.
+Los módulos desarrollados por terceros respetan la arquitectura modular y las interfaces definidas por Gamma Lab 2.0.
 &
 SRS
 &
@@ -960,7 +960,7 @@ D13 & Todo se ejecuta en un único proceso sin manejador global de excepciones: 
 \hline
 D14 & Los errores se ocultan y el sistema no es observable: el usuario no recibe una explicación cuando una funcionalidad falla, y la información de diagnóstico se emite con \texttt{print}, sin niveles de severidad ni identificación del componente de origen.  \\
 \hline
-\caption{Síntesis del diagnóstico de Gamma Lab 1.0} \label{tab:sintesis_diagnostico} \\
+\caption{Síntesis del diagnóstico de Gamma Lab} \label{tab:sintesis_diagnostico} \\
 \end{longtable}
 \end{center}
 
@@ -977,7 +977,7 @@ Gamma Lab 2.0 mantiene el estilo microkernel: un núcleo estable ofrece los serv
     \item Verificar durante la carga que el descriptor de cada extensión contenga los campos obligatorios.
 \end{itemize}
 
-Se consideraron dos alternativas. Reescribir el sistema como un monolito en capas habría simplificado el control del flujo, pero obligaba a reescribir las dieciséis extensiones existentes y sacrificaba la extensibilidad, que es una necesidad explícita del laboratorio. Un estilo de tuberías y filtros se ajusta bien al procesamiento de señales, pero no a una aplicación interactiva en la que el usuario navega entre módulos que comparten el mismo estado. El microkernel permite conservar las extensiones existentes y, al mismo tiempo, concentrar en el núcleo el control que hoy está disperso.
+Se consideraron dos alternativas. Reescribir el sistema como un monolito en capas habría simplificado el control del flujo, pero obligaba a reescribir las dieciséis extensiones existentes y sacrificaba la extensibilidad, que es una necesidad explícita del laboratorio. Un estilo de tuberías y filtros se ajusta bien al procesamiento de señales, pero no a una aplicación interactiva en la que el usuario navega entre módulos que comparten el mismo estado. El microkernel permite conservar las extensiones existentes y, al mismo tiempo, concentrar en el núcleo el control que en la versión 1.0 estaba disperso.
 
 El núcleo no asume todas estas responsabilidades por sí mismo, sino que las distribuye entre un conjunto de servicios que no son reemplazables por extensiones:
 
@@ -1208,7 +1208,7 @@ Las secciones siguientes describen cada uno. La Figura~\ref{fig:vistacasosuso} p
     \label{fig:vistacasosuso}
 \end{figure}
 
-La Figura~\ref{fig:vistacasosuso} revela que el subsistema \textbf{N\'ucleo y Ciclo de Vida}, en particular CU-020, el orquestador de tareas, es el verdadero centro de gravedad arquitect\'onico: diez de los otros veintid\'os casos de uso lo incluyen expl\'icitamente. Esa centralidad se concreta a continuaci\'on en tres escenarios representativos.
+La Figura~\ref{fig:vistacasosuso} muestra que el subsistema \textbf{N\'ucleo y Ciclo de Vida}, en particular CU-020, el orquestador de tareas, es el centro de la arquitectura: diez de los otros veintid\'os casos de uso lo incluyen expl\'icitamente. Esa centralidad se concreta a continuaci\'on en tres escenarios representativos.
 
 
 \subsubsection{Subsistema Interfaz y Usabilidad}
@@ -1242,7 +1242,7 @@ El diagrama tambi\'en muestra un segundo agrupamiento, formado por CU-012 y CU-0
 
 Por \'ultimo, CU-009 aparece en el diagrama vinculado con CU-019 mediante una relaci\'on de extensi\'on. Este caso de uso representa una operaci\'on sobre el estado del formulario de cada funcionalidad: restablece los par\'ametros a sus valores por defecto sin modificar los resultados ya presentados ni los datos en memoria. Su ejecuci\'on est\'a condicionada a que no exista un c\'omputo en curso lanzado desde ese formulario, lo que mantiene la coherencia entre los par\'ametros mostrados y la tarea en ejecuci\'on.
 
-En conjunto, el subsistema resuelve dentro de la capa de presentaci\'on los atributos de calidad m\'as sensibles para el usuario: la capacidad de respuesta, la fluidez del renderizado y el consumo acotado de memoria y recursos gr\'aficos. Al concentrar su conexi\'on con el resto del sistema en CU-008, mantiene la l\'ogica de interacci\'on desacoplada de la l\'ogica de procesamiento y delega la ejecuci\'on de las operaciones pesadas en el orquestador del n\'ucleo.
+Así, el subsistema resuelve dentro de la capa de presentaci\'on los atributos de calidad m\'as sensibles para el usuario: la capacidad de respuesta, la fluidez del renderizado y el consumo acotado de memoria y recursos gr\'aficos. Al concentrar su conexi\'on con el resto del sistema en CU-008, mantiene la l\'ogica de interacci\'on desacoplada de la l\'ogica de procesamiento y delega la ejecuci\'on de las operaciones pesadas en el orquestador del n\'ucleo.
 
 \subsubsection{Subsistema N\'ucleo y Ciclo de Vida}
 
@@ -1312,7 +1312,7 @@ La \'unica relaci\'on interna del subsistema es la inclusi\'on de CU-004 por par
 
 M\'as all\'a de las relaciones representadas, los casos de uso del subsistema comparten un mismo principio de dise\~no: los datos originales no se modifican. Cada transformaci\'on se registra como un conjunto derivado de la se\~nal o de los trials, y el acceso al modelo se hace siempre a trav\'es de su API p\'ublica, sin que ninguna extensi\'on manipule su estructura interna. Cuando un cambio afecta a datos ya representados o analizados, el sistema invalida las cach\'es dependientes y advierte qu\'e resultados quedaron desactualizados. Con este principio se conserva la trazabilidad entre la se\~nal original y cada una de sus transformaciones, y se reduce el acoplamiento entre las extensiones y el modelo de datos.
 
-En conjunto, el subsistema act\'ua como la etapa de acondicionamiento previa al an\'alisis. Combina la delegaci\'on de la ejecuci\'on en el n\'ucleo con la preservaci\'on de los datos originales, de modo que el investigador puede probar distintas transformaciones sin perder la se\~nal de partida.
+El subsistema act\'ua, por tanto, como la etapa de acondicionamiento previa al an\'alisis. Combina la delegaci\'on de la ejecuci\'on en el n\'ucleo con la preservaci\'on de los datos originales, de modo que el investigador puede probar distintas transformaciones sin perder la se\~nal de partida.
 
 \subsubsection{Subsistema An\'alisis}
 
@@ -1328,7 +1328,7 @@ El subsistema \textbf{An\'alisis} agrupa los c\'omputos que extraen informaci\'o
         \hline
         CU-001 & An\'alisis PAC de un canal & Calcula el acoplamiento fase-amplitud entre dos bandas de frecuencia de un mismo canal, sobre un trial \'unico o el promedio de trials. \\
         \hline
-        CU-002 & An\'alisis PAC de dos canales / PPC & Calcula el acoplamiento fase-amplitud entre dos canales distintos, o la coherencia de fase entre ellos. \\
+        CU-002 & An\'alisis PAC de dos canales / PPC & Calcula el acoplamiento fase-amplitud entre dos canales distintos, o la consistencia de fase por pares entre ellos. \\
         \hline
         CU-013 & Calcular Wavelet & Calcula la transformada wavelet de la se\~nal con normalizaci\'on y escala configurables, y presenta el escalograma tiempo-frecuencia. \\
         \hline
@@ -1339,11 +1339,11 @@ El subsistema \textbf{An\'alisis} agrupa los c\'omputos que extraen informaci\'o
 
 En el diagrama, todos los casos de uso concretos del subsistema mantienen una relaci\'on de inclusi\'on con el orquestador del n\'ucleo (CU-020). Esto es consecuente con la naturaleza del subsistema, que re\'une los c\'omputos m\'as costosos del sistema. Delegar su ejecuci\'on en el n\'ucleo permite que la interfaz siga respondiendo durante el c\'alculo, que el usuario pueda cancelarlo y que los resultados se publiquen en el estado compartido de forma sincronizada. Cada extensi\'on de an\'alisis queda as\'i limitada a su l\'ogica de c\'alculo, sin intervenir en la gesti\'on de la concurrencia.
 
-La relaci\'on interna del subsistema es una generalizaci\'on: CU-001 y CU-002 especializan el caso de uso abstracto Ejecutar an\'alisis PAC / PPC, que define el procedimiento com\'un de c\'alculo del acoplamiento fase-amplitud y sus visualizaciones. Las especializaciones se distinguen por el origen de los datos. CU-001 toma la fase y la amplitud de un mismo canal, y CU-002 las toma de canales distintos y a\~nade la coherencia de fase. Esta estructura permite reutilizar el comportamiento com\'un y agregar nuevas variantes de acoplamiento sin modificar las existentes.
+La relaci\'on interna del subsistema es una generalizaci\'on: CU-001 y CU-002 especializan el caso de uso abstracto Ejecutar an\'alisis PAC / PPC, que define el procedimiento com\'un de c\'alculo del acoplamiento fase-amplitud y sus visualizaciones. Las especializaciones se distinguen por el origen de los datos. CU-001 toma la fase y la amplitud de un mismo canal, y CU-002 las toma de canales distintos y a\~nade la consistencia de fase por pares. Esta estructura permite reutilizar el comportamiento com\'un y agregar nuevas variantes de acoplamiento sin modificar las existentes.
 
 CU-013 y CU-015 no participan en esta jerarqu\'ia y se representan como an\'alisis independientes. CU-013 produce la representaci\'on tiempo-frecuencia de la se\~nal y tiene un tiempo m\'aximo de c\'omputo definido. CU-015 produce la serie promediada de los trials y opera sobre el subconjunto seleccionado en el subsistema Preprocesamiento.
 
-En conjunto, el subsistema consume los datos acondicionados por el preprocesamiento y produce los resultados que despu\'es se visualizan y exportan. Al delegar la ejecuci\'on en el n\'ucleo y organizar los an\'alisis de acoplamiento mediante generalizaci\'on, el subsistema puede crecer con nuevos an\'alisis sin afectar la estabilidad de la interfaz ni la estructura de los an\'alisis existentes.
+El subsistema consume los datos acondicionados por el preprocesamiento y produce los resultados que despu\'es se visualizan y exportan. Al delegar la ejecuci\'on en el n\'ucleo y organizar los an\'alisis de acoplamiento mediante generalizaci\'on, el subsistema puede crecer con nuevos an\'alisis sin afectar la estabilidad de la interfaz ni la estructura de los an\'alisis existentes.
 
 \subsubsection{Subsistema Exportaci\'on}
 
@@ -1364,11 +1364,11 @@ El subsistema \textbf{Exportaci\'on} agrupa los casos de uso que trasladan el tr
     \end{tabular}
 \end{table}
 
-En el diagrama, el subsistema se conecta con el resto del sistema mediante una \'unica relaci\'on: la inclusi\'on de CU-005 por parte de CU-021, Cerrar un proyecto, del subsistema N\'ucleo y Ciclo de Vida. Esta relaci\'on expresa que el guardado del proyecto no es una operaci\'on aislada, sino una parte obligatoria del ciclo de vida del proyecto: toda operaci\'on que cierre o reemplace el proyecto activo pasa por el mismo mecanismo de persistencia. El archivo de proyecto almacena una referencia a la se\~nal de origen junto con los trials, los an\'alisis y sus par\'ametros, sin duplicar los datos de la se\~nal. As\'i, el proyecto se mantiene liviano y puede restaurarse a partir del archivo original.
+En el diagrama, el subsistema se conecta con el resto del sistema mediante una \'unica relaci\'on: la inclusi\'on de CU-005 por parte de CU-021, Cerrar un proyecto, del subsistema N\'ucleo y Ciclo de Vida. Esta relaci\'on expresa que el guardado del proyecto no es una operaci\'on aislada, sino una parte obligatoria del ciclo de vida del proyecto: toda operaci\'on que cierre o reemplace el proyecto activo pasa por el mismo mecanismo de persistencia. El proyecto es una carpeta con una copia de la se\~nal de origen y un manifiesto (\textit{.glab}) que registra los trials, los an\'alisis y sus par\'ametros; los resultados num\'ericos no se guardan, sino que se recalculan al abrir. As\'i, el manifiesto se mantiene liviano y el proyecto puede abrirse en otro equipo.
 
 CU-017 se representa sin relaciones con otros casos de uso, porque es una operaci\'on que el usuario invoca directamente sobre una visualizaci\'on ya generada. Complementa a CU-005 con un formato vectorial que conserva cada elemento gr\'afico por separado, en lugar de una imagen plana. Los dos casos de uso comparten las mismas convenciones de salida: el nombre sugerido del archivo incluye el nombre de la se\~nal original y los tiempos de exportaci\'on est\'an acotados seg\'un el tipo de contenido.
 
-En conjunto, el subsistema cierra el flujo de trabajo del sistema, ya que convierte los resultados producidos por los subsistemas Preprocesamiento y An\'alisis en artefactos persistentes y reutilizables fuera de la aplicaci\'on. Al integrarse con el n\'ucleo a trav\'es del cierre del proyecto, el sistema asegura que el trabajo del investigador pueda conservarse antes de liberar los recursos de la sesi\'on.
+El subsistema cierra el flujo de trabajo: convierte los resultados producidos por los subsistemas Preprocesamiento y An\'alisis en artefactos persistentes y reutilizables fuera de la aplicaci\'on. Al integrarse con el n\'ucleo a trav\'es del cierre del proyecto, el trabajo del investigador puede conservarse antes de liberar los recursos de la sesi\'on.
 
 
 \subsection{Vista Lógica}
@@ -1494,7 +1494,7 @@ un proyecto copiando su carpeta en una tarea cancelable (\textit{duplicar\_proye
 \subsubsection{Elementos de presentación}
 
 \paragraph{MainWindow}
-La MainWindow se encuentra parcialmente implementada y constituye el contenedor principal de la interfaz gráfica. Es responsable de la navegación entre los módulos funcionales, de la presentación de la pantalla de inicio y de las operaciones de proyecto disponibles en el menú Archivo. Mantiene referencias al Kernel y al ProjectService. La operación switch\_module presenta las extensiones correspondientes a la categoría seleccionada por el usuario, la operación (show\_home) presenta la pantalla de inicio y la operación (build\_home\_welcome) construye el panel de bienvenida. Esta última se encuentra pendiente de incorporar la detección de la primera ejecución de la aplicación, requerida por el requerimiento R10. La ventana mantiene además la lista de proyectos abiertos en el \textit{Explorer}, con uno solo activo, y puede abrir un proyecto en otra ventana lanzando una nueva instancia de la aplicación.
+La MainWindow se encuentra implementada y constituye el contenedor principal de la interfaz gráfica. Es responsable de la navegación entre los módulos funcionales, de la presentación de la pantalla de inicio y de las operaciones de proyecto disponibles en el menú Archivo. Mantiene referencias al Kernel y al ProjectService. La operación switch\_module presenta las extensiones correspondientes a la categoría seleccionada por el usuario, la operación (show\_home) presenta la pantalla de inicio y la operación (build\_home\_welcome) construye el panel de bienvenida. El panel solo se muestra en la primera ejecución de la aplicación, como exige el requerimiento R10. La ventana mantiene además la lista de proyectos abiertos en el \textit{Explorer}, con uno solo activo, y puede abrir un proyecto en otra ventana lanzando una nueva instancia de la aplicación.
 
 \paragraph{VTKContextMenu}
 El VTKContextMenu se encuentra implementado y provee el menú contextual asociado a las visualizaciones. Sus operaciones permiten presentar el menú en la posición indicada por el usuario (show\_menu) y solicitar la exportación de la visualización como imagen o como tabla (export\_image y export\_table). Este elemento delega la exportación en el ExportService y opera sobre los componentes visuales provistos por las extensiones.
@@ -1591,39 +1591,39 @@ La persistencia de proyectos mediante el ProjectService y la estructura ProjectD
 
 \subsection{Vista de despliegue}
 \subsubsection{Propósito}
-La vista de despliegue permite comprender cómo se organiza GammaLab 2.0 y cómo colaboran sus componentes para ofrecer las funcionalidades de procesamiento y análisis de señales neurofisiológicas. El Kernel y el PluginManager proporcionan la estructura necesaria para integrar las extensiones, mientras que los servicios de soporte se encargan de gestionar los datos, los archivos, la configuración, los proyectos y la exportación de resultados.
+La vista de despliegue permite comprender cómo se organiza Gamma Lab 2.0 y cómo colaboran sus componentes para ofrecer las funcionalidades de procesamiento y análisis de señales neurofisiológicas. El Kernel y el PluginManager proporcionan la estructura necesaria para integrar las extensiones, mientras que los servicios de soporte se encargan de gestionar los datos, los archivos, la configuración, los proyectos y la exportación de resultados.
 
 Por su parte, los plugins reúnen las herramientas de entrada y salida, preprocesamiento, análisis y medición. A estos componentes se suman nuevas incorporaciones, como el TaskOrchestrator, orientado a coordinar la ejecución de tareas; el ProjectService, destinado a conservar y recuperar el estado del trabajo; y el TooltipHelper, que busca facilitar la comprensión de las herramientas disponibles.
 
-En conjunto, esta organización permite que GammaLab 2.0 evolucione a partir de su versión anterior, reutilice funcionalidades existentes e incorpore nuevas capacidades de manera ordenada. La separación de responsabilidades contribuye a que el sistema sea más fácil de mantener y ampliar, al tiempo que establece una estructura que puede acompañar el crecimiento de las necesidades de análisis del laboratorio.
+Esta organización permite reutilizar las funcionalidades de la versión anterior e incorporar otras nuevas sin reescribir el sistema.
 
 \subsubsection{Notación}
-La leyenda incluida en la Figura~\ref{fig:vistadesarrollo} permite distinguir los componentes según su estado y su relación con el alcance definido para GammaLab 2.0. Los colores se interpretan de la siguiente manera:
+La leyenda incluida en la Figura~\ref{fig:vistadesarrollo} permite distinguir los componentes según su estado y su relación con el alcance definido para Gamma Lab 2.0. Los colores se interpretan de la siguiente manera:
 
 \begin{itemize}
     \item \textbf{Azul - Núcleo existente:} representa los componentes centrales que ya forman parte de la estructura de la aplicación, como \texttt{MainWindow} y \texttt{Kernel}.
 
     \item \textbf{Amarillo - Servicio o plugin existente:} identifica los servicios y plugins que se reutilizan de la versión anterior, como \texttt{DataStore}, \texttt{FileIOService}, \texttt{SettingsService} y las extensiones funcionales existentes.
 
-    \item \textbf{Rojo - Nuevo:} identifica los componentes incorporados o previstos para GammaLab 2.0, entre ellos \texttt{ProjectService}, \texttt{TaskOrchestrator} y \texttt{TooltipHelper}.
+    \item \textbf{Rojo - Nuevo:} identifica los componentes incorporados en Gamma Lab 2.0, entre ellos \texttt{ProjectService}, \texttt{TaskOrchestrator} y \texttt{TooltipHelper}.
 
     \item \textbf{Gris - Fuera del alcance de los 23 casos de uso:} representa los componentes que se muestran como referencia funcional o documental, pero que no forman parte del alcance específico considerado en dichos casos de uso.
 \end{itemize}
 
-Esta distinción permite identificar con mayor facilidad qué partes de la arquitectura se apoyan en funcionalidades existentes y cuáles corresponden a nuevas incorporaciones. También ayuda a comprender que el diagrama representa tanto la estructura reutilizada como la organización propuesta para ampliar el sistema.
+Así se distingue qué partes de la arquitectura vienen de la versión anterior y cuáles son nuevas.
 
 
 \subsubsection{Visión general del modelo}
-GammaLab 2.0 sigue una arquitectura basada en el estilo \textit{Microkernel}. En esta estructura, el Kernel funciona como el punto central de coordinación, encargado de mantener el registro de los plugins y servicios disponibles. A su alrededor se encuentran los componentes que permiten cargar señales, realizar operaciones de preprocesamiento, ejecutar análisis, obtener medidas y exportar resultados.
+Gamma Lab 2.0 sigue una arquitectura basada en el estilo \textit{Microkernel}. En esta estructura, el Kernel funciona como el punto central de coordinación, encargado de mantener el registro de los plugins y servicios disponibles. A su alrededor se encuentran los componentes que permiten cargar señales, realizar operaciones de preprocesamiento, ejecutar análisis, obtener medidas y exportar resultados.
 
-La organización modular permite que cada componente se concentre en una responsabilidad específica, sin que toda la lógica de la aplicación dependa de un único módulo. Esto facilita el mantenimiento del sistema y permite ampliar sus capacidades mediante la incorporación de nuevas funcionalidades. Además, el diagrama distingue entre los componentes existentes, aquellos que se plantean como nuevas incorporaciones para GammaLab 2.0 y los elementos que se encuentran fuera del alcance de los 23 casos de uso considerados.
+Cada componente se concentra en una responsabilidad específica, de modo que la lógica de la aplicación no depende de un único módulo.
 
 A continuación, se describe la función de cada grupo de componentes y su participación en el funcionamiento general del sistema.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.95\linewidth]{diagrama_componentes_sistema_completo.png}
-    \caption{Vista de desarrollo de GammaLab 2.0: componentes organizados por paquetes funcionales (\texttt{io}, \texttt{preprocessing}, \texttt{analysis}, \texttt{measure} y \texttt{faq}), junto con los componentes transversales de la arquitectura.}
+    \caption{Vista de desarrollo de Gamma Lab 2.0: componentes organizados por paquetes funcionales (\texttt{io}, \texttt{preprocessing}, \texttt{analysis}, \texttt{measure} y \texttt{faq}), junto con los componentes transversales de la arquitectura.}
     \label{fig:vistadesarrollo}
 \end{figure}
 
@@ -1631,7 +1631,7 @@ A continuación, se describe la función de cada grupo de componentes y su parti
 
 \subsubsection{Componentes principales}
 
-El Kernel es el núcleo de GammaLab 2.0 y permite que los diferentes componentes trabajen de manera coordinada. Su función principal es mantener el registro de los plugins y servicios disponibles, de modo que puedan ser localizados y utilizados por los módulos que los necesiten. Gracias a esta organización, los componentes pueden acceder a las funcionalidades compartidas sin depender directamente de los detalles internos de su implementación.
+El Kernel es el núcleo de Gamma Lab 2.0 y permite que los diferentes componentes trabajen de manera coordinada. Su función principal es mantener el registro de los plugins y servicios disponibles, de modo que puedan ser localizados y utilizados por los módulos que los necesiten. Gracias a esta organización, los componentes pueden acceder a las funcionalidades compartidas sin depender directamente de los detalles internos de su implementación.
 
 Entre sus principales responsabilidades se encuentran:
 
@@ -1649,29 +1649,27 @@ La interacción con el usuario se realiza mediante el componente \texttt{MainWin
 
 Por otra parte, el \texttt{PluginManager} se encarga de descubrir, cargar e instanciar los plugins disponibles. Este componente permite incorporar las extensiones al sistema y ponerlas a disposición de la aplicación. Para ello, utiliza operaciones como \texttt{load\_all()} y \texttt{discover()}, junto con los mecanismos de configuración y metadatos asociados a los plugins.
 
-En conjunto, el Kernel, la MainWindow y el PluginManager conforman la estructura principal sobre la que se integran las demás funcionalidades de GammaLab 2.0.
+En conjunto, el Kernel, la MainWindow y el PluginManager conforman la estructura principal sobre la que se integran las demás funcionalidades de Gamma Lab 2.0.
 
 \subsubsection{Servicios de soporte y gestión de datos}
 
-Además de los componentes centrales, GammaLab 2.0 cuenta con servicios que resuelven necesidades comunes de la aplicación. Estos servicios permiten compartir información, administrar la configuración y gestionar archivos y resultados sin que cada plugin tenga que implementar estas funciones por separado.
+Además de los componentes centrales, Gamma Lab 2.0 cuenta con servicios que resuelven necesidades comunes de la aplicación. Estos servicios permiten compartir información, administrar la configuración y gestionar archivos y resultados sin que cada plugin tenga que implementar estas funciones por separado.
 
-El \texttt{DataStore} mantiene el estado compartido de la aplicación y proporciona acceso a los datos que utilizan los diferentes módulos durante el procesamiento y el análisis. Su función es especialmente importante porque permite que las operaciones se realicen sobre la información disponible en la sesión de trabajo, evitando que cada componente gestione de manera independiente sus propios datos.
+El \texttt{DataStore} mantiene el estado compartido de la aplicación y proporciona acceso a los datos que utilizan los diferentes módulos durante el procesamiento y el análisis. Así, ningún componente gestiona por separado sus propios datos de la sesión.
 
 El \texttt{FileIOService} se encarga de leer y validar los archivos que contienen las señales neurofisiológicas. De esta manera, centraliza el acceso a los datos de entrada y permite que los componentes que requieren una señal puedan utilizar un mecanismo común para cargarla.
 
 Por su parte, el \texttt{SettingsService} administra la configuración general de la aplicación y las preferencias del usuario. Este servicio permite consultar y modificar los parámetros de configuración, manteniéndolos disponibles para los componentes que los necesiten.
 
-El \texttt{ExportService} se ocupa de gestionar la exportación de los resultados obtenidos durante el análisis, facilitando su almacenamiento y posterior utilización. De esta forma, la generación de archivos de salida se mantiene separada de los algoritmos que realizan los cálculos.
+El \texttt{ExportService} se ocupa de exportar los resultados obtenidos durante el análisis. De esta forma, la generación de archivos de salida se mantiene separada de los algoritmos que realizan los cálculos.
 
-Finalmente, el \texttt{ProjectService} es uno de los nuevos componentes contemplados para GammaLab 2.0. Su propósito es permitir que el usuario guarde y recupere su espacio de trabajo mediante archivos con extensión \texttt{.glab}. Estos proyectos conservan información como la señal de referencia, los \textit{trials}, los análisis realizados y los parámetros asociados.
+Finalmente, el \texttt{ProjectService} es uno de los componentes nuevos de Gamma Lab 2.0. Su propósito es permitir que el usuario guarde y recupere su espacio de trabajo mediante archivos con extensión \texttt{.glab}. Estos proyectos conservan una copia de la señal, los \textit{trials}, los análisis realizados y los parámetros asociados.
 
 Para cumplir esta función, el ProjectService se relaciona con el DataStore y el FileIOService. El primero permite acceder a la información de la sesión, mientras que el segundo facilita la recarga de la señal original cuando se abre un proyecto que la necesita. De esta manera, el usuario puede continuar su trabajo sin tener que reconstruir manualmente todo el estado de la sesión.
 
-En conjunto, estos servicios proporcionan las capacidades necesarias para gestionar los datos y la configuración, trabajar con archivos y conservar los resultados de las operaciones realizadas en GammaLab 2.0.
-
 \subsubsection{Orquestador del núcleo}
 
-El \texttt{TaskOrchestrator} es un componente nuevo cuyo propósito es coordinar la ejecución de las tareas de procesamiento y análisis. Su incorporación responde a la necesidad de gestionar operaciones que pueden requerir un tiempo considerable de cálculo sin afectar innecesariamente la interacción del usuario con la interfaz gráfica.
+El \texttt{TaskOrchestrator} es un componente nuevo cuyo propósito es coordinar la ejecución de las tareas de procesamiento y análisis. Ejecuta fuera del hilo de la interfaz las operaciones que pueden tardar, de modo que el usuario puede seguir interactuando con la aplicación.
 
 En lugar de que cada plugin tenga que encargarse directamente de toda la coordinación de su ejecución, puede solicitar la operación correspondiente al orquestador. Este componente se encarga de coordinar la tarea y su interacción con los servicios necesarios, manteniendo separadas las responsabilidades de procesamiento y gestión de la ejecución.
 
@@ -1687,11 +1685,11 @@ Entre sus responsabilidades previstas se encuentran:
 
 Como se muestra en la Figura~\ref{fig:vistadesarrollo}, el TaskOrchestrator se relaciona con los plugins de entrada y salida, preprocesamiento y análisis. Estos componentes pueden solicitar la ejecución de las operaciones correspondientes, mientras que el orquestador se encarga de coordinar su procesamiento. También se relaciona con el ExportService para gestionar las tareas asociadas a la generación de resultados.
 
-Su incorporación busca mejorar la capacidad de respuesta de la aplicación y facilitar la ejecución de operaciones computacionalmente exigentes. No obstante, las capacidades efectivamente disponibles dependerán de la implementación de los mecanismos de ejecución previstos para este componente.
+El orquestador ejecuta una tarea a la vez en un hilo trabajador, informa el progreso y permite cancelar la tarea en curso (Sección~\ref{sec:principios}).
 
 \subsubsection{Plugins funcionales}
 
-Los plugins son los componentes que proporcionan las principales herramientas de procesamiento y análisis de GammaLab 2.0. Cada uno se encarga de una funcionalidad específica y se integra con el resto del sistema mediante el mecanismo de registro administrado por el Kernel.
+Los plugins son los componentes que proporcionan las principales herramientas de procesamiento y análisis de Gamma Lab 2.0. Cada uno se encarga de una funcionalidad específica y se integra con el resto del sistema mediante el mecanismo de registro administrado por el Kernel.
 
 Esta organización permite que las funcionalidades se agrupen según el propósito de las operaciones que realizan. De acuerdo con el diagrama, los plugins se distribuyen en las siguientes categorías:
 
@@ -1711,7 +1709,7 @@ La separación de las funcionalidades en plugins permite que cada módulo tenga 
 
 \subsubsection{Documentación de ayuda}
 
-El componente \texttt{TooltipHelper} se incorpora con el propósito de facilitar el uso de las herramientas disponibles en GammaLab 2.0. Su función consiste en proporcionar descripciones breves sobre los plugins, de manera que el usuario pueda comprender qué hace cada herramienta antes de utilizarla.
+El componente \texttt{TooltipHelper} se incorpora con el propósito de facilitar el uso de las herramientas disponibles en Gamma Lab 2.0. Su función consiste en proporcionar descripciones breves sobre los plugins, de manera que el usuario pueda comprender qué hace cada herramienta antes de utilizarla.
 
 En el diagrama, este componente se relaciona con los plugins de preprocesamiento mediante la operación \texttt{aplicar\_tooltips}. Esta relación permite asociar información descriptiva a las herramientas y presentarla mediante ayudas emergentes en la interfaz.
 
@@ -1723,7 +1721,7 @@ De esta manera, la arquitectura contempla tanto la asistencia contextual dentro 
 
 \subsubsection{Flujo general}
 
-La interacción entre los componentes permite desarrollar las operaciones de GammaLab 2.0 desde la selección de una herramienta hasta la obtención y conservación de los resultados. Aunque el recorrido puede variar según la funcionalidad utilizada, es posible identificar las siguientes etapas generales:
+La interacción entre los componentes permite desarrollar las operaciones de Gamma Lab 2.0 desde la selección de una herramienta hasta la obtención y conservación de los resultados. Aunque el recorrido puede variar según la funcionalidad utilizada, es posible identificar las siguientes etapas generales:
 
 \begin{enumerate}
     \item \textbf{Interacción con la interfaz:} el usuario inicia una operación desde la \texttt{MainWindow}, seleccionando la funcionalidad que necesita.
@@ -1743,24 +1741,23 @@ Este recorrido describe la colaboración general entre los componentes, pero no 
 
 En términos generales, cada componente participa en la operación de acuerdo con su responsabilidad. La interfaz recibe las acciones del usuario, el Kernel permite localizar las funcionalidades disponibles, los plugins ejecutan las operaciones específicas y los servicios proporcionan el acceso a los datos y recursos necesarios. Cuando la operación lo requiere, el orquestador coordina su ejecución y los resultados se presentan, almacenan o exportan según corresponda.
 
-Esta distribución de responsabilidades permite que los componentes colaboren sin concentrar toda la lógica del sistema en un único módulo y facilita la incorporación de nuevas funcionalidades.
 
 
 
 Dos hallazgos relevantes para la planificaci\'on de la implementaci\'on:
 \begin{itemize}[nosep]
     \item Los paquetes \texttt{measure/} (Amplitude, Slope) y \texttt{faq/} (manual PDF est\'atico) existen en el c\'odigo pero \textbf{ninguno} de los 23 casos de uso los cubre; por ello, se muestran en gris neutro para delimitar la frontera del alcance actual.
-    \item \texttt{TooltipHelper} depende de los plugins de preprocesamiento y an\'alisis por igual (CU-010): su ausencia hoy no es aislada, sino transversal a $\sim$15 plugins que carecen de \textit{tooltips}, salvo dos excepciones puntuales ya presentes en \texttt{TrialsPlugin} y \texttt{RelativePSDPlugin}.
+    \item \texttt{TooltipHelper} depende de los plugins de preprocesamiento y an\'alisis por igual (CU-010): en la versión 1.0 su ausencia no era aislada, sino transversal a $\sim$15 plugins que carecían de \textit{tooltips}, salvo dos excepciones puntuales ya presentes en \texttt{TrialsPlugin} y \texttt{RelativePSDPlugin}.
 \end{itemize}
 
 \subsection{Vista de Procesos}
 
 \subsubsection{Propósito}
-La vista de procesos permite comprender cómo se organiza el flujo de trabajo entre el investigador y el sistema de GammaLab v2.0 durante una sesión de trabajo, desde el inicio de la aplicación hasta la exportación de los resultados, guardado y el cierre del proyecto.
+La vista de procesos permite comprender cómo se organiza el flujo de trabajo entre el investigador y el sistema de Gamma Lab 2.0 durante una sesión de trabajo, desde el inicio de la aplicación hasta la exportación de los resultados, guardado y el cierre del proyecto.
 
-Asimismo, el diagrama que se presentara más adelante permite identificar las responsabilidades del usuario y del sistejma, las descisiones que condicionan la ejecución del flujo de trabajo y los mecanismos mediante los cuales se gestionan los cálculos asociados al procesamiento de señales.
+Asimismo, el diagrama que se presentará más adelante permite identificar las responsabilidades del usuario y del sistema, las decisiones que condicionan la ejecución del flujo de trabajo y los mecanismos mediante los cuales se gestionan los cálculos asociados al procesamiento de señales.
 
-Esta vista permite el entendimiento del comportamiento dinámico del sistema desde una perspectiva arquitectónica, mostrando cómo el flujo que siga el investigador desencadena las operacione sinternas y los resultados generados se ponene a disposición de este.
+Esta vista permite entender el comportamiento dinámico del sistema desde una perspectiva arquitectónica: cómo las acciones del investigador desencadenan las operaciones internas y cómo los resultados se ponen a su disposición.
 
 \subsubsection{Notación}
 La leyenda del diagrama distingue los elementos según su estado de implementación:
@@ -1768,14 +1765,14 @@ La leyenda del diagrama distingue los elementos según su estado de implementaci
 \begin{itemize}
     \item \textbf{Verde - Ya existe:} representa las actividades o funcionalidades que ya se encuentran disponibles en la aplicación.
     
-    \item \textbf{Rojo - Nuevo:} identifica las actividades asociadas a componentes o funcionalidades nuevas contempladas para GammaLab 2.0.
+    \item \textbf{Rojo - Nuevo:} identifica las actividades asociadas a componentes o funcionalidades nuevas contempladas para Gamma Lab 2.0.
     
     \item \textbf{Gris - Mixto:} corresponde a actividades cuyo funcionamiento combina elementos existentes con nuevas incorporaciones, según la descripción asociada al diagrama.
 
 \end{itemize}
 
 \subsubsection{Visión general del modelo}
-El modelo representa el flujo de trabajo general de GammaLab 2.0, desde el inicio de la aplicación hasta el cierre de la sesión. Su propósito es mostrar cómo se relacionan las acciones del investigador con los procesos internos del sistema y cómo se desarrolla una sesión de análisis de señales neurofisiológicas.
+El modelo representa el flujo de trabajo general de Gamma Lab 2.0, desde el inicio de la aplicación hasta el cierre de la sesión. Su propósito es mostrar cómo se relacionan las acciones del investigador con los procesos internos del sistema y cómo se desarrolla una sesión de análisis de señales neurofisiológicas.
 
 El flujo comienza con la inicialización de la aplicación, durante la cual se registran los servicios disponibles y se descubren los plugins mediante los mecanismos de configuración YAML. Posteriormente, el investigador puede elegir entre abrir un proyecto previamente guardado o comenzar una sesión cargando una señal desde un archivo. En ambos casos, el sistema prepara los datos y los publica en el \texttt{DataStore} para que puedan utilizarse en las etapas posteriores.
 
@@ -1783,7 +1780,7 @@ Una vez disponible la señal, el investigador puede realizar operaciones de prep
 
 Para representar estas interacciones, el diagrama se organiza en dos carriles: \textit{Investigador} y \textit{Sistema}. El primero agrupa las acciones y decisiones que corresponden al usuario, mientras que el segundo representa las operaciones que ejecuta la aplicación para responder a dichas acciones. Esta separación permite identificar las responsabilidades de cada participante y comprender cómo se coordinan durante una sesión de trabajo.
 
-La Figura~\ref{fig:vistaprocesos} presenta el modelo completo, incluyendo las decisiones que controlan el flujo, las actividades principales y las relaciones entre las acciones del investigador y los procesos internos de GammaLab 2.0.
+La Figura~\ref{fig:vistaprocesos} presenta el modelo completo, incluyendo las decisiones que controlan el flujo, las actividades principales y las relaciones entre las acciones del investigador y los procesos internos de Gamma Lab 2.0.
 
 \begin{figure}[H]
     \centering
@@ -1793,46 +1790,46 @@ La Figura~\ref{fig:vistaprocesos} presenta el modelo completo, incluyendo las de
 \end{figure}
 
 \subsubsection{Inicio de la aplicación}
-El flujo de ejecución comienza con la inicialización de GammaLab v2.0. Durante esat aetapa, el sistema premara los componentes centrales necesarios para el funcinamiento del sistema y registra los servicios que estará disponibles para lso demás módulos.
+El flujo de ejecución comienza con la inicialización de Gamma Lab 2.0. Durante esta etapa, el sistema prepara los componentes centrales necesarios para su funcionamiento y registra los servicios que estarán disponibles para los demás módulos.
 
-Luego, se lleva a cabo la descubrimiento de los plugins mediante los mecanismos de configuración YAML. Esto permite identificar las extensione disponibles y peraparaa su integración cpon el núcleo del sistema.
+Luego se descubren los plugins mediante sus descriptores YAML. Esto permite identificar las extensiones disponibles y prepararlas para su integración con el núcleo del sistema.
 
-La inicialización establece las condiciones necesarias para que el investigador pueda acceder a las funcionalidades de carga, procesamiento y análisis de señales. Asimismo, prepara la infraestructura de servicios que permite compartir datos y coordinar las operaciones ejecutadas durante la sesión.
+La inicialización establece las condiciones necesarias para que el investigador pueda acceder a las funcionalidades de carga, procesamiento y análisis de señales. También prepara la infraestructura de servicios que permite compartir datos y coordinar las operaciones ejecutadas durante la sesión.
 
 
 \subsubsection{Apertura de proyecto o carga de una señal}
-Una vez el sistema este iniciado, el flujo cotempaldo cuenta con dos alternativas para comenzar el trabajo: acargar una señal o abrir un proyecto guardado en la pantalla de inicio (Home).
+Una vez iniciado el sistema, el flujo contempla dos alternativas para comenzar el trabajo: cargar una señal o abrir un proyecto guardado desde la pantalla de inicio (Home).
 
-Cuando el investigador carga una señal desde un archivo compatible mediante el sercivio \textit{FileIOService}. Este se permite cargar los datos al enterno de trabajo y perpararlos para las etapas posteriores del flujo.
+El investigador puede cargar una señal desde un archivo compatible mediante el servicio \textit{FileIOService}, que la lleva al entorno de trabajo y la prepara para las etapas posteriores del flujo.
 
-Como alternativa, el investigador puede seleccioanr un proyecto con la extensión\textit{.glab}, el sistema recupera la inforamción almacenada para restarurar la señal y el trabajo previo. Este mecanismo permite continuar el flujo de trabajo sin tener que repetir manuealmente el trabajo previo.
+Como alternativa, el investigador puede seleccionar un proyecto con la extensión \textit{.glab}; el sistema recupera la información almacenada para restaurar la señal y el trabajo previo, de modo que no hay que repetirlo manualmente.
 
-Independientemente de la opción seleccinada, la señal se publica en el \textit{DataStore}. Este servicio proporciona un punto común de acceso a los datos que utilizan los módulos de preprocesamiento y análisis, permitiendo que las operaciones posteriores trabajen sobre la información disponible en la sesión.
+Independientemente de la opción seleccionada, la señal se publica en el \textit{DataStore}. Este servicio proporciona un punto común de acceso a los datos que utilizan los módulos de preprocesamiento y análisis, permitiendo que las operaciones posteriores trabajen sobre la información disponible en la sesión.
 
 
 \subsubsection{Procesamiento de señales}
 Después de cargar o recuperar la señal, el investigador puede realizar operaciones de preprocesamiento necesarias para preparar los datos antes de realizar los análisis.
 
-En esta etapa se presentan la generación y edición de ensayos (\textit{trials}), la selección de lso ensayos que se conservarán, la eliminación de artefactos y la aplicación de filtros. También permite ajustar ña frecuencia de muestreo según las necesidades del procesamiento.
+En esta etapa se realizan la generación y edición de ensayos (\textit{trials}), la selección de los ensayos que se conservarán, la eliminación de artefactos y la aplicación de filtros. También es posible ajustar la frecuencia de muestreo según las necesidades del procesamiento.
 
-El investigador puede configurar y ejecutar las operaciones a través de los \textit{plugins}. El resultado esperado de esta etapa es una señal preparada apra le análisis, sobre la cual se pueda aplicar los métodos disponibles en GammaLab v2.0.
+El investigador puede configurar y ejecutar las operaciones a través de los \textit{plugins}. El resultado esperado de esta etapa es una señal preparada para el análisis, sobre la cual se puedan aplicar los métodos disponibles en Gamma Lab 2.0.
 
 El flujo contempla la posibilidad de regresar a esta etapa cuando sea necesario modificar la preparación de los datos y continuar el trabajo con la señal activa.
 
 \subsubsection{Ejecución de análisis y coordinación de tareas}
-Una vez la señal este preparada, el investigador puede ejecutar ls análisis disponibles en el sistema. Entre los métodos existentes se encuentran PAC, PPC, Wavelet y el promedio d ensayos, que permite obtener resultados a apartir de los datos procesados.
+Una vez preparada la señal, el investigador puede ejecutar los análisis disponibles en el sistema, entre ellos PAC, PPC, Wavelet y el promedio de ensayos.
 
-La ejecución de estas operaciones involucra al orquestador de tareas del núcleo \textit{TaskOrchestrator}, encargado de coordinar el procesamiento y gestión en su ejecución. Esta separación permite distinguir la solicitud del análisis, realizada desde la interfaz, de las operaciones de cálculo que ejecuta el sistema.
+La ejecución de estas operaciones involucra al orquestador de tareas del núcleo (\textit{TaskOrchestrator}), que coordina el procesamiento y gestiona su ejecución. Esta separación distingue la solicitud del análisis, realizada desde la interfaz, de las operaciones de cálculo que ejecuta el sistema.
 
-El modelo posee la capacidad de cancelar una ejecución en curso, permitiendo al investigador regresar a la etapa de preprocesamiento sin perder los datos cargados o los resultados obtenidos.
-Esta organización busca evitar que los cálculos pesados interfieran con la experiencia del usuario. La coordinación de las tareas cosntituyen, un componente relevante dentro de la arquitectura para la mejora de las capacidades de respeusta y facilitar la ejecución de análisis.
+El investigador puede cancelar una ejecución en curso y regresar a la etapa de preprocesamiento sin perder los datos cargados ni los resultados obtenidos.
+Así, los cálculos pesados no bloquean la interfaz mientras el investigador trabaja.
 
 \subsubsection{Visualización e interacción con los resultados}
-Una vez esten disponibles los resultados del análsis, el investigador puede interactuar con su representación visual para examinar el comportamiento de las señales y los resultados obtenidos.
+Una vez disponibles los resultados del análisis, el investigador puede interactuar con su representación visual para examinar el comportamiento de las señales y los resultados obtenidos.
 
 La aplicación proporciona mecanismos de visualización que permiten explorar la información generada por los diferentes métodos de análisis. Esta interacción forma parte del ciclo de trabajo, puesto que los resultados pueden motivar nuevos ajustes en el preprocesamiento o la ejecución de otros análisis.
 
-El modelo posee la capacidad de usar submuestro para la representación visual cuando se trabajan con señales de gran tramaño. Esto busca reducir la carga asociada al dibujo de gráficas y mejora sufluidez.
+Cuando se trabaja con señales de gran tamaño, la representación visual se submuestrea, lo que reduce la carga del dibujo de las gráficas y mejora su fluidez.
 
 
 \subsubsection{Continuación del trabajo, guardado y cierre}
@@ -1840,7 +1837,7 @@ Después de visualizar los resultados, el flujo presenta una decisión que permi
 
 Si decide continuar, el flujo regresa a las etapas anteriores para realizar nuevos ajustes, ejecutar otros análisis o seguir explorando los resultados. Este ciclo permite desarrollar una sesión de trabajo iterativa, en la que diferentes operaciones pueden aplicarse sobre la información disponible.
 
-Si el investigador decide finalizar, puede exportar los resultados obtenidos y guardar el proyecto para conservar el trabajo realizado. La exportación contempla los formatos de salida previstos por la aplicación, entre ellos imágenes, archivos \textit{.glab} y datos vectoriales EMF, según las funcionalidades disponibles.
+Si el investigador decide finalizar, puede exportar los resultados obtenidos y guardar el proyecto para conservar el trabajo realizado. La exportación contempla los formatos previstos por la aplicación (imágenes, tablas y gráficas vectoriales EMF), y el proyecto se guarda en un archivo \textit{.glab}.
 
 Finalmente, el investigador puede cerrar el proyecto o la aplicación. Durante esta etapa, el sistema debe gestionar el cierre de los componentes activos y la liberación de recursos asociados con la ejecución, incluidos los hilos de procesamiento y los recursos de visualización VTK.
 
@@ -1857,7 +1854,7 @@ La vista física describe el entorno de ejecución de Gamma Lab 2.0 y la forma e
 
 El diagrama sigue la notación de despliegue definida en la especificación UML 2.5.1 del Object Management Group \cite{omg_uml}. El equipo físico donde se ejecuta el sistema se representa como un nodo con el estereotipo «device», y dentro de él se ubican los componentes de software desplegados. Los archivos que el sistema consume o produce se representan como elementos con el estereotipo «artifact». Las relaciones entre el nodo y los artefactos son dependencias, representadas con líneas punteadas, y su etiqueta indica el tipo de acceso (lectura, escritura o ambos) y la operación del sistema que lo origina.
 
-Al igual que en la vista lógica, cada elemento del diagrama se clasifica según su origen. Los elementos sin color de fondo provienen de Gamma Lab 1.0, mientras que los elementos en color rojo se incorporaron en Gamma Lab 2.0.
+Al igual que en la vista lógica, cada elemento del diagrama se clasifica según su origen. Los elementos sin color de fondo provienen de Gamma Lab, mientras que los elementos en color rojo se incorporaron en Gamma Lab 2.0.
 
 \subsubsection{Visi\'on general del modelo}
 
@@ -2249,7 +2246,7 @@ Trazabilidad & NFR-R-04 (R73), NFR-U-02 (R03) \\
 \subsection{Reglas de compatibilidad y versionado}
 
 \begin{itemize}
-    \item \textbf{Versionado de la aplicaci\'on.} GammaLab 2.0 adopta versionado sem\'antico \texttt{MAJOR.\allowbreak MINOR.\allowbreak PATCH}: \texttt{MAJOR} rompe \texttt{.glab} o el contrato \texttt{IPlugin}; \texttt{MINOR} agrega capacidades retrocompatibles; \texttt{PATCH} corrige sin alterar contratos p\'ublicos. \texttt{main.py} expone esta versi\'on en una constante \'unica, visible en un di\'alogo ``Acerca de'' y embebida como metadato en cada archivo \texttt{.glab} generado.
+    \item \textbf{Versionado de la aplicaci\'on.} Gamma Lab 2.0 adopta versionado sem\'antico \texttt{MAJOR.\allowbreak MINOR.\allowbreak PATCH}: \texttt{MAJOR} rompe \texttt{.glab} o el contrato \texttt{IPlugin}; \texttt{MINOR} agrega capacidades retrocompatibles; \texttt{PATCH} corrige sin alterar contratos p\'ublicos. La pol\'itica prev\'e exponer esta versi\'on en una constante \'unica de \texttt{main.py}, visible en un di\'alogo ``Acerca de'' y embebida en cada archivo \texttt{.glab}; hoy el \texttt{.glab} solo registra la versi\'on de su esquema (\texttt{schema\_version}).
 
     \item \textbf{Contrato de plugins (\texttt{IPlugin}).} Cambios aditivos (nuevos m\'etodos opcionales, nuevos campos con valor por defecto) no rompen compatibilidad. Cambios que alteren la firma de \texttt{initialize}, \texttt{start}, \texttt{stop}, \texttt{process} o \texttt{get\_widget} elevan la versi\'on \texttt{MAJOR} del contrato.
 
@@ -2386,7 +2383,7 @@ Instalaci\'on en Windows limpio sin Python &
 Arranque exitoso, sin configuraci\'on manual \\
 \hline
 
-Robustez --\newline cancelaci\'on (UC-02) &
+Robustez --\newline cancelaci\'on (CU-014) &
 Liberaci\'on de la interfaz y la cola tras cancelar &
 Prueba sobre \texttt{Task\-Orchestrator} con una tarea que ignora la cancelaci\'on &
 Liberaci\'on en $\leq$ 2~s (R46, R70, R74) \\
@@ -2402,12 +2399,12 @@ Liberaci\'on en $\leq$ 2~s (R46, R70, R74) \\
     \item \textbf{Auditor\'ias documentales.} Los informes \texttt{reporte\_\allowbreak tests.\allowbreak tex} e \texttt{informe\_\allowbreak rendimiento.\allowbreak tex} (\texttt{docs/\allowbreak tests documents/}) registran el estado de la suite de pruebas y los hallazgos de rendimiento.
     \item \textbf{Pruebas de usabilidad con usuarios reales.} \texttt{docs/pruebas-usabilidad/} sustenta el criterio de aceptaci\'on de Usabilidad (Esc.~5).
     \item \textbf{Prueba de instalaci\'on limpia.} Arranque del ejecutable generado por PyInstaller en un Windows~10/11 sin Python previamente instalado, como evidencia de Portabilidad.
-    \item \textbf{Pruebas de cancelaci\'on.} Las pruebas de \texttt{test/\allowbreak services\_\allowbreak test/\allowbreak test\_\allowbreak task\_\allowbreak service.py} sobre el \texttt{Task\-Orchestrator}, incluida la de una tarea que ignora la cancelaci\'on, son la evidencia de Robustez (UC-02).
+    \item \textbf{Pruebas de cancelaci\'on.} Las pruebas de \texttt{test/\allowbreak services\_\allowbreak test/\allowbreak test\_\allowbreak task\_\allowbreak service.py} sobre el \texttt{Task\-Orchestrator}, incluida la de una tarea que ignora la cancelaci\'on, son la evidencia de Robustez (CU-014).
 \end{enumerate}
 
 \subsection{Conclusi\'on}
 
-Los escenarios de calidad, las reglas de compatibilidad y la tabla de m\'etricas convierten los atributos de calidad de la secci\'on~3.2 en criterios operativos y verificables, no en aspiraciones gen\'ericas. El plan de evidencia de la secci\'on~6.4 sostiene estos criterios con artefactos reproducibles: fixtures reales validados contra una referencia de MATLAB, benchmarks versionados por etiqueta, auditor\'ias documentales, y pruebas de usabilidad y de instalaci\'on. Junto con las reglas de versionado de la secci\'on~6.2, esta estructura garantiza que la arquitectura de GammaLab~2.0 eval\'ue, documente y demuestre sus atributos de calidad de forma reproducible en cada nueva versi\'on del sistema.
+Los escenarios de calidad, las reglas de compatibilidad y la tabla de m\'etricas convierten los atributos de calidad de la secci\'on~3.2 en criterios operativos y verificables. El plan de evidencia de la secci\'on~6.4 sostiene estos criterios con artefactos reproducibles: fixtures reales validados contra una referencia de MATLAB, benchmarks versionados por etiqueta, auditor\'ias documentales, y pruebas de usabilidad y de instalaci\'on. Junto con las reglas de versionado de la secci\'on~6.2, esta estructura permite evaluar, documentar y demostrar los atributos de calidad de Gamma Lab~2.0 de forma reproducible en cada nueva versi\'on del sistema.
 
 
 % ======================================================================
@@ -2830,7 +2827,7 @@ Este anexo resume dicha relaci\'on:
 
 \bibitem{nunez} P. L. Nunez, R. Srinivasan. \textit{Electric Fields of the Brain: The Neurophysics of EEG} (2nd ed.). Oxford University Press, 2006.
 
-\bibitem{sad} Equipo Gamma Lab. \textit{Software Architecture Document (SAD), v1.0}. Este documento.
+\bibitem{sad} Equipo Gamma Lab 2.0. \textit{Software Architecture Document (SAD), v1.0}. Este documento.
 
 \bibitem{omg_uml} Object Management Group. \textit{OMG Unified Modeling Language (OMG UML), Version 2.5.1}. OMG Doc. formal/17-12-05, dic. 2017. Disponible en: \url{https://www.omg.org/spec/UML/2.5.1/}.
 
