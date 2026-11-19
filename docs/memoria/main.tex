@@ -93,9 +93,9 @@ LOS REQUISITOS PARA EL TÍTULO EN INGENIERÍA DE SISTEMAS}
 
 % Autoridades de la universidad
 \newcommand{\rector}{Nombre del Rector, S.J.}
-\newcommand{\decano}{Ing. Nombre del Decano de la Facultad}
+\newcommand{\decano}{Ing. Diego Alejandro Patiño Guevara}
 \newcommand{\directorDepto}{Ing. Nombre del Director de Departamento, Ph.D.}
-\newcommand{\directorCarrera}{Ing. Nombre de la Directora de Carrera}
+\newcommand{\directorCarrera}{Ing. Andrea del Pilar Rueda Olarte}
 
 % Nombres de los archivos de imagen (subalos con estos nombres)
 \newcommand{\logoUniversidad}{LogoJaveriana}
@@ -1362,7 +1362,7 @@ Cuando una comparación no cumple un criterio por una diferencia conocida entre 
 
 Los módulos nuevos se validaron de otra forma. PAC y el índice de modulación se portaron de BOARD-FTD-PACC, por lo que sus pruebas contrastan cada paso del cálculo con el código original: los filtros IIR, la transformada de Morse y la agrupación de la amplitud por fase. PPC, en cambio, se aparta deliberadamente de la referencia, por las razones expuestas en el capítulo de diseño. Por eso se verifica con señales sintéticas: dos canales con desfase constante deben arrojar una consistencia alta, y dos canales independientes, una cercana a cero.
 
-Como complemento, el usuario revisa las gráficas de cada análisis en ambos sistemas y califica cada caso como \textit{equivalente}, \textit{diferencia aceptada} o \textit{diferencia no aceptada}. \hl{[AQUÍ FALTA COMPLETAR LA REVISIÓN VISUAL DE LOS ANÁLISIS RESTANTES; A LA FECHA ESTÁN REGISTRADOS AVERAGE, WAVELET, PAC Y PPC]}
+Como complemento, se revisaron las gráficas de cada análisis en ambos sistemas y cada caso se calificó como \textit{equivalente}, \textit{diferencia aceptada} o \textit{diferencia no aceptada}. El usuario revisó \textit{Average}, \textit{Wavelet}, PAC y PPC, y el equipo de desarrollo revisó los demás frente a las referencias exportadas de BOARD-FTD-PACC. \textit{Relative PSD}, PAC entre canales y el índice de modulación no tienen una referencia exportada con la cual comparar, por lo que su cálculo se verificó con señales de respuesta conocida.
 
 \subsubsection{Pruebas de rendimiento y de requisitos no funcionales}
 
@@ -1381,9 +1381,14 @@ Cada valor se contrastó con el criterio de aceptación del SRS, por ejemplo car
 Estas pruebas valoran la facilidad con que los investigadores completan las tareas habituales de su flujo de trabajo, y si la nueva organización de la interfaz resuelve los problemas de la versión anterior. Para ello se diseñaron diez casos, UT-01 a UT-10, que cubren los requisitos NFR-U-01 a NFR-U-09.
 
 Las sesiones son individuales y las conduce un moderador del equipo. El participante realiza cada tarea sin instrucciones adicionales y expresa en voz alta lo que piensa. El moderador solo interviene si se le solicita ayuda, y registra cada solicitud. Por caso se consignan cuatro métricas: finalización, tiempo, errores y solicitudes de ayuda. Al final, el participante responde el cuestionario SUS (\textit{System Usability Scale}), con puntuación entre 0 y 100.
+
+Por la disponibilidad del participante, la sesión principal fue remota y guiada: dos integrantes del equipo operaron la aplicación compartiendo pantalla, mientras el participante indicaba qué probar, hacía preguntas y comentaba los resultados. Por ello no se midieron el tiempo, los errores ni las solicitudes de ayuda de cada tarea; el tiempo de cada caso se estimó a partir de la grabación. Una sesión anterior con otro investigador no se usó para registrar los casos, porque su transcripción automática resultó ininteligible, y de ella solo se recuperaron algunas solicitudes.
+
 \subsubsection{Pruebas de aceptación del usuario}
 
 Estas pruebas confirman que Gamma Lab 2.0 satisface los requisitos funcionales y las expectativas del usuario en condiciones reales de uso. El usuario ejecuta, con señales y parámetros de su protocolo, la funcionalidad asociada a cada uno de los 45 requisitos funcionales del SRS. Por cada requisito se diligencia un cuadro que contrasta el comportamiento de la versión anterior (\textit{Antes}) con el de la versión 2.0 (\textit{Después}) y que registra la retroalimentación del usuario y el resultado: \textit{aceptado}, \textit{aceptado parcialmente} o \textit{no aceptado}.
+
+Solo se marca como aceptado un requisito que se demostró sin fallas durante la sesión. Los que presentaron fallas se registran como \textit{probados con fallas}, y los que no alcanzaron a tratarse, como \textit{no evaluados en la sesión}. Estos últimos no los utilizó personalmente el usuario, pero el equipo de trabajo verificó su implementación en el código y su respaldo en las pruebas automáticas.
 
 Las sesiones de usabilidad y de aceptación se realizaron entre el 11 y el 18 de noviembre de 2026, con tres participantes (Tabla~\ref{tab:pruebas_sesiones}).
 
@@ -1452,11 +1457,13 @@ En las sesiones con el usuario, Gamma Lab 2.0 se instala con \textit{GammaLab-Se
 \hline
 \textbf{Elemento} & \textbf{Valor} \\
 \hline
-Procesador & \hl{[AQUÍ FALTA EL PROCESADOR DEL EQUIPO]} \\
+Equipo & Portátil Dell Inspiron 15 3520 \\
 \hline
-Memoria RAM & \hl{[AQUÍ FALTA LA MEMORIA RAM DEL EQUIPO]} \\
+Procesador & Intel Core i7-1255U (10 núcleos, 12 hilos) \\
 \hline
-Sistema operativo & \hl{[AQUÍ FALTA EL SISTEMA OPERATIVO DEL EQUIPO]} \\
+Memoria RAM & 24\,GB \\
+\hline
+Sistema operativo & Windows 11 Pro 25H2, 64 bits \\
 \hline
 Versión de Gamma Lab & 2.0, instalada con \textit{GammaLab-Setup-2.0.0.exe} \\
 \hline
@@ -1535,7 +1542,7 @@ En la validación frente a BOARD-FTD-PACC, \textbf{cinco de los ocho análisis c
 
 Los módulos nuevos también se validaron. PAC y el índice de modulación reproducen paso a paso las funciones originales de BOARD-FTD-PACC. PPC responde como se espera ante señales sintéticas de respuesta conocida.
 
-En la comparación visual, el usuario calificó como \textit{equivalentes} las gráficas de \textit{Average}, \textit{Wavelet}, PAC y PPC. \hl{[AQUÍ FALTA EL RESULTADO DE LA COMPARACIÓN VISUAL DE ERP, FFT, FFT AVERAGE, PSD, PSD AVERAGE, RELATIVE PSD, WAVELET AVERAGE, PAC ENTRE CANALES Y MODULATION INDEX]}
+La comparación visual confirmó estos resultados. El usuario calificó como \textit{equivalentes} las gráficas de \textit{Average}, \textit{Wavelet}, PAC y PPC, y el equipo de desarrollo, las de ERP, FFT, \textit{FFT Average} y PSD. En \textit{Wavelet Average} la diferencia se calificó como \textit{aceptada}, por corresponder a la convención de amplitud, y en \textit{PSD Average} como \textit{no aceptada}, por la separación de las curvas entre 0 y 3\,Hz. \textit{Relative PSD}, PAC entre canales y el índice de modulación no se compararon por falta de una referencia exportada.
 
 \subsection{Requisitos no funcionales}
 
@@ -1570,26 +1577,32 @@ En memoria, liberar las ventanas gráficas de cada módulo redujo el consumo de 
 
 \subsection{Validación con el usuario}
 
+En las pruebas, realizadas entre el 11 y el 18 de noviembre de 2026, participaron tres personas: Jonathan \hl{[AQUÍ FALTA EL APELLIDO]} y Francisco Alejandro Munera Galarza, investigadores y profesores del laboratorio, y Cécile Gauthier Umaña, directora del trabajo de grado (Tabla~\ref{tab:pruebas_sesiones}). Los resultados provienen de la sesión guiada con un profesor investigador, en la que el equipo operó la aplicación.
+
+En usabilidad, \textbf{se trataron seis de los diez casos, cuatro de ellos sin fallas} (Tabla~\ref{tab:resultados_usabilidad}). La carga de la señal, la segmentación en \textit{trials}, el filtrado con vista previa y el análisis PAC funcionaron correctamente, y el participante valoró en particular el PAC y el control del rango de color. Las dificultades se concentraron en las medidas sobre todos los \textit{trials}, corregidas después de la sesión, y en un error de carga al abrir un proyecto.
+
 \begin{table}[H]
 \centering
 \scriptsize
 \renewcommand{\arraystretch}{1.3}
-\begin{tabularx}{\textwidth}{|l|>{\raggedright\arraybackslash}X|}
+\begin{tabularx}{\textwidth}{|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X|c|}
 \hline
-\textbf{Métrica} & \textbf{Resultado} \\
+\textbf{Resultado} & \textbf{Casos} & \textbf{Total} \\
 \hline
-Casos completados & \hl{[AQUÍ FALTA EL NÚMERO]} de 10 \\
+Completados sin fallas & UT-02, UT-03, UT-05, UT-06 & 4 \\
 \hline
-Tiempo promedio por caso & \hl{[AQUÍ FALTA EL TIEMPO EN MINUTOS]} \\
+Completados con dificultad & UT-08, UT-10 & 2 \\
 \hline
-Errores y solicitudes de ayuda & \hl{[AQUÍ FALTAN LOS TOTALES]} \\
-\hline
-Puntuación SUS (0 a 100) & \hl{[AQUÍ FALTA LA PUNTUACIÓN]} \\
+No evaluados en la sesión & UT-01, UT-04, UT-07, UT-09 & 4 \\
 \hline
 \end{tabularx}
 \caption{Resultados de las pruebas de usabilidad}
 \label{tab:resultados_usabilidad}
 \end{table}
+
+El cuestionario SUS obtuvo \textbf{87,5 puntos sobre 100}, cerca del valor que Bangor, Kortum y Miller asocian con una usabilidad ``excelente'' (85,6) \cite{bangor2009}. Al provenir de un solo participante, indica una valoración alta, pero no permite generalizarla.
+
+En aceptación, \textbf{16 de los 45 requisitos funcionales se aceptaron y ninguno se rechazó} (Tabla~\ref{tab:resultados_aceptacion}). Los aceptados cubren la persistencia de la señal, el guardado de proyectos, la exportación, la segmentación en \textit{trials}, el ajuste de la frecuencia de muestreo, el \textit{Butterfly}, el escalograma y el análisis PAC de un canal. Dos requisitos se probaron con fallas: la apertura de proyectos, por el error de carga, y la carga de formatos, porque no se probó un archivo EDF y el archivo \textit{.mat} se abrió sin frecuencia de muestreo.
 
 \begin{table}[H]
 \centering
@@ -1599,11 +1612,15 @@ Puntuación SUS (0 a 100) & \hl{[AQUÍ FALTA LA PUNTUACIÓN]} \\
 \hline
 \textbf{Resultado} & \textbf{Requisitos} & \textbf{Porcentaje} \\
 \hline
-Aceptados & \hl{[AQUÍ FALTA]} & \hl{[AQUÍ FALTA]} \\
+Aceptados & 16 & 35,6\,\% \\
 \hline
-Aceptados parcialmente & \hl{[AQUÍ FALTA]} & \hl{[AQUÍ FALTA]} \\
+Aceptados parcialmente & 0 & 0\,\% \\
 \hline
-No aceptados & \hl{[AQUÍ FALTA]} & \hl{[AQUÍ FALTA]} \\
+No aceptados & 0 & 0\,\% \\
+\hline
+Probados con fallas & 2 & 4,4\,\% \\
+\hline
+No evaluados en la sesión & 27 & 60,0\,\% \\
 \hline
 \textbf{Total} & \textbf{45} & \textbf{100\,\%} \\
 \hline
@@ -1612,12 +1629,16 @@ No aceptados & \hl{[AQUÍ FALTA]} & \hl{[AQUÍ FALTA]} \\
 \label{tab:resultados_aceptacion}
 \end{table}
 
-En las pruebas, realizadas entre el 11 y el 18 de noviembre de 2026, participaron tres personas: Jonathan \hl{[AQUÍ FALTA EL APELLIDO]} y Francisco Alejandro Munera Galarza, investigadores y profesores del laboratorio, y Cécile Gauthier Umaña, directora del trabajo de grado (Tabla~\ref{tab:pruebas_sesiones}). \hl{[AQUÍ FALTAN LOS PRINCIPALES RESULTADOS DE LAS SESIONES: FUNCIONALIDADES MEJOR VALORADAS, CASOS CON MAYOR DIFICULTAD Y MOTIVOS DE LOS REQUISITOS NO ACEPTADOS]}
+Los 27 requisitos no evaluados no alcanzaron a tratarse por el tiempo de la sesión; entre ellos están los del análisis entre canales y PPC, que requerían un registro con dos canales neuronales. No los utilizó personalmente el usuario, pero el equipo de trabajo verificó que están implementados en el código y que cuentan con pruebas automáticas aprobadas.
+
+De las trece solicitudes y observaciones surgidas en las sesiones, nueve se atendieron: entre ellas, la línea de la pendiente, la medida por derivada (\textit{Difference}), las medidas sobre todos los \textit{trials} y la posibilidad de tener varios proyectos abiertos. Dos siguen pendientes, una se resolvió de forma manual por acuerdo con la directora y una se dejó como trabajo futuro.
+
+Por último, el laboratorio valoró que Gamma Lab 2.0 reúne en una sola herramienta los análisis que requiere y automatiza los procedimientos repetitivos, de modo que ``un análisis que tomaba semanas puede completarse en minutos''.
 
 \subsection{Limitaciones identificadas}
 \label{sec:resultados_limitaciones}
 
-Ninguna de estas limitaciones impide el flujo de análisis:
+Los resultados anteriores dejan las siguientes limitaciones:
 
 \begin{itemize}
   \item \textbf{\textit{PSD Average}:} diferencia residual entre 0 y 3\,Hz, de causa no identificada.
@@ -1626,9 +1647,11 @@ Ninguna de estas limitaciones impide el flujo de análisis:
   \item \textbf{Primera apertura de PAC:} puede detener la interfaz entre 270 y 480\,ms, por encima del límite de 300\,ms. Las aperturas siguientes cumplen.
   \item \textbf{Instalación:} al no tener firma digital, el instalador genera un aviso de Windows que el usuario debe confirmar.
   \item \textbf{Pantallas pequeñas:} por debajo de 1366 píxeles de ancho, el área de gráficas se reduce notablemente.
+  \item \textbf{Apertura de proyectos con PAC:} abrir un proyecto con parámetros de PAC produjo un error de carga cuya causa no se ha identificado.
+  \item \textbf{Aviso de la señal anterior:} tras cargar otra señal, el aviso de la anterior sigue visible.
+  \item \textbf{Frecuencia de muestreo de archivos \textit{.mat}:} no se toma del encabezado; por acuerdo con la directora, el usuario la ingresa de forma manual.
+  \item \textbf{Alcance de la validación con el usuario:} proviene de un solo participante en una sesión guiada, por lo que no mide la autonomía del investigador frente a la interfaz, y 27 requisitos cuentan con la verificación del equipo pero no con la aceptación directa del usuario.
 \end{itemize}
-
-\hl{[AQUÍ FALTAN LAS LIMITACIONES QUE SURJAN DE LAS SESIONES CON EL USUARIO]}
 
 %=====================================================================
 \capitulo{CONCLUSIONES}
@@ -1716,6 +1739,8 @@ J. Aru \textit{et al.}, ``Untangling cross-frequency coupling in neuroscience,''
 \bibitem{iso29148} ISO/IEC/IEEE 29148:2018, "Systems and software engineering, Life cycle processes, Requirements engineering," 2.\textsuperscript{a} ed., International Organization for Standardization / International Electrotechnical Commission / Institute of Electrical and Electronics Engineers, nov. 2018. [En línea]. Disponible: \url{https://www.iso.org/standard/72089.html}.
 
 \bibitem{eeles2001} P. Eeles, "Capturing Architectural Requirements," Rational Software Corporation, nov. 2001. [En línea]. Disponible: \url{https://www.ibm.com/developerworks/rational/library/4706.html}.
+
+\bibitem{bangor2009} A. Bangor, P. Kortum, y J. Miller, "Determining what individual SUS scores mean: Adding an adjective rating scale," \textit{Journal of Usability Studies}, vol. 4, n.\textsuperscript{o} 3, pp. 114--123, 2009.
 
 \end{thebibliography}
 
