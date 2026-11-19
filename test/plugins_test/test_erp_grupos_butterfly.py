@@ -73,7 +73,7 @@ def test_grupos_de_6(qapp):
     p._move_group(+1); p._move_group(+1)
     assert _etiquetas(p)[:-1] == ["Trial 13", "Trial 14"]
     assert p.ui.lblGroup.text().startswith("Group 3/3")
-    p._move_group(+1)                       # vuelve al primero
+    p._move_group(+1)
     assert p._group_idx == 0
 
 

@@ -1,4 +1,3 @@
-# plugins/io/open_signal/open_signal_plugin.py
 from functools import partial
 from pathlib import Path
 from PyQt5.QtWidgets import QMessageBox
@@ -153,7 +152,6 @@ class OpenSignalPlugin(IPlugin):
             self.vtk_menu = None
             self.alerts.error("Error creating the context menu.\n" + str(e))
 
-        # synchronization callback
         self._setup_sync_callback()
 
         try:
@@ -172,7 +170,6 @@ class OpenSignalPlugin(IPlugin):
                 return
             self._is_syncing = True
             try:
-                # 1) Where is the cursor?
                 try:
                     mx, my = self.vtk_interactor.GetEventPosition()
                 except Exception:
@@ -206,20 +203,17 @@ class OpenSignalPlugin(IPlugin):
  
         self._sync_callback = sync_axes
         
-        # Add observers for different interaction events
         for evento in (vtk.vtkCommand.InteractionEvent, vtk.vtkCommand.MouseWheelForwardEvent,
                        vtk.vtkCommand.MouseWheelBackwardEvent, vtk.vtkCommand.LeftButtonPressEvent,
                        vtk.vtkCommand.LeftButtonReleaseEvent, vtk.vtkCommand.MouseMoveEvent):
             observar(self.vtk_interactor, evento, self._sync_callback)
 
-    # ---------------- file / data ----------------
     def open_file_dialog(self):
         """Public entry point: shows the file picker and loads the selected signal.
 
         Called both from the plugin's own button and from the File > Open signal
         menu action in the main window.
         """
-        # Get last opened folder from settings
         last_dir = self.settings.get("last_open_dir", carpeta_inicial())
 
         fname, _ = QtWidgets.QFileDialog.getOpenFileName(
@@ -234,7 +228,6 @@ class OpenSignalPlugin(IPlugin):
         if self.mainwin and not self.mainwin.cerrar_proyecto_para_nueva_senal():
             return
 
-        # Save the selected folder as last used
         self.settings.set("last_open_dir", str(Path(fname).parent))
 
         fileio: FileIOService | None = self.kernel.get_service("FileIO")
@@ -275,10 +268,6 @@ class OpenSignalPlugin(IPlugin):
             self.alerts.error("El servicio de tareas no está disponible.")
             return
 
-        # La lectura sale del hilo de la interfaz, como pide el Escenario de
-        # Calidad 2 del SAD. Lo que sigue —registrar en el DataStore, avisar a
-        # los plugins y dibujar— vuelve al hilo de la interfaz en el slot de
-        # `finished`, para que siga habiendo un unico escritor (R54).
         tasks.cancel_all_from(self.meta.id)
         self._terminar_carga()
 
@@ -322,7 +311,6 @@ class OpenSignalPlugin(IPlugin):
         if handle is not self._load_handle:
             return
         self._terminar_carga()
-        # Si el proyecto se cerró mientras leia, ya no hay dónde mostrarlo.
         if self.ui is None or ds is None:
             return
 
@@ -333,7 +321,7 @@ class OpenSignalPlugin(IPlugin):
 
         try:
             if self.mainwin:
-                self.mainwin.liberar_senal_anterior(conservar_plugin=self.name())   # R11, R52
+                self.mainwin.liberar_senal_anterior(conservar_plugin=self.name())
             key = store.add_signal(ds, ds.name)
             self._log("Saved in DataStore:", key)
             store.set_active_signal(key)
@@ -382,7 +370,6 @@ class OpenSignalPlugin(IPlugin):
         self.ui.spnNewSamplingRate.blockSignals(False)
         self.ui.btnRestoreSamplingRate.setEnabled(ds.original_sampling_rate is not None)
 
-    # ---------------- CU-018: adjust sampling rate (inline, no dialog) ----------------
     def _on_restore_sampling_rate_clicked(self):
         if self.current_ds is None or self.current_ds.original_sampling_rate is None:
             return
@@ -414,8 +401,6 @@ class OpenSignalPlugin(IPlugin):
     def _after_sampling_rate_change(self, ds: SignalDataset):
         self.ui.lblSamplingRateError.setText("")
 
-        # R72: cached VTK table was invalidated on the model; rebuild it here
-        # so the redraw never uses the previous time axis.
         self._vtk_table = dataset_to_vtk_table(ds)
         self._render_selected()
         self._refresh_sampling_rate_labels()
@@ -441,7 +426,6 @@ class OpenSignalPlugin(IPlugin):
         if reply != QMessageBox.Yes:
             return
 
-        # El corte corre en el TaskService (R71); el conjunto nuevo se registra al terminar, en el hilo de la interfaz
         self.run_task(regenerar_trials, partial(self._on_trials_regenerated, ds),
                       on_failed=lambda m: self.alerts.error(f"No se pudieron regenerar los trials: {m}"),
                       ds=ds, anteriores=list(ds.get_all_trials_datasets()))
@@ -494,7 +478,6 @@ class OpenSignalPlugin(IPlugin):
             return
         self._render_selected()
 
-    # ---------------- layout helpers ----------------
     def _relayout_charts(self):
         """Reposition charts with enough spacing so axes are visible."""
         if not self.vtk_view or not self._charts:
@@ -507,7 +490,7 @@ class OpenSignalPlugin(IPlugin):
 
         left_margin, right_margin = 8, 8
         top_margin, bottom_margin = 10, 12
-        gap = 40            # space between charts
+        gap = 40
         min_row_h = 150
 
         rows = len(self._charts)
@@ -530,7 +513,6 @@ class OpenSignalPlugin(IPlugin):
             ax_b.SetLabelsVisible(True)
             ax_b.SetTitle("Time (s)")
 
-        # Synchronize ranges after re-layout
         self._sync_all_x_axes()
 
         rw.Render()
@@ -542,14 +524,12 @@ class OpenSignalPlugin(IPlugin):
 
         self._is_syncing = True
         try:
-            # Reference chart range
             ref_axis = self._charts[0].GetAxis(vtk.vtkAxis.BOTTOM)
 
             ref_range = [0.0, 0.0]
             ref_axis.GetRange(ref_range)
             x0, x1 = ref_range
 
-            # Apply to all charts
             for chart in self._charts:
                 axis = chart.GetAxis(vtk.vtkAxis.BOTTOM)
                 axis.SetRange(x0, x1)
@@ -590,7 +570,6 @@ class OpenSignalPlugin(IPlugin):
             ax_b.SetGridVisible(True)
             ax_l.SetGridVisible(True)
 
-            # Show labels and X title on all charts
             ax_b.SetLabelsVisible(True)
             ax_b.SetTitle("Time (s)")
 
@@ -609,7 +588,7 @@ class OpenSignalPlugin(IPlugin):
     def _chart_at_pixel(self, x: int, y: int):
         """Return the chart whose rectangle contains point (x, y) in VTK coords."""
         for ch in self._charts:
-            r = ch.GetSize()  # vtkRectf: x, y, width, height
+            r = ch.GetSize()
             if (r.GetX() <= x <= r.GetX() + r.GetWidth()
                     and r.GetY() <= y <= r.GetY() + r.GetHeight()):
                 return ch

@@ -42,12 +42,10 @@ class Average_plugin(IPlugin):
             self.widget = QWidget(parent)
             self.ui = Ui_Average()
             self.ui.setupUi(self.widget)
-            # Assign the widget to alerts
             self.alerts.parent = self.widget
 
             self.ensure_vtk()
 
-            # Connect "Calculate Average" button
             self.ui.calculateAverageButton.clicked.connect(self._on_calculate_average)
             self.ui.clearButton.clicked.connect(self._on_clear_clicked)
             self.ui.spnFrom.valueChanged.connect(self._sync_range)
@@ -104,19 +102,16 @@ class Average_plugin(IPlugin):
             self._notify("No trials selected.", "warning")
             return
 
-        # R41: only the selected trials enter the average
         if len(idx) == n_trials:
             used = trials_used(idx, n_trials, "average", channel=trials.channel_name)
         else:
             used = trials_used(idx, n_trials, channel=trials.channel_name)
             used["label"] = f"promedio de {used['label']}"
 
-        # Per-sample average across trials, in the TaskService (R71)
         self.run_task(ca.promedio_trials, partial(self._on_average_done, trials, used),
                       on_failed=lambda m: self.alerts.error(f"No se pudo calcular el promedio: {m}"),
                       trials=np.array(trials.trials, copy=True), idx=list(idx))
 
-    # ====== Trial selection (same rules as ERP) ======
     def _collect_selected_indices(self, n_trials: int) -> list[int]:
         """Positions (1-based, among valid trials) according to the selection mode."""
         ui = self.ui
@@ -150,12 +145,10 @@ class Average_plugin(IPlugin):
         self._notify(f"Average computed with {used['label']}")
 
         
-        # Render in VTK
         self.render_average(t, av_data, trials.channel_name, trials.unit)
         self.publish_current_trial()
         self.mark_project_dirty()
 
-    # ====== Project save/restore ======
     def get_analysis_params(self) -> dict:
         ui = self.ui
         if ui.chkSelectAll.isChecked():
@@ -180,7 +173,7 @@ class Average_plugin(IPlugin):
 
     def apply_analysis_params(self, params: dict):
         ui = self.ui
-        mode = params.get("mode", "all")   # projects saved before R41 have no mode: all trials
+        mode = params.get("mode", "all")
         ui.chkSelectAll.setChecked(mode == "all")
         ui.chkSingleTrial.setChecked(mode == "single")
         ui.chkUseRange.setChecked(mode == "range")
@@ -205,25 +198,21 @@ class Average_plugin(IPlugin):
         if self.view is None:
             self.ensure_vtk()
 
-        # Basic validations
         t = np.asarray(t, dtype=float)
         av = np.asarray(av_data, dtype=float)
         if t.ndim != 1 or av.ndim != 1 or t.size != av.size:
             self.alerts.error( "Time and signal vectors must have the same 1D length.", "Render error")
             return
 
-        # Clear scene
         scene = self.view.GetScene()
         scene.ClearItems()
 
         chart = vtk.vtkChartXY()
         scene.AddItem(chart)
 
-        # Draw line (R73: at most 2000 points on screen; the data stays complete)
         plot = agregar_linea(chart, t, av, "Time (s)", f"{channel_name or 'Signal'} [{unit or ''}]")
         try:
             plot.SetWidth(1.5)
-            # SetColor expects RGBA (0..255) in some versions
             plot.SetColor(0, 0, 0, 255)
         except Exception:
             pass
@@ -233,7 +222,6 @@ class Average_plugin(IPlugin):
         etiqueta = (self._trials_used or {}).get("label")
         chart.SetTitle(f"Average - {channel_name or ''}" + (f" — {etiqueta}" if etiqueta else ""))
 
-        # --- Context menu ---
 
         signal_name = self.active_signal.name
         ch_name = channel_name or "channel"
@@ -249,13 +237,10 @@ class Average_plugin(IPlugin):
                 domain=self.meta.subcategory,
                 graph_id=graph_uid
             )
-        # --- End context menu ---
 
-        # Force render
         try:
             self.view.GetRenderWindow().Render()
         except Exception:
-            # Fallback: if view lacks a RenderWindow use vtk_widget
             try:
                 self.vtk_widget.GetRenderWindow().Render()
             except Exception:
@@ -264,7 +249,6 @@ class Average_plugin(IPlugin):
 
     def ensure_vtk(self):
         """Create and initialize VTK widgets and the context view."""
-        # Create QVTK inside the container defined in the .ui
         if not self.vtk_widget:
             self.vtk_widget = QVTKRenderWindowInteractor(self.ui.plotArea)
             
@@ -273,13 +257,11 @@ class Average_plugin(IPlugin):
             self.ui.plotArea.setLayout(layout)
             layout.addWidget(self.vtk_widget)
 
-        # ContextView (facilitates charting)
         self.view = vtk.vtkContextView()
         self.view.SetRenderWindow(self.vtk_widget.GetRenderWindow())
         self.view.GetRenderer().SetBackground(0.98, 0.98, 0.98)
         self.vtk_widget.Initialize()
         
-        # Menu
         if self.vtk_menu is None:
             base_scope = {
                 "view_id": "average",

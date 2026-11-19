@@ -84,9 +84,7 @@ class NotificationCenter(QObject):
     def window(self):
         return self._host.window()
 
-    # ---------- API ----------
     def show_message(self, level: str, title: str, message: str):
-        # Un mismo aviso repetido (p. ej. al pulsar varias veces) no se apila.
         for card in self._cards:
             if card.level == level and card.key == (title, message):
                 self._cards.remove(card)
@@ -114,7 +112,6 @@ class NotificationCenter(QObject):
         if self._cards:
             self._reposition()
 
-    # ---------- internos ----------
     def _arm_timer(self, card):
         if card.level != "info":
             return
@@ -128,7 +125,6 @@ class NotificationCenter(QObject):
         card._timer = timer
 
     def _trim(self):
-        # Se descartan primero los info mas antiguos; los warning solo si no queda otra.
         while len(self._cards) > self.MAX_CARDS:
             victim = next((c for c in self._cards if c.level == "info"), self._cards[0])
             self._remove_card(victim)
@@ -145,7 +141,6 @@ class NotificationCenter(QObject):
         width = min(self.WIDTH, max(200, host.width() - 2 * self.MARGIN))
         x = self.MARGIN
         y = host.height() - self.MARGIN
-        # El mas reciente abajo; los anteriores se apilan hacia arriba
         for card in reversed(self._cards):
             card.setFixedWidth(width)
             h = card.heightForWidth(width) if card.hasHeightForWidth() else card.sizeHint().height()

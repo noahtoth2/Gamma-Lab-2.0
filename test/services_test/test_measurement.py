@@ -2,9 +2,6 @@ import pytest
 from unittest.mock import Mock, patch
 from core.services.measurement_service import SesionDeMedicion
 
-# ---------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------
 
 def create_basic_service():
     """Minimal SesionDeMedicion with stubbed datastore and chart access."""
@@ -29,10 +26,6 @@ def create_service_with_data():
     }
     return svc
 
-
-# =====================================================================
-# 1) STATE MACHINE: start / cancel / reentry / guards
-# =====================================================================
 
 def test_start_slope_success():
     svc = create_basic_service()
@@ -85,10 +78,6 @@ def test_start_while_busy_different_type_is_blocked_and_does_not_mutate():
     svc.alerts.warning.assert_called()
 
 
-# ---------------------------------------------------------------------
-# Cancel
-# ---------------------------------------------------------------------
-
 def test_cancel_resets_all_state():
     svc = create_basic_service()
     svc._state = "waiting_p2"
@@ -111,10 +100,6 @@ def test_cancel_during_waiting_p1():
     assert svc._state == "idle"
     assert svc._current is None
 
-
-# =====================================================================
-# 2) PERSISTENCE: save_measurement / IDs / context
-# =====================================================================
 
 def test_save_measurement_slope():
     svc = create_basic_service()
@@ -177,23 +162,16 @@ def test_measurement_id_sequence_beyond_999():
     assert meas_id == "slope-1000"
 
 
-
-# =====================================================================
-# 4) TRIALS: slopes by trial and helpers
-# =====================================================================
-
 @patch("core.services.measurement_service.two_point_metrics")
 def test_compute_slopes_each_trial_basic(mock_metrics):
-    # Return different slopes to distinguish calls
     mock_metrics.side_effect = [
-        {"type": "slope", "slope": 0.5},  # for trial_1
-        {"type": "slope", "slope": 0.7},  # for trial_2
+        {"type": "slope", "slope": 0.5},
+        {"type": "slope", "slope": 0.7},
     ]
 
     svc = create_basic_service()
     svc.set_context(view_id="trials", plugin="trials", domain="time", trial_id=1)
 
-    # x + trial_1 + trial_2 (3 samples)
     x_vals  = [0.0, 1.0, 2.0]
     t1_vals = [1.0, 1.5, 2.0]
     t2_vals = [2.0, 3.0, 4.0]
@@ -230,30 +208,25 @@ def test_compute_slopes_each_trial_basic(mock_metrics):
             0, 2, make_overlays_for_current=True
         )
 
-    # IDs collected for both trials
     assert ids == ["slope-001", "slope-002"]
 
-    # two_point_metrics called with exact (t,y) pairs and kind
     assert mock_metrics.call_count == 2
     (a1, a2), kw1 = mock_metrics.call_args_list[0]
     (b1, b2), kw2 = mock_metrics.call_args_list[1]
     assert a1 == (0.0, t1_vals[0]) and a2 == (2.0, t1_vals[2]) and kw1["kind"] == "slope"
     assert b1 == (0.0, t2_vals[0]) and b2 == (2.0, t2_vals[2]) and kw2["kind"] == "slope"
 
-    # _save_measurement called with correct enriched results and endpoints
     assert mock_save.call_count == 2
 
-    # First call (trial_1)
     save_args1, save_kwargs1 = mock_save.call_args_list[0]
-    res1, p1_1, p2_1 = save_args1  # (result_dict, (t1,y1), (t2,y2))
+    res1, p1_1, p2_1 = save_args1
     assert res1["type"] == "slope"
     assert res1["slope"] == 0.5
     assert res1["trial_name"] == "trial_1"
     assert p1_1 == (0.0, t1_vals[0])
     assert p2_1 == (2.0, t1_vals[2])
-    assert save_kwargs1["override_ctx"]["trial_id"] == 0  # "trial_1" -> 0-based
+    assert save_kwargs1["override_ctx"]["trial_id"] == 0
 
-    # Second call (trial_2)
     save_args2, save_kwargs2 = mock_save.call_args_list[1]
     res2, p1_2, p2_2 = save_args2
     assert res2["type"] == "slope"
@@ -261,9 +234,8 @@ def test_compute_slopes_each_trial_basic(mock_metrics):
     assert res2["trial_name"] == "trial_2"
     assert p1_2 == (0.0, t2_vals[0])
     assert p2_2 == (2.0, t2_vals[2])
-    assert save_kwargs2["override_ctx"]["trial_id"] == 1  # "trial_2" -> 0-based
+    assert save_kwargs2["override_ctx"]["trial_id"] == 1
 
-    # Overlays only for current trial_id=1 -> only for trial_2
     assert mock_overlay.call_count == 1
     ov_args, _ = mock_overlay.call_args
     assert ov_args[0] == "slope-002"
@@ -294,10 +266,6 @@ def test_compute_slopes_each_trial_same_index():
     ids = svc._compute_and_save_slopes_each_trial_by_index(0, 0)
     assert ids == []
 
-
-# =====================================================================
-# 5) REMOVAL: last / by id / clear / out-of-sync
-# =====================================================================
 
 def test_remove_last_measurement_success():
     svc = create_basic_service()
@@ -330,12 +298,6 @@ def test_clear_all_measurements():
     svc.ds_set.assert_called_once_with("measurements", [])
 
 
-
-
-# =====================================================================
-# 6) HELPERS: nearest index + extremes + math edge cases
-# =====================================================================
-
 def test_nearest_index_exact_match():
     svc = create_service_with_data()
     idx = svc._nearest_index(3.0)
@@ -359,11 +321,6 @@ def test_nearest_index_with_duplicates():
     idx = svc._nearest_index(1.0)
     assert idx in [1, 2]
     assert svc._ref_data["xs"][idx] == 1.0
-
-
-# =====================================================================
-# 7) CONTEXT + CLEAR/CLEANUP INTEGRATION
-# =====================================================================
 
 
 def test_cancel_cleans_up_all_internal_state():
@@ -392,10 +349,6 @@ def test_clear_all_preserves_context():
     assert svc._context["view_id"] == "trials"
     assert svc._context["trial_id"] == 5
 
-
-# =====================================================================
-# 8) INTEGRATION mini-workflows
-# =====================================================================
 
 @patch("core.services.measurement_service.two_point_metrics")
 def test_complete_slope_workflow(mock_metrics):

@@ -9,17 +9,14 @@ class Ui_OpenSignal(QtWidgets.QWidget):
         self.setObjectName("OpenAbfSignalForm")
         self.resize(1200, 720)
 
-        # ===== Root =====
         root = QtWidgets.QHBoxLayout(self)
         root.setContentsMargins(8, 8, 8, 8)
         root.setSpacing(8)
 
-        # ===== Splitter (izq: VTK, der: panel) =====
         self.splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal, self)
         self.splitter.setObjectName("openSignalSplitter")
         root.addWidget(self.splitter, 1)
 
-        # ---------- IZQUIERDA: contenedor VTK ----------
         self.frameVtk = QtWidgets.QFrame(self.splitter)
         self.frameVtk.setObjectName("VtkViewer")
         self.frameVtk.setFrameShape(QtWidgets.QFrame.StyledPanel)
@@ -39,7 +36,6 @@ class Ui_OpenSignal(QtWidgets.QWidget):
         )
         leftLayout.addWidget(self.vtkContainer, 1)
 
-        # ---------- DERECHA: barra lateral ----------
         self.sidebar = QtWidgets.QWidget(self.splitter)
         self.sidebar.setObjectName("sidebarPanel")
         sideLayout = QtWidgets.QVBoxLayout(self.sidebar)
@@ -47,17 +43,15 @@ class Ui_OpenSignal(QtWidgets.QWidget):
         sideLayout.setSpacing(10)
         self.splitter.widget(1).setMaximumWidth(300)
 
-        # ====== Panel title ======
         self.lblParams = QtWidgets.QLabel("Parameters", self.sidebar)
-        self.lblParams.setProperty("variant", "title")          # 👈 usa tu QSS
+        self.lblParams.setProperty("variant", "title")
         sideLayout.addWidget(self.lblParams)
 
         self.divParams = QtWidgets.QFrame(self.sidebar)
         self.divParams.setFrameShape(QtWidgets.QFrame.HLine)
-        self.divParams.setProperty("role", "section-divider")   # 👈 usa tu QSS
+        self.divParams.setProperty("role", "section-divider")
         sideLayout.addWidget(self.divParams)
 
-        # ====== Subtitle: Sampling Rate (CU-018) ======
         self.lblSamplingRate = QtWidgets.QLabel("Sampling Rate", self.sidebar)
         self.lblSamplingRate.setProperty("variant", "subtitle")
         sideLayout.addWidget(self.lblSamplingRate)
@@ -123,17 +117,15 @@ class Ui_OpenSignal(QtWidgets.QWidget):
 
         sideLayout.addLayout(self.samplingRateButtonsLayout)
 
-        # ====== Subtitle: Shown Channels ======
         self.lblShowed = QtWidgets.QLabel("Showed Channels", self.sidebar)
-        self.lblShowed.setProperty("variant", "subtitle")       # 👈
+        self.lblShowed.setProperty("variant", "subtitle")
         sideLayout.addWidget(self.lblShowed)
 
         self.divShowed = QtWidgets.QFrame(self.sidebar)
         self.divShowed.setFrameShape(QtWidgets.QFrame.HLine)
-        self.divShowed.setProperty("role", "divider")           # 👈
+        self.divShowed.setProperty("role", "divider")
         sideLayout.addWidget(self.divShowed)
 
-        # ====== Channel list (without QGroupBox) ======
         self.listChannels = QtWidgets.QListWidget(self.sidebar)
         self.listChannels.setObjectName("listChannels")
         self.listChannels.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
@@ -142,7 +134,6 @@ class Ui_OpenSignal(QtWidgets.QWidget):
 
         sideLayout.addStretch(0)
 
-        # ---------- Splitter sizes / stretch ----------
         self.sidebar.setMinimumWidth(240)
         self.sidebar.setMaximumWidth(480)
         self.splitter.setStretchFactor(0, 1)

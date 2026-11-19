@@ -15,13 +15,11 @@ class Ui_Average(object):
         self.splitter.setObjectName("splitter")
         self.mainWindow.addWidget(self.splitter)
 
-        # --- Left Area: Plot ---
         self.plotArea = QtWidgets.QFrame(self.splitter)
         self.plotArea.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.plotArea.setFrameShadow(QtWidgets.QFrame.Raised)
         self.plotArea.setObjectName("plotArea")
 
-        # --- Right Area: Panel (fixed header + scrollable body) ---
         self.rightContainer = QtWidgets.QWidget(self.splitter)
         self.rightContainer.setObjectName("rightContainer")
 
@@ -29,7 +27,6 @@ class Ui_Average(object):
         self.rightLayoutOuter.setContentsMargins(8, 0, 8, 0)
         self.rightLayoutOuter.setSpacing(0)
 
-        # ===== Header: Parameters + clear + Calculate Average (always visible) =====
         self.headerLayout = QtWidgets.QHBoxLayout()
         self.headerLayout.setContentsMargins(0, 0, 0, 5)
 
@@ -40,7 +37,6 @@ class Ui_Average(object):
 
         self.headerLayout.addStretch(1)
 
-        # --- Clear/ broom button ---
         self.clearButton = QtWidgets.QToolButton(self.rightContainer)
         self.clearButton.setObjectName("clearButton")
         icon_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "assets", "iconos", "clear.png")
@@ -63,7 +59,6 @@ class Ui_Average(object):
         self.paramsLine.setProperty("role", "section-divider")
         self.rightLayoutOuter.addWidget(self.paramsLine)
 
-        # ===== Scrollable body =====
         self.scrollArea = QtWidgets.QScrollArea(self.rightContainer)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
@@ -81,8 +76,6 @@ class Ui_Average(object):
         self.scrollArea.setWidget(self.layoutWidget)
         self.rightLayoutOuter.addWidget(self.scrollArea)
 
-        # nueva sección trialsSelection...
-        # --- Parameters: Trials Selection ---
         self.trialsSelection = QtWidgets.QVBoxLayout()
         self.trialsSelection.setObjectName("trialsSelection")
 
@@ -97,13 +90,11 @@ class Ui_Average(object):
         self.trialsSelectionLine.setProperty("role", "divider")
         self.trialsSelection.addWidget(self.trialsSelectionLine)
 
-        # Checkbox: Select all trials
         self.chkSelectAll = QtWidgets.QCheckBox("Select all trials", self.layoutWidget)
         self.chkSelectAll.setObjectName("chkSelectAll")
         self.chkSelectAll.setChecked(True)
         self.trialsSelection.addWidget(self.chkSelectAll)
 
-        # Row: Single trial
         self.singleTrialRow = QtWidgets.QHBoxLayout()
         self.singleTrialRow.setObjectName("singleTrialRow")
 
@@ -121,10 +112,8 @@ class Ui_Average(object):
 
         self.trialsSelection.addLayout(self.singleTrialRow)
 
-        # Add section to main layout
         self.paramsLayout.addLayout(self.trialsSelection)
 
-        # --- Range Section ---
         self.rangeSection = QtWidgets.QVBoxLayout()
         self.rangeSection.setObjectName("rangeSection")
 
@@ -139,7 +128,6 @@ class Ui_Average(object):
         self.rangeLine.setProperty("role", "divider")
         self.rangeSection.addWidget(self.rangeLine)
 
-        # Row: Trials range
         self.rangeRow = QtWidgets.QHBoxLayout()
         self.rangeRow.setObjectName("rangeRow")
 
@@ -172,7 +160,6 @@ class Ui_Average(object):
 
         self.paramsLayout.addLayout(self.rangeSection)
 
-        # --- Filter trials ---
         self.trialsSection = QtWidgets.QVBoxLayout()
         self.trialsSection.setObjectName("trialsSection")
 
@@ -187,8 +174,6 @@ class Ui_Average(object):
         self.trialsLine.setProperty("role", "divider")
         self.trialsSection.addWidget(self.trialsLine)
 
-        # --- Group: Trials (filter + list) ---
-        # Filter input
         self.trialsFilterLayout = QtWidgets.QHBoxLayout()
         self.trialsFilterLayout.setObjectName("trialsFilterLayout")
 
@@ -199,7 +184,6 @@ class Ui_Average(object):
 
         self.trialsSection.addLayout(self.trialsFilterLayout)
 
-        # Trials list
         self.lstTrials = QtWidgets.QListWidget(self.layoutWidget)
         self.lstTrials.setObjectName("lstTrials")
         self.lstTrials.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
@@ -209,10 +193,8 @@ class Ui_Average(object):
 
         self.paramsLayout.addLayout(self.trialsSection)
 
-        # --- Spacer ---
         self.paramsLayout.addStretch(1)
 
-        # Size splitter
         self.splitter.setStretchFactor(0, 1)
         self.splitter.setStretchFactor(1, 0)
 
@@ -221,7 +203,6 @@ class Ui_Average(object):
         QtCore.QMetaObject.connectSlotsByName(Average)
 
     def _wireDefaultState(self):
-        # Default states and enablement rules
         self.chkSelectAll.toggled.connect(self._onSelectAllToggled)
         self.chkSingleTrial.toggled.connect(self._onSingleToggled)
         self.chkUseRange.toggled.connect(self._onRangeToggled)
@@ -230,7 +211,6 @@ class Ui_Average(object):
         self._onSingleToggled(self.chkSingleTrial.isChecked())
         self._onRangeToggled(self.chkUseRange.isChecked())
 
-    # ==== enablement rules ====
     def _onSelectAllToggled(self, on: bool):
         if on:
             self.chkSingleTrial.setChecked(False)
@@ -258,7 +238,6 @@ class Ui_Average(object):
         self.spnFrom.setEnabled(rng)
         self.spnTo.setEnabled(rng)
 
-        # Trials list enabled only in manual mode
         manual = not (sel_all or single or rng)
         self.txtFilter.setEnabled(manual)
         self.lstTrials.setEnabled(manual)

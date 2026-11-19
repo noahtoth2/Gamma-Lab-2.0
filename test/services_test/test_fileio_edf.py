@@ -3,9 +3,6 @@ import numpy as np
 import pytest
 from core.services.fileio_service import FileIOService, SignalDataset
 
-# ---------------------------------------------------------------------
-# Dummy classes simulating pyedflib.EdfReader behavior
-# ---------------------------------------------------------------------
 class _EDFBase:
     def __init__(self, path):
         self._closed = False
@@ -69,9 +66,6 @@ class DummyEDF_Raises(_EDFBase):
     def __init__(self, path):
         raise IOError("Not a valid EDF file")
 
-# ---------------------------------------------------------------------
-# Tests
-# ---------------------------------------------------------------------
 
 def test_load_edf_valid_uniform(monkeypatch, tmp_path):
     """
@@ -91,7 +85,6 @@ def test_load_edf_valid_uniform(monkeypatch, tmp_path):
     assert isinstance(ds, SignalDataset)
     assert ds.format == "edf"
     assert ds.signals.shape == (2, 1000)
-    # if your loader takes fs from the file, it should be 1000.0
     assert ds.channel_names == ["ch0", "ch1"]
     assert ds.units == ["uV", "uV"]
 

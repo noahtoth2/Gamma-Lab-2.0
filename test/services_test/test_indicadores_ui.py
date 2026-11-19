@@ -40,9 +40,6 @@ def trials_de(canal, indice):
         trials=np.zeros((NS, T)), onsets_s=[float(i) for i in range(T)])
 
 
-# ============================================================
-#   Textos de trials
-# ============================================================
 def test_compress_ranges_agrupa_consecutivos():
     assert compress_ranges([1, 2, 3, 5, 8, 9]) == "1–3, 5, 8–9"
     assert compress_ranges([4]) == "4"
@@ -72,9 +69,6 @@ def test_trials_used_es_serializable_y_completo():
     assert todos["label"] == "promedio de todos (4)"
 
 
-# ============================================================
-#   Indices originales de los trials validos
-# ============================================================
 def test_indices_validos_sin_descartes():
     ds = señal()
     ds.add_trial_dataset(trials_de("CA1", 0))
@@ -88,9 +82,7 @@ def test_indices_validos_con_descartes_y_por_canal():
     ds.discard_trial(ARCHIVO, "CA1", 1)
     ds.discard_trial(ARCHIVO, "CA1", 4)
     assert ds.get_active_trial_indices(ARCHIVO, "CA1") == [0, 2, 3, 5]
-    # Sin nombre: el ultimo canal generado, que no tiene descartes
     assert ds.get_active_trial_indices(ARCHIVO) == list(range(T))
-    # Coincide con las columnas que devuelve get_active_trials
     assert ds.get_active_trials(ARCHIVO, "CA1").trials.shape[1] == 4
 
 
@@ -98,9 +90,6 @@ def test_indices_validos_sin_trials():
     assert señal().get_active_trial_indices(ARCHIVO) == []
 
 
-# ============================================================
-#   Estado del trial actual en los plugins
-# ============================================================
 class _Kernel:
     def __init__(self, store):
         self._store = store
@@ -178,9 +167,6 @@ def test_texto_del_indicador():
     assert fmt(None) == ""
 
 
-# ============================================================
-#   Severidad de los mensajes
-# ============================================================
 class _Centro:
     def __init__(self):
         self.mostrados = []
@@ -233,9 +219,6 @@ def test_sin_centro_ni_ventana_no_falla(monkeypatch):
     a.info("x"); a.warning("y"); a.error("z")
 
 
-# ============================================================
-#   Lectura X/Y bajo el cursor
-# ============================================================
 class _Eje:
     def __init__(self, lo, hi, log=False, titulo=""):
         self.lo, self.hi, self.log, self.titulo = lo, hi, log, titulo

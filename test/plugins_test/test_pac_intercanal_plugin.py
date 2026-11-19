@@ -21,7 +21,6 @@ RAIZ = Path(__file__).resolve().parents[2] / "plugins/analysis/time_frequency/pa
 WIDGETS = ("ampChannelLabel", "ampChannelLine", "ampChannelComboBox")
 
 
-# ------------------------------------------- el doble de la interfaz
 class _Combo:
     def __init__(self, texto=""):
         self.items, self._texto, self.visible, self.mudo = [], texto, True, False
@@ -34,7 +33,7 @@ class _Combo:
 
     def addItems(self, xs):
         self.items.extend(xs)
-        if not self._texto and self.items:      # Qt elige el primero al llenar
+        if not self._texto and self.items:
             self._texto = self.items[0]
 
     def setCurrentText(self, t):
@@ -113,13 +112,10 @@ def plugin(tipo=Pac_plugin.PSEL_INTER, canales=("CA1", "IN 7", "IN 8"), activo="
     sig = _Senal(canales) if canales is not None else None
     td = _Trials(activo) if activo is not None else None
     p._active_trials_quiet = lambda: (sig, td)
-    p.get_active_trials = lambda: None          # para `_n_trials`
+    p.get_active_trials = lambda: None
     return p
 
 
-# ============================================================
-#   El modo existe y comparte camino con Psel
-# ============================================================
 def test_el_modo_esta_en_la_lista_y_va_al_final():
     assert Pac_plugin.PSEL_INTER in Pac_plugin.PAC_TYPES
     assert Pac_plugin.PAC_TYPES[-1] == Pac_plugin.PSEL_INTER
@@ -141,9 +137,6 @@ def test_el_modo_entre_canales_no_usa_un_solo_trial():
     assert plugin(tipo="PAC")._usa_un_solo_trial() is True
 
 
-# ============================================================
-#   El selector de canal
-# ============================================================
 @pytest.mark.parametrize("tipo", ["PAC", "PAC Average", Pac_plugin.PSEL])
 def test_el_selector_se_oculta_en_los_demas_modos(tipo):
     p = plugin(tipo=tipo)
@@ -172,7 +165,7 @@ def test_respeta_el_canal_que_el_usuario_ya_habia_elegido():
     p = plugin()
     p._actualizar_selector_canal()
     p.ui.ampChannelComboBox.setCurrentText("IN 8")
-    p._actualizar_selector_canal()          # un refresco cualquiera
+    p._actualizar_selector_canal()
     assert p.ui.ampChannelComboBox.currentText() == "IN 8"
 
 
@@ -189,14 +182,14 @@ def test_sin_senal_cargada_no_revienta():
     p = plugin(canales=None, activo=None)
     p._actualizar_selector_canal()
     assert p.ui.ampChannelComboBox.items == []
-    assert p.ui.ampChannelComboBox.isVisible() is True   # visible pero vacío
+    assert p.ui.ampChannelComboBox.isVisible() is True
 
 
 def test_sin_interfaz_montada_no_revienta():
     """Se llama durante la restauración de un proyecto, antes de que haya UI."""
     p = object.__new__(Pac_plugin)
     p.ui = None
-    p._actualizar_selector_canal()      # no debe lanzar
+    p._actualizar_selector_canal()
 
 
 def test_el_selector_de_trial_arrastra_al_de_canal():
@@ -212,9 +205,6 @@ def test_el_selector_de_trial_arrastra_al_de_canal():
     assert p.ui.ampChannelComboBox.items == ["IN 7", "IN 8"]
 
 
-# ============================================================
-#   El contrato de nombres con el archivo de la interfaz
-# ============================================================
 def test_la_interfaz_declara_los_widgets_que_el_plugin_usa():
     """El doble de arriba no puede detectar que la UI de verdad cambie de
     nombre, así que el contrato se comprueba leyendo los dos archivos."""

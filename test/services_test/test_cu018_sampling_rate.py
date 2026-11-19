@@ -19,7 +19,7 @@ def make_signal(fs=1000.0):
 def test_set_sampling_rate_recomputes_time_and_invalidates_cache():
     ds = make_signal(fs=1000.0)
     old_n = ds.time.shape[0]
-    ds.vtk_table = object()  # pretend it was cached
+    ds.vtk_table = object()
 
     ds.set_sampling_rate(500.0)
 

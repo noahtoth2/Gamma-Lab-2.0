@@ -1,4 +1,3 @@
-# test/performance_test/test_vtk_adapters_bench.py
 """
 Benchmarks del camino de conversión a VTK que SÍ está vectorizado
 (core/utils/adapters.py), y un micro-benchmark sintético que aísla, en forma
@@ -64,10 +63,6 @@ def td(ds):
     )
 
 
-# ---------------------------------------------------------------------
-# core.utils.adapters -- ya vectorizado con numpy_to_vtk (patrón de referencia)
-# ---------------------------------------------------------------------
-
 def test_bench_dataset_to_vtk_table(ds):
     """
     dataset_to_vtk_table() cachea su resultado en ds.vtk_table -- se limpia el
@@ -94,11 +89,6 @@ def test_bench_trials_matrix_to_vtk_table(td):
         stats,
     )
 
-
-# ---------------------------------------------------------------------
-# Micro-benchmark sintético: bucle Python (InsertNextValue) vs numpy_to_vtk,
-# para el mismo volumen de datos que maneja un escalograma real (~3M puntos)
-# ---------------------------------------------------------------------
 
 def _construir_con_bucle_python(x: np.ndarray) -> vtk.vtkFloatArray:
     arr = vtk.vtkFloatArray()

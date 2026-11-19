@@ -39,7 +39,6 @@ body {
 img { max-width: 100%; display: block; }
 a { color: var(--accent); }
 
-/* Top bar */
 .topbar {
   position: sticky; top: 0; z-index: 10;
   background: color-mix(in srgb, var(--surface) 88%, transparent);
@@ -56,7 +55,6 @@ a { color: var(--accent); }
 .topbar__nav a:not(.btn) { color: var(--muted); text-decoration: none; font-weight: 500; font-size: .95rem; }
 .topbar__nav a:not(.btn):hover { color: var(--text); }
 
-/* Buttons */
 .btn {
   display: inline-flex; align-items: center; gap: 8px;
   background: var(--brand); color: #fff; text-decoration: none;
@@ -68,7 +66,6 @@ a { color: var(--accent); }
 .btn--ghost { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.5); }
 .btn--ghost:hover { background: rgba(255,255,255,.12); }
 
-/* Hero */
 .hero {
   background: #1f4e9c;
   color: #fff;
@@ -79,7 +76,6 @@ a { color: var(--accent); }
 .hero__lead { font-size: 1.1rem; opacity: .9; max-width: 620px; margin: 0 0 28px; }
 .hero__actions { display: flex; flex-wrap: wrap; gap: 12px; }
 
-/* Facts */
 .facts__inner {
   max-width: 1160px; margin: -32px auto 0; padding: 0 16px;
   display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
@@ -93,7 +89,6 @@ a { color: var(--accent); }
 .fact__label { color: var(--muted); font-size: .82rem; }
 .fact__value { font-weight: 700; font-size: 1.2rem; }
 
-/* Layout */
 .layout {
   max-width: 1160px; margin: 0 auto; padding: 48px 16px 64px;
   display: grid; grid-template-columns: 250px 1fr; gap: 40px; align-items: start;
@@ -109,7 +104,6 @@ a { color: var(--accent); }
 .toc a:hover { color: var(--text); }
 .toc a.active { color: var(--brand); border-left-color: var(--brand); font-weight: 600; }
 
-/* Steps */
 .steps { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
 .step {
   display: grid; grid-template-columns: 44px 1fr; gap: 20px;
@@ -149,7 +143,6 @@ a { color: var(--accent); }
 .shot--narrow img { max-width: 460px; width: 100%; }
 .shot--icon img { width: 135px; }
 
-/* Footer */
 .footer { border-top: 1px solid var(--border); background: var(--surface); }
 .footer__inner {
   max-width: 1160px; margin: 0 auto; padding: 24px 16px;
@@ -158,7 +151,6 @@ a { color: var(--accent); }
 }
 .brand--footer { font-size: 1rem; font-weight: 600; color: var(--text); }
 
-/* Lightbox */
 .lightbox {
   position: fixed; inset: 0; z-index: 50; background: rgba(8, 10, 16, .85);
   display: grid; place-items: center; padding: 24px; cursor: zoom-out;
@@ -170,7 +162,6 @@ a { color: var(--accent); }
   color: #fff; font-size: 2.2rem; cursor: pointer;
 }
 
-/* Responsive */
 @media (max-width: 900px) {
   .layout { grid-template-columns: 1fr; }
   .toc { display: none; }

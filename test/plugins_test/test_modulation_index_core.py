@@ -17,8 +17,6 @@ from plugins.analysis.time_frequency.modulation_index.compute import (
 
 FS = 1000.0
 
-# Lo que trae el panel al abrirlo. Están aquí como constantes y no sueltos en
-# cada prueba para que se vea de un vistazo qué es lo que se está defendiendo.
 POR_DEFECTO = dict(p_ini=0.1, p_fin=10.0, pstep=0.1,
                    a_ini=10.0, a_fin=500.0, astep=0.5)
 
@@ -43,8 +41,6 @@ def senal(dur=2.0, fs=FS, f_lenta=3.5, f_rapida=75.0):
     return lento + 0.5 * ((1 + lento) / 2) * np.sin(2 * np.pi * f_rapida * t)
 
 
-# ------------------------------------------------------------------ eje_barrido
-
 def test_eje_barrido_incluye_el_extremo_cuando_cae_justo():
     """`a:paso:b` de MATLAB llega hasta `b` si la división es exacta."""
     assert eje_barrido(10.0, 12.0, 0.5).tolist() == [10.0, 10.5, 11.0, 11.5, 12.0]
@@ -63,8 +59,6 @@ def test_eje_barrido_rechaza_paso_cero():
     with pytest.raises(ValueError, match="mayor que cero"):
         eje_barrido(10.0, 20.0, 0.0)
 
-
-# ------------------------------------------- la guarda de Nyquist (regresión)
 
 def test_los_valores_por_defecto_del_panel_calculan():
     """**La regresión.**
@@ -101,8 +95,6 @@ def test_el_mensaje_de_nyquist_nombra_la_banda_que_se_calcula():
     assert "551" in str(e.value), "10 + 177*3 + 10 = 551 Hz, la banda 178"
 
 
-# ------------------------------------------------ el límite de 178 de MATLAB
-
 def test_solo_calcula_178_bandas_y_el_resto_queda_en_nan():
     r = comodulograma(Ctx(), senal(), FS, FS, p_ini=2.0, p_fin=8.0, pstep=1.0,
                       a_ini=30.0, a_fin=120.0, astep=0.5, limite_matlab=True)
@@ -120,8 +112,6 @@ def test_un_barrido_con_menos_de_178_bandas_avisa_en_vez_de_reventar():
                       a_ini=30.0, a_fin=50.0, astep=0.5, limite_matlab=True)
 
 
-# ----------------------------------------------------------------- validación
-
 @pytest.mark.parametrize("campos,trozo", [
     (dict(p_ini=0.0), "inicial de fase"),
     (dict(p_ini=8.0, p_fin=2.0), "final de fase"),
@@ -134,8 +124,6 @@ def test_los_rangos_al_reves_o_en_cero_avisan_en_espanol(campos, trozo):
     with pytest.raises(ValueError, match=trozo):
         comodulograma(Ctx(), senal(), FS, FS, **args)
 
-
-# ------------------------------------------------------------- el orquestador
 
 def test_cancelar_antes_de_empezar_devuelve_none():
     ctx = Ctx()
@@ -157,8 +145,6 @@ def test_informa_el_avance_en_dos_tramos():
     assert pcts == sorted(pcts), "el avance no puede ir hacia atrás"
     assert pcts[-1] == 100
 
-
-# ------------------------------------------- ciclos de la banda de fase lenta
 
 def test_cuenta_los_ciclos_de_la_banda_de_fase_mas_lenta():
     """`duracion x p_ini`: cuantos ciclos del ritmo mas lento caben en el trial."""
@@ -193,8 +179,6 @@ def test_el_umbral_de_ciclos_es_el_que_se_midio():
     """Si alguien lo cambia sin medir de nuevo, que al menos falle una prueba."""
     assert CICLOS_MINIMOS_FASE == 6.0
 
-
-# ------------------------------------------------- calcular todas las bandas
 
 def test_el_comodulograma_sale_lleno():
     """Si todas las bandas caben, no queda ni una fila vacía."""

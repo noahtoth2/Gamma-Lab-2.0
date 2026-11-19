@@ -45,9 +45,6 @@ def esperar(condicion, ms=10000):
     return condicion()
 
 
-# ============================================================
-#   Cerrar con un cálculo en curso
-# ============================================================
 class _CajaFalsa:
     """Lo que `_confirm_discard_unsaved_changes` usa de QMessageBox. Pulsa, en orden,
     los botones de `guion` y anota el título de cada caja que se mostró."""
@@ -130,9 +127,6 @@ def test_mientras_se_guarda_no_se_deja_cerrar(ventana):
     ventana._stop_all_background_workers.assert_not_called()
 
 
-# ============================================================
-#   Cerrar mientras se abre un proyecto
-# ============================================================
 def test_cancelar_todo_cancela_tambien_la_apertura_del_proyecto(qt_app):
     tareas = TaskService()
     eventos = []
@@ -155,9 +149,6 @@ def test_cancelar_todo_cancela_tambien_la_apertura_del_proyecto(qt_app):
     assert eventos == ["cancelado"]
 
 
-# ============================================================
-#   Reabrir un proyecto no lo marca como modificado
-# ============================================================
 class _Analisis(IPlugin):
     """Un análisis mínimo que, como los de verdad, recalcula al restaurarse y marca
     el proyecto cuando le llega el resultado."""
@@ -266,7 +257,6 @@ def test_los_plugins_sin_run_task_tampoco_marcan_al_restaurar(ruta, clase):
     else:
         p._on_wavelet_done(h, ([0.0], [1.0], [[0.0]], False))
     assert not ps.dirty
-    # Y una tarea que el usuario pide después sí marca
     p._handle = otro = _Handle()
     if clase == "Modulation_index_plugin":
         p._on_mi_done(otro, 0, object())

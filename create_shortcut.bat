@@ -11,5 +11,3 @@ powershell -command ^
  $s.IconLocation = '%ICON_PATH%'; ^
  $s.Save()"
 
-@REM echo Acceso directo creado en el Escritorio con icono personalizado.
-@REM pause

@@ -1,7 +1,5 @@
 import numpy as np
 
-# Límite de muestras que se dibujan en el mapa de calor. Por encima de esto el
-# submuestreo no cambia lo que se ve y sí el tiempo de dibujo.
 MAX_MUESTRAS = 2000
 
 

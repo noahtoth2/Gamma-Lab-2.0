@@ -33,16 +33,13 @@ def juego(onsets, n_muestras=100, trials=None, canal="CA1", unidad="mV", modo="f
                         trials=datos, onsets_s=list(onsets), metadata={"end_mode": modo})
 
 
-# ============================================================
-#   Estímulos irregulares y trials que se solapan
-# ============================================================
 def test_estimulos_irregulares_avisan_y_sugieren_un_umbral():
     td = juego([0.0, 0.0006, 5.0, 5.0007, 10.0, 15.0])
-    estimulo = np.r_[np.full(100, 0.05), np.full(10, 5.0)]          # un canal en V con pulsos de 5 V
+    estimulo = np.r_[np.full(100, 0.05), np.full(10, 5.0)]
     avisos = revisar_corte(td, estimulo, "V", 0.0007)
     assert len(avisos) == 1
     assert "no son regulares" in avisos[0]
-    assert "2500 mV" in avisos[0]                                     # la mitad del pulso
+    assert "2500 mV" in avisos[0]
 
 
 def test_estimulos_regulares_no_avisan():
@@ -50,7 +47,7 @@ def test_estimulos_regulares_no_avisan():
 
 
 def test_trials_que_se_solapan_avisan_con_el_tiempo_final_que_cabe():
-    td = juego([1.0, 4.0, 7.0, 10.0], n_muestras=4050, t0=-0.05)      # trials de 4,05 s cada 3 s
+    td = juego([1.0, 4.0, 7.0, 10.0], n_muestras=4050, t0=-0.05)
     avisos = revisar_corte(td)
     assert len(avisos) == 1 and "se solapan" in avisos[0]
     assert "2.95" in avisos[0]
@@ -61,10 +58,7 @@ def test_cortar_hasta_el_siguiente_estimulo_no_se_solapa():
     assert revisar_corte(td) == []
 
 
-# ============================================================
-#   Canal sin señal
-# ============================================================
-PASO = 0.0025          # 2,5 µV en mV, como los ABF de test/data
+PASO = 0.0025
 
 
 def cuantizado(desviacion_en_pasos, forma=(3000, 5)):
@@ -83,7 +77,7 @@ def test_un_canal_vivo_no_se_marca():
 
 def test_unos_artefactos_no_esconden_un_canal_muerto():
     x = cuantizado(0.7)
-    x[:5, :] = 2.0                                                     # el artefacto de cada estímulo
+    x[:5, :] = 2.0
     assert canal_sin_senal(juego(range(5), trials=x)) is not None
 
 
@@ -92,13 +86,9 @@ def test_un_canal_constante_se_detecta():
 
 
 def test_sin_pasos_de_conversor_no_se_marca():
-    # Datos ya filtrados o promediados: no hay pasos que medir y no se arriesga
     assert canal_sin_senal(juego(range(5), trials=np.random.default_rng(2).normal(scale=1e-6, size=(500, 5)))) is None
 
 
-# ============================================================
-#   Los plugins lo dicen
-# ============================================================
 def test_trials_avisa_al_cortar_un_canal_sin_senal():
     from core.model.signal_dataset import SignalDataset
     from plugins.preprocessing.trials.trials_plugin import TrialsPlugin
@@ -144,7 +134,7 @@ def test_pac_avisa_de_un_canal_de_amplitud_sin_senal():
     p.on_create_pac()
     textos = [c.args[0] for c in p.alerts.warning.call_args_list]
     assert any("'STR' parece no tener señal" in t for t in textos)
-    tareas.submit.assert_called_once()                 # avisa, pero calcula igual
+    tareas.submit.assert_called_once()
 
 
 def test_los_avisos_del_indice_de_modulacion_se_ven():
@@ -165,9 +155,6 @@ def test_la_magnitud_del_vector_medio_dice_que_no_esta_normalizada():
     assert "no normalizada" in titulo_de(0.03 + 0.01j)
 
 
-# ============================================================
-#   La barra de progreso sigue a la tarea que corre
-# ============================================================
 @pytest.fixture(scope="module")
 def qt_app():
     return QCoreApplication.instance() or QCoreApplication([])
@@ -198,6 +185,6 @@ def test_task_started_llega_cuando_la_tarea_empieza_a_correr(qt_app):
         return 1
 
     tareas.submit(lenta, owner="pac")
-    tareas.submit(lambda: 2, owner="ppc")             # queda en cola
+    tareas.submit(lambda: 2, owner="ppc")
     assert empezadas == ["pac"], "la de la cola todavía no corre"
     assert esperar(lambda: empezadas == ["pac", "ppc"])

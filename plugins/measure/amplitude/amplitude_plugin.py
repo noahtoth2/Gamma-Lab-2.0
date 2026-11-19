@@ -1,4 +1,3 @@
-# plugins/measure/amplitude/amplitude_plugin.py
 import sys
 import os
 from core.utils.rutas import carpeta_inicial
@@ -16,25 +15,23 @@ from plugins.measure.amplitude.amplitude_plugin_ui import Ui_Amplitude
 
 
 class AmplitudeTableModel(QtCore.QAbstractTableModel):
-    # User-facing headers in English
     HEADERS = [
-        "ID",                 # 0
-        "Channel",            # 1 (ctx.channel_name)
-        "Graph",              # 2 (e.g., "trial N" from ctx.trial_id)
-        "Point 1 (x, y)",     # 3
-        "Point 2 (x, y)",     # 4
-        "Window start (x1)",  # 5
-        "Window end (x2)",    # 6
-        "Samples (N)",        # 7
-        "Min value (Ymin)",   # 8
-        "Max value (Ymax)",   # 9
-        "Amplitude (p-p)",    # 10
-        "x at min",           # 11
-        "x at max",           # 12
-        "Timestamp",          # 13
+        "ID",
+        "Channel",
+        "Graph",
+        "Point 1 (x, y)",
+        "Point 2 (x, y)",
+        "Window start (x1)",
+        "Window end (x2)",
+        "Samples (N)",
+        "Min value (Ymin)",
+        "Max value (Ymax)",
+        "Amplitude (p-p)",
+        "x at min",
+        "x at max",
+        "Timestamp",
     ]
 
-    # Optional tooltips for headers
     HEADER_TIPS = {
         0: "Unique measurement ID.",
         1: "Channel associated with this measurement (from ctx.channel_name).",
@@ -119,24 +116,17 @@ class AmplitudeTableModel(QtCore.QAbstractTableModel):
         return list(self._rows)
 
 
-# ----------------------------
-# Plugin
-# ----------------------------
 class AmplitudePlugin(IPlugin):
 
     def __init__(self, meta: PluginMeta):
         super().__init__(meta)
 
-        # UI
         self.widget: QtWidgets.QWidget | None = None
         self.ui: Ui_Amplitude | None = None
 
-        # Model
         self.model: AmplitudeTableModel | None = None
 
 
-
-    # ---------- Lifecycle ----------
     def initialize(self, kernel):
         self.kernel = kernel
         self._log("initialize()")
@@ -153,16 +143,14 @@ class AmplitudePlugin(IPlugin):
         self._log("process(): refreshing table")
         self._reload_from_store()
 
-    # ---------- UI ----------
     def get_widget(self, parent=None):
         if self.widget is None:
             self._log("get_widget(): creating UI")
             self.alerts.parent = parent
             self.ui = Ui_Amplitude()
             self.widget = QtWidgets.QWidget(parent)
-            self.ui.setupUi(self.widget)  # assumes Form: AmplitudeForm
+            self.ui.setupUi(self.widget)
 
-            # Model + table setup
             self.model = AmplitudeTableModel([])
             tv = self.ui.tableView
             tv.setModel(self.model)
@@ -173,13 +161,11 @@ class AmplitudePlugin(IPlugin):
             tv.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
             tv.verticalHeader().setVisible(False)
 
-            # Initial load
             self._reload_from_store()
         else:
             self.widget.setParent(parent)
         return self.widget
 
-    # ---------- DataStore ----------
     def _reload_from_store(self):
         rows = self._load_amplitude_rows_from_store()
         if self.model:
@@ -208,7 +194,6 @@ class AmplitudePlugin(IPlugin):
             self.alerts.error("DataStore service not found.")
             return []
 
-        # Try to read from DataStore
         raw = None
         for key in ("measurements", "meassurements"):
             try:
@@ -243,7 +228,6 @@ class AmplitudePlugin(IPlugin):
                     p1x, p1y = _f(p1[0]), _f(p1[1])
                     p2x, p2y = _f(p2[0]), _f(p2[1])
 
-                # amplitude metrics
                 x1        = _f(item.get("x1"))
                 x2        = _f(item.get("x2"))
                 n         = _i(item.get("n"))
@@ -289,7 +273,6 @@ class AmplitudePlugin(IPlugin):
 
         return rows
 
-    # ---------- Export ----------
     def _export_dir(self) -> str:
         """Default export folder: the open project's 'archivos' folder, else last used dir."""
         try:
@@ -347,7 +330,6 @@ class AmplitudePlugin(IPlugin):
         try:
             with open(path, "w", newline="", encoding="utf-8") as f:
                 w = csv.writer(f)
-                # Header: same order as UI
                 headers, filas = self._tabla_exportable()
                 w.writerow(headers)
                 w.writerows(filas)
@@ -380,7 +362,6 @@ class AmplitudePlugin(IPlugin):
             self.alerts.error(f"Failed to export Excel:\n{e}")
 
 
-# --- Local helpers for safe casting ---
 def _f(v):
     try:
         return float(v) if v is not None else None

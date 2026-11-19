@@ -20,8 +20,8 @@ CANAL_AMPLITUD = "IN 7"
 @pytest.fixture(scope="module")
 def secciones():
     resultado = correr(canal(False, 0), canal(True, 1), canal_fase="CA1", canal_amplitud=CANAL_AMPLITUD)
-    plugin = Pac_plugin.__new__(Pac_plugin)      # sin __init__: no levanta Qt ni VTK
-    plugin.ui = None                             # sin casilla de unidades: grados
+    plugin = Pac_plugin.__new__(Pac_plugin)
+    plugin.ui = None
     plugin._ultimo = {
         "parametros": {"tipo": Pac_plugin.PSEL_INTER, "p1_hz": 3.0, "p2_hz": 8.0, "a1_hz": 25.0, "a2_hz": 60.0,
                        "trial": "todos", "canal_amplitud": CANAL_AMPLITUD},

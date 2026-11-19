@@ -6,14 +6,9 @@ class Ui_Relative_psd(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
 
-        # Layout principal del Form
         self.vbox = QtWidgets.QVBoxLayout(Form)
         self.vbox.setSpacing(0)
 
-        # --- Right Area: Panel (fixed header + scrollable body) ---
-        # Note: relative_psd_plugin.py inserts a plotArea at index 0 of this
-        # same layout at runtime (self.widget.layout().insertWidget(0, ...)),
-        # so this container must stay as the single widget added to self.vbox.
         self.rightContainer = QtWidgets.QWidget(Form)
         self.rightContainer.setObjectName("rightContainer")
         self.vbox.addWidget(self.rightContainer)
@@ -22,7 +17,6 @@ class Ui_Relative_psd(object):
         self.rightLayoutOuter.setContentsMargins(8, 0, 8, 0)
         self.rightLayoutOuter.setSpacing(0)
 
-        # ===== Header: Parameters + clear + Calculate Relative PSD (always visible) =====
         self.headerLayout = QtWidgets.QHBoxLayout()
         self.headerLayout.setContentsMargins(0, 0, 0, 5)
 
@@ -55,7 +49,6 @@ class Ui_Relative_psd(object):
         self.paramsLine.setProperty("role", "section-divider")
         self.rightLayoutOuter.addWidget(self.paramsLine)
 
-        # ===== Scrollable body =====
         self.scrollArea = QtWidgets.QScrollArea(self.rightContainer)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
@@ -70,7 +63,6 @@ class Ui_Relative_psd(object):
         self.paramsLayout.setContentsMargins(0, 10, 0, 0)
         self.paramsLayout.setSpacing(12)
 
-        # --- Sample density ---
         self.sampleDensity = QtWidgets.QVBoxLayout()
         self.sampleDensity.setObjectName("sampleDensity")
 
@@ -101,7 +93,6 @@ class Ui_Relative_psd(object):
         self.sampleDensity.addLayout(self.sampleDensityInput)
         self.paramsLayout.addLayout(self.sampleDensity)
 
-        # --- Welch Parameters ---
         self.welchParameters = QtWidgets.QVBoxLayout()
         self.welchParameters.setObjectName("welchParameters")
 
@@ -116,7 +107,6 @@ class Ui_Relative_psd(object):
         self.welchLine.setProperty("role", "divider")
         self.welchParameters.addWidget(self.welchLine)
 
-        # Window
         self.windowLayout = QtWidgets.QHBoxLayout()
         self.windowLayout.setObjectName("windowLayout")
 
@@ -130,7 +120,6 @@ class Ui_Relative_psd(object):
         self.windowComboBox.addItems(["hann", "hamming", "blackman", "bartlett"])
         self.windowLayout.addWidget(self.windowComboBox)
 
-        # N-per-seg
         self.npersegLayout = QtWidgets.QHBoxLayout()
         self.npersegLayout.setObjectName("npersegLayout")
 
@@ -144,7 +133,6 @@ class Ui_Relative_psd(object):
         self.npersegSpinBox.setObjectName("npersegSpinBox")
         self.npersegLayout.addWidget(self.npersegSpinBox)
         
-        # N-overlap
         self.noverlapLayout = QtWidgets.QHBoxLayout()
         self.noverlapLayout.setObjectName("noverlapLayout")
 
@@ -158,7 +146,6 @@ class Ui_Relative_psd(object):
         self.noverlapSpinBox.setObjectName("noverlapSpinBox")
         self.noverlapLayout.addWidget(self.noverlapSpinBox)
 
-        # N-FFT
         self.nfftLayout = QtWidgets.QHBoxLayout()
         self.nfftLayout.setObjectName("nfftLayout")
 
@@ -179,7 +166,6 @@ class Ui_Relative_psd(object):
 
         self.paramsLayout.addLayout(self.welchParameters, stretch=1)
         
-        # --- Range ---
         self.rangeLayout = QtWidgets.QVBoxLayout()
         self.rangeLayout.setObjectName("rangeLayout")
         
@@ -202,7 +188,6 @@ class Ui_Relative_psd(object):
         self.frequencyLabel.setProperty("variant", "input")
         self.frequencyLayout.addWidget(self.frequencyLabel)
 
-        # Low Frequency
         self.lowFqLayout = QtWidgets.QHBoxLayout()
         self.lowFqLayout.setObjectName("lowFqLayout")
 
@@ -223,7 +208,6 @@ class Ui_Relative_psd(object):
 
         self.frequencyLayout.addLayout(self.lowFqLayout, stretch=1)
     
-        # High Frequency
         self.highFqLayout = QtWidgets.QHBoxLayout()
         self.highFqLayout.setObjectName("highFqLayout")
 
@@ -247,7 +231,6 @@ class Ui_Relative_psd(object):
         self.rangeLayout.addLayout(self.frequencyLayout)
         self.paramsLayout.addLayout(self.rangeLayout)
 
-        # --- Results Section ---
         self.resultsSection = QtWidgets.QVBoxLayout()
         self.resultsSection.setObjectName("resultsSection")
 
@@ -262,7 +245,6 @@ class Ui_Relative_psd(object):
         self.resultsLine.setProperty("role", "divider")
         self.resultsSection.addWidget(self.resultsLine)
 
-        # --- Row: Absolute Power ---
         self.absPowerRow = QtWidgets.QHBoxLayout()
         self.absPowerRow.setObjectName("absPowerRow")
 
@@ -279,7 +261,6 @@ class Ui_Relative_psd(object):
 
         self.resultsSection.addLayout(self.absPowerRow)
 
-        # --- Row: Relative Power ---
         self.relPowerRow = QtWidgets.QHBoxLayout()
         self.relPowerRow.setObjectName("relPowerRow")
 
@@ -297,11 +278,9 @@ class Ui_Relative_psd(object):
 
         self.resultsSection.addLayout(self.relPowerRow)
 
-        # Add entire section to main layout
         self.vbox.addLayout(self.resultsSection)
 
 
-        # --- Spacer ---
         self.paramsLayout.addStretch(1)
 
         self.retranslateUi(Form)

@@ -67,7 +67,7 @@ def _terminar(p, nperseg, f1=8.0, f2=12.0):
 
 def test_avisa_cuando_la_banda_tiene_muy_pocos_puntos():
     p = _plugin()
-    _terminar(p, 256)                      # 3.9 Hz por punto: 8-12 Hz cae en 2
+    _terminar(p, 256)
     texto = p.alerts.warning.call_args.args[0]
     assert "Low frequency resolution" in texto and "nperseg" in texto
 
@@ -99,7 +99,7 @@ def test_la_grafica_muestra_el_espectro_entero_con_el_promedio_y_la_banda():
     ch = p.chart
     etiquetas = [ch.GetPlot(i).GetLabel() for i in range(ch.GetNumberOfPlots())]
     assert "Average" in etiquetas
-    assert ch.GetNumberOfPlots() == 5 + 1 + 2          # trials + promedio + límites de banda
+    assert ch.GetNumberOfPlots() == 5 + 1 + 2
     datos = ch.GetPlot(0).GetInput()
-    assert datos.GetNumberOfRows() > 100               # antes: 1 punto por trial en 8-12 Hz
+    assert datos.GetNumberOfRows() > 100
     assert "8-12 Hz" in ch.GetTitle()

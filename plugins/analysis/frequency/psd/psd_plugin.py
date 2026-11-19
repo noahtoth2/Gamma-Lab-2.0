@@ -8,7 +8,6 @@ from scipy.signal import welch
 from core.plugins.interfaces import IPlugin
 from core.plugins.meta import PluginMeta
 from core.utils.vtk_context_menu import VTKContextMenu
-# UI and VTK adapter
 from plugins.analysis.frequency.psd.psd_plugin_ui import Ui_Psd
 from core.utils.adapters import trials_matrix_to_vtk_table
 from core.utils.trial_labels import trials_used
@@ -59,7 +58,6 @@ class Psd_plugin(IPlugin):
         super().__init__(meta)
         self.ui: Ui_Psd | None = None
 
-        # VTK
         self.vtk_interactor: QVTKRenderWindowInteractor | None = None
         self.vtk_view: vtk.vtkContextView | None = None
         self.chart: vtk.vtkChartXY | None = None
@@ -89,18 +87,15 @@ class Psd_plugin(IPlugin):
                       "splitter:", bool(self.ui.splitter))
             
             self._ensure_vtk()
-            # Detrend combobox is provided by the UI
             self._wire_ui()
-            self._init_defaults()  # MATLAB-like defaults
+            self._init_defaults()
 
-            # Show watermark until the chart is generated
             try:
                 if self.mainwin:
                     self.mainwin.show_watermark()
             except Exception:
                 pass
 
-            # logs post-show (dimensiones reales)
             QtCore.QTimer.singleShot(0, self._log_sizes)
         else:
             self.widget.setParent(parent)
@@ -112,31 +107,25 @@ class Psd_plugin(IPlugin):
         if self.ui and self.ui.plotArea:
             self._log(f"plotArea size={self.ui.plotArea.size().width()}x{self.ui.plotArea.size().height()}")
     
-    # --- UI helpers ---
 
     def _init_defaults(self):
         """Set MATLAB-like defaults and a wide plotting range."""
         self.ui.sampleDensitySpinBox.setValue(1000)
-        # Window: hamming
         try:
             idx = self.ui.windowComboBox.findText("hamming", QtCore.Qt.MatchFixedString)
             if idx >= 0:
                 self.ui.windowComboBox.setCurrentIndex(idx)
         except Exception:
             pass
-        # nperseg: 256, noverlap: 128, nfft: 256
         self.ui.npersegSpinBox.setValue(256)
-        self._sync_noverlap()  # sets noverlap=128 and nfft=256
-        # Detrend: none
+        self._sync_noverlap()
         if hasattr(self.ui, "detrendComboBox"):
             self.ui.detrendComboBox.setProperty("variant", "input")
             self.ui.detrendComboBox.setCurrentText("none")
             
-        # Default plotting range (Low=0.0, High=500.0)
         self.ui.lowFrequencySpinBox.setValue(0.0)
         self.ui.highFrequencySpinBox.setValue(500.0)
         
-        # Mode: Individual, Trial: 0
         try:
             midx = self.ui.modeComboBox.findText("Individual", QtCore.Qt.MatchFixedString)
             if midx >= 0:
@@ -144,7 +133,6 @@ class Psd_plugin(IPlugin):
         except Exception:
             pass
         self.ui.trialIndexSpinBox.setValue(1)
-    # --- End UI helpers ---
 
     def _wire_ui(self):
         self._log("wire ui")
@@ -152,8 +140,8 @@ class Psd_plugin(IPlugin):
         self.ui.clearButton.clicked.connect(self._init_defaults)
         self.ui.lowFrequencySpinBox.valueChanged.connect(self._sync_range)
         self.ui.highFrequencySpinBox.valueChanged.connect(self._sync_range)
-        self.ui.npersegSpinBox.setRange(1, 100_000_000)  # sin tope de digitos: lo limita la longitud de la senal
-        self.ui.npersegSpinBox.setKeyboardTracking(False)  # sincroniza noverlap/nfft al terminar de escribir
+        self.ui.npersegSpinBox.setRange(1, 100_000_000)
+        self.ui.npersegSpinBox.setKeyboardTracking(False)
         self.ui.npersegSpinBox.setValue(256)
         self.ui.noverlapSpinBox.setRange(0, 100_000_000)
         self.ui.noverlapSpinBox.setValue(128)
@@ -168,21 +156,15 @@ class Psd_plugin(IPlugin):
         self.ui.highFrequencySpinBox.setValue(40.0)
         self.ui.lowFrequencySpinBox.setDecimals(2)
         self.ui.lowFrequencySpinBox.setRange(0.0, 10000)
-        # Sync low/high only when the user finishes typing: while typing "100", the "1" was
-        # momentarily below the low limit and dragged it down
         self.ui.lowFrequencySpinBox.setKeyboardTracking(False)
         self.ui.highFrequencySpinBox.setKeyboardTracking(False)
         self.ui.lowFrequencySpinBox.setSingleStep(1.0)
         self.ui.lowFrequencySpinBox.setValue(0.0)
         
-        # Keep noverlap synced with nperseg
         self.ui.npersegSpinBox.valueChanged.connect(self._sync_noverlap)
         
-        # Mode combobox
         self.ui.modeComboBox.currentTextChanged.connect(self._on_mode_changed)
 
-        # Trial selector counts from 1 (position among valid trials), like the
-        # rest of the application.
         self.ui.trialIndexSpinBox.setMinimum(1)
         self.ui.modeComboBox.currentTextChanged.connect(lambda _: self.publish_current_trial())
         self.ui.trialIndexSpinBox.valueChanged.connect(lambda _: self.publish_current_trial())
@@ -193,7 +175,6 @@ class Psd_plugin(IPlugin):
         self.ui.trialIndexLabel.setVisible(is_individual)
         self.ui.trialIndexSpinBox.setVisible(is_individual)
         
-        # Enable the spinbox only when visible and there are trials
         num_trials = self.ui.trialIndexSpinBox.maximum()
         self.ui.trialIndexSpinBox.setEnabled(is_individual and num_trials > 0)
 
@@ -214,11 +195,9 @@ class Psd_plugin(IPlugin):
         """Set noverlap to half of nperseg by default."""
         nperseg = self.ui.npersegSpinBox.value()
         self.ui.noverlapSpinBox.setValue(nperseg // 2)
-        # Make nfft follow nperseg (common behavior)
         self.ui.nfftSpinBox.setValue(nperseg)
 
-    # ------- VTK -------
-    def _ensure_vtk(self, *args):  # no unused args
+    def _ensure_vtk(self, *args):
         self._log("ensure_vtk(): enter")
         if self.vtk_interactor:
              self.ui.plotArea.layout().addWidget(self.vtk_interactor)
@@ -241,69 +220,55 @@ class Psd_plugin(IPlugin):
         self._log("ensure_vtk(): scheduled init")
 
 
-    # ------- actions -------
     def _on_calculate_clicked(self):
         self._log("_on_calculate_clicked()")
 
-        # 1) Load trials from active signal
         fs, X, ch_name = self._load_trials_from_store()
         if X is None or fs is None:
             self._notify("PSD: no trials in active signal.")
-            # Disable selector on failure
             self.ui.trialIndexSpinBox.setEnabled(False)
             self.ui.trialIndexSpinBox.setRange(1, 1)
             return
             
-        # Target Fs default = fs (no downsample)
         if self.ui.sampleDensitySpinBox.value() <= 0:
              self.ui.sampleDensitySpinBox.setValue(fs)
-        # Range 0..fs/2
         if self.ui.lowFrequencySpinBox.value() >= self.ui.highFrequencySpinBox.value():
             self.ui.lowFrequencySpinBox.setValue(0.0)
             self.ui.highFrequencySpinBox.setValue(fs/2.0)
             
-        # Update UI with number of trials
         num_trials = X.shape[1]
         self.ui.trialIndexSpinBox.setRange(1, max(1, num_trials))
-        # Enable for Individual mode
         is_individual = (self.ui.modeComboBox.currentText() == "Individual")
         self.ui.trialIndexSpinBox.setEnabled(is_individual)
 
 
-        # 2) UI parameters
         try:
             target_fs = float(self.ui.sampleDensitySpinBox.value())
             lo = float(self.ui.lowFrequencySpinBox.value())
             hi = float(self.ui.highFrequencySpinBox.value())
             
-            # Welch parameters
             window = self.ui.windowComboBox.currentText()
             nperseg = self.ui.npersegSpinBox.value()
             noverlap = self.ui.noverlapSpinBox.value()
             nfft = self.ui.nfftSpinBox.value()
             
-            # Detrend
             detrend = self.ui.detrendComboBox.currentText()
             
-            # Mode parameters
             mode = self.ui.modeComboBox.currentText()
-            trial_idx = self.ui.trialIndexSpinBox.value() - 1   # 0-based column
+            trial_idx = self.ui.trialIndexSpinBox.value() - 1
 
             if lo > hi:
                 lo, hi = hi, lo
             
-            # Validate Welch parameters
             if nperseg <= 1:
                 raise ValueError("N-per-seg must be > 1.")
             if noverlap < 0:
                 raise ValueError("N-overlap cannot be negative.")
-            # The noverlap>=nperseg adjustment is handled inside _compute_psd
             
         except Exception as e:
             self.alerts.warning(f"Parameter error: {str(e)}", "Invalid parameters")
             return
 
-        # 3) PSD (always for all trials) in the TaskService (R71); 4) plot when it finishes
         p = dict(mode=mode, trial_idx=trial_idx, num_trials=num_trials, lo=lo, hi=hi, ch_name=ch_name)
         self.run_task(calcular_psd, partial(self._on_psd_done, p),
                       on_failed=lambda m: self.alerts.error(f"Could not compute PSD: {m}"),
@@ -313,9 +278,8 @@ class Psd_plugin(IPlugin):
     def _on_psd_done(self, p, resultado):
         mode, trial_idx, num_trials = p["mode"], p["trial_idx"], p["num_trials"]
         lo, hi, ch_name = p["lo"], p["hi"], p["ch_name"]
-        freq, power_all_trials, fs_eff = resultado     # power_all_trials: (Nf, T)
+        freq, power_all_trials, fs_eff = resultado
 
-        # Choose what to plot based on mode
         power_to_plot = None
         plot_title = ""
         
@@ -328,7 +292,6 @@ class Psd_plugin(IPlugin):
                 plot_title += f", se dibujan {self.MAX_PLOTS}"
             
         elif mode == "Average":
-            # Per-frequency average (axis=1)
             power_to_plot = np.mean(power_all_trials, axis=1, keepdims=True)
             used = trials_used(None, num_trials, "average")
             plot_title = f"PSD (Average) - {ch_name} — {used['label']}"
@@ -337,13 +300,11 @@ class Psd_plugin(IPlugin):
             if not (0 <= trial_idx < num_trials):
                 self._notify(f"Trial {trial_idx + 1} out of range (1–{num_trials}).", "warning")
                 return
-            # Pick only that trial column
             power_to_plot = power_all_trials[:, trial_idx:trial_idx+1]
             used = trials_used([trial_idx + 1], num_trials, "single")
             plot_title = f"PSD - {ch_name} — {used['label']}"
             
 
-        # 4) Plot
         if power_to_plot is not None:
             self._plot_psd(freq, power_to_plot, plot_title, lo, hi, ch_name)
             self._trials_used = used
@@ -353,7 +314,6 @@ class Psd_plugin(IPlugin):
         else:
             self._notify(f"Calculation mode '{mode}' not recognized.", "error")
 
-    # ====== Project save/restore ======
     def get_analysis_params(self) -> dict:
         return {
             "sample_density": self.ui.sampleDensitySpinBox.value(),
@@ -365,7 +325,7 @@ class Psd_plugin(IPlugin):
             "nfft": self.ui.nfftSpinBox.value(),
             "detrend": self.ui.detrendComboBox.currentText(),
             "mode": self.ui.modeComboBox.currentText(),
-            "trial_index": self.ui.trialIndexSpinBox.value() - 1,   # stored 0-based
+            "trial_index": self.ui.trialIndexSpinBox.value() - 1,
             "trials_used": self._trials_used,
         }
 
@@ -378,8 +338,6 @@ class Psd_plugin(IPlugin):
         if idx >= 0:
             self.ui.windowComboBox.setCurrentIndex(idx)
 
-        # nperseg first: its valueChanged auto-syncs noverlap/nfft, so set the
-        # saved noverlap/nfft AFTER it to override that auto-sync if they differ.
         self.ui.npersegSpinBox.setValue(params.get("nperseg", self.ui.npersegSpinBox.value()))
         self.ui.noverlapSpinBox.setValue(params.get("noverlap", self.ui.noverlapSpinBox.value()))
         self.ui.nfftSpinBox.setValue(params.get("nfft", self.ui.nfftSpinBox.value()))
@@ -392,25 +350,20 @@ class Psd_plugin(IPlugin):
         if midx >= 0:
             self.ui.modeComboBox.setCurrentIndex(midx)
 
-        # Widen the range first so the saved index isn't clamped before
-        # _on_calculate_clicked() sets the real range from the trial count.
-        trial_index = int(params.get("trial_index", 0)) + 1   # stored 0-based, shown 1-based
+        trial_index = int(params.get("trial_index", 0)) + 1
         self.ui.trialIndexSpinBox.setRange(1, max(self.ui.trialIndexSpinBox.maximum(), trial_index))
         self.ui.trialIndexSpinBox.setValue(trial_index)
 
         self._on_calculate_clicked()
 
     def _sync_range(self):
-        # Simplify sync (no sender())
         lo = float(self.ui.lowFrequencySpinBox.value())
         hi = float(self.ui.highFrequencySpinBox.value())
         if lo > hi:
-            # Force hi to match lo when needed
             self.ui.highFrequencySpinBox.setValue(lo)
         self._log(f"range sync: low={self.ui.lowFrequencySpinBox.value()}, "
                   f"high={self.ui.highFrequencySpinBox.value()}")
 
-    # ====== DATA ======
     def _load_trials_from_store(self):
         if not self.mainwin:
             return None, None, None
@@ -424,9 +377,9 @@ class Psd_plugin(IPlugin):
             return None, None, None
 
         fs = float(getattr(td, "sampling_rate", 0.0))
-        X = np.asarray(getattr(td, "trials", None), dtype=np.float64) # (Ns, T)
+        X = np.asarray(getattr(td, "trials", None), dtype=np.float64)
         ch = getattr(td, "channel_name", "")
-        self._unidad_psd = getattr(td, "unit", "") or ""      # para el rótulo del eje
+        self._unidad_psd = getattr(td, "unit", "") or ""
         if X is None or X.ndim != 2 or fs <= 0:
             self._log("Invalid TrialDataset (fs<=0 or trials not 2D).")
             return None, None, None
@@ -434,13 +387,11 @@ class Psd_plugin(IPlugin):
         self._log(f"Trials: Ns={X.shape[0]}, T={X.shape[1]}, fs={fs}")
         return fs, X, ch
 
-    # ====== PSD Logic ======
     def _compute_psd(self, X: np.ndarray, fs: float, target_fs: float,
                      window: str, nperseg: int, noverlap: int, nfft: int, detrend: str):
         
         return calcular_psd(X, fs, target_fs, window, nperseg, noverlap, nfft, detrend, log=self._log)
 
-    # ====== Plot in VTK ======
     def _plot_psd(self, freq: np.ndarray, power: np.ndarray, 
                    plot_title: str, lo: float, hi: float, ch_name: str):
         """
@@ -451,13 +402,10 @@ class Psd_plugin(IPlugin):
         if self.vtk_view is None:
             self._ensure_vtk()
 
-        # Frequency range filter (X axis)
         sel = (freq >= lo) & (freq <= hi)
         freq_v = freq[sel]
-        # 'power' is already 2D (Nf_sel, T) or (Nf_sel, 1)
         power_v = power[sel, :]
 
-        # Limit number of curves if too many trials
         num_curves = power_v.shape[1]
         MAX_PLOTS = self.MAX_PLOTS
         if num_curves > MAX_PLOTS:
@@ -466,7 +414,6 @@ class Psd_plugin(IPlugin):
 
         table = trials_matrix_to_vtk_table(freq_v, power_v)
 
-        # Fresh chart
         scene = self.vtk_view.GetScene()
         scene.ClearItems()
         self.chart = vtk.vtkChartXY()
@@ -476,40 +423,31 @@ class Psd_plugin(IPlugin):
         ax_l = self.chart.GetAxis(vtk.vtkAxis.LEFT)
         ax_b.SetGridVisible(True); ax_l.SetGridVisible(True)
         ax_b.SetTitle("Frequency (Hz)")
-        ax_l.SetTitle(etiqueta_psd(getattr(self, "_unidad_psd", "")))   # antes «V^2/Hz» fijo
+        ax_l.SetTitle(etiqueta_psd(getattr(self, "_unidad_psd", "")))
         
-        # Auto-fit Y axis to avoid clipping peaks
         if power_v.size > 0:
-            # Max across visible data
             y_max_data = np.max(power_v)
-            # Add 10% headroom
             y_max_limit = y_max_data * 1.10 
-            # Lower limit for PSD is 0.0
             y_min_limit = 0.0 
             
-            # Apply to left axis (Y)
             ax_l.SetMinimum(y_min_limit)
             ax_l.SetMaximum(y_max_limit)
             self._log(f"Auto Y fit: range=[{y_min_limit:.2e}, {y_max_limit:.2e}]")
 
         try:
-            # Use dynamic title
             self.chart.SetTitle(plot_title)
         except Exception:
             pass
         
-        # One plot per column (1 or T)
         num_cols = table.GetNumberOfColumns()
         self._log(f"Plotting {num_cols-1} PSD curves.")
         
-        # If single curve, make it thicker
         line_width = 0.5 if num_curves > 1 else 2.0
         
         for c in range(1, num_cols):
             plot = agregar_columna(self.chart, table, c)
             plot.SetWidth(line_width) 
 
-       # --- Context menu ---
         try:
             self.vtk_menu = VTKContextMenu(self.chart, self.vtk_interactor,
                                            self.active_signal.name, ch_name,
@@ -520,7 +458,6 @@ class Psd_plugin(IPlugin):
 
         self.vtk_view.GetRenderWindow().Render()
 
-        # Hide watermark once content is present
         try:
             if self.mainwin:
                 self.mainwin.hide_watermark()

@@ -18,13 +18,11 @@ class Ui_Pac(object):
         self.splitter.setObjectName("splitter")
         self.mainWindow.addWidget(self.splitter)
 
-        # --- Left Area: Plot ---
         self.plotArea = QtWidgets.QFrame(self.splitter)
         self.plotArea.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.plotArea.setFrameShadow(QtWidgets.QFrame.Raised)
         self.plotArea.setObjectName("plotArea")
 
-        # --- Right Area: Panel (fixed header + scrollable body) ---
         self.rightContainer = QtWidgets.QWidget(self.splitter)
         self.rightContainer.setObjectName("rightContainer")
 
@@ -32,7 +30,6 @@ class Ui_Pac(object):
         self.rightLayoutOuter.setContentsMargins(8, 0, 8, 0)
         self.rightLayoutOuter.setSpacing(0)
 
-        # ===== Header: Parameters + clear + Create PAC (always visible) =====
         self.headerLayout = QtWidgets.QHBoxLayout()
         self.headerLayout.setContentsMargins(0, 0, 0, 5)
 
@@ -43,7 +40,6 @@ class Ui_Pac(object):
 
         self.headerLayout.addStretch(1)
 
-        # --- Clear/ broom button ---
         self.clearButton = QtWidgets.QToolButton(self.rightContainer)
         self.clearButton.setObjectName("clearButton")
         icon_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "assets", "iconos", "clear.png")
@@ -66,7 +62,6 @@ class Ui_Pac(object):
         self.paramsLine.setProperty("role", "section-divider")
         self.rightLayoutOuter.addWidget(self.paramsLine)
 
-        # ===== Scrollable body =====
         self.scrollArea = QtWidgets.QScrollArea(self.rightContainer)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
@@ -86,7 +81,6 @@ class Ui_Pac(object):
 
         self.splitter.widget(1).setMaximumWidth(300)
 
-        # --- PAC type ---
         self.pacTypeLayout = QtWidgets.QVBoxLayout()
         self.pacTypeLayout.setObjectName("pacTypeLayout")
 
@@ -107,10 +101,6 @@ class Ui_Pac(object):
         self.pacTypeLayout.addWidget(self.pacTypeComboBox)
         self.paramsLayout.addLayout(self.pacTypeLayout)
 
-        # --- Amplitude channel (solo en PAC Psel inter-canal) ---
-        # El analisis entre canales toma los ciclos y la fase del canal activo y
-        # la amplitud de este otro. En los demas modos el selector se oculta: un
-        # ajuste visible que no hace nada es peor que no tenerlo.
         self.ampChannelLayout = QtWidgets.QVBoxLayout()
         self.ampChannelLayout.setObjectName("ampChannelLayout")
 
@@ -131,7 +121,6 @@ class Ui_Pac(object):
         self.ampChannelLayout.addWidget(self.ampChannelComboBox)
         self.paramsLayout.addLayout(self.ampChannelLayout)
 
-        # --- Sample frequency ---
         self.sampleDensity = QtWidgets.QVBoxLayout()
         self.sampleDensity.setObjectName("sampleDensity")
 
@@ -162,7 +151,6 @@ class Ui_Pac(object):
         self.sampleDensity.addLayout(self.sampleDensityInput)
         self.paramsLayout.addLayout(self.sampleDensity)
 
-        # --- Phase band---
         self.PhaseBandLayout = QtWidgets.QVBoxLayout()
         self.PhaseBandLayout.setObjectName("PhaseBandLayout")
 
@@ -185,7 +173,6 @@ class Ui_Pac(object):
         self.frequencyLabel.setProperty("variant", "input")
         self.frequencyLayout.addWidget(self.frequencyLabel)
 
-        # --- Fq p1 ---
         self.lowFqLayout = QtWidgets.QHBoxLayout()
         self.lowFqLayout.setObjectName("lowFqLayout")
 
@@ -206,7 +193,6 @@ class Ui_Pac(object):
 
         self.frequencyLayout.addLayout(self.lowFqLayout)
     
-        # --- Fq p2 ---
         self.highFqLayout = QtWidgets.QHBoxLayout()
         self.highFqLayout.setObjectName("highFqLayout")
 
@@ -230,7 +216,6 @@ class Ui_Pac(object):
         self.PhaseBandLayout.addLayout(self.frequencyLayout)
         self.paramsLayout.addLayout(self.PhaseBandLayout)
 
-        # --- Amplitude band ---
         self.AmplitudeBandLayout = QtWidgets.QVBoxLayout()
         self.AmplitudeBandLayout.setObjectName("AmplitudeBandLayout")
 
@@ -253,7 +238,6 @@ class Ui_Pac(object):
         self.ampFrequencyLabel.setProperty("variant", "input")
         self.ampFrequencyLayout.addWidget(self.ampFrequencyLabel)
 
-        # --- Fq a1 ---
         self.ampLowFqLayout = QtWidgets.QHBoxLayout()
         self.ampLowFqLayout.setObjectName("ampLowFqLayout")
 
@@ -274,7 +258,6 @@ class Ui_Pac(object):
 
         self.ampFrequencyLayout.addLayout(self.ampLowFqLayout)
 
-        # --- Fq a2 ---
         self.ampHighFqLayout = QtWidgets.QHBoxLayout()
         self.ampHighFqLayout.setObjectName("ampHighFqLayout")
 
@@ -298,10 +281,6 @@ class Ui_Pac(object):
         self.AmplitudeBandLayout.addLayout(self.ampFrequencyLayout)
         self.paramsLayout.addLayout(self.AmplitudeBandLayout)
 
-        # --- Trial ---
-        # MATLAB solo tiene una casilla numerica ("Single Trial"), global para
-        # toda la aplicacion. Aqui ademas van flechas, porque la directora pidio
-        # poder navegar entre los trials, y el selector es propio del plugin.
         self.trialLayout = QtWidgets.QVBoxLayout()
         self.trialLayout.setObjectName("trialLayout")
 
@@ -324,8 +303,6 @@ class Ui_Pac(object):
         self.prevTrialButton.setCursor(QtCore.Qt.PointingHandCursor)
         self.trialInput.addWidget(self.prevTrialButton)
 
-        # Muestra 1 para el primer trial, como MATLAB; el plugin resta uno al
-        # indexar, porque Python cuenta desde cero.
         self.trialSpinBox = QtWidgets.QSpinBox(self.layoutWidget)
         self.trialSpinBox.setAlignment(QtCore.Qt.AlignCenter)
         self.trialSpinBox.setMinimum(1)
@@ -345,12 +322,6 @@ class Ui_Pac(object):
         self.trialLayout.addLayout(self.trialInput)
         self.paramsLayout.addLayout(self.trialLayout)
 
-        # --- Units of the phase axis ---
-        # Marcada: grados de 0 a 360. Sin marcar: radianes de -pi a pi, que es
-        # lo que hace el `bar(index_pi, ...)` del MATLAB. Afecta al histograma,
-        # a los dos mapas, al coseno de referencia, al panel de fase
-        # instantanea, a la brujula y a lo que se exporta: o todo en una unidad
-        # o todo en la otra, nunca mezclado.
         self.degreesLayout = QtWidgets.QVBoxLayout()
         self.degreesLayout.setObjectName("degreesLayout")
 
@@ -372,7 +343,6 @@ class Ui_Pac(object):
 
         self.paramsLayout.addLayout(self.degreesLayout)
 
-        # --- El color de los mapas (R33), el mismo control de Wavelet ---
         self.colorLayout = QtWidgets.QVBoxLayout()
         self.colorLayout.setObjectName("colorLayout")
 
@@ -391,10 +361,8 @@ class Ui_Pac(object):
             self, self.layoutWidget, self.colorLayout)
         self.paramsLayout.addLayout(self.colorLayout)
 
-        # --- Spacer ---
         self.paramsLayout.addStretch(1)
 
-        # Size splitter
         self.splitter.setStretchFactor(0, 1)
         self.splitter.setStretchFactor(1, 0)
 

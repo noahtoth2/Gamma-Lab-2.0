@@ -24,11 +24,11 @@ from core.filters.iir import bifiltro, filtro_butterworth, filtro_iir
 from core.filters.wavelet import tasa_efectiva
 from core.utils.parallel import map_ordenado
 
-GAMMA = 3.0          # ps_Gamma: el valor por defecto de la Morse generalizada
-NBINS = 100          # los bins de fase de f_Phase_PAC
-CICLOS = 1.0         # ps_StDevCycles de f_Phase_PAC
-FILAS_POR_HZ_PSEL = 2   # ps_FreqSeg = 2*(A2-A1) en f_Phase_PAC_Pdetect
-FILAS_POR_HZ = 4     # ps_FreqSeg = 4*(A2-A1) en f_Phase_PAC
+GAMMA = 3.0
+NBINS = 100
+CICLOS = 1.0
+FILAS_POR_HZ_PSEL = 2
+FILAS_POR_HZ = 4
 
 
 def morse_tf(sig, fs, fmin, fmax, n_freq, cycles=1.0, magnitudes=True):
@@ -63,11 +63,8 @@ def morse_tf(sig, fs, fmin, fmax, n_freq, cycles=1.0, magnitudes=True):
     if n_freq < 2:
         raise ValueError(f"Se necesitan al menos 2 frecuencias (se pidieron {n_freq}).")
 
-    # Eje lineal e invertido, como el MATLAB
     eje_frecuencias = np.linspace(fmin, fmax, n_freq)[::-1]
 
-    # Si la señal tiene largo par se descarta la última muestra; al final se
-    # duplica la última columna para devolver el largo original.
     era_par = (x.size % 2 == 0)
     if era_par:
         x = x[:-1]
@@ -76,7 +73,6 @@ def morse_tf(sig, fs, fmin, fmax, n_freq, cycles=1.0, magnitudes=True):
     eje_tiempo = np.arange(n, dtype=np.float64) / fs
     mitad = n // 2 + 1
 
-    # Eje angular: (2π/N)·(0:N−1)·fs
     w = (2.0 * np.pi / n) * np.arange(n, dtype=np.float64) * fs
     w_mitad = w[:mitad]
 
@@ -86,11 +82,6 @@ def morse_tf(sig, fs, fmin, fmax, n_freq, cycles=1.0, magnitudes=True):
 
     fft_sig = np.fft.fft(x)
 
-    # Cuando solo se quieren magnitudes se reserva float64 y se escribe fila por
-    # fila con el abs ya aplicado. Guardar la matriz compleja entera y convertir
-    # al final costaria el triple: con los valores por defecto de PAC
-    # —1.900 frecuencias x 8.000 muestras— son 348 MB contra 116 MB. Es el mismo
-    # patron del acumulador de la Fase 1.2 del orquestador.
     salida = np.empty((n_freq, n), dtype=np.float64 if magnitudes else np.complex128)
     ventana = np.zeros(n, dtype=np.float64)
 
@@ -98,10 +89,9 @@ def morse_tf(sig, fs, fmin, fmax, n_freq, cycles=1.0, magnitudes=True):
         for i, f in enumerate(eje_frecuencias):
             escala = pico / (2.0 * np.pi * f)
             w_escalado = w_mitad * escala
-            # Solo se llena media ventana: el wavelet es analitico.
             ventana[:mitad] = 2.0 * np.exp(
                 constante + beta * np.log(w_escalado) - w_escalado ** GAMMA)
-            ventana[~np.isfinite(ventana)] = 0.0   # w=0 da log(0) en la primera muestra
+            ventana[~np.isfinite(ventana)] = 0.0
             coef = np.fft.ifft(fft_sig * ventana)
             salida[i, :] = np.abs(coef) if magnitudes else coef
 
@@ -112,12 +102,7 @@ def morse_tf(sig, fs, fmin, fmax, n_freq, cycles=1.0, magnitudes=True):
     return salida, eje_tiempo, eje_frecuencias
 
 
-# --------------------------------------------------------------- PAC Psel
-# La deteccion de ciclos de `f_Phase_PAC_Pdetect`. No existe en PAC ni en MI:
-# en vez de recorrer la señal entera, Psel busca ciclos completos del ritmo
-# lento y promedia ventanas centradas en sus valles.
-
-BANDA_GAMMA_PSEL = (25.0, 129.0)   # g_Liml y g_Limh, escritas a mano en el .m
+BANDA_GAMMA_PSEL = (25.0, 129.0)
 
 
 def detectar_extremos(y):
@@ -180,15 +165,9 @@ def seleccionar_valles(y_filt, tiempo, picos, valles, ceros, min_t, max_t,
     if picos.size == 0 or valles.size < 4 or ceros.size == 0:
         return np.empty(0, dtype=np.int64)
 
-    # Los umbrales de amplitud. MATLAB recorta la lista mas larga a la corta
-    # antes de promediar la diferencia pico-valle; `Min_Vpp` se calcula y
-    # despues no se usa —la condicion que lo usaba quedo comentada—, asi que
-    # aqui no se calcula.
     alto_pico = float(y_filt[picos].mean())
     alto_valle = float(y_filt[valles].mean())
     if permisivo:
-        # `std` de MATLAB divide entre N-1 y el de numpy entre N, de ahi `ddof=1`.
-        # Con un solo elemento MATLAB devuelve 0 y numpy avisaria de un nan.
         altos, bajos = y_filt[picos], y_filt[valles]
         alto_pico -= float(altos.std(ddof=1)) if altos.size > 1 else 0.0
         alto_valle += float(bajos.std(ddof=1)) if bajos.size > 1 else 0.0
@@ -196,7 +175,6 @@ def seleccionar_valles(y_filt, tiempo, picos, valles, ceros, min_t, max_t,
     valido = np.ones(valles.size, dtype=bool)
     valido[0] = False
 
-    # Primero, los valles que caen antes del primer cruce por cero.
     i = 1
     while i < valles.size and valles[i] < ceros[0]:
         valido[i] = False
@@ -218,27 +196,23 @@ def seleccionar_valles(y_filt, tiempo, picos, valles, ceros, min_t, max_t,
         pico_pre, pico_post = picos[pre_pico[-1]], picos[post_pico[0]]
 
         descartar = (
-            siguiente < cero_post            # el valle siguiente llega antes que el cruce
-            or siguiente < pico_post         # o antes que el pico siguiente
-            or pico_post < cero_post         # el pico siguiente llega antes que el cruce
-            or anterior > cero_pre           # el valle anterior esta despues del cruce previo
-            or anterior > pico_pre           # o despues del pico previo
-            or pico_pre > cero_pre           # el pico previo esta despues del cruce previo
-            or y_filt[actual] > alto_valle   # el valle no baja lo suficiente
-            or y_filt[pico_pre] < alto_pico  # el pico previo no sube lo suficiente
-            or y_filt[pico_post] < alto_pico # ni el siguiente
+            siguiente < cero_post
+            or siguiente < pico_post
+            or pico_post < cero_post
+            or anterior > cero_pre
+            or anterior > pico_pre
+            or pico_pre > cero_pre
+            or y_filt[actual] > alto_valle
+            or y_filt[pico_pre] < alto_pico
+            or y_filt[pico_post] < alto_pico
             or not (min_t <= tiempo[actual] - tiempo[pico_pre] <= max_t)
             or not (min_t <= tiempo[pico_post] - tiempo[actual] <= max_t))
 
         valido[i] = not descartar
         i += 1
 
-    # Los dos ultimos nunca valen
     valido[-2:] = False
 
-    # MATLAB lo hace con `v_sel .* v_plw` y luego quita los ceros. Aqui se usa
-    # una mascara: multiplicar borraria tambien un valle que cayera en la
-    # muestra 0, que en MATLAB no puede pasar porque sus indices empiezan en 1.
     return valles[valido]
 
 
@@ -306,33 +280,30 @@ def _recorte_por_valles(av):
 @dataclass
 class ResultadoPsel:
     """Todo lo que `f_Phase_PAC_Pdetect` calcula y dibuja."""
-    mapa: np.ndarray            # m_phase_av_aux: (frecuencia, bin de fase), en z
-    frecuencias: np.ndarray     # fr, descendente
-    fases: np.ndarray           # index_pi, los bordes izquierdos de los bins
-    histograma: np.ndarray      # hist_pre_1
-    vector: complex             # v_pha_av_pre1
-    vectores_por_grupo: np.ndarray   # angulos_av: 16 vectores, de 6 bins cada uno
-    mapa_tf: np.ndarray         # tf_av_aux: el tiempo-frecuencia promedio, en z
-    tiempo_tf: np.ndarray       # t_tf
-    ciclos_full: np.ndarray     # m_lows_full recortado
-    ciclos_theta: np.ndarray    # m_lows_theta recortado
-    ciclos_gamma: np.ndarray    # m_lows_gamma (el MATLAB no lo recorta)
-    promedio_theta: np.ndarray  # av, ya recortado dos veces
-    promedio_full: np.ndarray   # av_full
+    mapa: np.ndarray
+    frecuencias: np.ndarray
+    fases: np.ndarray
+    histograma: np.ndarray
+    vector: complex
+    vectores_por_grupo: np.ndarray
+    mapa_tf: np.ndarray
+    tiempo_tf: np.ndarray
+    ciclos_full: np.ndarray
+    ciclos_theta: np.ndarray
+    ciclos_gamma: np.ndarray
+    promedio_theta: np.ndarray
+    promedio_full: np.ndarray
     n_ciclos: int
-    vpp: float                  # max(av) - min(av)
+    vpp: float
     vpp_full: float
-    vrms: float                 # rms(av_full)
-    ciclos_descartados: int     # los que no cabian enteros en la senal
+    vrms: float
+    ciclos_descartados: int
     fs_efectiva: float
-    senal: np.ndarray           # v_Data: los trials concatenados
-    senal_filtrada: np.ndarray  # v_Data_Filt: la misma en la banda de fase
-    tiempo: np.ndarray          # v_Time
-    # Lo que sigue solo se llena en el modo entre canales. En el de un canal
-    # `inter_canal` es False y los demas quedan en None, asi que el codigo que
-    # ya existia no nota la diferencia.
+    senal: np.ndarray
+    senal_filtrada: np.ndarray
+    tiempo: np.ndarray
     inter_canal: bool = False
-    senal_amplitud: np.ndarray | None = None   # v_Data2 concatenado
+    senal_amplitud: np.ndarray | None = None
     canal_fase: str | None = None
     canal_amplitud: str | None = None
     permisivo: bool = False
@@ -404,14 +375,11 @@ def pac_psel(ctx, data, fs_calculado, fs, p1, p2, a1, a2,
         raise ValueError("No hay trials que analizar.")
 
     fs_efectiva, factor = tasa_efectiva(fs_calculado, fs)
-    # Concatenados en una sola senal continua, trial tras trial
     senal = np.nan_to_num(m[::factor].T.ravel(), nan=0.0, posinf=0.0, neginf=0.0)
     if senal.size < 16:
         raise ValueError(
             f"La señal concatenada tiene {senal.size} muestras; se necesitan al menos 16.")
 
-    # El segundo canal, el de amplitud. Sin el, el analisis es el de siempre y
-    # `amplitud` apunta a la misma senal, asi que no hay ninguna rama distinta.
     senal_amplitud = None
     if data_amplitud is not None:
         ma = np.asarray(data_amplitud, dtype=np.float64)
@@ -435,8 +403,6 @@ def pac_psel(ctx, data, fs_calculado, fs, p1, p2, a1, a2,
     if ctx is not None:
         ctx.progress(5, "Filtrando")
 
-    # Dos filtros: el del ritmo lento y el de gamma, este ultimo con la banda
-    # fija. El lento sale siempre del canal de fase; gamma, del de amplitud.
     sos_fase, _ = filtro_iir(fs_efectiva, p1, p2)
     lento = bifiltro(sos_fase, senal)
     sos_gamma, _ = filtro_iir(fs_efectiva, *BANDA_GAMMA_PSEL)
@@ -474,15 +440,12 @@ def pac_psel(ctx, data, fs_calculado, fs, p1, p2, a1, a2,
     av = ciclos_theta.mean(axis=1)
     av_full = ciclos_full.mean(axis=1)
 
-    # Recorte a un ciclo entero a cada lado del valle central
     ct1, ct2 = _recorte_por_valles(av)
     av = av[ct1:ct2 + 1]
     av_full = av_full[ct1:ct2 + 1]
     ciclos_full = ciclos_full[ct1:ct2 + 1]
     ciclos_theta = ciclos_theta[ct1:ct2 + 1]
 
-    # Entre los dos primeros picos del promedio recortado: el tramo que se
-    # agrupa por fase. MATLAB usa `l2_av(1):l2_av(2)` sin comprobar que existan.
     picos_av, _ = find_peaks(av)
     if picos_av.size < 2:
         raise ValueError(
@@ -505,9 +468,6 @@ def pac_psel(ctx, data, fs_calculado, fs, p1, p2, a1, a2,
         tf, _, eje_frecuencias = gabor_tf(
             ciclos_full[:, c], fs_efectiva, a1, a2, n_freq, cycles=CICLOS_GABOR)
 
-        # El acumulador del mapa tiempo-frecuencia. La Gabor descarta una
-        # muestra cuando el largo es par, asi que las anchuras pueden no
-        # coincidir; MATLAB rellena con ceros o recorta, y aqui igual.
         if acumulado_tf is None:
             acumulado_tf = np.zeros_like(tf)
         if tf.shape[1] > acumulado_tf.shape[1]:
@@ -517,14 +477,8 @@ def pac_psel(ctx, data, fs_calculado, fs, p1, p2, a1, a2,
         else:
             acumulado_tf += tf
 
-        # Agrupado por fase, solo en el tramo entre los dos primeros picos
         recorte = tf[:, i1:i2 + 1]
         fase = np.angle(hilbert(ciclos_theta[i1:i2 + 1, c]))
-        # Se reutiliza `agrupar_por_fase` en vez de repetir el reparto aqui.
-        # Antes se hacia con `searchsorted` + `clip`, y el `clip` metia una fase
-        # de exactamente pi en el ultimo bin, cuando MATLAB —y nuestro propio
-        # `agrupar_por_fase`— la dejan fuera: el criterio es `>= izq & < der`,
-        # asi que el borde derecho del ultimo bin no pertenece a ninguno.
         suma_ciclo, cuenta_ciclo = agrupar_por_fase(recorte, fase, NBINS)
         if suma is None:
             suma = suma_ciclo
@@ -532,9 +486,6 @@ def pac_psel(ctx, data, fs_calculado, fs, p1, p2, a1, a2,
             suma += suma_ciclo
         cuenta += cuenta_ciclo.astype(np.int64)
 
-        # v_angles: MATLAB divide el acumulado de TODOS los ciclos entre la
-        # cuenta de ESTE, asi que el valor crece con el indice del ciclo. Se
-        # replica; es el dato del segundo compas y no entra en el mapa.
         with np.errstate(divide="ignore", invalid="ignore"):
             parcial = suma / cuenta_ciclo[None, :]
         hist_parcial = parcial.sum(axis=0)
@@ -552,9 +503,6 @@ def pac_psel(ctx, data, fs_calculado, fs, p1, p2, a1, a2,
     histograma = np.nanmean(promedio, axis=0)
     fases = centros_bins(NBINS)
 
-    # Los 16 vectores del segundo compas: la media de hist*e^{i*theta} en grupos
-    # de 6 bins. Cubren 96 de los 100 y los 4 ultimos se quedan fuera: el bucle
-    # del MATLAB avanza de 6 en 6 mientras el indice sea menor o igual que 95.
     angulos_todos = histograma * np.exp(1j * fases)
     vectores_por_grupo = np.array(
         [angulos_todos[f:f + 6].mean() for f in range(0, 96, 6)], dtype=np.complex128)
@@ -620,8 +568,6 @@ def remuestrear_en_log(mapa, frecuencias, n_filas=None):
     if np.any(f <= 0):
         raise ValueError("No se puede pasar a logaritmo un eje con frecuencias <= 0.")
 
-    # El eje de la Gabor viene descendente; aqui se ordena de menor a mayor
-    # porque la imagen de VTK crece hacia arriba.
     orden = np.argsort(f)
     log_f = np.log10(f[orden])
     m_ord = m[orden]
@@ -631,7 +577,6 @@ def remuestrear_en_log(mapa, frecuencias, n_filas=None):
         raise ValueError(f"Se necesitan al menos 2 filas de salida (se pidieron {n}).")
     destino = np.linspace(log_f[0], log_f[-1], n)
 
-    # Vecino mas cercano, sin construir la matriz de distancias entera
     pos = np.clip(np.searchsorted(log_f, destino), 1, log_f.size - 1)
     izquierda, derecha = pos - 1, pos
     elegida = np.where(destino - log_f[izquierda] <= log_f[derecha] - destino,
@@ -675,7 +620,6 @@ def agrupar_por_fase(tf, fase, nbins=NBINS):
     cuenta = np.zeros(nbins, dtype=np.float64)
 
     for k in range(nbins):
-        # `fase >= borde_izq & fase < borde_der`, igual que el find() del MATLAB
         dentro = (fase >= bordes[k]) & (fase < bordes[k + 1])
         n = int(np.count_nonzero(dentro))
         if n:
@@ -706,10 +650,6 @@ def zscore_por_fila(m):
     """
     m = np.asarray(m, dtype=np.float64)
     with np.errstate(divide="ignore", invalid="ignore"):
-        # ddof=1 y no 0: `std(m_phase_av, [], 2)` de MATLAB normaliza por N-1,
-        # que es su opcion por omision. Con los 100 bins de fase la diferencia
-        # es un factor sqrt(100/99) = 1,005, un 0,5 % en todo el mapa. Pequeno,
-        # pero sistematico, y saldria en cuanto se compare con la referencia.
         return (m - m.mean(axis=1, keepdims=True)) / m.std(axis=1, ddof=1, keepdims=True)
 
 
@@ -725,27 +665,23 @@ def vector_medio(hist, nbins=None):
     return complex(np.mean(hist * np.exp(1j * angulos)))
 
 
-# --------------------------------------------------------------------------
-# Las funciones de alto nivel: lo que el plugin manda al orquestador
-# --------------------------------------------------------------------------
-
 @dataclass
 class ResultadoPac:
     """Todo lo que el plugin necesita para dibujar las cuatro salidas."""
-    mapa: np.ndarray            # frecuencia x fase, con z-score por fila (lo que se dibuja)
-    mapa_crudo: np.ndarray      # el mismo sin normalizar (para comparar contra MATLAB)
-    frecuencias: np.ndarray     # eje de frecuencias, descendente
-    fases: np.ndarray           # los 100 bordes izquierdos de los bins, en radianes
-    histograma: np.ndarray      # un valor por bin: la suma sobre todas las frecuencias
-    vector: complex             # magnitud y angulo del acoplamiento
-    cuenta_por_bin: np.ndarray  # cuantas muestras cayeron en cada bin
-    senal: np.ndarray           # la senal ya submuestreada
-    banda_fase: np.ndarray      # la senal filtrada en [P1, P2]
-    fase: np.ndarray            # la fase instantanea, en radianes
-    banda_amplitud: np.ndarray  # la senal filtrada en [A1, A2]
-    tiempo: np.ndarray          # eje de tiempo de las cuatro senales
+    mapa: np.ndarray
+    mapa_crudo: np.ndarray
+    frecuencias: np.ndarray
+    fases: np.ndarray
+    histograma: np.ndarray
+    vector: complex
+    cuenta_por_bin: np.ndarray
+    senal: np.ndarray
+    banda_fase: np.ndarray
+    fase: np.ndarray
+    banda_amplitud: np.ndarray
+    tiempo: np.ndarray
     fs_efectiva: float
-    n_trials: int = 1           # cuantos trials se promediaron
+    n_trials: int = 1
 
 
 def _preparar(sig, fs_calculado, fs, p1, p2, a1, a2):
@@ -783,7 +719,6 @@ def pac_un_trial(ctx, sig, fs_calculado, fs, p1, p2, a1, a2):
 
     fs_efectiva, factor, n_freq = _preparar(sig, fs_calculado, fs, p1, p2, a1, a2)
 
-    # 1) Submuestrear, sin filtro antialias: es lo que hace `downsample`
     x = np.nan_to_num(np.asarray(sig, dtype=np.float64).ravel(),
                       nan=0.0, posinf=0.0, neginf=0.0)[::factor]
     if x.size < 4:
@@ -793,20 +728,8 @@ def pac_un_trial(ctx, sig, fs_calculado, fs, p1, p2, a1, a2):
     if ctx is not None:
         ctx.progress(10, "Extrayendo la fase")
 
-    # 2) La fase lenta
     sos_fase, _ = filtro_iir(fs_efectiva, p1, p2)
     banda_fase = bifiltro(sos_fase, x)
-    # Se filtra y se saca el ángulo por separado —en vez de usar
-    # `fase_instantanea`— porque la señal filtrada se necesita también para el
-    # segundo panel del dibujo, y filtrar dos veces costaría el doble.
-    #
-    # **Segunda divergencia deliberada.** MATLAB dibuja en los paneles 2 y 3 la
-    # senal del BUTTERWORTH (`v_h_Filt_P`) y saca de ella la fase instantanea,
-    # no la del Chebyshev que acaba de usar para el calculo. Medido, la fase
-    # difiere en 24 grados de mediana. Aqui se dibuja la del Chebyshev: es la
-    # que de verdad produjo el mapa, asi que el panel y el mapa cuentan lo
-    # mismo. El panel 4 si usa Butterworth, porque alli MATLAB no tiene
-    # alternativa —el Chebyshev degenera en la banda ancha de amplitud—.
     fase = np.angle(hilbert(banda_fase))
 
     if ctx is not None and ctx.cancelled:
@@ -814,7 +737,6 @@ def pac_un_trial(ctx, sig, fs_calculado, fs, p1, p2, a1, a2):
     if ctx is not None:
         ctx.progress(25, "Transformada de Morse")
 
-    # 3) La energía rápida
     tf, tiempo, frecuencias = morse_tf(x, fs_efectiva, a1, a2, n_freq, cycles=CICLOS)
 
     if ctx is not None and ctx.cancelled:
@@ -822,36 +744,13 @@ def pac_un_trial(ctx, sig, fs_calculado, fs, p1, p2, a1, a2):
     if ctx is not None:
         ctx.progress(80, "Agrupando por fase")
 
-    # 4 y 5) Repartir la energía en los 100 bins de fase
     suma, cuenta = agrupar_por_fase(tf, fase)
 
-    # 6) Promediar, 7) z-score por fila y 8) el vector medio
     crudo = promediar_bins(suma, cuenta)
     histograma = np.nansum(crudo, axis=0)
     mapa = zscore_por_fila(crudo)
     vector = vector_medio(histograma)
 
-    # El cuarto panel del dibujo: la banda de amplitud filtrada.
-    # Butterworth de orden 8 y no el Chebyshev II del calculo, igual que MATLAB.
-    # Con la banda por defecto [25, 500] a 2.000 Hz el orden automatico del
-    # Chebyshev se dispara a 228 y el filtrado devuelve NaN en todo.
-    #
-    # **Aqui se diverge del MATLAB a proposito, y conviene no "arreglarlo".**
-    # f_Phase_PAC filtra asi las senales que dibuja (lineas 122-124):
-    #
-    #     v_h_Filt_A = filter(h_FiltA, v_Data);
-    #     v_h_Filt_A = filter(h_FiltA, fliplr(v_h_Filt_A));   % <- fliplr
-    #     v_h_Filt_A = fliplr(v_h_Filt_A);
-    #
-    # `v_Data` es un vector COLUMNA y `fliplr` voltea columnas: sobre una sola
-    # no hace nada. El autor queria `flipud` —es lo que usa en f_IIRBiFilter—,
-    # asi que la senal acaba filtrada dos veces hacia delante y acumula el
-    # retardo en vez de cancelarlo. Medido sobre 4 s a 2.000 Hz en 3-8 Hz:
-    # correlacion 0,9136 y un desfase de 13 ms, que a 5 Hz son 23 grados.
-    #
-    # No se replica porque estropearia la lectura: el mapa SI usa el filtrado
-    # bidireccional de verdad (f_IIRBiFilter, con flipud), asi que un panel
-    # desfasado 23 grados contradiria al mapa que tiene justo encima.
     banda_amplitud = bifiltro(filtro_butterworth(fs_efectiva, a1, a2), x)
 
     if ctx is not None:
@@ -905,7 +804,6 @@ def pac_promedio(ctx, data, fs_calculado, fs, p1, p2, a1, a2):
             return suma, cuenta, tiempo, frecuencias, x, banda_fase, fase
         return suma, cuenta, None, None, None, None, None
 
-    # Cada trial en vuelo reserva ~2,2 matrices tiempo-frecuencia (medido)
     bytes_por_trial = int(2.2 * n_freq * -(-datos.shape[0] // factor) * 8)
     resultados = map_ordenado(un_trial, range(n_trials), ctx=ctx, bytes_por_item=bytes_por_trial)
     if resultados is None:

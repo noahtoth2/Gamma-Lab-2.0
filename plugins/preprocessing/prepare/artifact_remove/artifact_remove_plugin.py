@@ -1,12 +1,12 @@
 from functools import partial
-from vtk.util import numpy_support as nps  # Safe import for VTK/NumPy
+from vtk.util import numpy_support as nps
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel
 import numpy as np
 import vtk
 from typing import Optional, List, Set
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
-from types import SimpleNamespace  # Helper for trials
+from types import SimpleNamespace
 
 from core.plugins.interfaces import IPlugin
 from core.plugins.meta import PluginMeta
@@ -15,13 +15,11 @@ from core.model.signal_dataset import SignalDataset
 from core.model.trial_dataset import TrialDataset
 
 from plugins.preprocessing.prepare.artifact_remove.artifact_remove_ui import Ui_ArtifactRemove
-# Leer y escribir los trials (hilo de la interfaz) y calcular (orquestador)
 from plugins.preprocessing.prepare.artifact_remove.artifact_logic import preparar_modificacion, escribir_modificacion
 from plugins.preprocessing.prepare.artifact_remove.compute import calcular_modificacion
 from core.filters.artifacts import medidas_del_segmento
 from core.utils.submuestreo import agregar_linea
 
-# Optional import for custom context menu
 try:
     from core.utils.vtk_context_menu import VTKContextMenu
 except ImportError:
@@ -43,7 +41,6 @@ class _WidgetVisibilityFilter(QtCore.QObject):
                 self._plugin._on_widget_hidden()
         return super().eventFilter(obj, event)
 
-# Main Plugin Class
 class ArtifactRemovePlugin(IPlugin):
     def __init__(self, meta: PluginMeta):
         super().__init__(meta)
@@ -56,15 +53,14 @@ class ArtifactRemovePlugin(IPlugin):
         self.chart: Optional[vtk.vtkChartXY] = None
         self.vtk_menu: Optional[VTKContextMenu] = None
 
-        # Tarea vigente en el orquestador mientras se aplica una modificación
         self._apply_handle = None
 
         self._refresh_timer = QtCore.QTimer()
         self._refresh_timer.setSingleShot(True)
-        self._refresh_timer.setInterval(120) # ms
+        self._refresh_timer.setInterval(120)
         self._refresh_timer.timeout.connect(self._refresh_view_coalesced)
 
-        self.current_display_index: int = -1  # -1 = Average
+        self.current_display_index: int = -1
         self.valid_indices: List[int] = []
         self.total_original_trials: int = 0
         self.discarded_indices: Set[int] = set()
@@ -143,7 +139,6 @@ class ArtifactRemovePlugin(IPlugin):
                 if self.ui and self.ui.paramsLayout:
                     self._on_mode_changed(self.ui.mode_combo.currentText())
 
-                # Show watermark until something is plotted
                 try:
                     if self.mainwin:
                         self.mainwin.show_watermark()
@@ -203,7 +198,6 @@ class ArtifactRemovePlugin(IPlugin):
         self.ui.mode_combo.currentTextChanged.connect(self._on_mode_changed)
         self.ui.Btn_clear_params.clicked.connect(self._on_clear_params_clicked)
 
-        # Ensure correct initial visibility/state
         try:
             self._on_mode_changed(self.ui.mode_combo.currentText())
         except Exception:
@@ -223,13 +217,11 @@ class ArtifactRemovePlugin(IPlugin):
             
         show_point_b = (mode_text == "Interpolate Interval" or mode_text == "Blank Interval")
 
-        # Toggle visibility directly on UI widgets
         if hasattr(self.ui, 'label_b'):
             self.ui.label_b.setVisible(show_point_b)
         if hasattr(self.ui, 'point_b'):
             self.ui.point_b.setVisible(show_point_b)
 
-        # Update label A text
         if hasattr(self.ui, 'label_a'):
             if mode_text == "Cut From The Start":
                 self.ui.label_a.setText("Cut until (s):")
@@ -278,8 +270,6 @@ class ArtifactRemovePlugin(IPlugin):
         if not self.ui or not self.widget:
             return
 
-        # El botón puede volver a habilitarse si llega un evento de datos a mitad del
-        # cálculo; esta guarda no depende del botón.
         if self._apply_handle is not None:
             self.alerts.warning("Ya se está aplicando una modificación; espera a que termine.")
             return
@@ -295,7 +285,6 @@ class ArtifactRemovePlugin(IPlugin):
 
         try:
             mode_text = self.ui.mode_combo.currentText()
-            # Adjust mode based on modification logic
             mode = 'blank' if mode_text in ("Cut From The Start", "Blank Interval") else 'interpolate'
 
             point_a_str = self.ui.point_a.text().strip()
@@ -303,13 +292,10 @@ class ArtifactRemovePlugin(IPlugin):
                 raise ValueError("El punto A no puede estar vacío.")
             point_a = self._parse_point(point_a_str, "A")
 
-            # None = sin B («Cut From The Start»). No se usa 0.0 para eso: B = 0 es un
-            # punto válido de «Blank Interval», p. ej. para anular [-0,05; 0].
             point_b = None
-            if mode == 'interpolate' or mode_text == "Blank Interval":  # interval operations require B
+            if mode == 'interpolate' or mode_text == "Blank Interval":
                 point_b_str = self.ui.point_b.text().strip()
                 if not point_b_str:
-                    # In "Cut From The Start" B is optional; do not raise here
                     if mode_text != "Cut From The Start":
                          raise ValueError("El punto B no puede estar vacío para modificar un intervalo.")
                 else:
@@ -317,14 +303,11 @@ class ArtifactRemovePlugin(IPlugin):
                     if point_a == point_b and mode_text != "Cut From The Start":
                         raise ValueError("Los puntos A y B no pueden ser iguales.")
 
-            # Lectura en el hilo de la interfaz: el cálculo recibe una copia de los
-            # trials activos y nunca toca los datos compartidos.
             prep = preparar_modificacion(self.kernel)
             if prep is None:
                 self.alerts.info("No se aplicó ninguna modificación.")
                 return
 
-            # R40: las medidas del segmento se ven y se confirman antes de modificar
             if not self._confirmar_con_medidas(prep, mode, mode_text, point_a, point_b):
                 return
 
@@ -407,7 +390,6 @@ class ArtifactRemovePlugin(IPlugin):
         self._load_and_display_trials()
         QtCore.QTimer.singleShot(50, self._force_render)
 
-    # --- HELPERS TO FETCH ACTIVE TRIALS ---
     def _get_active_signal_and_name(self):
         store = self.kernel.get_service("DataStore")
         if not store:
@@ -424,7 +406,6 @@ class ArtifactRemovePlugin(IPlugin):
         
     def _get_current_channel_name(self, sd: SignalDataset) -> str:
         """Return channel name to use with get_active_trials."""
-        # 1) last TrialDataset (API pública; `sd.trials_dataset` no existe)
         try:
             tds = sd.get_all_trials_datasets()
             if tds and len(tds) > 0:
@@ -435,7 +416,6 @@ class ArtifactRemovePlugin(IPlugin):
         except Exception:
             pass
 
-        # 2) known names list
         try:
             names = getattr(sd, "channel_names", None)
             if names and len(names) > 0:
@@ -443,10 +423,8 @@ class ArtifactRemovePlugin(IPlugin):
         except Exception:
             pass
 
-        # 3) fallback if there are signals
         sig = getattr(sd, "signals", None)
         if sig is not None and getattr(sig, "shape", None) and sig.shape[0] > 0:
-            # assume "ch-1" if names are missing
             return "ch-1"
 
         raise RuntimeError("No channel selected/found. Generate Trials first or select a channel.")
@@ -457,10 +435,8 @@ class ArtifactRemovePlugin(IPlugin):
         if not hasattr(sd, "get_active_trials"):
             raise RuntimeError("SignalDataset.get_active_trials(...) not available.")
 
-        # Resolve channel
         channel_name = self._get_current_channel_name(sd)
 
-        # Call with channel
         result = sd.get_active_trials(sig_name, channel_name)
 
         td = None; meta = {}
@@ -499,7 +475,6 @@ class ArtifactRemovePlugin(IPlugin):
         else:
             orig_idx = list(map(int, orig_idx))
             
-        # Use resolved channel_name if the result does not provide it
         chan = getattr(td, "channel_name", meta.get("channel_name", channel_name))
 
         return SimpleNamespace(
@@ -510,7 +485,6 @@ class ArtifactRemovePlugin(IPlugin):
             total_trials=n_total,
         )
 
-    # --- Data loading and plotting ---
     def _load_and_display_trials(self):
         """Load active trials via get_active_trials and show average or individual."""
         print(f"{LOGP} _load_and_display_trials(). Index: {self.current_display_index}")
@@ -522,7 +496,6 @@ class ArtifactRemovePlugin(IPlugin):
             msg = str(e)
             print(f"{LOGP} fetch active trials error: {msg}")
             self._reset_state()
-            # Clear message when there are no trials yet (show hint in status label instead of overlay)
             if "unsupported format" in msg or "get_active_trials" in msg:
                 msg = "Generate Trials first"
             if "No active signal" in msg:
@@ -537,8 +510,8 @@ class ArtifactRemovePlugin(IPlugin):
 
 
         t = np.asarray(active.time_rel)
-        trials = np.asarray(active.trials)          # (Ns, Tact)
-        orig_indices = list(active.orig_indices)    # map to original indices
+        trials = np.asarray(active.trials)
+        orig_indices = list(active.orig_indices)
         total_trials = int(active.total_trials)
         channel_name = active.channel_name
 
@@ -551,7 +524,6 @@ class ArtifactRemovePlugin(IPlugin):
         if not (-1 <= self.current_display_index < Tact):
             self.current_display_index = -1
 
-        # Populate valid_indices for navigation
         self.valid_indices = list(range(Tact))
         self.total_original_trials = int(total_trials) 
 
@@ -595,7 +567,6 @@ class ArtifactRemovePlugin(IPlugin):
         state = getattr(self, "_trial_state", None)
         return state if state is not None else super().current_trial_state()
 
-    # --- VTK display logic ---
     def _ensure_vtk(self):
         """Ensure the interactor and view exist and are added to the layout."""
         
@@ -608,7 +579,7 @@ class ArtifactRemovePlugin(IPlugin):
                     self.vtk_interactor.Enable()
                 except Exception as e:
                     print(f"{LOGP} Error re-enabling VTK: {e}")
-            return  # already set
+            return
 
         print(f"{LOGP} _ensure_vtk(): Setting up VTK...")
         
@@ -682,12 +653,10 @@ class ArtifactRemovePlugin(IPlugin):
             
             renderer.GetActors2D().RemoveAllItems() 
             
-            # Fix stale message: force render after clearing 2D actors
             self.vtk_view.GetRenderWindow().Render() 
             
             renderer.SetBackground(vtk.vtkNamedColors().GetColor3d("WhiteSmoke"))
 
-            # --- clean data and convert to VTK safely (nps.numpy_to_vtk) ---
             finite_mask = np.isfinite(t) & np.isfinite(y)
             valid_mask = finite_mask.copy()
             
@@ -717,7 +686,6 @@ class ArtifactRemovePlugin(IPlugin):
                 print(f"{LOGP} WARNING: very large amplitude (|y| max ≈ {max_abs:.3e}). Check signal units/scale.")
 
             self.chart.RecalculateBounds()
-            # Context menu consistent with other plugins
             try:
                 if VTKContextMenu is not None and self.vtk_interactor is not None and self.active_signal is not None:
                     self.vtk_menu = VTKContextMenu(self.chart, self.vtk_interactor,
@@ -728,7 +696,6 @@ class ArtifactRemovePlugin(IPlugin):
                     self.alerts.error(f"Error creating the context menu.\n {str(e)}")
 
             print(f"{LOGP} _plot_curve: Plot '{title}' with {n_points} valid points.")
-            # Hide watermark once a plot is shown
             try:
                 if self.mainwin:
                     self.mainwin.hide_watermark()
@@ -752,7 +719,6 @@ class ArtifactRemovePlugin(IPlugin):
             print(f"{LOGP} Error during _plot_curve: {e}")
             self._clear_render(f"Error plotting:\n{e}")
 
-    # --- Utility functions ---
 
     def _reset_state(self):
         """Reset internal plugin state."""
@@ -869,8 +835,6 @@ class ArtifactRemovePlugin(IPlugin):
         except Exception as e:
             print(f"{LOGP} Error in _on_data_updated: {e}")
 
-    # --- Modificación en el orquestador ---
-    # Cada manejador ignora las señales de una tarea que ya no es la vigente.
 
     def _on_apply_progress(self, handle, percent, message):
         if handle is not self._apply_handle:
@@ -882,7 +846,6 @@ class ArtifactRemovePlugin(IPlugin):
         if handle is not self._apply_handle:
             return
         self._apply_handle = None
-        # Si el proyecto se cerró mientras calculaba, ya no hay dónde escribir ni dibujar.
         if self.ui is None:
             return
         try:
@@ -890,8 +853,6 @@ class ArtifactRemovePlugin(IPlugin):
                 self.alerts.info("No se aplicó ninguna modificación.")
             else:
                 escribir_modificacion(self.kernel, prep, out_active, mode, point_a, point_b)
-                # Sin esto, cerrar después de modificar no avisa de cambios sin
-                # guardar y el trabajo se pierde en silencio (problema nº 21).
                 self.mark_project_dirty()
                 self._trials_used = trials_used(None, len(prep.orig_indices), "all",
                                                 channel=prep.channel_name)
@@ -942,8 +903,6 @@ class ArtifactRemovePlugin(IPlugin):
         """Libera los controles y vuelve a dibujar los trials, modificados o no."""
         try:
             self._set_apply_busy(False)
-            # Oculto (el usuario cambió de sección) no se dibuja: al volver a
-            # mostrarse, _on_widget_shown recarga la vista.
             if self.widget is not None and self.widget.isVisible():
                 self._reset_state()
                 self._load_and_display_trials()

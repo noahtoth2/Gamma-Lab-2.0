@@ -52,9 +52,6 @@ def cortar_canales(ds, receta, canales, ctx=None):
 class Ppc_plugin(IPlugin):
     """Consistencia de fase por pares entre dos canales."""
 
-    # Los del panel *Inter Channel* del MATLAB, salvo los dos que el plan
-    # cambió: `wd` pasa a ser la ventana mínima y `ciclos` es nuevo (decisiones
-    # 9 y 11). Los valores son los mismos que trae el .mlapp.
     DEFECTOS = {
         "remuestreo_hz": 2000,
         "f_min_hz": 0.1,
@@ -68,11 +65,11 @@ class Ppc_plugin(IPlugin):
         self.ui = None
         self._handle = None
         self._calculando = False
-        self._ultimo = None            # {"parametros": ..., "resultado": ...}
+        self._ultimo = None
         self._params_en_curso = {}
-        self._restaurando = False        # apply_analysis_params recalcula al abrir un proyecto
-        self._corrida_restaura = False   # la ejecución en curso viene de una restauración
-        self._reintento_corte = False    # el cálculo se retoma tras cortar los trials que faltaban
+        self._restaurando = False
+        self._corrida_restaura = False
+        self._reintento_corte = False
         self.vtk_widget = None
         self.vtk_menu = None
         self._context_view = None
@@ -81,9 +78,6 @@ class Ppc_plugin(IPlugin):
         self._trials_used = None
         self._trials_en_curso = None
 
-    # =====================================================
-    # === Ciclo de vida
-    # =====================================================
     def get_widget(self, parent=None):
         if self.widget is None:
             self.widget = QWidget(parent)
@@ -117,9 +111,6 @@ class Ppc_plugin(IPlugin):
         self._terminar_calculo()
 
     def process(self, data):
-        # Se llama cada vez que se abre la pestaña. Nadie emite `trials_changed`,
-        # así que los canales con trials se releen aquí: sin esto los combos
-        # quedan vacíos si los trials se generaron antes de abrir PPC.
         self._llenar_canales()
         return None
 
@@ -128,9 +119,6 @@ class Ppc_plugin(IPlugin):
         if topic in ("signal_active_changed", "signal_added", "trials_changed"):
             self._llenar_canales()
 
-    # =====================================================
-    # === El panel
-    # =====================================================
     def _valores_por_defecto(self):
         if self.ui is None:
             return
@@ -171,8 +159,6 @@ class Ppc_plugin(IPlugin):
         """Ya en el hilo de la interfaz: registra los trials recortados y retoma el cálculo."""
         if senal is not self.get_active_signal(silent=True):
             return
-        # Sin cambiar el canal activo: el usuario no cortó este canal, lo cortó PPC
-        # para poder calcular, y los análisis de un canal deben seguir en el suyo.
         for td in tds:
             senal.add_trial_dataset(td, activar=False)
         self._reintento_corte = True
@@ -228,14 +214,9 @@ class Ppc_plugin(IPlugin):
             if previo in canales:
                 combo.setCurrentText(previo)
             elif len(canales) > i:
-                # Por omisión, cada combo apunta a uno distinto: el PPC de un
-                # canal consigo mismo vale 1 y no mide nada.
                 combo.setCurrentIndex(i)
             combo.blockSignals(False)
 
-    # =====================================================
-    # === Lógica principal
-    # =====================================================
     def on_create_ppc(self):
         self._corrida_restaura, self._restaurando = self._restaurando, False
         tareas = self.kernel.get_service("TaskService") if self.kernel else None
@@ -248,11 +229,6 @@ class Ppc_plugin(IPlugin):
         canal_1 = self.ui.channel1ComboBox.currentText()
         canal_2 = self.ui.channel2ComboBox.currentText()
         if not canal_1 or not canal_2 or canal_1 == canal_2:
-            # Se rechaza **antes** de encolar, no después. El PPC de un canal
-            # consigo mismo vale 1 en todas las celdas, así que calcularlo son
-            # varios segundos de espera para acabar enseñando un mapa entero de
-            # unos. `compute.avisos` también lo dice, por si alguien llama al
-            # cálculo desde un script, pero por la interfaz no se llega ahí.
             self.alerts.warning(
                 "Hacen falta dos canales **distintos**. El PPC de un canal consigo "
                 "mismo vale 1 en todo el mapa y no mide nada.")
@@ -268,7 +244,6 @@ class Ppc_plugin(IPlugin):
                     f"El canal '{faltan[0]}' no tiene trials y no hay ningún corte de otro canal "
                     f"del que copiar los parámetros. Genera los trials en Trials primero.")
                 return
-            # El corte de los trials que faltan se hace en el servicio de tareas (R71)
             self.run_task(cortar_canales, partial(self._tras_cortar, senal_activa),
                           on_failed=lambda m: self.alerts.error(f"No se pudieron generar los trials: {m}"),
                           ds=senal_activa, receta=receta, canales=faltan)
@@ -281,8 +256,6 @@ class Ppc_plugin(IPlugin):
         except ValueError as e:
             self.alerts.error(str(e))
             return
-        # Un canal sin señal no impide calcular —el PPC sale cerca de cero, que es
-        # honesto—, pero hay que decir por qué. Se muestra con los demás avisos.
         self._avisos_entrada = [a for a in (canal_sin_senal(td1), canal_sin_senal(td2)) if a]
 
         t = td1.time_rel
@@ -306,7 +279,6 @@ class Ppc_plugin(IPlugin):
             "ventana_min_s": wd, "ciclos": ciclos,
             "n_trials": int(np.asarray(td1.trials).shape[1]),
         }
-        # PPC usa todos los trials validos de los dos canales, emparejados
         self._trials_en_curso = trials_used(None, self._params_en_curso["n_trials"], "all",
                                             channel=f"{canal_1} ↔ {canal_2}")
         self._params_en_curso["trials_usados"] = (
@@ -340,12 +312,6 @@ class Ppc_plugin(IPlugin):
             self.ui.createPpcButton.setEnabled(True)
             self.ui.createPpcButton.setText("Generate")
 
-    # =====================================================
-    # === Los cuatro slots del orquestador
-    # =====================================================
-    # La guarda de cada uno descarta lo que llegue de una tarea que ya no es la
-    # vigente. Pasa de verdad: al cambiar un parámetro se encola otra y la
-    # anterior puede seguir viva un instante.
 
     def _on_ppc_progress(self, handle, porcentaje, mensaje):
         if handle is not self._handle:
@@ -393,9 +359,6 @@ class Ppc_plugin(IPlugin):
         finally:
             self._terminar_calculo()
 
-    # =====================================================
-    # === VTK
-    # =====================================================
     def current_trial_state(self):
         """PPC trabaja con dos canales a la vez: se muestran los dos."""
         if self._trials_used:
@@ -403,8 +366,6 @@ class Ppc_plugin(IPlugin):
         return super().current_trial_state()
 
     FONDO = (0.98, 0.98, 0.98)
-    # Como el MATLAB: `clim [0 0.5]`, una marca cada 0,5 en log10 etiquetada con
-    # `round(10.^v)` (0, 0, 1, 3, 10, 32, 100, 316 Hz) y los mismos títulos.
     LIMITE_COLOR = 0.5
     PASO_MARCA_LOG = 0.5
 
@@ -420,9 +381,6 @@ class Ppc_plugin(IPlugin):
         self.vtk_widget = QVTKRenderWindowInteractor(contenedor)
         contenedor.layout().addWidget(self.vtk_widget, 1)
 
-        # Los avisos van bajo el gráfico, nunca en un diálogo: un modal abre un
-        # bucle de eventos anidado y el temporizador de VTK sigue disparando
-        # dentro de él (problema nº 24 de problemas-encontrados.md).
         self._avisos_label = QLabel(contenedor)
         self._avisos_label.setWordWrap(True)
         self._avisos_label.setTextFormat(Qt.PlainText)
@@ -484,7 +442,6 @@ class Ppc_plugin(IPlugin):
             datos.ravel(), deep=True, array_type=vtk.VTK_FLOAT))
         img.Modified()
 
-        # R33: sin rango manual, 0-0,5 como el `[0 0.5]` de f_phase_coherence
         self._datos_mapa = datos
         vmin, vmax = limites_color(datos, *leer_rango(self.ui), por_defecto=(0.0, self.LIMITE_COLOR))
         mostrar_rango_automatico(self.ui, vmin, vmax)
@@ -544,9 +501,6 @@ class Ppc_plugin(IPlugin):
         recolorear(chart, self._tabla_de_color(vmin, vmax))
         self._context_view.GetRenderWindow().Render()
 
-    # =====================================================
-    # === Exportación
-    # =====================================================
     def _actualizar_menu(self):
         """Apunta el menú contextual al gráfico y a la señal actuales."""
         if self.vtk_menu is None:
@@ -595,9 +549,6 @@ class Ppc_plugin(IPlugin):
             return
         self.vtk_menu.export_service.export_sections(self._secciones_resultado(), fmt)
 
-    # =====================================================
-    # === Guardar y restaurar el análisis en el proyecto
-    # =====================================================
     def get_analysis_params(self) -> dict:
         return {
             "channel_1": self.ui.channel1ComboBox.currentText(),

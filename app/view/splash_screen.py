@@ -1,4 +1,3 @@
-# app/view/splash_screen.py
 from pathlib import Path
 
 from PyQt5.QtWidgets import QApplication, QSplashScreen
@@ -7,7 +6,6 @@ from PyQt5.QtCore import Qt, QRectF
 
 SPLASH_IMAGE = Path(__file__).resolve().parents[2] / "assets" / "images" / "splash.png"
 
-# Geometry relative to the 735x413 splash image
 BAR_WIDTH = 240
 BAR_HEIGHT = 4
 BAR_TOP = 352
@@ -33,7 +31,6 @@ class SplashScreen(QSplashScreen):
         painter.setRenderHint(painter.Antialiasing)
         width = self.pixmap().width()
 
-        # Progress bar (track + fill)
         bar = QRectF((width - BAR_WIDTH) / 2, BAR_TOP, BAR_WIDTH, BAR_HEIGHT)
         painter.setPen(Qt.NoPen)
         painter.setBrush(QColor("#D5DBE3"))
@@ -43,7 +40,6 @@ class SplashScreen(QSplashScreen):
             painter.setBrush(QColor("#2E60A9"))
             painter.drawRoundedRect(fill, 2, 2)
 
-        # Current step
         if self._message:
             font = QFont(QApplication.font())
             font.setPointSize(7)

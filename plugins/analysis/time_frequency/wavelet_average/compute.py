@@ -1,9 +1,5 @@
 import numpy as np
 
-# El cálculo de wavelet vive en core/filters/wavelet.py porque lo comparten este
-# plugin y el individual. Se importan los nombres sueltos, no el módulo: así
-# wavelet_promedio resuelve compute_wavelet por el espacio de este módulo y la
-# prueba de "un trial falla" puede sustituirlo.
 from core.filters.wavelet import (  # noqa: F401
     VOCES_POR_OCTAVA,
     eje_frecuencias,
@@ -45,8 +41,6 @@ def wavelet_promedio(ctx, data, fs_calculado, fs, fmin, fmax, cycles,
 
     avg_scalogram = acumulador / n_trials
 
-    # Con escala logarítmica las filas ya se calcularon sobre el eje logarítmico,
-    # así que la normalización trabaja sobre filas reales y no hace falta interpolar.
     if normalize:
         avg_scalogram = normalize_tf(avg_scalogram, norm_method)
 

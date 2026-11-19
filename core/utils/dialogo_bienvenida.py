@@ -46,7 +46,7 @@ class DialogoBienvenida(QDialog):
         pie.addWidget(nota)
         pie.addStretch(1)
         boton = QPushButton("Comenzar", self)
-        boton.setObjectName("headerGenerateButton")      # mismo estilo que el botón principal de los paneles
+        boton.setObjectName("headerGenerateButton")
         boton.setCursor(Qt.PointingHandCursor)
         boton.setDefault(True)
         boton.clicked.connect(self.accept)

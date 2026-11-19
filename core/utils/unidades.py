@@ -15,4 +15,4 @@ def etiqueta_psd(unidad: str) -> str:
         return "PSD (unidad²/Hz)"
     if unidad.isalnum() or unidad in ("µV", "μV"):
         return f"PSD ({unidad}²/Hz)"
-    return f"PSD (({unidad})²/Hz)"           # p. ej. «a.u.»: (a.u.)²/Hz
+    return f"PSD (({unidad})²/Hz)"

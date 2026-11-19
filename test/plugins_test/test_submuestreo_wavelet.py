@@ -38,16 +38,14 @@ def pico(sig, densidad, fmin, fmax):
     return float(freqs[int(np.argmax(Z.mean(axis=1)))])
 
 
-# --------------------------------------------------------------- tasa efectiva
-
 @pytest.mark.parametrize("densidad,factor_esperado,tasa_esperada", [
-    (1000.0, 10, 1000.0),      # divide exacto
-    (2000.0, 5, 2000.0),       # divide exacto
-    (2500.0, 4, 2500.0),       # divide exacto
-    (3000.0, 3, 10000.0 / 3),  # no divide: 3333,33
-    (4000.0, 2, 5000.0),       # no divide
-    (7000.0, 1, 10000.0),      # no divide; el factor no puede bajar de 1
-    (20000.0, 1, 10000.0),     # mayor que la del archivo
+    (1000.0, 10, 1000.0),
+    (2000.0, 5, 2000.0),
+    (2500.0, 4, 2500.0),
+    (3000.0, 3, 10000.0 / 3),
+    (4000.0, 2, 5000.0),
+    (7000.0, 1, 10000.0),
+    (20000.0, 1, 10000.0),
 ])
 def test_tasa_efectiva(densidad, factor_esperado, tasa_esperada):
     tasa, factor = tasa_efectiva(FS_ARCHIVO, densidad)
@@ -60,8 +58,6 @@ def test_la_tasa_efectiva_es_la_del_archivo_dividida_por_el_factor():
         tasa, factor = tasa_efectiva(FS_ARCHIVO, densidad)
         assert tasa == pytest.approx(FS_ARCHIVO / factor)
 
-
-# ------------------------------------------- el eje ya no se corre (corregido)
 
 @pytest.mark.parametrize("densidad", [1000.0, 2000.0, 2500.0, 3000.0, 4000.0, 7000.0])
 def test_un_tono_cae_en_su_frecuencia_con_cualquier_densidad(densidad):
@@ -86,8 +82,6 @@ def test_las_densidades_que_dividen_no_cambiaron():
     assert (tasa, factor) == (1000.0, 10)
 
 
-# ------------------------------------------- el Nyquist se valida bien ahora
-
 def test_rechaza_fmax_por_encima_del_nyquist_real():
     """Con 3.800 Hz el factor sale 3 y el Nyquist real es 1.666. Antes del
     arreglo se validaba contra 1.900 y dejaba pasar un fmax de 1.800."""
@@ -101,8 +95,6 @@ def test_acepta_fmax_justo_por_debajo_del_nyquist_real():
     Z, _, _ = compute_wavelet(tono(100.0), FS_ARCHIVO, 3800.0, 1.0, 1600.0, CICLOS)
     assert Z.shape[0] > 0
 
-
-# ------------------------------------- el aliasing, como limitacion conocida
 
 def test_el_aliasing_existe_y_es_el_mismo_que_en_matlab():
     """**Esta prueba documenta un defecto, no lo corrige.**

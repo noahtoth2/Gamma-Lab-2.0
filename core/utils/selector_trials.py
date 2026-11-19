@@ -32,7 +32,7 @@ class SelectorDeTrials(QtWidgets.QWidget):
         capa.addLayout(fila)
         self.btn_todos.clicked.connect(lambda: self._marcar(True))
         self.btn_ninguno.clicked.connect(lambda: self._marcar(False))
-        if self.unico:      # un solo trial a la vez: marcar uno desmarca los demás
+        if self.unico:
             self.btn_todos.setVisible(False)
             self.btn_ninguno.setVisible(False)
             self.lista.itemChanged.connect(self._dejar_uno)

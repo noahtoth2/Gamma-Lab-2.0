@@ -71,20 +71,12 @@ class _Worker(QThread):
         try:
             result, error = task.fn(**kwargs), None
         except BaseException as e:
-            # BaseException y no Exception: un SystemExit dentro de la tarea no
-            # emitiria `done`, y la cola quedaria bloqueada para siempre.
             result, error = None, e
         self.done.emit(task.id, result, error)
 
 
 class TaskService(QObject):
 
-    # Se emite con el TaskHandle cuando la tarea **empieza a correr**, no cuando
-    # se encola. Existe para que la interfaz pueda mostrar progreso y ofrecer
-    # Cancelar sin que cada plugin tenga que acordarse de engancharse (requisito
-    # R04, problema nº 9). Antes la emitía submit(): con una tarea corriendo y
-    # otra en cola, la barra seguía a la de la cola —quieta en 0 %— y su Cancelar
-    # cancelaba esa, mientras la que corría seguía sin barra.
     task_started = pyqtSignal(object)
 
     def __init__(self, cancel_timeout_ms: int = DEFAULT_CANCEL_TIMEOUT_MS):
@@ -94,10 +86,6 @@ class TaskService(QObject):
         self._queue = []
         self._running = None
         self._detached = {}
-        # Cada hilo se conserva hasta que Qt emite su propio QThread.finished.
-        # Soltarlo antes (al llegar `done`, que se emite todavia dentro de run())
-        # puede destruir un QThread que aun no salio, y Qt aborta toda la
-        # aplicacion con "QThread: Destroyed while thread is still running".
         self._threads = set()
 
     def submit(self, fn, *, owner: str, **kwargs) -> TaskHandle:
@@ -141,8 +129,6 @@ class TaskService(QObject):
         task = self._queue.pop(0)
         task.state = "running"
         self._running = task
-        # Antes de arrancar el hilo, para que quien escuche ya tenga el handle
-        # conectado cuando empiecen a llegar las señales de progreso.
         self.task_started.emit(task.handle)
 
         ctx = None
@@ -156,8 +142,6 @@ class TaskService(QObject):
         task.worker = worker
         self._threads.add(worker)
         worker.done.connect(self._on_worker_done)
-        # Se conecta antes de start(): una tarea muy corta puede terminar
-        # antes de que se alcance a conectar despues.
         worker.finished.connect(self._release_thread)
         worker.start()
 
@@ -183,11 +167,6 @@ class TaskService(QObject):
                           lambda tid=task_id: self._detach_if_still_running(tid))
 
     def _detach_if_still_running(self, task_id: str) -> None:
-        # Salida de emergencia del R46, no un descuido: la tarea ignoro la
-        # cancelacion durante cancel_timeout_ms. Se deja de esperarla para
-        # devolver la interfaz y seguir con la cola; el hilo puede seguir vivo
-        # y lo que devuelva se descarta en _on_worker_done. Python no ofrece
-        # forma segura de matar un hilo desde afuera.
         task = self._running
         if task is None or task.id != task_id or task.state != "running":
             return
@@ -200,7 +179,6 @@ class TaskService(QObject):
         self._start_next_if_idle()
 
     def _on_worker_done(self, task_id, result, error) -> None:
-        # El hilo no se libera aqui sino en _release_thread, cuando ya salio de run().
         if self._detached.pop(task_id, None) is not None:
             return
 

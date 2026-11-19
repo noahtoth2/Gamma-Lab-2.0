@@ -38,7 +38,6 @@ def _grafico_con_curvas(n_curvas=2, n=100):
     return chart, t, M
 
 
-# ---------------- R30: los ejes del zoom ----------------
 def test_los_ejes_del_zoom_son_los_de_vtk():
     assert EJE_X == vtk.vtkAxis.BOTTOM and EJE_Y == vtk.vtkAxis.LEFT
 
@@ -52,7 +51,6 @@ def test_set_zoom_mode_amplia_el_eje_que_dice_su_nombre(modo, x, y):
     assert bool(chart.GetAxisZoom(EJE_X)) is x and bool(chart.GetAxisZoom(EJE_Y)) is y
 
 
-# ---------------- R32 y R73: el butterfly del ERP ----------------
 def _erp(n_trials):
     from plugins.analysis.time.erp.erp_plugin import Erp_plugin
     p = Erp_plugin.__new__(Erp_plugin)
@@ -84,11 +82,10 @@ def test_el_butterfly_dibuja_a_lo_sumo_200_curvas_sin_tocar_los_datos():
     p, t, sel = _erp(250)
     antes = sel.copy()
     p._render_butterfly(t, sel, title="x")
-    assert _grafico_del_erp(p).GetNumberOfPlots() == 200 + 1      # + el promedio en negro
+    assert _grafico_del_erp(p).GetNumberOfPlots() == 200 + 1
     assert np.array_equal(sel, antes) and sel.shape[0] == 250
 
 
-# ---------------- R26: el valor es el de la muestra ----------------
 def test_la_lectura_del_cursor_cae_en_un_punto_de_la_senal():
     chart, t, M = _grafico_con_curvas(1)
     x, y = punto_mas_cercano(chart, 0.5013, 5.0)
@@ -107,7 +104,6 @@ def test_sin_curvas_no_inventa_un_punto():
     assert punto_mas_cercano(vtk.vtkChartXY(), 0.0, 0.0) is None
 
 
-# ---------------- R27: elegir los trials de un análisis ----------------
 def test_el_selector_devuelve_las_posiciones_marcadas(app):
     s = SelectorDeTrials()
     s.establecer_total(5)
@@ -163,7 +159,6 @@ def test_elegir_trials_aplica_la_seleccion_y_avisa_si_no_hay_ninguno(app):
     m.alerts.warning.assert_called()
 
 
-# ---------------- R76: lo que ofrece el filtro funciona ----------------
 def test_el_combo_del_filtro_solo_ofrece_lo_implementado(app):
     from core.filters.bandpass import filtrar_banda
     from plugins.preprocessing.prepare.filter import filter_plugin
@@ -173,7 +168,6 @@ def test_el_combo_del_filtro_solo_ofrece_lo_implementado(app):
     assert filtrar_banda(x, 5, 40, 4, 1000.0, "butterworth").shape == x.shape
 
 
-# ---------------- R12: cargar otra señal cierra el proyecto abierto ----------------
 def _ventana(abierto, confirma, sucio=False):
     from app.view.main_window import MainWindow
     servicio = SimpleNamespace(is_open=abierto, project_name="mio", dirty=sucio,
@@ -206,7 +200,6 @@ def test_al_confirmar_se_cierra_el_proyecto_y_se_comunica():
     assert "mio" in barra.showMessage.call_args[0][0]
 
 
-# ---------------- R78 y R07: la señal que falta y la ruta registrada ----------------
 class _FileIO:
     def load_abf(self, ruta):
         t = np.arange(100) / 100.0
@@ -267,7 +260,6 @@ def test_el_manifiesto_registra_la_ruta_y_el_nombre_de_la_senal(tmp_path):
     assert firma["filename"] == "s.abf" and Path(firma["source_path"]) == origen.resolve()
 
 
-# ---------------- R25 y R10 ----------------
 def test_clear_de_trials_devuelve_tambien_los_selectores(app):
     from plugins.preprocessing.trials.trials_plugin import TrialsPlugin
     from plugins.preprocessing.trials.trial_plugin_ui import Ui_Trials
@@ -315,7 +307,6 @@ def test_la_bienvenida_solo_sale_la_primera_vez(app, monkeypatch):
     assert f(ventana) is False and len(llamadas) == 1
 
 
-# ---------------- R27: Wavelet de un trial usa el trial elegido ----------------
 def test_el_selector_de_un_trial_deja_marcado_uno_solo(app):
     s = SelectorDeTrials(unico=True)
     s.establecer_total(5)

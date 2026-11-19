@@ -1,4 +1,3 @@
-# plugins/preprocessing/prepare/artifact_remove/artifact_logic.py
 """Lectura y escritura de los trials que modifica artifact_remove.
 
 La modificación se hace en tres pasos para que los datos compartidos solo se
@@ -19,7 +18,6 @@ from plugins.preprocessing.prepare.artifact_remove.compute import calcular_modif
 
 LOGL = "[ArtifactLogic]"
 
-# ----------------- Helpers -----------------
 
 def _last_trial_dataset(sd):
     """Último TrialDataset generado, por la API pública de SignalDataset (o None).
@@ -40,8 +38,6 @@ def _get_active_signal_and_name(kernel):
     sd = store.get_active_signal()
     if sd is None:
         raise RuntimeError("No hay una señal activa.")
-    # SignalDataset uses file_name (Path(source).name) as key.
-    # Try to take it from the last TrialDataset if available; otherwise from source_path.
     file_name = None
     last_td = _last_trial_dataset(sd)
     if last_td is not None and getattr(last_td, "source", None):
@@ -78,7 +74,6 @@ def _discarded_for(sd, file_name: str, channel_name: str) -> frozenset:
     discarded_dict = sd.get_discarded_trials_map()
     discarded = discarded_dict.get((file_name, channel_name), set()) or set()
     if not discarded and isinstance(discarded_dict, dict):
-        # Try alternate keys by filename stem
         stem = Path(file_name).stem
         for (k_file, k_ch), disc in discarded_dict.items():
             try:
@@ -89,7 +84,6 @@ def _discarded_for(sd, file_name: str, channel_name: str) -> frozenset:
                 continue
     return frozenset(discarded)
 
-# ----------------- Public logic -----------------
 
 @dataclass
 class ModificacionPreparada:
@@ -98,11 +92,11 @@ class ModificacionPreparada:
     td_base: object
     file_name: str
     channel_name: str
-    t: np.ndarray             # copia del eje de tiempo (Ns,)
-    trials: np.ndarray        # copia de los trials activos (Ns, T_act)
-    orig_indices: list        # columna activa -> columna del TrialDataset base
-    discarded: frozenset      # descartes vigentes al leer
-    base_shape: tuple         # forma del TrialDataset base al leer
+    t: np.ndarray
+    trials: np.ndarray
+    orig_indices: list
+    discarded: frozenset
+    base_shape: tuple
 
 
 def preparar_modificacion(kernel):
@@ -114,20 +108,18 @@ def preparar_modificacion(kernel):
     sd, file_name = _get_active_signal_and_name(kernel)
     channel_name = _get_current_channel_name(sd)
 
-    # 1) Read ACTIVE trials (filtered by discards) from the dataset
     td_active = sd.get_active_trials(file_name, channel_name)
     if td_active is None:
         raise RuntimeError(f"No hay trials activos para ({file_name}, {channel_name}).")
 
-    t = np.array(td_active.time_rel, copy=True)          # (Ns,)
-    trials_active = np.array(td_active.trials, copy=True)  # (Ns, T_act)
+    t = np.array(td_active.time_rel, copy=True)
+    trials_active = np.array(td_active.trials, copy=True)
     if t.ndim != 1 or trials_active.ndim != 2:
         raise RuntimeError("Los trials activos no tienen eje de tiempo o datos válidos.")
     Ns, T_act = trials_active.shape
     if T_act == 0:
         return None
 
-    # 1.5) Prefer file_name from the active trials metadata/source if available
     try:
         active_src = getattr(td_active, "source", None)
         if active_src is None:
@@ -137,14 +129,12 @@ def preparar_modificacion(kernel):
     except Exception:
         pass
 
-    # 2) Find BASE TrialDataset (unfiltered) for this file+channel
     td_list = sd.get_all_trials_datasets()
     td_base = next(
         (tdb for tdb in td_list
          if Path(getattr(tdb, "source", "")).name == file_name and getattr(tdb, "channel_name", None) == channel_name),
         None
     )
-    # Fallbacks: by channel and sample count, or by channel only (last occurrence)
     if td_base is None:
         try:
             ns = trials_active.shape[0]
@@ -160,13 +150,10 @@ def preparar_modificacion(kernel):
         raise RuntimeError(f"Los trials activos tienen {Ns} muestras y los originales "
                            f"{td_base.trials.shape[0]}; no coinciden.")
 
-    # 3) Build ACTIVE → ORIGINAL index mapping using discarded_trials if present
     discarded = _discarded_for(sd, file_name, channel_name)
     T_total = td_base.trials.shape[1]
     orig_indices = [i for i in range(T_total) if i not in discarded]
-    # If mapping length still mismatched, assume no discards
     if len(orig_indices) != T_act:
-        # Safety: adjust to shorter length (e.g., if discards changed live)
         T_act = min(T_act, len(orig_indices))
         trials_active = trials_active[:, :T_act]
         orig_indices = orig_indices[:T_act]
@@ -227,8 +214,6 @@ def escribir_modificacion(kernel, prep: ModificacionPreparada, out_active: np.nd
     td_base = prep.td_base
     orig_indices = prep.orig_indices
 
-    # 5) R79: the result goes into a DERIVED set; the original trials are never written.
-    # Successive modifications accumulate in the same derived set.
     derivado = sd.get_derived_trials(prep.file_name, prep.channel_name)
     if derivado is None:
         derivado = crear_derivado(td_base)
@@ -236,21 +221,15 @@ def escribir_modificacion(kernel, prep: ModificacionPreparada, out_active: np.nd
         if 0 <= orig_col < derivado.trials.shape[1]:
             derivado.trials[:, orig_col] = out_active[:, k]
 
-    # 6) Mark which trials were modified
     marcados = set(derivado.metadata.get("modified_trials", set()))
     marcados.update(orig_indices)
     derivado.metadata["modified_trials"] = marcados
 
-    # 6.5) Guardar la receta, en orden, para que el proyecto pueda reconstruirla.
-    # Sin esto las modificaciones se pierden al reabrir: el proyecto guarda cómo
-    # se generaron los trials, no sus valores (problema nº 21).
     derivado.metadata.setdefault("modificaciones", []).append(
         receta_dict if receta_dict is not None else receta(mode, point_a, point_b, prep.discarded))
 
-    # 5.5) Registering it also invalidates the cache, so get_active_trials serves the derived set
     sd.register_derived_trials(derivado)
 
-    # 7) Notify the UI (if the pipeline uses it)
     if hasattr(kernel, "event"):
         try:
             kernel.event.emit("trials_generated", {"signal": prep.file_name, "channel": prep.channel_name})

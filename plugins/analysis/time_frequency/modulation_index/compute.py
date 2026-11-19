@@ -15,50 +15,26 @@ from scipy.signal import hilbert
 from core.filters.iir import bifiltro, filtro_iir, tope_banda_alta
 from core.filters.wavelet import tasa_efectiva
 
-ANCHO_BANDA_FASE = 1.0        # f_PAC_sing filtra [f, f+1] para la fase
-ANCHO_BANDA_AMPLITUD = 10.0   # y [f, f+10] para la amplitud
+ANCHO_BANDA_FASE = 1.0
+ANCHO_BANDA_AMPLITUD = 10.0
 
-# El numero escrito a mano en f_PAC_sing, linea 41. El bucle correcto está
-# justo encima, comentado y con un paréntesis de menos:
-#
-#     %for counta = 1:(size(amp_range,2)
-#         for counta = 1:178
-#
-# Con los valores por defecto (10 : 0,5 : 500) el barrido da 981 frecuencias,
-# así que solo se calculan las primeras 178 —hasta 98,5 Hz— y el resto del
-# comodulograma sale en NaN: el 81,9 % de las filas. Y si el barrido diera menos
-# de 178, MATLAB se cae con un error de índice.
-#
-# Se replica a propósito, a la espera de la decisión pendiente en
-# `docs/Plan de Programación/plan-implementacion-pac.md`. Corregirlo es poner
-# este valor en None.
 LIMITE_BANDAS_AMPLITUD = 178
 
-# Cuantos ciclos de la banda de fase mas lenta tienen que caber en el trial para
-# que MInorm sea fiable. No sale de la teoria sino de medirlo: con un
-# acoplamiento construido a 75 Hz de amplitud y 3,5 Hz de fase, un trial de 3 s
-# y la fase arrancando en 1 Hz —3 ciclos— pone el maximo en cualquier parte;
-# arrancando en 2 Hz —6 ciclos— lo pone exactamente donde se construyo.
-#
-# MATLAB no comprueba nada de esto: calcula igual y devuelve un comodulograma
-# que parece correcto. El aviso es un anadido nuestro y **no cambia el
-# calculo**, solo advierte, para no leer como acoplamiento lo que es ruido.
 CICLOS_MINIMOS_FASE = 6.0
 
 
 @dataclass
 class ResultadoMI:
     """El comodulograma y sus ejes."""
-    mi_norm: np.ndarray       # amplitud x fase — es el que se dibuja (Özkurt)
-    mi: np.ndarray            # el mismo con el índice de Canolty, sin normalizar
-    frecuencias_fase: np.ndarray       # eje X
-    frecuencias_amplitud: np.ndarray   # eje Y
-    bandas_calculadas: int    # cuántas bandas de amplitud se filtraron de verdad
+    mi_norm: np.ndarray
+    mi: np.ndarray
+    frecuencias_fase: np.ndarray
+    frecuencias_amplitud: np.ndarray
+    bandas_calculadas: int
     fs_efectiva: float
-    duracion_s: float         # cuánto dura el trial ya submuestreado
-    ciclos_banda_lenta: float # cuántos ciclos de `p_ini` caben en esa duración
-    limite_matlab: bool       # si se aplicó el tope de 178; si no, lo que falte es
-                              # por Nyquist, y el aviso al usuario tiene que decir cuál
+    duracion_s: float
+    ciclos_banda_lenta: float
+    limite_matlab: bool
 
 
 def eje_barrido(inicio, fin, paso):
@@ -111,18 +87,13 @@ def comodulograma(ctx, sig, fs_calculado, fs, p_ini, p_fin, pstep, a_ini, a_fin,
     if rango_fase.size == 0 or rango_amplitud.size == 0:
         raise ValueError("Los rangos de barrido quedaron vacíos; revisa los pasos.")
 
-    # --- Cuántas bandas de amplitud se filtran de verdad
     n_amp_total = rango_amplitud.size
 
-    # Las que admiten filtro. Son siempre las primeras, porque el barrido crece
-    # y lo que estorba es el Nyquist por arriba.
     limite_filtro = tope_banda_alta(fs_efectiva)
     n_filtrables = int(np.count_nonzero(
         rango_amplitud + ANCHO_BANDA_AMPLITUD < limite_filtro))
 
     if not limite_matlab:
-        # El barrido entero, menos lo que el Nyquist impida. No se aborta por
-        # esas: se dejan en NaN y se avisa, que es más útil que no calcular nada.
         n_calculadas = n_filtrables
         if n_calculadas == 0:
             raise ValueError(
@@ -138,13 +109,6 @@ def comodulograma(ctx, sig, fs_calculado, fs, p_ini, p_fin, pstep, a_ini, a_fin,
                 f"hace falta que (fin − inicio) ≥ {LIMITE_BANDAS_AMPLITUD - 1} × paso.")
         n_calculadas = min(LIMITE_BANDAS_AMPLITUD, n_amp_total)
 
-        # El Nyquist se comprueba sobre la banda más alta que se filtra **de
-        # verdad**, no sobre el final del barrido: las frecuencias que el tope de
-        # 178 deja fuera nunca llegan a tener filtro, ni aquí ni en MATLAB, así
-        # que da igual a qué altura queden. Con los valores por defecto —10 : 0,5
-        # : 500 sobre 1.000 Hz— el barrido termina en 500 Hz, pero la banda 178 es
-        # la de 98,5-108,5 Hz y cabe de sobra. Mirar el final del barrido
-        # rechazaba justo el caso por defecto, que en MATLAB corre sin problema.
         if n_calculadas > n_filtrables:
             tope = rango_amplitud[n_calculadas - 1] + ANCHO_BANDA_AMPLITUD
             raise ValueError(
@@ -158,7 +122,6 @@ def comodulograma(ctx, sig, fs_calculado, fs, p_ini, p_fin, pstep, a_ini, a_fin,
         raise ValueError(
             f"La señal tiene {x.size} muestras después del submuestreo; se necesitan al menos 4.")
 
-    # --- Fase: una banda de 1 Hz por cada frecuencia del barrido
     m_fase = np.empty((x.size, rango_fase.size), dtype=np.float64)
     for i, f in enumerate(rango_fase):
         if ctx is not None and ctx.cancelled:
@@ -168,8 +131,6 @@ def comodulograma(ctx, sig, fs_calculado, fs, p_ini, p_fin, pstep, a_ini, a_fin,
         if ctx is not None and i % 10 == 0:
             ctx.progress(int(35 * (i + 1) / rango_fase.size), f"Fase {i + 1}/{rango_fase.size}")
 
-    # --- Amplitud: una banda de 10 Hz por cada frecuencia. Las que el límite
-    # deja fuera se quedan en cero, como la preasignación de MATLAB.
     m_amp = np.zeros((x.size, n_amp_total), dtype=np.float64)
     for i in range(n_calculadas):
         if ctx is not None and ctx.cancelled:
@@ -184,19 +145,11 @@ def comodulograma(ctx, sig, fs_calculado, fs, p_ini, p_fin, pstep, a_ini, a_fin,
     if ctx is not None:
         ctx.progress(92, "Cruzando fase y amplitud")
 
-    # --- El cruce, vectorizado.
-    # MATLAB lo hace con dos bucles anidados —100 x 981 vueltas con los valores
-    # por defecto—, que en Python seria inviable. Es exactamente una
-    # multiplicacion de matrices:
-    #     S[ca, cp] = sum_n  m_amp[n, ca] * exp(i*m_fase[n, cp])
-    # y de ahi MI = |S|/N y MInorm = |S| / sum(m_amp por columna).
     S = m_amp.T @ np.exp(1j * m_fase)
     suma_amp = m_amp.sum(axis=0)
 
     with np.errstate(divide="ignore", invalid="ignore"):
         mi = np.abs(S) / x.size
-        # Donde la banda no se filtro, la suma es cero: 0/0 da NaN, igual que
-        # MATLAB. No es un olvido, es el comportamiento de la referencia.
         mi_norm = np.abs(S / suma_amp[:, None])
 
     if ctx is not None:

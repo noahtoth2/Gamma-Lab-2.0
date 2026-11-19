@@ -96,7 +96,6 @@ trials = cut_trials_single_channel(ds=senal, **params, debug=False)
 trials.metadata["generation_params"] = params
 senal.add_trial_dataset(trials)
 
-# R49: tres canales dibujados, zoom con la rueda y desplazamiento arrastrando
 ventana.on_button_click("Open Signal")
 abrir = kernel.get_plugin("Open Signal")
 abrir._set_dataset(senal)
@@ -141,7 +140,6 @@ for tipo, nombre in (("zoom", "zoom"), ("arrastre", "desplazamiento")):
 
 ventana.switch_section("Analysis")
 
-# R56: promedio de 50 trials
 ventana.on_button_click("Average")
 promedio = kernel.get_plugin("Average")
 t0 = time.perf_counter()
@@ -149,7 +147,6 @@ promedio._on_calculate_average()
 esperar(promedio)
 anotar("R56", f"Promedio de {trials.trials.shape[1]} trials", time.perf_counter() - t0, 1.0, "s")
 
-# R50: cambio entre módulos con la señal en memoria
 peor = 0.0
 for nombre in ("FFT", "Wavelet", "PSD", "FFT", "Wavelet", "Average"):
     t0 = time.perf_counter()
@@ -158,7 +155,6 @@ for nombre in ("FFT", "Wavelet", "PSD", "FFT", "Wavelet", "Average"):
     peor = max(peor, time.perf_counter() - t0)
 anotar("R50", "Cambio de módulo (el más lento de 6)", peor, 0.5, "s")
 
-# R48: Wavelet con los parámetros por defecto
 ventana.on_button_click("Wavelet")
 wavelet = kernel.get_plugin("Wavelet")
 t0 = time.perf_counter()
@@ -166,7 +162,6 @@ wavelet.on_create_wavelet()
 esperar(wavelet)
 anotar("R48", "Wavelet de una señal", time.perf_counter() - t0, 10.0, "s")
 
-# R57 y R51: exportación de imagen y de tablas
 carpeta = tempfile.mkdtemp()
 destino = [None]
 QFileDialog.getSaveFileName = staticmethod(lambda *a, **kw: (destino[0], ""))
@@ -187,7 +182,6 @@ for formato in ("csv", "xlsx"):
     exportador.export_sections(secciones, formato, destino[0])
     anotar("R51", f"Tabla de 100000 filas en {formato}", time.perf_counter() - t0, 2.0, "s")
 
-# R55: la interfaz sigue respondiendo mientras PAC calcula en segundo plano
 ventana.on_button_click("PAC")
 pac = kernel.get_plugin("PAC")
 ultimo = [time.perf_counter()]
@@ -215,7 +209,6 @@ for ronda in range(3):
     anotar("R55", "Peor pausa durante PAC, " + ("primera vez" if ronda == 0 else f"ronda {ronda + 1}"), peor_pausa[0], 0.3, "s")
 reloj.stop()
 
-# R53: cierre
 ventana._confirm_discard_unsaved_changes = lambda: True
 t0 = time.perf_counter()
 ventana.close()

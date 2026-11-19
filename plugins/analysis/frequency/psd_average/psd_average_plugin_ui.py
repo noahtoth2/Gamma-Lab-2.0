@@ -6,24 +6,20 @@ class Ui_Psd_average(object):
     def setupUi(self, PsdAvg):
         PsdAvg.setObjectName("PsdAvg")
 
-        # Root layout
         self._root = QtWidgets.QVBoxLayout(PsdAvg)
         self._root.setObjectName("root")
         self._root.setSpacing(0)
 
-        # ====== Splitter ======
         self.splitter = QtWidgets.QSplitter(PsdAvg)
         self.splitter.setOrientation(QtCore.Qt.Horizontal)
         self.splitter.setObjectName("splitter")
         self._root.addWidget(self.splitter)
 
-        # --- Left Area: Plot ---
         self.plotArea = QtWidgets.QFrame(self.splitter)
         self.plotArea.setObjectName("plotArea")
         self.plotArea.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.plotArea.setFrameShadow(QtWidgets.QFrame.Raised)
 
-        # --- Right Area: Panel (fixed header + scrollable body) ---
         self.rightContainer = QtWidgets.QWidget(self.splitter)
         self.rightContainer.setObjectName("rightContainer")
 
@@ -31,7 +27,6 @@ class Ui_Psd_average(object):
         self.rightLayoutOuter.setContentsMargins(8, 0, 8, 0)
         self.rightLayoutOuter.setSpacing(0)
 
-        # ===== Header: Parameters + clear + Calculate PSD Average (always visible) =====
         self.headerLayout = QtWidgets.QHBoxLayout()
         self.headerLayout.setContentsMargins(0, 0, 0, 5)
 
@@ -64,7 +59,6 @@ class Ui_Psd_average(object):
         self.paramsLine.setProperty("role", "section-divider")
         self.rightLayoutOuter.addWidget(self.paramsLine)
 
-        # ===== Scrollable body =====
         self.scrollArea = QtWidgets.QScrollArea(self.rightContainer)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
@@ -83,7 +77,6 @@ class Ui_Psd_average(object):
 
         self.splitter.widget(1).setMaximumWidth(300)
 
-        # --- Sample density ---
         self.sampleDensity = QtWidgets.QVBoxLayout()
         self.sampleDensity.setObjectName("sampleDensity")
 
@@ -114,7 +107,6 @@ class Ui_Psd_average(object):
         self.sampleDensity.addLayout(self.sampleDensityInput)
         self.paramsLayout.addLayout(self.sampleDensity)
 
-        # --- Welch Parameters ---
         self.welchParameters = QtWidgets.QVBoxLayout()
         self.welchParameters.setObjectName("welchParameters")
 
@@ -129,7 +121,6 @@ class Ui_Psd_average(object):
         self.welchLine.setProperty("role", "divider")
         self.welchParameters.addWidget(self.welchLine)
 
-        # Window
         self.windowLayout = QtWidgets.QHBoxLayout()
         self.windowLayout.setObjectName("windowLayout")
 
@@ -143,7 +134,6 @@ class Ui_Psd_average(object):
         self.windowComboBox.addItems(["hann", "hamming", "blackman", "bartlett"])
         self.windowLayout.addWidget(self.windowComboBox)
 
-        # N-per-seg
         self.npersegLayout = QtWidgets.QHBoxLayout()
         self.npersegLayout.setObjectName("npersegLayout")
 
@@ -157,7 +147,6 @@ class Ui_Psd_average(object):
         self.npersegSpinBox.setObjectName("npersegSpinBox")
         self.npersegLayout.addWidget(self.npersegSpinBox)
         
-        # N-overlap
         self.noverlapLayout = QtWidgets.QHBoxLayout()
         self.noverlapLayout.setObjectName("noverlapLayout")
 
@@ -171,7 +160,6 @@ class Ui_Psd_average(object):
         self.noverlapSpinBox.setObjectName("noverlapSpinBox")
         self.noverlapLayout.addWidget(self.noverlapSpinBox)
 
-        # N-FFT
         self.nfftLayout = QtWidgets.QHBoxLayout()
         self.nfftLayout.setObjectName("nfftLayout")
 
@@ -192,7 +180,6 @@ class Ui_Psd_average(object):
 
         self.paramsLayout.addLayout(self.welchParameters)
         
-        # --- Range ---
         self.rangeLayout = QtWidgets.QVBoxLayout()
         self.rangeLayout.setObjectName("rangeLayout")
 
@@ -215,7 +202,6 @@ class Ui_Psd_average(object):
         self.frequencyLabel.setProperty("variant", "input")
         self.frequencyLayout.addWidget(self.frequencyLabel)
 
-        # Low Frequency (shown first)
         self.lowFqLayout = QtWidgets.QHBoxLayout()
         self.lowFqLayout.setObjectName("lowFqLayout")
 
@@ -236,7 +222,6 @@ class Ui_Psd_average(object):
 
         self.frequencyLayout.addLayout(self.lowFqLayout)
 
-        # High Frequency (shown second)
         self.highFqLayout = QtWidgets.QHBoxLayout()
         self.highFqLayout.setObjectName("highFqLayout")
 
@@ -260,10 +245,8 @@ class Ui_Psd_average(object):
         self.rangeLayout.addLayout(self.frequencyLayout)
         self.paramsLayout.addLayout(self.rangeLayout)
 
-        # --- Spacer ---
         self.paramsLayout.addStretch(1)
 
-        # Size splitter
         self.splitter.setStretchFactor(0, 1)
         self.splitter.setStretchFactor(1, 0)
 

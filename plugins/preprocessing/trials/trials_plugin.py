@@ -62,9 +62,7 @@ class TrialsPlugin(IPlugin):
         if self.vtk_interactor:
             self.vtk_interactor.Enable()
 
-        #self._populate_channels_once()
 
-    # -------------- UI ---------------------
     def get_widget(self, parent=None):
         if self.widget is None:
             self._log("get_widget: creating UI")
@@ -80,7 +78,6 @@ class TrialsPlugin(IPlugin):
             self._populate_channels_once()
             self._restore_existing_trials_if_any()
 
-            # Buttons to navigate between trials
             self.ui.Btn_prev_trial.clicked.connect(lambda: self.navigate_trial(-1))
             self.ui.Btn_next_trial.clicked.connect(lambda: self.navigate_trial(1))
         else:
@@ -129,7 +126,6 @@ class TrialsPlugin(IPlugin):
         self._log("ensure_vtk(): scheduled init")
 
     def _on_vtk_widget_destroyed(self, *args):
-        # extra safety if Qt destroys the widget
         try:
             if self.vtk_view is not None:
                 rw = self.vtk_view.GetRenderWindow()
@@ -172,7 +168,6 @@ class TrialsPlugin(IPlugin):
         self.ui.stimChannelComboBox.currentIndexChanged.connect(lambda _: self._update_threshold_unit())
         self._update_threshold_unit()
 
-    # -------------- Threshold units -----------------
     def _stim_unit(self) -> str:
         """Unit of the selected stimulus channel ("" if unknown)."""
         ds = self.get_active_signal(silent=True) if self.mainwin else None
@@ -221,7 +216,6 @@ class TrialsPlugin(IPlugin):
         self.ui.finalTimeDoubleSpinBox.setValue(self.params["t1"])
         self.ui.stimNumberSpinBox.setValue(self.params["stim_count"] or 0)
         self._apply_interstim_ui_rules(self.ui.stimNumberSpinBox.value())
-        # R25: tambien los selectores vuelven a su valor inicial (canal 0, estimulo en el ultimo canal)
         if self.ui.channelComboBox.count():
             self.ui.channelComboBox.setCurrentIndex(0)
         if self.ui.stimChannelComboBox.count():
@@ -262,7 +256,6 @@ class TrialsPlugin(IPlugin):
             isi.blockSignals(False)
             return
 
-        # stim_count >= 2
         isi.blockSignals(True)
         isi.setEnabled(True)
         isi.setMinimum(0.001)
@@ -278,14 +271,12 @@ class TrialsPlugin(IPlugin):
         - Channel → default index 0
         - Stim Channel → default last channel
         """
-        # Get references (tolerant if UI does not yet have the stim combo)
         cb_main = getattr(self.ui, "channelComboBox", None)
         cb_stim = getattr(self.ui, "stimChannelComboBox", None)
 
         if cb_main is None:
-            return  # nothing to do
+            return
 
-        # Build list of names
         names = []
         try:
             if getattr(ds, "channel_names", None):
@@ -294,7 +285,6 @@ class TrialsPlugin(IPlugin):
             self._log("channel_names error:", e)
 
         if not names:
-            # Fallback by shape
             C = 0
             try:
                 sig = getattr(ds, "signals", None)
@@ -304,7 +294,6 @@ class TrialsPlugin(IPlugin):
             names = [f"ch-{i+1}" for i in range(C)]
             self._log("fallback names by shape:", len(names))
 
-        # Populate main combo
         cb_main.blockSignals(True)
         cb_main.clear()
         for i, name in enumerate(names):
@@ -312,13 +301,11 @@ class TrialsPlugin(IPlugin):
         cb_main.setCurrentIndex(0 if names else -1)
         cb_main.blockSignals(False)
 
-        # Populate stim combo (if present in UI)
         if cb_stim is not None:
             cb_stim.blockSignals(True)
             cb_stim.clear()
             for i, name in enumerate(names):
                 cb_stim.addItem(name, i)
-            # default to the LAST channel
             default_idx = (len(names) - 1) if names else -1
             cb_stim.setCurrentIndex(default_idx)
             cb_stim.setToolTip("Channel used to detect onsets/stimuli")
@@ -350,9 +337,7 @@ class TrialsPlugin(IPlugin):
         self._render_trials(td)
         self._update_trial_ui(ds, 0, td.trials.shape[1], None)
 
-    # -------------- Acciones UI -----------------
     def _on_generate_clicked(self):
-        #self._log("_on_generate_clicked")
 
         ds = self.get_active_signal()
         if ds is None:
@@ -379,9 +364,6 @@ class TrialsPlugin(IPlugin):
 
             return
 
-        # The threshold is entered in mV; detection compares it against the raw
-        # stimulus channel, so it goes in that channel's unit. A channel without
-        # a voltage unit has no mV equivalent and keeps the value as entered.
         th_shown = float(self.ui.thresholdDoubleSpinBox.value())
         stim_unit = self._stim_unit()
         th_native = mv_to_unit(th_shown, stim_unit) if stim_unit else th_shown
@@ -407,8 +389,8 @@ class TrialsPlugin(IPlugin):
                                 end_mode=mode, stim_expected=stim, inter_stim_time=inter_stim_time))
 
         params = {
-            "channel": int(ch),                  # target channel to cut
-            "stim_channel": None if stim_ch is None else int(stim_ch),   # stimulus channel to detect onsets
+            "channel": int(ch),
+            "stim_channel": None if stim_ch is None else int(stim_ch),
             "threshold": th,
             "t0": t0, "t1": t1,
             "end_mode": mode,
@@ -416,7 +398,6 @@ class TrialsPlugin(IPlugin):
             "inter_stim_time": inter_stim_time,
         }
 
-        # The cut runs in the TaskService (R71); the dataset is updated when it finishes
         def al_fallar(m):
             self._log("cut_trials_single_channel error:", m)
             self.alerts.error(f"Error generating trials: {m}")
@@ -425,28 +406,20 @@ class TrialsPlugin(IPlugin):
                       ds=ds, **params)
 
     def _on_trials_cut(self, ds, params, th_text, td):
-        # The recipe keeps the threshold in the stimulus channel's unit: it is
-        # passed straight back to cut_trials_single_channel on project open.
         td.metadata["threshold_display"] = th_text
         td.metadata["generation_params"] = dict(params)
 
         try:
-            # add_trial_dataset ya olvida los descartes de ESTE canal, que apuntaban
-            # a los trials viejos. Antes se llamaba además a clear_discarded_trials,
-            # que borraba los descartes de todos los canales.
             ds.add_trial_dataset(td)
             self.mark_project_dirty()
 
         except Exception as e:
             self._log("add_trial_dataset warning:", e)
 
-        # Show only the first trial
         self.last_td = td
         self.visible_trials = [0]
         self.navigate_trial(0)
 
-        # Avisar a la ventana principal y a los demas plugins (indicador de
-        # trial, Remove Artifact...). Antes este evento solo lo emitia Open Signal.
         self.kernel.emit_event("trials_generated", {"signal": ds.name, "channel": td.channel_name})
 
         self._notify(f"Trials: {td.trials.shape[1]} trials generados en '{td.channel_name}' "
@@ -475,7 +448,6 @@ class TrialsPlugin(IPlugin):
             self.alerts.warning("\n\n".join(avisos), "Trials")
    
 
-    # -------------- Navigation between trials ----------------------
     def navigate_trial(self, direction: int):
         """
         Show next or previous trial according to 'direction'.
@@ -498,15 +470,13 @@ class TrialsPlugin(IPlugin):
             self.visible_trials = [0]
 
         current = self.visible_trials[0]
-        new_idx = (current + direction) % T  # circular navigation
+        new_idx = (current + direction) % T
         self.visible_trials = [new_idx]
 
-        #self._log(f"Navigating trial {new_idx + 1}/{T}")
         self._render_trials(td)
 
         self._update_trial_ui(sd, new_idx, T, None)
 
-        # Connect the button
         try:
             self.ui.Btn_discard_trial.clicked.disconnect()
         except Exception:
@@ -533,8 +503,6 @@ class TrialsPlugin(IPlugin):
             self.alerts.warning("No trials loaded.", "Discard trial")
             return
 
-        # El canal de los trials que se están viendo, no el del combo: el combo se
-        # puede cambiar sin volver a cortar, y con él el descarte caía en otro canal.
         ch = self._canal_mostrado()
     
       
@@ -546,12 +514,10 @@ class TrialsPlugin(IPlugin):
         print(f"Trial {index + 1} discarded: {estado}")
 
         if estado:
-            # Include again
             ds.include_trial(ds.name, ch, index)
             self._update_trial_ui(ds, index, T, False)
             self.alerts.info(f"Trial {index + 1} included.", "Include trial")
         else:
-            # Mark as discarded
             ds.discard_trial(ds.name, ch, index)
             self._update_trial_ui(ds, index, T, True)
             self.alerts.info(f"Trial {index + 1} discarded.", "Discard trial")
@@ -567,9 +533,6 @@ class TrialsPlugin(IPlugin):
         if estado_descartado is None:
             estado_descartado = ds.is_trial_discarded(ds.name, ch, index)
 
-        # Este plugin navega por el indice original (incluye descartados); el
-        # resto de la aplicacion numera por posicion entre los validos. Si hay
-        # descartes se muestran las dos para que se puedan relacionar.
         state = self.current_trial_state()
         valid_text = ""
         if state and state.get("note") and not estado_descartado:
@@ -634,7 +597,6 @@ class TrialsPlugin(IPlugin):
         ids = [i for i in ids if 0 <= i < T]
         return np.asarray(td.time_rel, dtype=float), M[:, ids], ids
 
-    # -------------- Render ----------------------
     def _render_trials(self, td: TrialDataset):
         self._log("_render_trials: enter")
         
@@ -658,8 +620,6 @@ class TrialsPlugin(IPlugin):
             sel = [1] if T > 1 else ([0] if T == 1 else [])
 
         for idx in sel:
-            # El trial se dibuja con todas sus muestras: el investigador tiene que
-            # verlo completo aunque haga zoom (con 2000 puntos se perdía detalle).
             plot = agregar_columna(self.chart, table, idx + 1, n_max=MAX_PUNTOS_DETALLE)
             plot.SetWidth(1.0)
             plot.SetLabel(f"Trial {idx+1}")
@@ -690,8 +650,6 @@ class TrialsPlugin(IPlugin):
             curr_channel_name = getattr(td, "channel_name", "") or "channel"
 
             graph_uid = f"trial {trial_idx}"
-            # "All trials" measurements: every valid trial (discarded ones left out),
-            # and only the visible trial gets its line drawn.
             self.vtk_menu.set_trials_source(self._fuente_de_trials, visible_trial_ids=sel)
             self.vtk_menu.on_view_rebuilt(
                 self.chart,

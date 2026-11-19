@@ -1,4 +1,3 @@
-# test/performance_test/test_preprocessing_bench.py
 """
 Benchmark del cómputo de preprocesamiento que corre antes de cualquier análisis:
 el filtro pasa-banda Butterworth de plugins/preprocessing/prepare/filter/

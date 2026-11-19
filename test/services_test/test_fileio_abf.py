@@ -3,9 +3,6 @@ import numpy as np
 import pytest
 from core.services.fileio_service import FileIOService, SignalDataset
 
-# ---------------------------------------------------------------------
-# Dummy class simulating pyabf.ABF behavior
-# ---------------------------------------------------------------------
 class DummyABF:
     """
     Simulates a valid ABF file with 2 channels, 1000 samples each, fs=1000 Hz.
@@ -26,7 +23,7 @@ class DummyABF:
             np.sin(2 * np.pi * 5 * t),
             np.cos(2 * np.pi * 7 * t)
         ])
-        self._ch = 0  # current channel index
+        self._ch = 0
 
     def setSweep(self, sweepNumber=0, channel=0):
         self._ch = int(channel)
@@ -49,9 +46,6 @@ class DummyABF:
         canal por canal, para no duplicar la memoria (problema nº 12)."""
         return self._data
 
-# ---------------------------------------------------------------------
-# Dummy variants for failure cases
-# ---------------------------------------------------------------------
 class DummyABF_Raises:
     """Simulates a corrupted or unreadable ABF file."""
     def __init__(self, path):
@@ -61,15 +55,12 @@ class DummyABF_BadShape(DummyABF):
     """Simulates channels with mismatched lengths."""
     def __init__(self, path):
         super().__init__(path)
-        self._data[1] = self._data[1][:-10]  # second channel shorter (990 samples)
+        self._data[1] = self._data[1][:-10]
 
     @property
     def sweepY(self):
         return self._data[self._ch]
 
-# ---------------------------------------------------------------------
-# Tests
-# ---------------------------------------------------------------------
 
 def test_load_abf_valid(monkeypatch, tmp_path):
     """
@@ -81,19 +72,17 @@ def test_load_abf_valid(monkeypatch, tmp_path):
     svc = FileIOService()
     ds = svc.load_abf(str(tmp_path / "fake.abf"))
 
-    # Structural checks
     assert isinstance(ds, SignalDataset)
     assert ds.format == "abf"
     assert ds.signals.shape == (2, 1000)
     assert ds.sampling_rate == 1000.0
     assert ds.channel_names == ["ch0", "ch1"]
 
-    # Data consistency checks
     ch0, ch1 = ds.signals
-    assert not np.allclose(ch0, ch1)              # channels must differ
-    assert np.isclose(ch0[0], 0.0, atol=1e-12)    # sin(0)=0
-    assert np.isclose(ch1[0], 1.0, atol=1e-12)    # cos(0)=1
-    assert len(ds.time) == ds.signals.shape[1]    # time axis matches signal length
+    assert not np.allclose(ch0, ch1)
+    assert np.isclose(ch0[0], 0.0, atol=1e-12)
+    assert np.isclose(ch1[0], 1.0, atol=1e-12)
+    assert len(ds.time) == ds.signals.shape[1]
 
 
 def test_load_abf_corrupted(monkeypatch, tmp_path):

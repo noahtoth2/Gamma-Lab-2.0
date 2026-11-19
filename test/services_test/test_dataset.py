@@ -1,4 +1,3 @@
-# test/services_test/test_data_store.py
 import pytest
 import numpy as np
 
@@ -6,9 +5,6 @@ from core.services.data_store import DataStore
 from core.model.signal_dataset import SignalDataset
 
 
-# ---------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------
 def make_signal_dataset(
     C=1, N=100, fs=1000.0, path="dummy.edf", name="dummy", fmt="edf"
 ) -> SignalDataset:
@@ -29,9 +25,6 @@ def make_signal_dataset(
     )
 
 
-# ---------------------------------------------------------------------
-# Basic key-value operations
-# ---------------------------------------------------------------------
 def test_set_get_has_remove_and_items():
     ds = DataStore()
     ds.set("a", 123)
@@ -52,9 +45,6 @@ def test_set_get_has_remove_and_items():
     assert ds.has("b")
 
 
-# ---------------------------------------------------------------------
-# add_signal & get_signals
-# ---------------------------------------------------------------------
 def test_add_signal_with_explicit_key_and_get_signals_filters():
     store = DataStore()
     sig = make_signal_dataset()
@@ -63,7 +53,6 @@ def test_add_signal_with_explicit_key_and_get_signals_filters():
     assert key == "raw_signal_main"
     assert store.get("raw_signal_main") is sig
 
-    # Non-signal entry should NOT appear in get_signals
     store.set("misc", 42)
     signals = store.get_signals()
     assert "raw_signal_main" in signals and "misc" not in signals
@@ -75,14 +64,10 @@ def test_add_signal_auto_keys_increment():
     k1 = store.add_signal(make_signal_dataset())
     k2 = store.add_signal(make_signal_dataset())
     k3 = store.add_signal(make_signal_dataset())
-    # Expected pattern: raw_signal_1, raw_signal_2, raw_signal_3
     assert k1.endswith("_1") and k2.endswith("_2") and k3.endswith("_3")
     assert store.has(k1) and store.has(k2) and store.has(k3)
 
 
-# ---------------------------------------------------------------------
-# Active signal management
-# ---------------------------------------------------------------------
 def test_set_active_signal_success_and_getters():
     store = DataStore()
     k1 = store.add_signal(make_signal_dataset(name="sig1"))

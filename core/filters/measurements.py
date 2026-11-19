@@ -11,11 +11,9 @@ def two_point_metrics(p1, p2, kind="slope"):
     dx = x2 - x1
     dy = y2 - y1
 
-    # Slope and Euclidean distance
     slope = np.inf if dx == 0 else dy / dx
     dist = np.hypot(dx, dy)
 
-    # Homogeneous output
     return {
         "type": kind,
         "p1": (float(x1), float(y1)),
@@ -53,7 +51,6 @@ def amplitude_in_window(xs, ys, x1, x2):
     if n == 0:
         return None
 
-    # Find min and max within the window
     y_min = None; y_max = None
     j_min = j_max = None
     for j, v in enumerate(wys):
@@ -111,13 +108,12 @@ def derivative_in_window(xs, ys, x1, x2):
     if not np.any(valido):
         return None
     d = np.diff(y)[valido] / dx[valido]
-    xm = ((x[:-1] + x[1:]) / 2.0)[valido]          # where each derivative value belongs
+    xm = ((x[:-1] + x[1:]) / 2.0)[valido]
     ym = ((y[:-1] + y[1:]) / 2.0)[valido]
 
     j_max = int(np.argmax(d))
     j_min = int(np.argmin(d))
 
-    # Tangent of slope d_max through the maximum, as long as a quarter of the window
     medio = (x[-1] - x[0]) / 8.0
     x0, y0, m = float(xm[j_max]), float(ym[j_max]), float(d[j_max])
     tangent = [(x0 - medio, y0 - m * medio), (x0 + medio, y0 + m * medio)]

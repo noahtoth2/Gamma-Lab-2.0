@@ -40,8 +40,6 @@ def _silencio(fn, *a, **k):
         sys.stdout = orig
 
 
-# ------------------------------------------------------------------- ABF
-
 @pytest.mark.skipif(not ABF_PATH.exists(), reason="no se encontro el archivo ABF de prueba")
 def test_abf_no_copia_las_senales():
     """Las señales devueltas deben ser los mismos arreglos que trae pyabf, no copias."""
@@ -81,8 +79,6 @@ def test_abf_los_arreglos_son_escribibles_y_propios():
     sd.signals[0, 0] = primero + 1.0
     assert float(sd.signals[0, 0]) == pytest.approx(primero + 1.0)
 
-
-# ------------------------------------------------------------------- EDF
 
 def _generar_edf(ruta, canales):
     """canales: lista de (nombre, unidad, fs, duracion_s)."""
@@ -180,7 +176,6 @@ def test_edf_con_fs_distintas_remuestrea_a_la_menor(tmp_path):
     _generar_edf(ruta, CASOS_EDF["fs_distintas"])
     sd = _silencio(FileIOService().load_edf, str(ruta))
 
-    # fs comun = la menor (128); duracion comun = la menor (8 s) -> 1024 muestras
     assert sd.sampling_rate == 128.0
     assert sd.signals.shape == (3, 1024)
     assert sd.metadata["uniform"] is False
@@ -193,5 +188,5 @@ def test_edf_no_deja_el_archivo_abierto(tmp_path):
     ruta = tmp_path / "cierre.edf"
     _generar_edf(ruta, CASOS_EDF["un_canal"])
     _silencio(FileIOService().load_edf, str(ruta))
-    ruta.unlink()          # falla con PermissionError si quedo abierto
+    ruta.unlink()
     assert not ruta.exists()

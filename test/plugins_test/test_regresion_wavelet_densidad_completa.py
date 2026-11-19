@@ -33,9 +33,6 @@ def _senal(n=6000, semilla=0):
     return np.sin(2 * np.pi * 40 * t) + 0.3 * rng.standard_normal(n)
 
 
-# ============================================================
-#   1. El cálculo en bloques
-# ============================================================
 def test_repartir_las_frecuencias_da_el_mismo_resultado_bit_a_bit():
     sig = _senal()
     Z, t, f = cw.compute_wavelet(sig, FS, round(FS), 1, 200, 2.0)
@@ -62,14 +59,10 @@ def test_el_calculo_informa_el_avance_y_se_puede_cancelar():
     assert cw.compute_wavelet(_senal(2000), FS, round(FS), 1, 100, 2.0, ctx=_Ctx(cancelar=True)) is None
 
 
-# ============================================================
-#   2. El dibujo y el zoom
-# ============================================================
 def test_sin_zoom_se_dibuja_a_la_resolucion_de_la_pantalla():
     Z = np.random.default_rng(1).random((50, 45454), dtype=np.float32)
     bloque, x0, dx, _, _ = celdas_visibles(piramide(Z), 0.0, 1.0, 0.0, 1.0, (0, 45454), (0, 50))
     assert bloque.shape[1] <= MAX_COLUMNAS and bloque.shape[0] == 50
-    # cada celda dibujada es el promedio de las columnas que cubre
     escala = int(round(dx))
     assert np.allclose(bloque[:, 3], Z[:, 3 * escala:4 * escala].mean(axis=1), rtol=1e-5)
 
@@ -102,7 +95,7 @@ def _pintar(chart, rango_x, rango_y):
 def test_un_mapa_de_45454_columnas_se_ve_y_no_sale_de_un_solo_color():
     """Antes la imagen entera iba a VTK: salía de un solo color y tardaba 10 s."""
     nx, ny = 45454, 60
-    Z = np.tile(((np.arange(nx) // 1000) % 2).astype(np.float32), (ny, 1))      # franjas
+    Z = np.tile(((np.arange(nx) // 1000) % 2).astype(np.float32), (ny, 1))
     lut = vtk.vtkColorTransferFunction()
     lut.AddRGBPoint(0.0, 0.1, 0.1, 0.5)
     lut.AddRGBPoint(1.0, 0.9, 0.9, 0.1)
@@ -115,15 +108,11 @@ def test_un_mapa_de_45454_columnas_se_ve_y_no_sale_de_un_solo_color():
     mapa = MapaConZoom(chart, Z, 0.0, 1.0, 0.0, 1.0)
     assert _pintar(chart, (0, nx), (0, ny)) > 1
     assert mapa.celdas_dibujadas[1] <= MAX_COLUMNAS
-    # acercar: el eje avisa y el mapa recorta, ahora con cada celda
     chart.GetAxis(vtk.vtkAxis.BOTTOM).SetRange(20500, 21500)
     assert mapa.imagen.GetSpacing()[0] == 1.0
     assert mapa.celdas_dibujadas[1] <= 1004
 
 
-# ============================================================
-#   3. La densidad por defecto
-# ============================================================
 def _plugin_wavelet():
     from core.plugins.meta import PluginMeta
     from plugins.analysis.time_frequency.wavelet.wavelet_plugin import Wavelet_plugin
@@ -183,13 +172,13 @@ def test_al_generar_usa_la_densidad_del_archivo_sin_avisos():
     tareas = _preparar(p, _trials())
     p.on_create_wavelet()
     assert tareas.submit.call_args.kwargs["fs"] == 10101
-    p.alerts.info.assert_not_called()       # 10.101 frente a 10.101,01 Hz no merece aviso
+    p.alerts.info.assert_not_called()
     p.alerts.warning.assert_not_called()
 
 
 def test_si_el_usuario_elige_otra_densidad_se_respeta():
     p = _plugin_wavelet()
     tareas = _preparar(p, _trials())
-    p.ui.sampleDensitySpinBox.setValue(2000)          # cambio del usuario
+    p.ui.sampleDensitySpinBox.setValue(2000)
     p.on_create_wavelet()
     assert tareas.submit.call_args.kwargs["fs"] == 2000

@@ -2,7 +2,6 @@ import numpy as np
 import pytest
 from pathlib import Path
 
-# --- Real pipeline imports (core app services & plugins) ---
 from core.services.fileio_service import FileIOService
 from core.filters import trials as tr
 from core.model.trial_dataset import TrialDataset
@@ -10,73 +9,41 @@ from plugins.analysis.time.average.average_plugin import Average_plugin
 from core.plugins.meta import PluginMeta
 
 
-# ============================================================
-#                  GLOBAL CONFIG / TEST DATA
-# ============================================================
-
-# Base directory for test data files
 BASE_DIR = Path(__file__).resolve().parents[2] / "test" / "data"
 
-# Input ABF file
 ABF_PATH = BASE_DIR / "17308005.abf"
 
-# MATLAB reference CSV
 MATLAB_CSV = BASE_DIR / "average_data_matlab.csv"
 
 
-# ============================================================
-#                 TRIALS DIVISION PARAMETERS
-# ============================================================
-
-# Channel where the signal of interest is stored
 TARGET_CHANNEL = 0
 
-# Channel used to detect stimulus onsets
 STIM_CHANNEL = 1
 
-# Threshold to detect a stimulus event
 THRESHOLD = 0.7
 
-# Time window around each stimulus (in seconds)
-T0 = -0.05     # Start time relative to stimulus
-T1 = 4.00      # End time relative to stimulus
+T0 = -0.05
+T1 = 4.00
 
-# How to decide the end of a trial
 END_MODE = "until_next_onset"
 
-# Expected number of stimuli per trial
 STIM_EXPECTED = 1
 
-# Inter-stimulus interval (used by the cutting logic)
 ISI = 0.0
 
-# Value used to pad trials if needed
 PAD_VALUE = 0.0
 
 
-# ============================================================
-#                 NUMERICAL COMPARISON PARAMETERS
-# ============================================================
+K_EXPECTED = 1
 
-# Expected number of columns in the average vector (we use 1)
-K_EXPECTED = 1          # Expected number of columns
-
-# Minimum acceptable Pearson correlation between APP vs MATLAB curves
 MIN_CORR = 0.98
 
-# Minimum fraction of points that must be within tolerance
-FRAC_MIN_PASS = 0.95    # ≥ 95% of points must pass
+FRAC_MIN_PASS = 0.95
 
-# Absolute tolerance for pointwise comparison: |APP - MATLAB| ≤ FRAC_ATOL
 FRAC_ATOL = 0.001
 
-# Relative tolerance (unused for now, but kept for completeness of the formula)
-FRAC_RTOL = 0.0         # With rtol=0.0 we only use the absolute tolerance
+FRAC_RTOL = 0.0
 
-
-# ============================================================
-#                    NUMPY HELPER FUNCTIONS
-# ============================================================
 
 def crop_rows_to_min(A: np.ndarray, B: np.ndarray):
     """
@@ -89,13 +56,11 @@ def crop_rows_to_min(A: np.ndarray, B: np.ndarray):
     A = np.asarray(A, dtype=float)
     B = np.asarray(B, dtype=float)
 
-    # Promote 1D vectors to (N, 1) matrices.
     if A.ndim == 1:
         A = A.reshape(-1, 1)
     if B.ndim == 1:
         B = B.reshape(-1, 1)
 
-    # Basic sanity checks for matrix shapes.
     assert A.ndim == 2 and B.ndim == 2, "Input arrays must be 2D."
     assert A.shape[1] == B.shape[1], f"Different number of columns: {A.shape[1]} vs {B.shape[1]}"
 
@@ -129,7 +94,6 @@ def diff_debug_report_fraction(A, B, within, tol_mat, label_a="APP", label_b="MA
     excess = np.full_like(diffs, np.nan, dtype=float)
     excess[over_mask] = diffs[over_mask] - tol_mat[over_mask]
 
-    # Find worst violating point (ignoring NaNs).
     flat_idx = np.nanargmax(excess)
     r, c = np.unravel_index(flat_idx, excess.shape)
     worst_excess = float(excess[r, c])
@@ -137,16 +101,13 @@ def diff_debug_report_fraction(A, B, within, tol_mat, label_a="APP", label_b="MA
     worst_tol = float(tol_mat[r, c])
     va, vb = float(A[r, c]), float(B[r, c])
 
-    # Aggregated statistics by column (avoid all-NaN warnings).
     by_col_counts = np.nansum(over_mask, axis=0)
     with np.errstate(all="ignore", invalid="ignore"):
         by_col_maxexc = np.nanmax(excess, axis=0)
 
-    # Filter columns that actually have violations.
     cols = np.where(by_col_counts > 0)[0]
     topk = []
     if cols.size > 0:
-        # Sort by (# violations desc, max_excess desc).
         order = np.lexsort((-by_col_maxexc[cols], -by_col_counts[cols]))[::-1]
         for idx in order[:topk_cols]:
             cidx = int(cols[idx])
@@ -219,14 +180,11 @@ def assert_points_within_tolerance_fraction(
     B = np.asarray(B, dtype=float)
     A, B = crop_rows_to_min(A, B)
 
-    # Only evaluate points where both matrices are finite.
     valid = np.isfinite(A) & np.isfinite(B)
     total = int(np.sum(valid))
     if total == 0:
-        # Nothing to compare: silently accept.
         return
 
-    # Choose which matrix is used as "reference" in the tolerance formula.
     ref_mat = A if ref.upper() == "A" else B
     tol_mat = atol + rtol * np.abs(ref_mat)
 
@@ -236,10 +194,8 @@ def assert_points_within_tolerance_fraction(
     ratio = passed / float(total)
 
     if ratio >= min_pass_ratio:
-        # Enough points are within tolerance → test passes.
         return
 
-    # Build a detailed report to help debugging failures.
     lines = []
     lines.append(msg or "Fractional tolerance check failed")
     lines.append(f"[frac] shape {label_a}={A.shape}, {label_b}={B.shape}")
@@ -256,10 +212,6 @@ def assert_points_within_tolerance_fraction(
     raise AssertionError("\n".join(lines))
 
 
-# ============================================================
-#                 TEST FOR Average_plugin
-# ============================================================
-
 class AverageDouble(Average_plugin):
     """
     Test double for Average_plugin that:
@@ -271,7 +223,6 @@ class AverageDouble(Average_plugin):
     """
 
     def __init__(self):
-        # Minimal plugin metadata required by the core plugin system.
         meta = PluginMeta(
             id="average",
             name="Average",
@@ -283,15 +234,12 @@ class AverageDouble(Average_plugin):
         )
         super().__init__(meta)
 
-        # Captured outputs from render_average().
         self._captured_t = None
         self._captured_avg = None
 
-        # References to active signal and trials set by the test.
         self._active_signal = None
         self._active_trials: TrialDataset | None = None
 
-    # --- UI / VTK handling overrides ---
 
     def construir_ui(self):
         """Real panel (no VTK), so the trial selection controls can be driven."""
@@ -317,7 +265,6 @@ class AverageDouble(Average_plugin):
         self._captured_t = np.asarray(t, dtype=float)
         self._captured_avg = np.asarray(av_data, dtype=float)
 
-    # --- Bridges required by the original plugin API ---
 
     def get_active_signal(self):
         """
@@ -331,7 +278,6 @@ class AverageDouble(Average_plugin):
         """
         return self._active_trials
 
-    # --- Injection helpers used by the tests ---
 
     def set_active_signal(self, sd):
         """
@@ -346,10 +292,6 @@ class AverageDouble(Average_plugin):
         self._active_trials = td
 
 
-# ============================================================
-#                        FIXTURES
-# ============================================================
-
 @pytest.fixture(scope="class")
 def ds():
     """
@@ -359,7 +301,6 @@ def ds():
     fio = FileIOService()
     sd = fio.load_abf(str(ABF_PATH))
 
-    # Ensure we work with float64 for better numerical stability.
     sd.signals = sd.signals.astype(np.float64, copy=False)
     sd.time = sd.time.astype(np.float64, copy=False)
 
@@ -408,10 +349,8 @@ def app_avg(ds, td):
     assert plug._captured_avg is not None, "AverageDouble did not capture av_data."
     avg = plug._captured_avg
 
-    # Simple logging to help debug shape issues.
     print("APP Average shape:", avg.shape)
 
-    # Return as (N, 1) so we can reuse the 2D helper functions.
     avg = np.asarray(avg, dtype=np.float64).reshape(-1, 1)
     return avg
 
@@ -431,21 +370,14 @@ def matlab_avg():
     M = np.asarray(M, dtype=np.float64)
 
     if M.ndim == 2 and M.shape[1] >= 1:
-        # Example: [t, avg] -> use the last column as average.
         M = M[:, -1]
     elif M.ndim != 1:
-        # Fallback: flatten to 1D.
         M = M.reshape(-1)
 
     print("MATLAB Average shape (raw 1D):", M.shape)
     M = M.reshape(-1, 1)
     return M
 
-
-# ============================================================
-#                   INTEGRATION TEST SUITE
-#          APP Average vs MATLAB Reference Average
-# ============================================================
 
 @pytest.mark.skipif(not ABF_PATH.exists(), reason="ABF file not found")
 @pytest.mark.skipif(not MATLAB_CSV.exists(), reason="MATLAB CSV not found")
@@ -461,9 +393,6 @@ class TestAverageABFVsMatlab:
          absolute tolerance.
     """
 
-    # --------------------------------------------------------
-    # 1. Shape and basic structural checks
-    # --------------------------------------------------------
     def test_shape_and_length(self, app_avg, matlab_avg):
         """
         Ensure that both APP and MATLAB averages:
@@ -482,9 +411,6 @@ class TestAverageABFVsMatlab:
 
         assert app_avg.shape[0] >= 1 and matlab_avg.shape[0] >= 1
 
-    # --------------------------------------------------------
-    # 2. Correlation: APP vs MATLAB average curve
-    # --------------------------------------------------------
     def test_correlation_with_matlab(self, app_avg, matlab_avg):
         """
         Check that each column of the APP average has Pearson correlation
@@ -504,9 +430,6 @@ class TestAverageABFVsMatlab:
             )
             pytest.fail(msg)
 
-    # --------------------------------------------------------
-    # 3. Pointwise comparison with tolerance (allows outliers)
-    # --------------------------------------------------------
     def test_pointwise_fraction_allowing_outliers(self, app_avg, matlab_avg):
         """
         Require that at least FRAC_MIN_PASS of the valid points between

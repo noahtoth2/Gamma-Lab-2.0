@@ -45,9 +45,6 @@ def juego(canal, n=3):
                         onsets_s=list(range(n)))
 
 
-# ============================================================
-#   El canal activo
-# ============================================================
 def activo(ds):
     return ds.get_active_trials(ds.name, None).channel_name
 
@@ -82,11 +79,7 @@ def test_por_defecto_el_ultimo_guardado_es_el_activo():
     assert activo(ds) == "IN 7"
 
 
-# ============================================================
-#   Trials fijos con varios estímulos por trial
-# ============================================================
 def test_fixed_con_varios_estimulos_agrupa_una_sola_vez():
-    # 20 pares de estímulos separados 0,1 s: 40 estímulos, S = 2
     primeros = [1.0 + 2.0 * k for k in range(20)]
     ds = senal([s for p in primeros for s in (p, p + 0.1)], 43.0)
     td = cut_trials_single_channel(
@@ -94,9 +87,8 @@ def test_fixed_con_varios_estimulos_agrupa_una_sola_vez():
         end_mode="fixed", stim_expected=2, inter_stim_time=0.1, debug=False)
 
     assert td.metadata["stim_detected"] == 40
-    assert td.trials.shape == (200, 20)              # cabeza de 0,1 s + una ventana de 0,1 s
+    assert td.trials.shape == (200, 20)
     assert np.allclose(td.onsets_s, primeros)
-    # Con ISI igual a la ventana, el trial ensamblado es el tramo continuo del par
     a = int(round((primeros[3] - 0.02) * FS))
     assert np.allclose(td.trials[:, 3], ds.signals[0][a:a + 200])
 
@@ -111,9 +103,6 @@ def test_until_next_onset_sigue_igual():
     assert np.allclose(td.onsets_s, primeros)
 
 
-# ============================================================
-#   Descartes en el plugin Trials
-# ============================================================
 class _Kernel:
     def __init__(self):
         self.eventos = []
@@ -177,16 +166,13 @@ def test_descartar_marca_el_canal_de_los_trials_que_se_ven():
     ds = senal([1.0, 1.5, 2.0], 3.0)
     ds.add_trial_dataset(juego("CA1"))
     ds.add_trial_dataset(juego("IN 7"))
-    p = trials_plugin(ds, combo="CA1")              # el combo dice otra cosa
+    p = trials_plugin(ds, combo="CA1")
     p.last_td = ds.get_active_trials(ds.name, "IN 7")
     p._on_discard_trial(2, 3)
     assert ds.is_trial_discarded(ds.name, "IN 7", 2)
     assert not ds.is_trial_discarded(ds.name, "CA1", 2)
 
 
-# ============================================================
-#   Blank Interval con B = 0
-# ============================================================
 T_REL = np.arange(-0.1, 0.4, 1 / FS)
 
 
@@ -203,9 +189,9 @@ def test_blank_interval_con_b_cero_toca_solo_ese_tramo():
     antes = trials_rampa()
     out = calcular_modificacion(T_REL, antes, mode="blank", point_a=-0.05, point_b=0.0)
     fuera = (T_REL < -0.052) | (T_REL > 0.002)
-    assert np.allclose(out[fuera], antes[fuera])          # el pico de -0,09 sigue ahí
+    assert np.allclose(out[fuera], antes[fuera])
     dentro = (T_REL > -0.03) & (T_REL < -0.02)
-    assert not np.allclose(out[dentro], antes[dentro])    # el de -0,03 se fue
+    assert not np.allclose(out[dentro], antes[dentro])
 
 
 def test_sin_b_sigue_anulando_desde_el_inicio_hasta_a():
@@ -243,9 +229,6 @@ def test_reaplicar_una_receta_con_b_cero_da_lo_mismo_que_aplicarla():
     assert np.allclose(td.trials, esperado)
 
 
-# ============================================================
-#   PSD promedio sin quitar la tendencia
-# ============================================================
 def test_psd_promedio_no_quita_la_tendencia():
     from plugins.analysis.frequency.psd_average.psd_average_plugin import calcular_psd
     t = np.arange(4000) / FS
