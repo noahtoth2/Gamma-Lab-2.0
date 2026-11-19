@@ -328,7 +328,7 @@ Como se expone en la memoria de trabajo de grado \cite{asencio2025}, Gamma Lab f
 Gamma Lab \cite{asencio2025} representó una solución inicial para la visualización y el procesamiento de señales EEG mediante una aplicación con interfaz gráfica. Sin embargo, como es propio de una primera versión, se identificaron diversas brechas, entendidas tanto como deficiencias en funcionalidades existentes que requieren corrección como oportunidades de mejora asociadas a funcionalidades ausentes, o presentes de manera parcial y que aún no alcanzan un nivel de madurez adecuado. Las pruebas iniciales realizadas con usuarios del Laboratorio de Electrofisiología permitieron identificar estas brechas en los siguientes cuatro frentes principales:
 
 \begin{itemize}
-  \item \textbf{Corrección de Errores Funcionales.} Se identificaron inconsistencias en diferentes módulos de procesamiento y análisis. Estas incluyen la ejecución manual de la remoción de artefactos sin un criterio de procesamiento definido, una implementación incorrecta de la normalización de la transformada \textit{Wavelet}, fallas en la exportación de resultados hacia formatos CSV y JSON, \textcolor{red}{\uline{ausencia de exportación en formato EMF}}, limitaciones en el cálculo de mediciones sobre múltiples ensayos y señales procesadas, y bloqueos de la aplicación durante la ejecución de los filtros elíptico y Chebyshev.
+  \item \textbf{Corrección de Errores Funcionales.} Se identificaron inconsistencias en diferentes módulos de procesamiento y análisis. Estas incluyen la ejecución manual de la remoción de artefactos sin un criterio de procesamiento definido, una implementación incorrecta de la normalización de la transformada \textit{Wavelet}, fallas en la exportación de resultados hacia formatos CSV y JSON, ausencia de exportación en formato EMF, limitaciones en el cálculo de mediciones sobre múltiples ensayos y señales procesadas, y bloqueos de la aplicación durante la ejecución de los filtros elíptico y Chebyshev.
 
   \item \textbf{Fortalecimiento de la Experiencia de Navegación e Interacción.} A pesar del conocimiento técnico de los usuarios, la interfaz no comunica con claridad el estado del sistema ni los distintos modos de interacción disponibles, dificultando la navegación. Estas limitaciones se relacionan con la ausencia de identificadores de la señal, canal o análisis activo, la falta de retroalimentación visual sobre los elementos interactivos y los modos de selección, y la ausencia de ayudas contextuales para la configuración de parámetros. En conjunto, estos aspectos dificultan la construcción de un modelo mental claro del funcionamiento de la aplicación para el usuario.
 
@@ -346,11 +346,11 @@ En conjunto, las brechas identificadas muestran que la herramienta aún no está
 En respuesta a lo anterior, se plantea el desarrollo de Gamma Lab 2.0 como la segunda iteración de la plataforma, concebida para consolidar la base técnica establecida en la primera versión y dar continuidad a su evolución como herramienta para el procesamiento y análisis de señales EEG. La solución se organiza en torno a los mismos cuatro frentes descritos en la formulación del problema, de modo que cada brecha identificada cuenta con una medida concreta que la resuelve.
 
 \begin{itemize}
-  \item \textbf{Corrección de Errores Funcionales en los Análisis y Procesos Existentes.} Este frente comprende la actualización de los módulos de procesamiento y análisis para que se comporten de forma consistente durante la ejecución de la herramienta. La propuesta incorpora la revisión del procedimiento de remoción de artefactos, la corrección de la normalización de la transformada \textit{Wavelet}, la actualización de los mecanismos de exportación de resultados, la ampliación del módulo de mediciones para soportar múltiples ensayos y señales procesadas, \textcolor{red}{\uline{la incorporación del formato de exportación EMF}} y la estabilización de los filtros digitales implementados.
+  \item \textbf{Corrección de Errores Funcionales en los Análisis y Procesos Existentes.} Este frente comprende la actualización de los módulos de procesamiento y análisis para que se comporten de forma consistente durante la ejecución de la herramienta. La propuesta incorpora la revisión del procedimiento de remoción de artefactos, la corrección de la normalización de la transformada \textit{Wavelet}, la actualización de los mecanismos de exportación de resultados, la ampliación del módulo de mediciones para soportar múltiples ensayos y señales procesadas, la incorporación del formato de exportación EMF y la estabilización de los filtros digitales implementados.
 
-  \item \textbf{Fortalecimiento de la Experiencia de Navegación e Interacción.} La solución redefine la interacción con la herramienta mediante una interfaz que comunica de forma explícita el contexto de trabajo del usuario. Para ello, incorpora elementos de contextualización de la señal, el canal y el análisis activo, indicadores visuales del estado de interacción, ayudas para la configuración de parámetros y una reorganización de la navegación que reduzca la dependencia de menús contextuales como mecanismo principal de operación. \hl{Adicionalmente, incorpora la persistencia de proyectos y sesiones de trabajo.}
+  \item \textbf{Fortalecimiento de la Experiencia de Navegación e Interacción.} La solución redefine la interacción con la herramienta mediante una interfaz que comunica de forma explícita el contexto de trabajo del usuario. Para ello, incorpora elementos de contextualización de la señal, el canal y el análisis activo, indicadores visuales del estado de interacción, ayudas para la configuración de parámetros y una reorganización de la navegación que reduzca la dependencia de menús contextuales como mecanismo principal de operación. Adicionalmente, incorpora la persistencia del trabajo mediante proyectos que pueden guardarse y volver a abrirse para retomar la sesión de trabajo.
 
-  \item \textbf{Estabilización de la Arquitectura y el Rendimiento del Sistema.} \hl{La propuesta fortalece el núcleo de la aplicación mediante mecanismos para la gestión del ciclo de vida de los recursos utilizados durante el procesamiento de señales y la revisión del esquema de ejecución de los módulos de análisis. Como parte de esta evolución, se plantea la incorporación de un mecanismo compartido de ejecución en segundo plano dentro del \textit{kernel} como orquestador, que permita desacoplar el procesamiento de la interfaz gráfica y establecer una base común para soportar análisis de mayor demanda computacional.}
+  \item \textbf{Estabilización de la Arquitectura y el Rendimiento del Sistema.} La propuesta fortalece el núcleo de la aplicación mediante mecanismos para la gestión del ciclo de vida de los recursos utilizados durante el procesamiento de señales y la revisión del esquema de ejecución de los módulos de análisis. Como parte de esta evolución, se plantea la incorporación de un mecanismo compartido de ejecución en segundo plano dentro del \textit{kernel} como orquestador, que permita desacoplar el procesamiento de la interfaz gráfica y establecer una base común para soportar análisis de mayor demanda computacional.
 
   \item \textbf{Ampliación del Alcance Analítico de la Herramienta.} La segunda iteración incorpora un nuevo módulo para el análisis de \textit{Phase-Amplitude Coupling} (PAC), ampliando las capacidades hacia el estudio de la interacción entre componentes de distinta frecuencia de una misma señal. El módulo se integra como un \textit{plugin} más dentro del flujo de procesamiento existente.
 \end{itemize}
@@ -501,7 +501,7 @@ Según la Tabla~\ref{tab:comparacion_alternativas}, Gamma Lab 2.0 conserva las v
 
 \subsection{Requerimientos}
 
-El levantamiento de requerimientos para Gamma Lab 2.0 partió de las brechas identificadas en la versión antecesora y de las necesidades expresadas por el Laboratorio de Electrofisiología. El conjunto resultante de este proceso se documentó bajo el estándar ISO/IEC/IEEE 29148 \cite{iso29148} y se clasificó en funcionales y no funcionales. En total se identificaron  \textbf{81 requerimientos}, de los cuales \textbf{45 son funcionales y 36 no funcionales}. Las siguientes subsecciones presentan una explicación general de ambos grupos y los criterios bajo los cuales se organizaron; el detalle uno a uno se documenta en el anexo de Especificación de Requisitos de \textit{Software} (SRS)  \colorbox{yellow}{(FALTA CITAR ANEXO AQUÍ)}, y la información presentada a continuación se alinea con dicho documento.
+El levantamiento de requerimientos para Gamma Lab 2.0 partió de las brechas identificadas en la versión antecesora y de las necesidades expresadas por el Laboratorio de Electrofisiología. El conjunto resultante de este proceso se documentó bajo el estándar ISO/IEC/IEEE 29148 \cite{iso29148} y se clasificó en funcionales y no funcionales. En total se identificaron  \textbf{81 requerimientos}, de los cuales \textbf{45 son funcionales y 36 no funcionales}. Las siguientes subsecciones presentan una explicación general de ambos grupos y los criterios bajo los cuales se organizaron; el detalle uno a uno se documenta en la Especificación de Requisitos de \textit{Software} (SRS, Anexo~\ref{anx:srs}), y la información presentada a continuación se alinea con dicho documento.
 \subsubsection{Requerimientos Funcionales}
 
 Los requisitos funcionales especifican las acciones y comportamientos observables que Gamma Lab 2.0 debe ejecutar ante una entrada, evento o solicitud del usuario. Para facilitar su organización y trazabilidad, estos se agruparon en módulos de acuerdo con la capacidad que habilitan, considerando aspectos como el tipo de dato que manejan, la operación que realizan sobre la señal y el propósito que cumplen dentro del flujo de trabajo. De este proceso surgieron cuatro módulos: IO y UI, de carácter transversal y presentes a lo largo de los flujos de análisis, y WV y PAC, de carácter específico y vinculados a técnicas de análisis particulares. Esta organización refleja, a su vez, los frentes de trabajo definidos para la solución: bajo esta lógica, IO y UI buscan fortalecer la funcionalidad base y mejorar la experiencia de usuario; WV se enfoca en corregir y fortalecer el funcionamiento de una técnica ya incorporada en Gamma Lab; mientras que PAC amplía el alcance analítico de la herramienta mediante la incorporación de una nueva técnica de análisis.
@@ -532,7 +532,7 @@ Los requisitos no funcionales definen las condiciones de calidad que debe cumpli
 
 \subsection{Especificación Funcional}
 
-A partir del levantamiento de requerimientos, se construyeron los casos de uso del sistema, tomando cada requisito como insumo para identificar el flujo de trabajo, el actor involucrado y la funcionalidad que respondía a la necesidad correspondiente. Los requerimientos afines en flujo y propósito se integraron en un mismo caso de uso, mientras que las interacciones independientes dieron lugar a casos de uso propios. De este proceso resultaron \textbf{23 casos de uso, cada uno con al menos un requisito asociado}, garantizando la cobertura total de los requerimientos; la asignación entre requisitos y casos de uso que se documenta en el anexo de especificación de casos de uso. \colorbox{yellow}{(FALTA CITAR ANEXO AQUÍ)}.
+A partir del levantamiento de requerimientos, se construyeron los casos de uso del sistema, tomando cada requisito como insumo para identificar el flujo de trabajo, el actor involucrado y la funcionalidad que respondía a la necesidad correspondiente. Los requerimientos afines en flujo y propósito se integraron en un mismo caso de uso, mientras que las interacciones independientes dieron lugar a casos de uso propios. De este proceso resultaron \textbf{23 casos de uso, cada uno con al menos un requisito asociado}, garantizando la cobertura total de los requerimientos. La asignación entre requisitos y casos de uso se documenta en la Matriz de Requerimientos y Casos de Uso (Anexo~\ref{anx:mrcu}).
 
 A partir de los casos de uso definidos se configura una visión integral del sistema, en la que las funcionalidades se articulan para representar las capacidades de Gamma Lab 2.0 y las relaciones entre los componentes que intervienen en su ejecución. Como se observa en la Figura~\ref{fig:diagrama-casos-uso}, el modelo contempla un único actor, el Investigador, quien desencadena las funcionalidades del sistema mediante sus solicitudes, sin que se representen actores externos o procesos autónomos como iniciadores de casos de uso. La interacción se concentra inicialmente en las funcionalidades de Interfaz y Usabilidad, desde las cuales se accede a las capacidades de la herramienta y se establece la comunicación con el Núcleo y Ciclo de Vida, que actúa como elemento central para gestionar el estado de la aplicación y coordinar la ejecución de los procesos. A partir de este núcleo se integran los subsistemas de Preprocesamiento, Análisis y Exportación, que soportan las diferentes etapas del flujo de trabajo con las señales. Esta lectura por componentes es la que guía la construcción de Gamma Lab 2.0: cada subsistema del diagrama de la Figura~\ref{fig:diagrama-casos-uso} corresponde a un componente identificable dentro de la arquitectura del sistema.
 
@@ -1454,7 +1454,7 @@ Las sesiones de usabilidad y de aceptación se realizaron entre el 11 y el 18 de
 \hline
 \textbf{Participante} & \textbf{Rol en el laboratorio} & \textbf{Tipo de sesión} & \textbf{Fecha} \\
 \hline
-Jonathan \hl{[AQUÍ FALTA EL APELLIDO]} & Investigador y profesor & Usabilidad y aceptación & 11 de noviembre de 2026 \\
+Jonathan Muñoz & Investigador y profesor & Usabilidad y aceptación & 11 de noviembre de 2026 \\
 \hline
 Francisco Alejandro Munera Galarza & Investigador y profesor & Usabilidad y aceptación & 13 de noviembre de 2026 \\
 \hline
@@ -1591,12 +1591,12 @@ En la validación frente a BOARD-FTD-PACC, \textbf{cinco de los ocho análisis c
 
 \begin{itemize}
   \item \textbf{\textit{Wavelet} y \textit{Wavelet Average}} (4 fallos esperados, en correlación y punto a punto). La diferencia es de escala, no de forma: BOARD-FTD-PACC no aplica la normalización de PyWavelets. Al igualar esa convención, la correlación sube de 0,83 a 0,98 para un \textit{trial} y a 0,997 para el promedio.
-  \item \textbf{\textit{PSD Average}} (1 fallo esperado, en correlación). Alcanza 0,93 frente a un umbral de 0,95, y la potencia total coincide dentro del 2\,\%. La diferencia se concentra entre 0 y 3\,Hz y su causa no se ha identificado.
+  \item \textbf{\textit{PSD Average}} (1 fallo esperado, en correlación). Alcanza 0,93 frente a un umbral de 0,95, y la potencia total coincide dentro del 2\,\%. La diferencia se concentra entre 1 y 3\,Hz y se debe al método de cálculo que emplea cada herramienta: Gamma Lab 2.0 calcula la PSD con SciPy y BOARD-FTD-PACC, con MATLAB.
 \end{itemize}
 
 Los módulos nuevos también se validaron. PAC y el índice de modulación reproducen paso a paso las funciones originales de BOARD-FTD-PACC. PPC responde como se espera ante señales sintéticas de respuesta conocida.
 
-La comparación visual confirmó estos resultados. El usuario calificó como \textit{equivalentes} las gráficas de \textit{Average}, \textit{Wavelet}, PAC y PPC, y el equipo de desarrollo, las de ERP, FFT, \textit{FFT Average} y PSD. En \textit{Wavelet Average} la diferencia se calificó como \textit{aceptada}, por corresponder a la convención de amplitud, y en \textit{PSD Average} como \textit{no aceptada}, por la separación de las curvas entre 0 y 3\,Hz. \textit{Relative PSD}, PAC entre canales y el índice de modulación no se compararon por falta de una referencia exportada.
+La comparación visual confirmó estos resultados. El usuario calificó como \textit{equivalentes} las gráficas de \textit{Average}, \textit{Wavelet}, PAC y PPC, y el equipo de desarrollo, las de ERP, FFT, \textit{FFT Average} y PSD. En \textit{Wavelet Average} la diferencia se calificó como \textit{aceptada}, por corresponder a la convención de amplitud, y en \textit{PSD Average} como \textit{no aceptada}, por la separación de las curvas entre 1 y 3\,Hz. \textit{Relative PSD}, PAC entre canales y el índice de modulación no se compararon por falta de una referencia exportada.
 
 \subsection{Requisitos no funcionales}
 
@@ -1631,7 +1631,7 @@ En memoria, liberar las ventanas gráficas de cada módulo redujo el consumo de 
 
 \subsection{Validación con el usuario}
 
-En las pruebas, realizadas entre el 11 y el 18 de noviembre de 2026, participaron tres personas: Jonathan \hl{[AQUÍ FALTA EL APELLIDO]} y Francisco Alejandro Munera Galarza, investigadores y profesores del laboratorio, y Cécile Gauthier Umaña, directora del trabajo de grado (Tabla~\ref{tab:pruebas_sesiones}). Los resultados provienen de la sesión guiada con un profesor investigador, en la que el equipo operó la aplicación.
+En las pruebas, realizadas entre el 11 y el 18 de noviembre de 2026, participaron tres personas: Jonathan Muñoz y Francisco Alejandro Munera Galarza, investigadores y profesores del laboratorio, y Cécile Gauthier Umaña, directora del trabajo de grado (Tabla~\ref{tab:pruebas_sesiones}). Los resultados provienen de la sesión guiada con un profesor investigador, en la que el equipo operó la aplicación.
 
 En usabilidad, \textbf{se trataron seis de los diez casos, cuatro de ellos sin fallas} (Tabla~\ref{tab:resultados_usabilidad}). La carga de la señal, la segmentación en \textit{trials}, el filtrado con vista previa y el análisis PAC funcionaron correctamente, y el participante valoró en particular el PAC y el control del rango de color. Las dificultades se concentraron en las medidas sobre todos los \textit{trials}, corregidas después de la sesión, y en un error de carga al abrir un proyecto.
 
@@ -1695,7 +1695,7 @@ Por último, el laboratorio valoró que Gamma Lab 2.0 reúne en una sola herrami
 Los resultados anteriores dejan las siguientes limitaciones:
 
 \begin{itemize}
-  \item \textbf{\textit{PSD Average}:} diferencia residual entre 0 y 3\,Hz, de causa no identificada.
+  \item \textbf{\textit{PSD Average}:} diferencia residual entre 1 y 3\,Hz, debida al método de cálculo de cada herramienta (SciPy en Gamma Lab 2.0 y MATLAB en BOARD-FTD-PACC).
   \item \textbf{\textit{Wavelet}:} los valores absolutos difieren de BOARD-FTD-PACC por un factor de escala conocido.
   \item \textbf{Fluidez con tres canales:} la mediana supera los 24 cuadros por segundo exigidos, pero el peor cuadro de algunas corridas baja de ese valor.
   \item \textbf{Primera apertura de PAC:} puede detener la interfaz entre 270 y 480\,ms, por encima del límite de 300\,ms. Las aperturas siguientes cumplen.
@@ -1757,6 +1757,7 @@ A partir de los resultados obtenidos, se identifican las siguientes líneas de t
   \item \textbf{Fusionar registros de distintos animales}, en serie o en paralelo, para analizarlos en conjunto dentro de un mismo proyecto.
   \item \textbf{Extender la herramienta a un entorno multiusuario}, de modo que varios investigadores puedan compartir proyectos y resultados.
   \item \textbf{Implementar una tienda de \textit{plugins}}, propuesta desde la primera versión de Gamma Lab, que facilite publicar e incorporar nuevas técnicas de análisis y fomente la colaboración entre laboratorios.
+  \item \textbf{Desarrollar un módulo de análisis estadístico} que permita comparar estadísticamente los resultados obtenidos dentro de la herramienta.
 \end{itemize}
 
 %=====================================================================
@@ -1847,31 +1848,42 @@ J. Aru \textit{et al.}, ``Untangling cross-frequency coupling in neuroscience,''
 %=====================================================================
 \capitulo{ANEXOS}
 
+Los documentos y el \textit{software} que se describen a continuación se entregan junto con esta memoria.
+
 \subsection{MRCU - Matriz de Requerimientos y Casos de Uso}
-\pendiente
+\label{anx:mrcu}
+Libro de Excel que consolida el levantamiento de requerimientos de Gamma Lab 2.0. Reúne el encabezado del proyecto, el histórico de entrevistas y eventos de recolección, el diccionario de conceptos y los actores del sistema. La hoja de requerimientos registra cada requisito levantado con su prioridad, justificación, criterio de medición y tipo FURPS+, junto con la valoración de su calidad. Cada uno de los 23 casos de uso tiene su propia hoja, con su objetivo, actores, requisitos asociados, entradas, salidas, precondiciones, postcondiciones y flujos de ejecución.
 
 \subsection{PMP - \textit{Project Management Plan}}
-\pendiente
+\label{anx:pmp}
+Plan de administración del proyecto. Presenta la visión del producto, el propósito, el alcance, los objetivos, los supuestos y las restricciones, y justifica la selección del ciclo de vida \textit{Water-Scrum-Fall}. Describe las herramientas, la organización del equipo, los roles y los entregables, y detalla la estimación del esfuerzo y del calendario por fase, la asignación de recursos, la gestión de cambios y de riesgos, los criterios de éxito, las métricas de seguimiento y el cierre y la entrega del producto.
 
 \subsection{SAD - \textit{Software Architecture Document}}
-\pendiente
+\label{anx:sad}
+Documento de arquitectura de \textit{software}. Expone el contexto del sistema y sus limitaciones, los interesados y sus requisitos, y los atributos de calidad. Justifica el estilo \textit{microkernel} con núcleo activo, los principios arquitectónicos y las 12 decisiones arquitectónicas con sus alternativas y consecuencias. Describe el sistema en las vistas del modelo 4+1 (escenarios, lógica, despliegue, procesos y física), define ocho escenarios de calidad y las reglas de compatibilidad y versionado, y traza la relación entre requisitos, casos de uso y decisiones.
 
 \subsection{SDD - \textit{Software Design Document}}
-\pendiente
+\label{anx:sdd}
+Documento de diseño de \textit{software}. Detalla la arquitectura de implementación: la organización del código y sus reglas de dependencia, el núcleo y su ciclo de vida, los hilos y tareas, el manejo de fallos y la extensibilidad. Describe con diagramas de clases el modelo de datos y el archivo de proyecto \textit{.glab}, los servicios de soporte y la capa de presentación. Incluye los diagramas de secuencia de abrir, guardar y cerrar un proyecto y del cálculo \textit{wavelet}, la organización de la interfaz y la trazabilidad con los requisitos y los casos de uso.
 
 \subsection{SRS - \textit{Software Requirements Specifications}}
-\pendiente
+\label{anx:srs}
+Especificación de requerimientos de \textit{software}, elaborada según la ISO/IEC/IEEE 29148. Describe el propósito, el alcance, la perspectiva del producto y sus interfaces, sus funciones, las características de los usuarios, las restricciones, el modelo de dominio, y los supuestos y dependencias. Especifica los 81 requisitos del sistema (45 funcionales, agrupados en los módulos IO, UI, WV y PAC, y 36 no funcionales, clasificados con FURPS+) y documenta los procesos de ingeniería y de verificación de requerimientos.
 
 \subsection{TD - \textit{Test Document}}
-\pendiente
+\label{anx:td}
+Documento de pruebas. Define el alcance, las herramientas y el entorno de ejecución, y presenta los resultados de las pruebas unitarias y de integración del núcleo, de los módulos de análisis, de la validación frente a BOARD-FTD-PACC y de rendimiento y requisitos no funcionales. Incluye los 10 casos de prueba de usabilidad con su consolidado y el cuestionario SUS, los cuadros de aceptación de los 45 requisitos funcionales y la matriz de trazabilidad entre los 81 requisitos y las pruebas que los verifican.
 
 \subsection{MU - Manual de Usuario}
-\pendiente
+\label{anx:mu}
+Manual de usuario de Gamma Lab 2.0. Indica los requerimientos del equipo, la instalación con el ejecutable o desde el código fuente y la solución de los problemas de instalación más frecuentes. Describe la interfaz y guía paso a paso la gestión de señales y proyectos, el preprocesamiento (\textit{trials}, remoción de artefactos y filtros), cada análisis en los dominios de tiempo, frecuencia, tiempo-frecuencia y conectividad, y la toma de medidas sobre las gráficas.
 
 \subsection{VFP - Versión Final Propuesta de Proyecto}
-\pendiente
+\label{anx:vfp}
+Propuesta del trabajo de grado. Presenta los antecedentes, la formulación del problema, la propuesta y la justificación de la solución, los objetivos y los entregables con sus estándares. Incluye el análisis de impacto a corto, mediano y largo plazo, la metodología \textit{Water-Scrum-Fall} organizada en cuatro fases con sus métodos, actividades y entregables, los aspectos generales del proyecto, como la licencia, y el marco teórico sobre las señales EEG y su análisis.
 
 \subsection{Aplicación de escritorio}
-\pendiente
+\label{anx:app}
+Gamma Lab 2.0 en su versión 2.0.0. Se entrega el instalador para Windows de 64 bits (\textit{GammaLab-Setup-2.0.0.exe}) y el código fuente en Python, organizado en el núcleo, la interfaz y 20 \textit{plugins} de carga de señales, preprocesamiento, análisis, medición y ayuda, junto con la suite de 921 pruebas automáticas.
 
 \end{document}
