@@ -561,41 +561,41 @@ La estructura organizacional del proyecto se presenta en la Figura~\ref{fig:orga
 
 \subsection{Entregables del Proyecto}
 
-El proyecto genera entregables técnicos, funcionales y documentales en las distintas fases del ciclo de vida. Con ellos se evidencia el cumplimiento de cada objetivo específico.
+El proyecto genera entregables técnicos, funcionales y documentales en las distintas fases del ciclo de vida. Con ellos se evidencia el cumplimiento de cada objetivo específico. Para cada entregable se indican los estándares, especificaciones o modelos que sigue.
 
 \begin{itemize}[label={}]
     \item \textbf{VFP: Versión Final de Proyecto.}
-    Documento inicial que formaliza el problema, los objetivos, el alcance funcional y los lineamientos estratégicos y metodológicos del proyecto, sirviendo como base de referencia para la construcción del PMP y de los documentos técnicos posteriores.
+    Documento inicial que formaliza el problema, los objetivos, el alcance funcional y los lineamientos estratégicos y metodológicos del proyecto, sirviendo como base de referencia para la construcción del PMP y de los documentos técnicos posteriores. \textit{Estándar:} ISO/IEC/IEEE 29148 \cite{iso29148}.
 
     \item \textbf{PMP: Plan de Administración del Proyecto.}
-    Define los procesos de dirección del proyecto, la planificación y los mecanismos de seguimiento, estableciendo la estructura organizacional, los roles y el cronograma de trabajo.
+    Define los procesos de dirección del proyecto, la planificación y los mecanismos de seguimiento, estableciendo la estructura organizacional, los roles y el cronograma de trabajo. \textit{Estándar:} PMI PMBOK 7 \cite{pmbok7}.
 
     \item \textbf{MRCU: Matriz de Requerimientos y Casos de Uso }
-    Consolida la matriz original de requerimientos y casos de uso levantados durante la fase inicial del proyecto, registrando los históricos, conceptos, actores, requerimientos y cada caso de uso con su flujo principal y sus flujos alternos.
+    Consolida la matriz original de requerimientos y casos de uso levantados durante la fase inicial del proyecto, registrando los históricos, conceptos, actores, requerimientos y cada caso de uso con su flujo principal y sus flujos alternos. \textit{Estándares:} ISO/IEC/IEEE 29148 \cite{iso29148} y modelo FURPS+ \cite{eeles2001}.
 
     \item \textbf{SRS: Especificación de Requerimientos de Software.}
-    Describe formalmente los requerimientos funcionales y no funcionales del sistema, formalizando las entradas, salidas, parámetros configurables y dependencias de cada módulo, incluyendo el nuevo módulo de análisis incorporado en Gamma Lab 2.0.
+    Describe formalmente los requerimientos funcionales y no funcionales del sistema, formalizando las entradas, salidas, parámetros configurables y dependencias de cada módulo, incluyendo el nuevo módulo de análisis incorporado en Gamma Lab 2.0. \textit{Estándares:} ISO/IEC/IEEE 29148 \cite{iso29148} y modelo FURPS+ \cite{eeles2001}.
 
     \item \textbf{SAD: Documento de Arquitectura de Software.}
-    Formaliza las decisiones estructurales del sistema, incluyendo la distribución de componentes, las vistas arquitectónicas y la justificación técnica del diseño adoptado para Gamma Lab 2.0.
+    Formaliza las decisiones estructurales del sistema, incluyendo la distribución de componentes, las vistas arquitectónicas y la justificación técnica del diseño adoptado para Gamma Lab 2.0. \textit{Estándares:} ISO/IEC/IEEE 42010 \cite{iso42010}, modelo de vistas 4+1 \cite{kruchten1995} y UML 2.5.1 \cite{omg_uml}.
 
     \item \textbf{SDD: Documento de Diseño de Software.}
-    Presenta el diseño detallado de los componentes del sistema mediante diagramas de secuencia, diagramas de clases y demás representaciones estructurales, describiendo la organización modular y el comportamiento interno de Gamma Lab 2.0.
+    Presenta el diseño detallado de los componentes del sistema mediante diagramas de secuencia, diagramas de clases y demás representaciones estructurales, describiendo la organización modular y el comportamiento interno de Gamma Lab 2.0. \textit{Estándar:} UML 2.5.1 \cite{omg_uml}.
 
     \item \textbf{Mockups.}
     Representaciones visuales de alta fidelidad de la interfaz de Gamma Lab 2.0, que muestran las mejoras de experiencia de usuario y de navegación, y que se usaron para validar la disposición general de los módulos y los flujos de navegación.
 
     \item \textbf{Repositorio Final.}
-    Código fuente estructurado, versionado y documentado para facilitar mantenimiento, trazabilidad y futuras extensiones del proyecto.
+    Código fuente estructurado, versionado y documentado para facilitar mantenimiento, trazabilidad y futuras extensiones del proyecto. \textit{Estándares:} versionado semántico (SemVer 2.0.0) \cite{semver} y requisitos no funcionales del modelo FURPS+ \cite{eeles2001}.
 
     \item \textbf{Informe de Pruebas y Validación.}
-    Documentan resultados de pruebas técnicas, análisis comparativo entre Gamma Lab y Gamma Lab 2.0, y validación funcional de nuevas capacidades.
+    Documentan resultados de pruebas técnicas, análisis comparativo entre Gamma Lab y Gamma Lab 2.0, y validación funcional de nuevas capacidades. \textit{Estándares:} ISO/IEC/IEEE 29119-3 \cite{iso29119-3}, ISO 9241-11 \cite{iso9241-11} y cuestionario SUS \cite{brooke1996}.
 
     \item \textbf{Manual de uso de Gamma Lab 2.0.}
-    Guía orientada al usuario final que describe instalación, navegación y uso de funcionalidades principales del sistema.
+    Guía orientada al usuario final que describe instalación, navegación y uso de funcionalidades principales del sistema. \textit{Estándar:} ISO/IEC/IEEE 26514 \cite{iso26514}.
 
     \item \textbf{Memoria Final del Proyecto.}
-    Consolida el proceso completo de desarrollo, incluyendo contexto, metodología, diseño, implementación, pruebas, resultados y conclusiones.
+    Consolida el proceso completo de desarrollo, incluyendo contexto, metodología, diseño, implementación, pruebas, resultados y conclusiones. \textit{Estándar:} modelo FURPS+ \cite{eeles2001} para la evaluación de los requisitos no funcionales.
 \end{itemize}
 
 \subsection{Estructura colaborativa y enfoque de trabajo}
@@ -929,6 +929,65 @@ Durante el desarrollo, pueden surgir solicitudes de cambio de requerimientos, mo
 
 Cambios solicitados después de la mitad de Fase 3 (después del sprint 10) serán evaluados para versiones futuras, priorizando la entrega a tiempo de los objetivos planteados.
 
+\subsection{Gestión de Riesgos}
+\label{sec:gestion_riesgos}
+
+La gestión de riesgos sigue el dominio de desempeño de incertidumbre de la guía PMBOK, séptima edición \cite{pmbok7}. Un riesgo es un evento incierto que, si ocurre, afecta el cronograma, el alcance o la calidad del proyecto. El proceso tiene cuatro pasos:
+
+\begin{enumerate}
+    \item \textbf{Identificación:} al inicio de cada fase, el equipo revisa los supuestos, las restricciones y el trabajo planeado para detectar riesgos nuevos. Cualquier integrante puede proponer un riesgo en las reuniones semanales.
+
+    \item \textbf{Análisis:} cada riesgo se califica según su probabilidad y su impacto, en una escala de tres niveles. La probabilidad es \textit{alta} si es de esperar que el riesgo ocurra durante el proyecto, \textit{media} si puede ocurrir y \textit{baja} si es poco probable. El impacto es \textit{alto} si compromete un objetivo específico o la fecha de entrega, \textit{medio} si obliga a reprogramar tareas de uno o más \textit{sprints} y \textit{bajo} si se absorbe dentro del mismo \textit{sprint}. Los riesgos con probabilidad e impacto altos se atienden primero.
+
+    \item \textbf{Respuesta:} para cada riesgo se elige una estrategia: \textit{evitar} (eliminar su causa), \textit{mitigar} (reducir su probabilidad o su impacto) o \textit{aceptar} (asumirlo con un plan de contingencia).
+
+    \item \textbf{Seguimiento:} el registro se revisa cada semana en la \textit{Sprint Retrospective}. El \textit{Scrum Master} lo actualiza en la hoja de seguimiento (Tabla~\ref{tab:monitoreo_control}) y escala a la directora los riesgos que comprometan el cronograma o el alcance. Si un riesgo se materializa, su respuesta se ejecuta como acción correctiva o, si modifica el alcance, mediante el protocolo de solicitudes de cambio.
+\end{enumerate}
+
+La Tabla~\ref{tab:registro_riesgos} presenta el registro de riesgos del proyecto.
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{1cm}|>{\raggedright\arraybackslash}p{4.4cm}|>{\raggedright\arraybackslash}p{1.3cm}|>{\raggedright\arraybackslash}p{1.3cm}|>{\raggedright\arraybackslash}p{5.8cm}|}
+\hline
+\textbf{ID} & \textbf{Riesgo} & \textbf{Proba\-bilidad} & \textbf{Impacto} & \textbf{Estrategia y respuesta} \\
+\hline
+\endfirsthead
+\hline
+\textbf{ID} & \textbf{Riesgo} & \textbf{Proba\-bilidad} & \textbf{Impacto} & \textbf{Estrategia y respuesta} \\
+\hline
+\endhead
+\caption{Registro de riesgos del proyecto} \label{tab:registro_riesgos} \\
+\endlastfoot
+
+R-01 & Los investigadores del laboratorio tienen poca disponibilidad para las sesiones de validación, usabilidad y aceptación. & Alta & Alto & \textbf{Mitigar:} agendar las sesiones con anticipación a través de la directora, permitir sesiones remotas por Microsoft Teams y grabarlas para no tener que repetirlas. \textbf{Contingencia:} la directora participa en las sesiones como usuaria experta. \\
+\hline
+
+R-02 & El código de Gamma Lab contiene decisiones de diseño sin documentar, lo que retrasa su comprensión y modificación. & Media & Alto & \textbf{Mitigar:} exploración técnica y entrevistas con el equipo original en la Fase~1, inventario de las funciones existentes y pruebas de regresión antes de modificar cada módulo. \\
+\hline
+
+R-03 & Los cambios en el núcleo (liberación de memoria y orquestador de tareas) rompen el funcionamiento de los \textit{plugins} existentes. & Media & Alto & \textbf{Mitigar:} mantener estable el contrato de extensión, integrar los cambios de forma incremental y ejecutar las pruebas automáticas antes de integrar a la rama principal, como exige la \textit{Definition of Done}. \\
+\hline
+
+R-04 & Los resultados del nuevo módulo PAC no coinciden con los del sistema de referencia BOARD-FTD-PACC. & Media & Alto & \textbf{Mitigar:} portar las funciones de la referencia paso a paso, comparar los resultados numéricamente con tolerancias definidas y validar las gráficas con el usuario. \\
+\hline
+
+R-05 & El alcance crece por nuevas solicitudes del laboratorio durante el desarrollo. & Alta & Medio & \textbf{Evitar:} toda solicitud sigue el protocolo de solicitudes de cambio; después del \textit{sprint}~10, las solicitudes nuevas se registran para versiones futuras. \\
+\hline
+
+R-06 & El esfuerzo de una fase se subestima o un integrante se ausenta temporalmente por su carga académica. & Media & Medio & \textbf{Mitigar:} seguir cada semana la velocidad y el \textit{burn-down}, redistribuir tareas y mantener la revisión cruzada para que al menos dos integrantes conozcan cada componente. \\
+\hline
+
+R-07 & Se pierde código o documentación por fallas de los equipos o errores en el manejo de versiones. & Baja & Alto & \textbf{Mitigar:} control de versiones en GitHub con ramas y revisión de cambios, y respaldo de los documentos en OneDrive. \\
+\hline
+
+R-08 & El equipamiento del laboratorio o la máquina virtual compartida no están disponibles para las pruebas. & Media & Medio & \textbf{Aceptar:} las pruebas se ejecutan en los equipos de los desarrolladores y las de rendimiento se concentran en ventanas acordadas con el laboratorio. \\
+\hline
+
+R-09 & Una actualización de las librerías (PyQt5, VTK, PyWavelets) altera el comportamiento del sistema o impide generar el instalador. & Baja & Medio & \textbf{Evitar:} fijar las versiones de las dependencias en \textit{requirements.txt} y probar el instalador en un equipo distinto a los de desarrollo. \\
+\hline
+\end{longtable}
+
+Al cierre del proyecto, la evaluación \textit{post-mortem} revisa qué riesgos se materializaron y qué tan eficaces fueron las respuestas, como insumo para futuras versiones de Gamma Lab.
+
 \subsection{Criterios de Éxito del Proyecto}
 
 El proyecto Gamma Lab 2.0 será considerado exitoso cuando se cumplan los siguientes criterios cuantificables:
@@ -1180,6 +1239,39 @@ N. Yahya and S. S. Maidin, “The waterfall model with agile Scrum as the hybrid
 
 \bibitem{academia2012}
 Academia.edu, “Comparative study of various process model in software development,” 2012. [Online]. Available: https://www.academia.edu/81531661
+
+\bibitem{pmbok7}
+Project Management Institute, \textit{A Guide to the Project Management Body of Knowledge (PMBOK Guide) and The Standard for Project Management}, 7th ed. Newtown Square, PA, USA: Project Management Institute, 2021. [Online]. Available: \url{https://www.pmi.org/standards/pmbok}
+
+\bibitem{iso29148}
+\textit{Systems and Software Engineering -- Life Cycle Processes -- Requirements Engineering}, ISO/IEC/IEEE 29148:2018, 2nd ed., International Organization for Standardization, Nov. 2018. [Online]. Available: \url{https://www.iso.org/standard/72089.html}
+
+\bibitem{eeles2001}
+P. Eeles, “Capturing architectural requirements,” Rational Software Corporation, Nov. 2001. [Online]. Available: \url{https://web.archive.org/web/20210126025316/https://www.ibm.com/developerworks/rational/library/4706.html}
+
+\bibitem{iso42010}
+\textit{Software, Systems and Enterprise -- Architecture Description}, ISO/IEC/IEEE 42010:2022, 2nd ed., International Organization for Standardization, Nov. 2022. [Online]. Available: \url{https://www.iso.org/standard/74393.html}
+
+\bibitem{kruchten1995}
+P. B. Kruchten, “The 4+1 view model of architecture,” \textit{IEEE Software}, vol. 12, no. 6, pp. 42--50, 1995, doi: 10.1109/52.469759.
+
+\bibitem{omg_uml}
+Object Management Group, \textit{OMG Unified Modeling Language (OMG UML), Version 2.5.1}, OMG Doc. formal/17-12-05, Dec. 2017. [Online]. Available: \url{https://www.omg.org/spec/UML/2.5.1/}
+
+\bibitem{iso29119-3}
+\textit{Software and Systems Engineering -- Software Testing -- Part 3: Test Documentation}, ISO/IEC/IEEE 29119-3:2021, 2nd ed., International Organization for Standardization, Oct. 2021. [Online]. Available: \url{https://www.iso.org/standard/79429.html}
+
+\bibitem{iso9241-11}
+\textit{Ergonomics of Human-System Interaction -- Part 11: Usability: Definitions and Concepts}, ISO 9241-11:2018, 2nd ed., International Organization for Standardization, Mar. 2018. [Online]. Available: \url{https://www.iso.org/standard/63500.html}
+
+\bibitem{brooke1996}
+J. Brooke, “SUS: A quick and dirty usability scale,” in \textit{Usability Evaluation in Industry}, P. W. Jordan, B. Thomas, B. A. Weerdmeester, and I. L. McClelland, Eds. London, U.K.: Taylor \& Francis, 1996, pp. 189--194.
+
+\bibitem{iso26514}
+\textit{Systems and Software Engineering -- Design and Development of Information for Users}, ISO/IEC/IEEE 26514:2022, 1st ed., International Organization for Standardization, Jan. 2022. [Online]. Available: \url{https://www.iso.org/standard/77451.html}
+
+\bibitem{semver}
+T. Preston-Werner, “Semantic Versioning 2.0.0.” [Online]. Available: \url{https://semver.org/spec/v2.0.0.html}
 
 \end{thebibliography}
 \end{document}

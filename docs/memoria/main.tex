@@ -27,6 +27,7 @@
 \usepackage{graphicx}
 \usepackage{array}
 \usepackage{tabularx}
+\usepackage{longtable}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta}
 \usepackage{listings}
@@ -378,7 +379,47 @@ dominios de tiempo, frecuencia y tiempo-frecuencia.
 \end{enumerate}
 
 \subsection{Entregables, estándares utilizados y justificación}
-\pendiente
+
+
+\begingroup
+\small\setstretch{1}
+\renewcommand{\arraystretch}{1.3}
+\setlength{\LTcapwidth}{\textwidth}
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.22\textwidth}|>{\raggedright\arraybackslash}p{0.19\textwidth}|>{\raggedright\arraybackslash}p{0.47\textwidth}|}
+\hline
+\textbf{Entregable} & \textbf{Estándares asociados} & \textbf{Justificación} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Entregable} & \textbf{Estándares asociados} & \textbf{Justificación} \\
+\hline
+\endhead
+\endfoot
+\caption{Entregables del proyecto, estándares aplicados y justificación}
+\label{tab:entregables} \\
+\endlastfoot
+\textbf{VFP -- Versión Final Propuesta de Proyecto} & ISO/IEC/IEEE 29148~\cite{iso29148} & Formaliza el problema, los objetivos, el alcance y los entregables a partir de las necesidades del laboratorio y de las brechas de la versión anterior. \\
+\hline
+\textbf{PMP -- \textit{Project Management Plan}} & PMI PMBOK 7~\cite{pmbok7} & Define el ciclo de vida, la estimación, los recursos, la gestión de cambios y de riesgos, el seguimiento y el cierre del proyecto. \\
+\hline
+\textbf{MRCU -- Matriz de Requerimientos y Casos de Uso} & ISO/IEC/IEEE 29148~\cite{iso29148}, FURPS+~\cite{eeles2001} & Registra cada requisito con su prioridad, justificación, criterio de medición y tipo FURPS+, lo revisa según las características de calidad de la 29148 y lo vincula con los casos de uso. \\
+\hline
+\textbf{SRS -- \textit{Software Requirements Specification}} & ISO/IEC/IEEE 29148~\cite{iso29148}, FURPS+~\cite{eeles2001} & Especifica los 81 requisitos del sistema (45 funcionales y 36 no funcionales) con la estructura de la 29148; los no funcionales se clasifican con FURPS+. \\
+\hline
+\textbf{SAD -- \textit{Software Architecture Document}} & ISO/IEC/IEEE 42010~\cite{iso42010}, modelo 4+1~\cite{kruchten1995}, UML 2.5.1~\cite{omg_uml} & Identifica los interesados y los atributos de calidad, registra las decisiones arquitectónicas con sus alternativas y consecuencias, y describe el sistema en las vistas del modelo 4+1 con notación UML. \\
+\hline
+\textbf{SDD -- \textit{Software Design Document}} & UML 2.5.1~\cite{omg_uml} & Describe el diseño detallado de los componentes mediante diagramas de clases y de secuencia. \\
+\hline
+\textbf{TD -- \textit{Test Document}} & ISO/IEC/IEEE 29119-3~\cite{iso29119-3}, ISO 9241-11~\cite{iso9241-11}, SUS~\cite{brooke1996} & Documenta el alcance, el entorno, los casos de prueba, los resultados y la trazabilidad con el SRS. La usabilidad se mide según la 9241-11 en eficacia, eficiencia y satisfacción; esta última, con el cuestionario SUS. \\
+\hline
+\textbf{MU -- Manual de Usuario} & ISO/IEC/IEEE 26514~\cite{iso26514} & Guía al usuario final en la instalación, la interfaz y el procedimiento de cada análisis, para que el laboratorio use la herramienta sin depender del equipo desarrollador. \\
+\hline
+\textbf{Memoria del Proyecto} & FURPS+~\cite{eeles2001} & Resume el desarrollo, la validación, los resultados y las conclusiones del proyecto, y evalúa los requisitos no funcionales según las categorías FURPS+. \\
+\hline
+\textbf{Aplicación de escritorio -- código fuente e instalador} & SemVer 2.0.0~\cite{semver}, FURPS+~\cite{eeles2001} & Se distribuye como la versión 2.0.0 según el versionado semántico y se verificó frente a los requisitos no funcionales FURPS+ con 921 pruebas automáticas. \\
+\hline
+\end{longtable}
+\endgroup
 
 %=====================================================================
 \capitulo{CONTEXTO DEL PROYECTO}
@@ -1779,7 +1820,25 @@ J. Aru \textit{et al.}, ``Untangling cross-frequency coupling in neuroscience,''
 
 \bibitem{iso29148} ISO/IEC/IEEE 29148:2018, "Systems and software engineering, Life cycle processes, Requirements engineering," 2.\textsuperscript{a} ed., International Organization for Standardization / International Electrotechnical Commission / Institute of Electrical and Electronics Engineers, nov. 2018. [En línea]. Disponible: \url{https://www.iso.org/standard/72089.html}.
 
-\bibitem{eeles2001} P. Eeles, "Capturing Architectural Requirements," Rational Software Corporation, nov. 2001. [En línea]. Disponible: \url{https://www.ibm.com/developerworks/rational/library/4706.html}.
+\bibitem{pmbok7} Project Management Institute, \textit{A Guide to the Project Management Body of Knowledge (PMBOK Guide) and The Standard for Project Management}, 7.\textsuperscript{a} ed. Newtown Square, PA, EE. UU.: Project Management Institute, 2021. [En línea]. Disponible: \url{https://www.pmi.org/standards/pmbok}.
+
+\bibitem{iso42010} ISO/IEC/IEEE 42010:2022, ``Software, systems and enterprise, Architecture description,'' 2.\textsuperscript{a} ed., International Organization for Standardization / International Electrotechnical Commission / Institute of Electrical and Electronics Engineers, nov. 2022. [En línea]. Disponible: \url{https://www.iso.org/standard/74393.html}.
+
+\bibitem{kruchten1995} P. B. Kruchten, ``The 4+1 View Model of architecture,'' \textit{IEEE Software}, vol. 12, n.\textsuperscript{o} 6, pp. 42--50, 1995, doi: 10.1109/52.469759. [En línea]. Disponible: \url{https://doi.org/10.1109/52.469759}.
+
+\bibitem{omg_uml} Object Management Group, \textit{OMG Unified Modeling Language (OMG UML), Version 2.5.1}, OMG Doc. formal/17-12-05, dic. 2017. [En línea]. Disponible: \url{https://www.omg.org/spec/UML/2.5.1/}.
+
+\bibitem{iso29119-3} ISO/IEC/IEEE 29119-3:2021, ``Software and systems engineering, Software testing, Part 3: Test documentation,'' 2.\textsuperscript{a} ed., International Organization for Standardization / International Electrotechnical Commission / Institute of Electrical and Electronics Engineers, oct. 2021. [En línea]. Disponible: \url{https://www.iso.org/standard/79429.html}.
+
+\bibitem{iso9241-11} ISO 9241-11:2018, ``Ergonomics of human-system interaction, Part 11: Usability: Definitions and concepts,'' 2.\textsuperscript{a} ed., International Organization for Standardization, mar. 2018. [En línea]. Disponible: \url{https://www.iso.org/standard/63500.html}.
+
+\bibitem{brooke1996} J. Brooke, ``SUS: A quick and dirty usability scale,'' en \textit{Usability Evaluation in Industry}, P. W. Jordan, B. Thomas, B. A. Weerdmeester, e I. L. McClelland, Eds. Londres, Reino Unido: Taylor \& Francis, 1996, pp. 189--194.
+
+\bibitem{iso26514} ISO/IEC/IEEE 26514:2022, ``Systems and software engineering, Design and development of information for users,'' 1.\textsuperscript{a} ed., International Organization for Standardization / International Electrotechnical Commission / Institute of Electrical and Electronics Engineers, ene. 2022. [En línea]. Disponible: \url{https://www.iso.org/standard/77451.html}.
+
+\bibitem{semver} T. Preston-Werner, ``Semantic Versioning 2.0.0.'' [En línea]. Disponible: \url{https://semver.org/spec/v2.0.0.html}.
+
+\bibitem{eeles2001} P. Eeles, "Capturing Architectural Requirements," Rational Software Corporation, nov. 2001. [En línea]. Disponible: \url{https://web.archive.org/web/20210126025316/https://www.ibm.com/developerworks/rational/library/4706.html}.
 
 \bibitem{bangor2009} A. Bangor, P. Kortum, y J. Miller, "Determining what individual SUS scores mean: Adding an adjective rating scale," \textit{Journal of Usability Studies}, vol. 4, n.\textsuperscript{o} 3, pp. 114--123, 2009.
 
