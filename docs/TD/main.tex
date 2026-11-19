@@ -52,6 +52,7 @@
 \newcommand{\autorTres}{Sebastián Almanza Galvis}
 \newcommand{\autorCuatro}{Xiomara Herrera Suárez}
 \newcommand{\nombreDocumento}{\textit{TEST DOCUMENT} (TD)}
+\newcommand{\fechasesion}{11 de noviembre de 2026}
 \newcommand{\director}{Ing. Cécile Gauthier Umaña}
 \newcommand{\juradoUno}{Ing. Nombre del Primer Jurado}
 \newcommand{\juradoDos}{Ing. Nombre del Segundo Jurado}
@@ -197,7 +198,7 @@ Las pruebas se centran en la funcionalidad crítica del sistema y en la experien
 \end{itemize}
 
 \subsection{Entorno de ejecución de las pruebas automáticas}
-Las pruebas automáticas se ejecutaron con el comando \textit{python -m pytest test} desde la carpeta raíz del repositorio, en los equipos descritos en la Tabla~\ref{tab:td_entorno}. Los resultados de las Secciones~\ref{sec:td_resumen} a~\ref{sec:td_validacion} corresponden a la ejecución del 16 de noviembre de 2026; las mediciones de tiempo de la Sección~\ref{sec:td_rendimiento} se tomaron en la ejecución del 8 de noviembre de 2026.
+Las pruebas automáticas se ejecutaron con el comando \textit{python -m pytest test} desde la carpeta raíz del repositorio, en los equipos descritos en la Tabla~\ref{tab:td_entorno}. Los resultados de las Secciones~\ref{sec:td_resumen} a~\ref{sec:td_validacion} corresponden a la ejecución del 18 de noviembre de 2026; las mediciones de tiempo de la Sección~\ref{sec:td_rendimiento} se tomaron en la ejecución del 8 de noviembre de 2026.
 
 \begin{center}
 \small
@@ -213,7 +214,7 @@ Sistema operativo & Windows 11, 64 bits & Windows 11, 64 bits \\
 \hline
 Intérprete & Python 3.13.7 & Python 3.12.1 \\
 \hline
-Fecha de la ejecución & 16 de noviembre de 2026 & 8 de noviembre de 2026 \\
+Fecha de la ejecución & 18 de noviembre de 2026 & 8 de noviembre de 2026 \\
 \hline
 \end{tabularx}
 \captionof{table}{Entorno de ejecución de las pruebas automáticas}
@@ -222,7 +223,7 @@ Fecha de la ejecución & 16 de noviembre de 2026 & 8 de noviembre de 2026 \\
 \capitulo{ORGANIZACIÓN DE LAS PRUEBAS Y RESUMEN DE RESULTADOS}
 \label{sec:td_resumen}
 
-La suite automática reside en la carpeta \textit{test} del repositorio y se divide en tres subcarpetas: \textit{services\_test}, con las pruebas de los servicios del núcleo; \textit{plugins\_test}, con las pruebas de los módulos de análisis y las comparaciones con el sistema de referencia, y \textit{performance\_test}, con las pruebas de rendimiento. La Tabla~\ref{tab:td_resumen} resume el resultado de la ejecución del 16 de noviembre de 2026.
+La suite automática reside en la carpeta \textit{test} del repositorio y se divide en tres subcarpetas: \textit{services\_test}, con las pruebas de los servicios del núcleo; \textit{plugins\_test}, con las pruebas de los módulos de análisis y las comparaciones con el sistema de referencia, y \textit{performance\_test}, con las pruebas de rendimiento. La Tabla~\ref{tab:td_resumen} resume el resultado de la ejecución del 18 de noviembre de 2026.
 
 \begin{center}
 \small
@@ -230,7 +231,7 @@ La suite automática reside en la carpeta \textit{test} del repositorio y se div
 \hline
 \textbf{Frente de prueba} & \textbf{Suites} & \textbf{Pruebas} & \textbf{Aprobadas} & \textbf{Fallo esperado} & \textbf{Fallidas} \\
 \hline
-Unitarias y de integración del núcleo (Sección~\ref{sec:td_unitarias}) & 42 & 389 & 389 & 0 & 0 \\
+Unitarias y de integración del núcleo (Sección~\ref{sec:td_unitarias}) & 43 & 393 & 393 & 0 & 0 \\
 \hline
 Módulos de análisis (Sección~\ref{sec:td_modulos}) & 23 & 476 & 476 & 0 & 0 \\
 \hline
@@ -238,7 +239,7 @@ Validación frente a BOARD-FTD-PACC (Sección~\ref{sec:td_validacion}) & 9 & 27 
 \hline
 Rendimiento (Sección~\ref{sec:td_rendimiento}) & 6 & 25 & 25 & 0 & 0 \\
 \hline
-\textbf{Total} & \textbf{80} & \textbf{917} & \textbf{912} & \textbf{5} & \textbf{0} \\
+\textbf{Total} & \textbf{81} & \textbf{921} & \textbf{916} & \textbf{5} & \textbf{0} \\
 \hline
 \end{tabularx}
 \captionof{table}{Resumen de la ejecución de la suite automática}
@@ -247,7 +248,7 @@ Rendimiento (Sección~\ref{sec:td_rendimiento}) & 6 & 25 & 25 & 0 & 0 \\
 
 Una prueba con \textbf{fallo esperado} es una prueba que se mantiene en la suite para documentar una diferencia conocida y explicada: se ejecuta en cada corrida y, si algún día dejara de fallar, la suite lo advertiría. Las 5 pruebas en esta condición corresponden a comparaciones con las referencias de MATLAB cuya causa se analiza en la Sección~\ref{sec:td_diferencias}.
 
-Ninguna prueba falla. En la ejecución del 8 de noviembre de 2026 fallaba \textit{test\_el\_orden\_de\_botones\_viene\_de\_los\_metadatos}, de la suite \textit{test\_plugin\_sin\_tocar\_nucleo}, porque esperaba cuatro extensiones en la subcategoría tiempo-frecuencia y desde la incorporación de PPC hay cinco; la prueba se actualizó para incluir a PPC y ahora se aprueba. Frente a esa ejecución, la suite incorpora además 15 suites nuevas con 156 pruebas, en su mayoría de regresión, que fijan correcciones hechas después del 8 de noviembre: 8 en el núcleo (97 pruebas) y 7 en los módulos de análisis (59 pruebas).
+Ninguna prueba falla. En la ejecución del 8 de noviembre de 2026 fallaba \textit{test\_el\_orden\_de\_botones\_viene\_de\_los\_metadatos}, de la suite \textit{test\_plugin\_sin\_tocar\_nucleo}, porque esperaba cuatro extensiones en la subcategoría tiempo-frecuencia y desde la incorporación de PPC hay cinco; la prueba se actualizó para incluir a PPC y ahora se aprueba. Frente a esa ejecución, la suite incorpora además 16 suites nuevas con 160 pruebas, en su mayoría de regresión, que fijan correcciones y funcionalidades incorporadas después del 8 de noviembre: 9 en el núcleo (101 pruebas) y 7 en los módulos de análisis (59 pruebas).
 
 Las pruebas de usabilidad (Sección~\ref{sec:td_usabilidad}) y de aceptación del usuario (Sección~\ref{sec:td_uat}) son manuales y se encuentran pendientes de ejecución.
 \capitulo{PRUEBAS UNITARIAS Y DE INTEGRACIÓN}
@@ -326,6 +327,8 @@ La Tabla~\ref{tab:td_servicios} presenta cada suite, lo que verifica y su result
 \hline
 \textit{test\_niveles\_de\_mensaje} & Cada situación usa el nivel de severidad que le corresponde (R02). & 5 & 5 & Aprobada \\
 \hline
+\textit{test\_nuevo\_proyecto\_explorer} & \textit{File} > \textit{New project} añade el proyecto nuevo al \textit{Explorer} debajo de los abiertos sin cambiar el activo, y no descarta una señal sin guardar. & 4 & 4 & Aprobada \\
+\hline
 \textit{test\_persistencia\_artifact\_remove} & Las modificaciones de \textit{Remove Artifact} se conservan al guardar y abrir el proyecto. & 15 & 15 & Aprobada \\
 \hline
 \textit{test\_plugin\_sin\_tocar\_nucleo} & Una extensión nueva se guarda con el proyecto y se ordena desde su \textit{properties.yml} sin modificar el núcleo (R77). & 4 & 4 & Aprobada \\
@@ -366,7 +369,7 @@ La Tabla~\ref{tab:td_servicios} presenta cada suite, lo que verifica y su result
 \end{center}
 
 \subsection{Análisis de resultados}
-Las 389 pruebas de este frente se aprobaron. Destacan cuatro conjuntos. Las pruebas del servicio de tareas y de su integración con la interfaz confirman que el cómputo pesado se ejecuta fuera del hilo de interfaz, que solo corre una tarea a la vez y que la cancelación es cooperativa. Las pruebas de liberación de la señal y de las ventanas gráficas verifican que la memoria se recupera al cerrar un proyecto, al cargar otra señal y al salir de un módulo. Por último, las pruebas de proyectos comprueban que el guardado y la apertura conservan la señal, los \textit{trials}, los descartes, el preprocesamiento, las medidas y los parámetros de los análisis. Finalmente, las suites de regresión (\textit{test\_regresion\_*}) fijan los defectos corregidos después de la ejecución del 8 de noviembre, de modo que cualquier cambio que los reintroduzca sea detectado.
+Las 393 pruebas de este frente se aprobaron. Destacan cuatro conjuntos. Las pruebas del servicio de tareas y de su integración con la interfaz confirman que el cómputo pesado se ejecuta fuera del hilo de interfaz, que solo corre una tarea a la vez y que la cancelación es cooperativa. Las pruebas de liberación de la señal y de las ventanas gráficas verifican que la memoria se recupera al cerrar un proyecto, al cargar otra señal y al salir de un módulo. Por último, las pruebas de proyectos comprueban que el guardado y la apertura conservan la señal, los \textit{trials}, los descartes, el preprocesamiento, las medidas y los parámetros de los análisis. Finalmente, las suites de regresión (\textit{test\_regresion\_*}) fijan los defectos corregidos después de la ejecución del 8 de noviembre, de modo que cualquier cambio que los reintroduzca sea detectado.
 \capitulo{PRUEBAS DE LOS MÓDULOS DE ANÁLISIS}
 \label{sec:td_modulos}
 
@@ -519,47 +522,47 @@ La suite \textit{test\_referencias\_matlab\_wavelet\_psd}, cuyas 3 pruebas se ap
 Los módulos nuevos de la versión 2.0 se validaron de forma distinta. PAC y el índice de modulación se portaron de las funciones de BOARD-FTD-PACC, y sus pruebas (124 para PAC y 27 para el índice de modulación) verifican cada paso del cálculo frente al comportamiento del código de referencia, incluidos los filtros IIR, la transformada de Morse y la agrupación de la amplitud por fase. PPC, en cambio, se aparta deliberadamente de la referencia: BOARD-FTD-PACC calcula un valor de bloqueo de fase cuyo sesgo hace que las frecuencias bajas aparezcan perfectamente acopladas con independencia de los datos, mientras que Gamma Lab 2.0 calcula la consistencia de fase por pares sobre muestras independientes. Por ello, sus 84 pruebas de núcleo no se comparan con la referencia sino con señales sintéticas de verdad conocida: dos canales con desfase constante deben dar consistencia alta, y canales independientes, consistencia cercana a cero.
 
 \subsection{Comparación visual con el usuario}
-Como complemento de la comparación numérica, el usuario revisará las gráficas de cada análisis en ambos sistemas. La Tabla~\ref{tab:td_visual} queda preparada para registrar esa revisión.
+Como complemento de la comparación numérica, se revisaron las gráficas de cada análisis en ambos sistemas. El cliente revisó \textit{Average}, \textit{Wavelet}, PAC y PPC. Las demás filas de la Tabla~\ref{tab:td_visual} las revisó el equipo de desarrollo, que comparó las gráficas de Gamma Lab 2.0 con las de las referencias exportadas de BOARD-FTD-PACC usadas en la validación numérica; en esas filas se indican además la correlación y la fracción de puntos dentro de la tolerancia de la Tabla~\ref{tab:td_validacion}. Solo se marcan como equivalentes los análisis que superan los tres criterios sin diferencias. \textit{Relative PSD}, PAC entre canales y el índice de modulación no tienen una referencia exportada con la cual comparar, por lo que no se marcan.
 
 \begin{center}
 \small
 \begin{longtable}{|>{\raggedright\arraybackslash}p{0.20\textwidth}|>{\raggedright\arraybackslash}p{0.48\textwidth}|>{\raggedright\arraybackslash}p{0.22\textwidth}|}
 \hline
-\textbf{Análisis} & \textbf{Observación del usuario} & \textbf{Resultado} \\
+\textbf{Análisis} & \textbf{Observación} & \textbf{Resultado} \\
 \hline
 \endfirsthead
 \hline
-\textbf{Análisis} & \textbf{Observación del usuario} & \textbf{Resultado} \\
+\textbf{Análisis} & \textbf{Observación} & \textbf{Resultado} \\
 \hline
 \endhead
 \hline
 \endfoot
 \hline
-\caption{Registro de la comparación visual con el usuario} \label{tab:td_visual} \\
+\caption{Registro de la comparación visual con el cliente y el equipo de desarrollo} \label{tab:td_visual} \\
 \endlastfoot
 \textit{Average} & El usuario aprobó el funcionamiento del plugin Average en Gamma Lab 2.0 & \casilla{x} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
 \hline
-ERP & \rule{0pt}{2.2em} & \casilla{} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
+ERP & Revisión del equipo: el promedio y cada \textit{trial} coinciden con la referencia en forma y amplitud; correlación mediana por \textit{trial} de 1,000 (mínima 0,994) y 98,3\,\% de los puntos dentro de la tolerancia. & \casilla{x} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
 \hline
-FFT & \rule{0pt}{2.2em} & \casilla{} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
+FFT & Revisión del equipo: los espectros coinciden en todo el rango de 0 a 500\,Hz; correlación mediana por \textit{trial} de 0,998 y 96,0\,\% de los puntos dentro de la tolerancia. & \casilla{x} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
 \hline
-\textit{FFT Average} & \rule{0pt}{2.2em} & \casilla{} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
+\textit{FFT Average} & Revisión del equipo: el espectro promedio coincide con la referencia; correlación de 1,000 y 99,0\,\% de los puntos dentro de la tolerancia. & \casilla{x} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
 \hline
-PSD & \rule{0pt}{2.2em} & \casilla{} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
+PSD & Revisión del equipo: los espectros coinciden en escala logarítmica; correlación mediana por \textit{trial} de 0,92 (umbral 0,88) y 99,0\,\% de los puntos dentro de la tolerancia. & \casilla{x} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
 \hline
-\textit{PSD Average} & \rule{0pt}{2.2em} & \casilla{} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
+\textit{PSD Average} & Revisión del equipo: coincide por encima de 3\,Hz; entre 0 y 3\,Hz las curvas se separan y la correlación queda en 0,93, por debajo del umbral de 0,95, sin una causa identificada (Sección~\ref{sec:td_diferencias}). & \casilla{} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{x} Diferencia no aceptada \\
 \hline
-\textit{Relative PSD} & \rule{0pt}{2.2em} & \casilla{} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
+\textit{Relative PSD} & Revisión del equipo: no hay una referencia exportada de BOARD-FTD-PACC para este análisis, por lo que no se compararon gráficas; el cálculo se verificó con una señal de potencia conocida (\textit{test\_relative\_psd\_correcciones}). & \casilla{} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
 \hline
 \textit{Wavelet} & El usuario aprobó el funcionamiento del plugin Wavelet en Gamma Lab 2.0 & \casilla{x} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
 \hline
-\textit{Wavelet Average} & \rule{0pt}{2.2em} & \casilla{} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
+\textit{Wavelet Average} & Revisión del equipo: el patrón tiempo-frecuencia coincide y la respuesta al estímulo aparece en el mismo lugar, pero difieren la escala de amplitud y la intensidad de una franja en un extremo del rango de frecuencias. Es la diferencia de convención de amplitud descrita en la Sección~\ref{sec:td_diferencias}: la correlación global es de 0,83 y sube a 0,997 al corregirla. & \casilla{} Equivalente \newline \casilla{x} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
 \hline
 PAC & El usuario aprobó el funcionamiento del plugin PAC en Gamma Lab 2.0 & \casilla{x} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
 \hline
-PAC entre canales & \rule{0pt}{2.2em} & \casilla{} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
+PAC entre canales & Revisión del equipo: no hay una referencia exportada de BOARD-FTD-PACC para el modo entre canales, por lo que no se compararon gráficas; el cálculo se verificó con señales sintéticas (\textit{test\_pac\_intercanal}). & \casilla{} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
 \hline
-\textit{Modulation Index} & \rule{0pt}{2.2em} & \casilla{} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
+\textit{Modulation Index} & Revisión del equipo: no hay una referencia exportada de BOARD-FTD-PACC con la cual comparar las gráficas; el cálculo se portó de la función \textit{f\_PAC\_sing} y se verificó paso a paso (\textit{test\_modulation\_index\_core}). & \casilla{} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
 \hline
 PPC & El usuario aprobó el funcionamiento del plugin PPC en Gamma Lab 2.0 & \casilla{x} Equivalente \newline \casilla{} Diferencia aceptada \newline \casilla{} Diferencia no aceptada \\
 \hline
@@ -712,6 +715,10 @@ Estas pruebas evalúan la facilidad con que los investigadores del laboratorio c
 \subsection{Metodología}
 Cada sesión es individual y la conduce un moderador del equipo. El participante recibe la descripción de cada tarea, la realiza sin instrucciones adicionales y se le pide expresar en voz alta lo que piensa mientras trabaja. El moderador solo interviene si el participante solicita ayuda, y registra cada solicitud. Por cada caso se registran cuatro métricas: si la tarea se completó, el tiempo empleado, los errores cometidos y las solicitudes de ayuda. Al terminar los casos, el participante diligencia el cuestionario de satisfacción SUS (\textit{System Usability Scale}) \cite{brooke1996}.
 
+\textbf{Sesión realizada.} La sesión se hizo de forma remota por Microsoft Teams el \fechasesion{} y duró unos 63 minutos. Participó un profesor investigador del Laboratorio de Electrofisiología, y la directora del proyecto se unió desde el minuto 9. Por la disponibilidad del participante, la sesión fue guiada: dos integrantes del equipo operaron la aplicación compartiendo pantalla, y el participante indicó qué probar, hizo preguntas y comentó los resultados. Por eso no se midieron el tiempo, los errores ni las solicitudes de ayuda del participante en cada tarea, como preveía el procedimiento. El tiempo de cada caso es la duración aproximada del tramo de la grabación en que se trató, y en los campos de errores y ayudas se registran las preguntas del participante y los problemas del sistema observados. Los casos que no se trataron en la sesión se indican como no evaluados. La remoción de un artefacto (UT-04) se hizo en un tramo que no quedó grabado y se registra a partir de las notas del equipo.
+
+\textbf{Sesión anterior.} Antes se hizo otra sesión remota con otro investigador del laboratorio. Su transcripción automática se generó en un idioma equivocado y resultó casi ininteligible, por lo que de esa sesión solo se registra, a partir de las notas del equipo, el caso UT-01: el participante descargó la aplicación desde la página de descarga, la instaló y la abrió por primera vez sin problemas. De la transcripción se recuperan además algunas solicitudes y comentarios: el participante pidió una descripción emergente al pasar el cursor sobre las medidas y la aprobó al verla; la directora pidió medir la pendiente sobre el promedio de todos los \textit{trials} entre dos instantes y poder tener varias instancias de un mismo experimento abiertas en paralelo, funciones que se mostraron en la sesión del \fechasesion{}; se propuso complementar el manual con videos tutoriales, y el participante concluyó que lo implementado ``es más que suficiente para un análisis''.
+
 \subsection{Entorno de la prueba}
 
 \begin{center}
@@ -720,7 +727,7 @@ Cada sesión es individual y la conduce un moderador del equipo. El participante
 \hline
 \textbf{Equipo} & \textbf{Procesador} & \textbf{RAM} & \textbf{Sistema operativo} & \textbf{Versión de Gamma Lab} \\
 \hline
-\rule{0pt}{2em} & & & & 2.0, instalada con \textit{GammaLab-Setup-2.0.0.exe} \\
+Portátil Dell Inspiron 15 3520 & Intel Core i7-1255U (10 núcleos, 12 hilos) & 24\,GB & Windows 11 Pro 25H2, 64 bits & 2.0, instalada con \textit{GammaLab-Setup-2.0.0.exe} \\
 \hline
 \end{tabularx}
 \captionof{table}{Equipo empleado en las pruebas de usabilidad}
@@ -731,7 +738,7 @@ Los datos de prueba son la señal \textit{17308005.abf} y, a elección del parti
 
 \subsection{Verificación automática previa}
 \label{sec:td_ut_automatica}
-Antes de las sesiones con el usuario se comprobó que el comportamiento descrito en el resultado esperado de cada caso está respaldado por la suite automática. La Tabla~\ref{tab:td_ut_automatica} relaciona cada caso con las suites que lo cubren, todas aprobadas en la ejecución del 16 de noviembre de 2026, y con los tiempos de las operaciones que involucra, medidos en esa misma ejecución con las pruebas de \textit{performance\_test} (mediana de varias repeticiones, equipo de la Tabla~\ref{tab:td_entorno}). Esta verificación no sustituye la sesión: el tiempo empleado, los errores, las solicitudes de ayuda y la satisfacción del participante solo pueden obtenerse con el usuario.
+Antes de las sesiones con el usuario se comprobó que el comportamiento descrito en el resultado esperado de cada caso está respaldado por la suite automática. La Tabla~\ref{tab:td_ut_automatica} relaciona cada caso con las suites que lo cubren, todas aprobadas en la ejecución del 18 de noviembre de 2026, y con los tiempos de las operaciones que involucra, medidos ese mismo día con las pruebas de \textit{performance\_test} (mediana de varias repeticiones) en el equipo de la Tabla~\ref{tab:td_ut_entorno}, el mismo en que se realizan las sesiones. Esta verificación no sustituye la sesión: el tiempo empleado, los errores, las solicitudes de ayuda y la satisfacción del participante solo pueden obtenerse con el usuario.
 
 \begin{center}
 \footnotesize
@@ -749,25 +756,25 @@ Antes de las sesiones con el usuario se comprobó que el comportamiento descrito
 \hline
 \caption{Respaldo automático de los casos de prueba de usabilidad} \label{tab:td_ut_automatica} \\
 \endlastfoot
-UT-01 & \textit{test\_ayudas\_controles}, \textit{test\_correcciones\_interaccion}, \textit{test\_instalacion\_rutas} & Todo control tiene descripción emergente; el panel de bienvenida aparece solo en el primer arranque; los ajustes se guardan en la carpeta del usuario. No se verifican de forma automática la pantalla de inicio ni los iconos. & Arranque del núcleo con 20 extensiones: 66\,ms \\
+UT-01 & \textit{test\_ayudas\_controles}, \textit{test\_correcciones\_interaccion}, \textit{test\_instalacion\_rutas} & Todo control tiene descripción emergente; el panel de bienvenida aparece solo en el primer arranque; los ajustes se guardan en la carpeta del usuario. No se verifican de forma automática la pantalla de inicio ni los iconos. & Arranque del núcleo con 20 extensiones: 142\,ms \\
 \hline
-UT-02 & \textit{test\_fileio\_abf}, \textit{test\_regresion\_zoom\_resolucion}, \textit{test\_correcciones\_interaccion}, \textit{test\_indicadores\_ui} & Lectura del archivo ABF; el \textit{zoom} actúa sobre el eje elegido sin perder definición; la lectura del cursor cae en el punto de la señal más cercano. & Lectura de \textit{17308005.abf}: 56,5\,ms; tabla VTK de la señal: 37,3\,ms \\
+UT-02 & \textit{test\_fileio\_abf}, \textit{test\_regresion\_zoom\_resolucion}, \textit{test\_correcciones\_interaccion}, \textit{test\_indicadores\_ui} & Lectura del archivo ABF; el \textit{zoom} actúa sobre el eje elegido sin perder definición; la lectura del cursor cae en el punto de la señal más cercano. & Lectura de \textit{17308005.abf}: 82,3\,ms; tabla VTK de la señal: 48,9\,ms \\
 \hline
-UT-03 & \textit{test\_trials}, \textit{test\_trials\_por\_canal}, \textit{test\_regresion\_trials\_y\_artefactos}, \textit{test\_indicadores\_ui} & Segmentación con canal de estímulo y umbral en mV; descartes por canal; el indicador muestra el \textit{trial} en curso y su estado. & Corte de 60 \textit{trials} de 30\,501 muestras: 28,6\,ms \\
+UT-03 & \textit{test\_trials}, \textit{test\_trials\_por\_canal}, \textit{test\_regresion\_trials\_y\_artefactos}, \textit{test\_indicadores\_ui} & Segmentación con canal de estímulo y umbral en mV; descartes por canal; el indicador muestra el \textit{trial} en curso y su estado. & Corte de 60 \textit{trials} de 30\,501 muestras: 38,1\,ms \\
 \hline
 UT-04 & \textit{test\_medidas\_artefacto}, \textit{test\_artifact\_remove\_orquestador}, \textit{test\_persistencia\_artifact\_remove}, \textit{test\_trials\_derivados} & Las medidas del segmento no modifican los datos; cancelar no escribe nada; la remoción no toca los \textit{trials} originales y descartar el derivado los devuelve. & --- \\
 \hline
-UT-05 & \textit{test\_trials\_derivados}, \textit{test\_correcciones\_interaccion} & El filtro crea un conjunto derivado sin modificar el original y los análisis leen el derivado; el selector solo ofrece los filtros implementados. No hay una prueba específica de que \textit{Preview} no modifique los \textit{trials}. & Filtro de la señal completa: 57,3\,ms; de un \textit{trial}: 4,2\,ms \\
+UT-05 & \textit{test\_trials\_derivados}, \textit{test\_correcciones\_interaccion} & El filtro crea un conjunto derivado sin modificar el original y los análisis leen el derivado; el selector solo ofrece los filtros implementados. No hay una prueba específica de que \textit{Preview} no modifique los \textit{trials}. & Filtro de la señal completa: 104,0\,ms; de un \textit{trial}: 5,2\,ms \\
 \hline
 UT-06 & \textit{test\_pac\_core}, \textit{test\_pac\_grados}, \textit{test\_run\_task}, \textit{test\_regresion\_avisos} & Cálculo de PAC en sus modos; la brújula del vector medio coincide con el histograma; el progreso de la tarea llega a la extensión. & --- \\
 \hline
 UT-07 & \textit{test\_pac\_intercanal\_plugin}, \textit{test\_pac\_intercanal}, \textit{test\_ppc\_plugin\_orquestado}, \textit{test\_ppc\_core}, \textit{test\_regresion\_alineacion\_entre\_canales} & El selector del canal de amplitud aparece solo en el modo entre canales, excluye el canal activo y explica el origen de fase y amplitud; PPC rechaza canales repetidos o desalineados. & --- \\
 \hline
-UT-08 & \textit{test\_measurement}, \textit{test\_mediciones\_todos\_los\_trials}, \textit{test\_resultados\_xlsx}, \textit{test\_xlsx\_writer}, \textit{test\_emf\_export}, \textit{test\_export} & Flujos completos de pendiente y amplitud; exportación de resultados a Excel, del escalograma a EMF y de su tabla a CSV. & Dibujo del escalograma: 127\,ms \\
+UT-08 & \textit{test\_measurement}, \textit{test\_mediciones\_todos\_los\_trials}, \textit{test\_resultados\_xlsx}, \textit{test\_xlsx\_writer}, \textit{test\_emf\_export}, \textit{test\_export} & Flujos completos de pendiente y amplitud; exportación de resultados a Excel, del escalograma a EMF y de su tabla a CSV. & Dibujo del escalograma: 165\,ms \\
 \hline
-UT-09 & \textit{test\_task\_service}, \textit{test\_run\_task}, \textit{test\_cancelacion\_al\_cambiar\_seccion}, \textit{test\_regresion\_avisos} & Cancelación cooperativa; cambiar de sección cancela las tareas del módulo abandonado; un resultado tardío se descarta; la barra sigue a la tarea en ejecución. & \textit{Wavelet Average} sobre 20 \textit{trials}: 5,1\,s \\
+UT-09 & \textit{test\_task\_service}, \textit{test\_run\_task}, \textit{test\_cancelacion\_al\_cambiar\_seccion}, \textit{test\_regresion\_avisos} & Cancelación cooperativa; cambiar de sección cancela las tareas del módulo abandonado; un resultado tardío se descarta; la barra sigue a la tarea en ejecución. & \textit{Wavelet Average} sobre 20 \textit{trials}: 8,7\,s \\
 \hline
-UT-10 & \textit{test\_guardado\_proyecto}, \textit{test\_apertura\_proyecto}, \textit{test\_regresion\_cierre\_y\_apertura}, \textit{test\_correcciones\_interaccion} & Guardado por pasos; el cierre se comunica y pide confirmación; la apertura restaura señal, \textit{trials}, descartes y recetas sin marcar el proyecto como modificado. & --- \\
+UT-10 & \textit{test\_guardado\_proyecto}, \textit{test\_apertura\_proyecto}, \textit{test\_regresion\_cierre\_y\_apertura}, \textit{test\_correcciones\_interaccion}, \textit{test\_nuevo\_proyecto\_explorer} & Guardado por pasos; el cierre se comunica y pide confirmación; la apertura restaura señal, \textit{trials}, descartes y recetas sin marcar el proyecto como modificado. & --- \\
 \hline
 \end{longtable}
 \end{center}
@@ -806,19 +813,19 @@ UT-10 & \textit{test\_guardado\_proyecto}, \textit{test\_apertura\_proyecto}, \t
 \hline
 \multicolumn{2}{|c|}{\textbf{Información para el seguimiento}} \\
 \hline
-\textbf{Resultado obtenido} & \rule{0pt}{2.2em} \\
+\textbf{Resultado obtenido} & Según el registro del equipo, en la sesión anterior otro investigador del laboratorio descargó la aplicación desde la página de descarga, la instaló y la abrió por primera vez sin problemas, y aprobó la descripción emergente que había pedido para las medidas. En la sesión del \fechasesion{} el equipo mostró además las descripciones emergentes y la barra de búsqueda de funciones. \\
 \hline
-\textbf{Tiempo empleado (min)} &  \\
+\textbf{Tiempo empleado (min)} & No registrado \\
 \hline
-\textbf{Errores cometidos} &  \\
+\textbf{Errores cometidos} & No se registraron. \\
 \hline
-\textbf{Solicitudes de ayuda} &  \\
+\textbf{Solicitudes de ayuda} & No se necesito. \\
 \hline
-\textbf{Estado} & \casilla{} Superado \qquad \casilla{} Superado con dificultad \qquad \casilla{} No superado \\
+\textbf{Estado} & \casilla{x} Superado \qquad \casilla{} Superado con dificultad \qquad \casilla{} No superado \\
 \hline
-\textbf{Fecha de ejecución} &  \\
+\textbf{Fecha de ejecución} & Sesión anterior al \fechasesion{} \\
 \hline
-\textbf{Observaciones} & \rule{0pt}{2.2em} \\
+\textbf{Observaciones} & NA \\
 \hline
 \end{longtable}
 \end{center}
@@ -854,19 +861,19 @@ UT-10 & \textit{test\_guardado\_proyecto}, \textit{test\_apertura\_proyecto}, \t
 \hline
 \multicolumn{2}{|c|}{\textbf{Información para el seguimiento}} \\
 \hline
-\textbf{Resultado obtenido} & \rule{0pt}{2.2em} \\
+\textbf{Resultado obtenido} & Se cargó la señal \textit{17308005.abf} y se hizo \textit{zoom} sobre el eje temporal entre 0 y 0,1\,s. No se revisaron la selección de canales visibles ni la lectura X/Y del cursor. \\
 \hline
-\textbf{Tiempo empleado (min)} &  \\
+\textbf{Tiempo empleado (min)} & $\approx$1 (5:46--6:38) \\
 \hline
-\textbf{Errores cometidos} &  \\
+\textbf{Errores cometidos} & No aplica (sesión guiada). \\
 \hline
-\textbf{Solicitudes de ayuda} &  \\
+\textbf{Solicitudes de ayuda} & No aplica (sesión guiada). \\
 \hline
-\textbf{Estado} & \casilla{} Superado \qquad \casilla{} Superado con dificultad \qquad \casilla{} No superado \\
+\textbf{Estado} & \casilla{x} Superado \qquad \casilla{} Superado con dificultad \qquad \casilla{} No superado \\
 \hline
-\textbf{Fecha de ejecución} &  \\
+\textbf{Fecha de ejecución} & \fechasesion \\
 \hline
-\textbf{Observaciones} & \rule{0pt}{2.2em} \\
+\textbf{Observaciones} & El participante advirtió que los registros terminados en 0 no tienen estímulo y eligió uno que sí tiene respuesta. \\
 \hline
 \end{longtable}
 \end{center}
@@ -902,19 +909,19 @@ UT-10 & \textit{test\_guardado\_proyecto}, \textit{test\_apertura\_proyecto}, \t
 \hline
 \multicolumn{2}{|c|}{\textbf{Información para el seguimiento}} \\
 \hline
-\textbf{Resultado obtenido} & \rule{0pt}{2.2em} \\
+\textbf{Resultado obtenido} & Se generaron los 60 \textit{trials} del registro y se recorrieron uno por uno desde el módulo PAC. No se probaron el descarte ni la recuperación de \textit{trials}. \\
 \hline
-\textbf{Tiempo empleado (min)} &  \\
+\textbf{Tiempo empleado (min)} & $\approx$1 (5:53--6:38) \\
 \hline
-\textbf{Errores cometidos} &  \\
+\textbf{Errores cometidos} & No aplica (sesión guiada). \\
 \hline
-\textbf{Solicitudes de ayuda} &  \\
+\textbf{Solicitudes de ayuda} & No aplica (sesión guiada). \\
 \hline
-\textbf{Estado} & \casilla{} Superado \qquad \casilla{} Superado con dificultad \qquad \casilla{} No superado \\
+\textbf{Estado} & \casilla{x} Superado \qquad \casilla{} Superado con dificultad \qquad \casilla{} No superado \\
 \hline
-\textbf{Fecha de ejecución} &  \\
+\textbf{Fecha de ejecución} & \fechasesion \\
 \hline
-\textbf{Observaciones} & \rule{0pt}{2.2em} \\
+\textbf{Observaciones} & Sin observaciones del participante. \\
 \hline
 \end{longtable}
 \end{center}
@@ -950,19 +957,19 @@ UT-10 & \textit{test\_guardado\_proyecto}, \textit{test\_apertura\_proyecto}, \t
 \hline
 \multicolumn{2}{|c|}{\textbf{Información para el seguimiento}} \\
 \hline
-\textbf{Resultado obtenido} & \rule{0pt}{2.2em} \\
+\textbf{Resultado obtenido} & Según el registro del equipo, el participante removió un artefacto de un \textit{trial} sin problemas y comprobó que el resultado quedó claro. \\
 \hline
-\textbf{Tiempo empleado (min)} &  \\
+\textbf{Tiempo empleado (min)} & No registrado \\
 \hline
-\textbf{Errores cometidos} &  \\
+\textbf{Errores cometidos} & No se registraron. \\
 \hline
-\textbf{Solicitudes de ayuda} &  \\
+\textbf{Solicitudes de ayuda} & No se registraron. \\
 \hline
-\textbf{Estado} & \casilla{} Superado \qquad \casilla{} Superado con dificultad \qquad \casilla{} No superado \\
+\textbf{Estado} & \casilla{x} Superado \qquad \casilla{} Superado con dificultad \qquad \casilla{} No superado \\
 \hline
-\textbf{Fecha de ejecución} &  \\
+\textbf{Fecha de ejecución} & \fechasesion \\
 \hline
-\textbf{Observaciones} & \rule{0pt}{2.2em} \\
+\textbf{Observaciones} & Este tramo de la sesión no quedó en la grabación y se registra a partir de las notas del equipo. Estado de la implementación (verificación del equipo): implementado. Las medidas del segmento se calculan sin modificar los datos, la corrección se aplica solo al confirmar y descartar el conjunto derivado devuelve los \textit{trials} originales (\textit{test\_medidas\_artefacto}, \textit{test\_artifact\_remove\_orquestador}, \textit{test\_trials\_derivados}). \\
 \hline
 \end{longtable}
 \end{center}
@@ -998,19 +1005,19 @@ UT-10 & \textit{test\_guardado\_proyecto}, \textit{test\_apertura\_proyecto}, \t
 \hline
 \multicolumn{2}{|c|}{\textbf{Información para el seguimiento}} \\
 \hline
-\textbf{Resultado obtenido} & \rule{0pt}{2.2em} \\
+\textbf{Resultado obtenido} & Se aplicó un filtro Butterworth pasa-banda con frecuencia alta de 200\,Hz. La vista previa mostró el resultado sin modificar la señal original y \textit{Filter} lo aplicó al registro. \\
 \hline
-\textbf{Tiempo empleado (min)} &  \\
+\textbf{Tiempo empleado (min)} & $\approx$3 (0:10--2:54) \\
 \hline
-\textbf{Errores cometidos} &  \\
+\textbf{Errores cometidos} & No aplica (sesión guiada). La operadora omitió \textit{Preview} en el primer intento y lo corrigió. \\
 \hline
-\textbf{Solicitudes de ayuda} &  \\
+\textbf{Solicitudes de ayuda} & No aplica (sesión guiada). El participante preguntó qué tipos de filtro hay y en qué unidades están los límites. \\
 \hline
-\textbf{Estado} & \casilla{} Superado \qquad \casilla{} Superado con dificultad \qquad \casilla{} No superado \\
+\textbf{Estado} & \casilla{x} Superado \qquad \casilla{} Superado con dificultad \qquad \casilla{} No superado \\
 \hline
-\textbf{Fecha de ejecución} &  \\
+\textbf{Fecha de ejecución} & \fechasesion \\
 \hline
-\textbf{Observaciones} & \rule{0pt}{2.2em} \\
+\textbf{Observaciones} & El participante comentó que la señal ``quedó bien limpio[a]''. \\
 \hline
 \end{longtable}
 \end{center}
@@ -1046,19 +1053,19 @@ UT-10 & \textit{test\_guardado\_proyecto}, \textit{test\_apertura\_proyecto}, \t
 \hline
 \multicolumn{2}{|c|}{\textbf{Información para el seguimiento}} \\
 \hline
-\textbf{Resultado obtenido} & \rule{0pt}{2.2em} \\
+\textbf{Resultado obtenido} & Se ejecutaron PAC y \textit{PAC Average} con el límite superior de la banda de amplitud en 125\,Hz; se mostraron el mapa fase-frecuencia, el histograma, el vector medio y el cambio del rango de color. El cálculo de cada \textit{trial} respondió de inmediato al recorrerlos. \\
 \hline
-\textbf{Tiempo empleado (min)} &  \\
+\textbf{Tiempo empleado (min)} & $\approx$4 (6:58--9:34 y 11:06--11:46) \\
 \hline
-\textbf{Errores cometidos} &  \\
+\textbf{Errores cometidos} & No aplica (sesión guiada). \\
 \hline
-\textbf{Solicitudes de ayuda} &  \\
+\textbf{Solicitudes de ayuda} & No aplica (sesión guiada). El participante preguntó por la onda de referencia que aparece bajo el vector medio. \\
 \hline
-\textbf{Estado} & \casilla{} Superado \qquad \casilla{} Superado con dificultad \qquad \casilla{} No superado \\
+\textbf{Estado} & \casilla{x} Superado \qquad \casilla{} Superado con dificultad \qquad \casilla{} No superado \\
 \hline
-\textbf{Fecha de ejecución} &  \\
+\textbf{Fecha de ejecución} & \fechasesion \\
 \hline
-\textbf{Observaciones} & \rule{0pt}{2.2em} \\
+\textbf{Observaciones} & El participante valoró el rango de color (``eso me gusta'') y al cierre dijo que el PAC ``está buenísimo''. Al inicio, la demostración pasó al equipo de otro integrante porque el primero tenía una copia desactualizada del código. \\
 \hline
 \end{longtable}
 \end{center}
@@ -1094,19 +1101,19 @@ UT-10 & \textit{test\_guardado\_proyecto}, \textit{test\_apertura\_proyecto}, \t
 \hline
 \multicolumn{2}{|c|}{\textbf{Información para el seguimiento}} \\
 \hline
-\textbf{Resultado obtenido} & \rule{0pt}{2.2em} \\
+\textbf{Resultado obtenido} & No se evaluó: no se contaba con un registro con dos canales neuronales. El participante ofreció enviar uno. \\
 \hline
-\textbf{Tiempo empleado (min)} &  \\
+\textbf{Tiempo empleado (min)} & --- \\
 \hline
-\textbf{Errores cometidos} &  \\
+\textbf{Errores cometidos} & --- \\
 \hline
-\textbf{Solicitudes de ayuda} &  \\
+\textbf{Solicitudes de ayuda} & --- \\
 \hline
-\textbf{Estado} & \casilla{} Superado \qquad \casilla{} Superado con dificultad \qquad \casilla{} No superado \\
+\textbf{Estado} & \casilla{} Superado \qquad \casilla{} Superado con dificultad \qquad \casilla{} No superado \qquad \casilla{x} No evaluado \\
 \hline
-\textbf{Fecha de ejecución} &  \\
+\textbf{Fecha de ejecución} & --- \\
 \hline
-\textbf{Observaciones} & \rule{0pt}{2.2em} \\
+\textbf{Observaciones} & Estado de la implementación (verificación del equipo): implementado. PAC Psel entre canales ofrece el selector del canal de amplitud y PPC deja en blanco las celdas que no pueden medirse (\textit{test\_pac\_intercanal\_plugin}, \textit{test\_pac\_intercanal}, \textit{test\_ppc\_core}, \textit{test\_ppc\_plugin\_orquestado}). \\
 \hline
 \end{longtable}
 \end{center}
@@ -1142,19 +1149,19 @@ UT-10 & \textit{test\_guardado\_proyecto}, \textit{test\_apertura\_proyecto}, \t
 \hline
 \multicolumn{2}{|c|}{\textbf{Información para el seguimiento}} \\
 \hline
-\textbf{Resultado obtenido} & \rule{0pt}{2.2em} \\
+\textbf{Resultado obtenido} & Se midió una amplitud, que quedó dibujada y registrada en el panel \textit{Results}, y las medidas se exportaron a CSV y Excel; también se exportaron la tabla del escalograma a Excel y JSON y la imagen en TIFF. La pendiente sobre todos los \textit{trials} no se calculó para cada \textit{trial}, la línea de la pendiente no se dibujó y la amplitud no estaba disponible para todos los \textit{trials}. No se probó la exportación en EMF. \\
 \hline
-\textbf{Tiempo empleado (min)} &  \\
+\textbf{Tiempo empleado (min)} & $\approx$13 (15:32--25:42 y 28:10--30:53) \\
 \hline
-\textbf{Errores cometidos} &  \\
+\textbf{Errores cometidos} & No aplica (sesión guiada). \\
 \hline
-\textbf{Solicitudes de ayuda} &  \\
+\textbf{Solicitudes de ayuda} & No aplica (sesión guiada). El participante preguntó cómo se seleccionan los puntos y cómo se calcula la pendiente. \\
 \hline
-\textbf{Estado} & \casilla{} Superado \qquad \casilla{} Superado con dificultad \qquad \casilla{} No superado \\
+\textbf{Estado} & \casilla{} Superado \qquad \casilla{x} Superado con dificultad \qquad \casilla{} No superado \\
 \hline
-\textbf{Fecha de ejecución} &  \\
+\textbf{Fecha de ejecución} & \fechasesion \\
 \hline
-\textbf{Observaciones} & \rule{0pt}{2.2em} \\
+\textbf{Observaciones} & Se acordó dibujar la pendiente, ofrecer una medida por derivada y medir sobre el promedio con el \textit{Butterfly} de fondo. Estos cambios se incorporaron el 15 de noviembre (extensión \textit{Difference}, pendiente sobre todos los \textit{trials} y medición sobre el \textit{Butterfly}) y los verifican \textit{test\_mediciones\_todos\_los\_trials} y \textit{test\_medir\_sobre\_butterfly}. \\
 \hline
 \end{longtable}
 \end{center}
@@ -1190,19 +1197,19 @@ UT-10 & \textit{test\_guardado\_proyecto}, \textit{test\_apertura\_proyecto}, \t
 \hline
 \multicolumn{2}{|c|}{\textbf{Información para el seguimiento}} \\
 \hline
-\textbf{Resultado obtenido} & \rule{0pt}{2.2em} \\
+\textbf{Resultado obtenido} & Solo se mostró la barra de progreso durante un cálculo; no se probaron la cancelación ni el cambio de módulo con un cálculo en curso. \\
 \hline
-\textbf{Tiempo empleado (min)} &  \\
+\textbf{Tiempo empleado (min)} & $\approx$1 (3:28--4:03) \\
 \hline
-\textbf{Errores cometidos} &  \\
+\textbf{Errores cometidos} & No aplica (sesión guiada). \\
 \hline
-\textbf{Solicitudes de ayuda} &  \\
+\textbf{Solicitudes de ayuda} & No aplica (sesión guiada). \\
 \hline
-\textbf{Estado} & \casilla{} Superado \qquad \casilla{} Superado con dificultad \qquad \casilla{} No superado \\
+\textbf{Estado} & \casilla{} Superado \qquad \casilla{} Superado con dificultad \qquad \casilla{} No superado \qquad \casilla{x} No evaluado \\
 \hline
-\textbf{Fecha de ejecución} &  \\
+\textbf{Fecha de ejecución} & \fechasesion \\
 \hline
-\textbf{Observaciones} & \rule{0pt}{2.2em} \\
+\textbf{Observaciones} & Estado de la implementación (verificación del equipo): implementado. La barra de progreso permite cancelar, la cancelación es cooperativa, un resultado tardío se descarta y cambiar de módulo cancela las tareas del módulo abandonado (\textit{test\_task\_service}, \textit{test\_run\_task}, \textit{test\_cancelacion\_al\_cambiar\_seccion}). \\
 \hline
 \end{longtable}
 \end{center}
@@ -1238,19 +1245,19 @@ UT-10 & \textit{test\_guardado\_proyecto}, \textit{test\_apertura\_proyecto}, \t
 \hline
 \multicolumn{2}{|c|}{\textbf{Información para el seguimiento}} \\
 \hline
-\textbf{Resultado obtenido} & \rule{0pt}{2.2em} \\
+\textbf{Resultado obtenido} & Se guardó el trabajo como proyecto \textit{.glab} en una carpeta, se abrió con \textit{Open project}, se duplicó, se creó un segundo proyecto en la misma ventana y se alternó entre proyectos desde el \textit{Explorer}. Al abrir el proyecto apareció un error de carga atribuido a una frecuencia en cero en los parámetros de PAC. No se probó el cierre del proyecto. \\
 \hline
-\textbf{Tiempo empleado (min)} &  \\
+\textbf{Tiempo empleado (min)} & $\approx$6 (14:13--15:32 y 35:04--39:29) \\
 \hline
-\textbf{Errores cometidos} &  \\
+\textbf{Errores cometidos} & No aplica (sesión guiada). \\
 \hline
-\textbf{Solicitudes de ayuda} &  \\
+\textbf{Solicitudes de ayuda} & No aplica (sesión guiada). \\
 \hline
-\textbf{Estado} & \casilla{} Superado \qquad \casilla{} Superado con dificultad \qquad \casilla{} No superado \\
+\textbf{Estado} & \casilla{} Superado \qquad \casilla{x} Superado con dificultad \qquad \casilla{} No superado \\
 \hline
-\textbf{Fecha de ejecución} &  \\
+\textbf{Fecha de ejecución} & \fechasesion \\
 \hline
-\textbf{Observaciones} & \rule{0pt}{2.2em} \\
+\textbf{Observaciones} & La directora confirmó que el manejo de varios proyectos era lo que se había pedido. Después de cargar otra señal quedó visible un aviso que correspondía a la señal anterior. \\
 \hline
 \end{longtable}
 \end{center}
@@ -1271,27 +1278,76 @@ UT-10 & \textit{test\_guardado\_proyecto}, \textit{test\_apertura\_proyecto}, \t
 \hline
 \endfoot
 \hline
-\caption{Consolidado de las pruebas de usabilidad} \label{tab:td_ut_consolidado} \\
+\caption{Consolidado de las pruebas de usabilidad (N/A: no aplica en una sesión guiada; tiempos aproximados según la grabación)} \label{tab:td_ut_consolidado} \\
 \endlastfoot
-UT-01 & & & & & \rule{0pt}{1.6em} \\
+UT-01 & Sí & No registrado & --- & --- & Instalación y primer arranque sin problemas (sesión anterior). \\
 \hline
-UT-02 & & & & & \rule{0pt}{1.6em} \\
+UT-02 & Sí & $\approx$1 & N/A & N/A & Carga y \textit{zoom} temporal correctos. \\
 \hline
-UT-03 & & & & & \rule{0pt}{1.6em} \\
+UT-03 & Sí & $\approx$1 & N/A & N/A & Sin probar descarte ni recuperación. \\
 \hline
-UT-04 & & & & & \rule{0pt}{1.6em} \\
+UT-04 & Sí & No registrado & --- & --- & Artefacto removido sin problemas (tramo no grabado). \\
 \hline
-UT-05 & & & & & \rule{0pt}{1.6em} \\
+UT-05 & Sí & $\approx$3 & N/A & N/A & Vista previa y filtro correctos. \\
 \hline
-UT-06 & & & & & \rule{0pt}{1.6em} \\
+UT-06 & Sí & $\approx$4 & N/A & N/A & Valorado positivamente por el participante. \\
 \hline
-UT-07 & & & & & \rule{0pt}{1.6em} \\
+UT-07 & No evaluado & --- & --- & --- & Sin registro de dos canales. \\
 \hline
-UT-08 & & & & & \rule{0pt}{1.6em} \\
+UT-08 & Con dificultad & $\approx$13 & N/A & N/A & Fallas en las medidas sobre todos los \textit{trials}, corregidas el 15/11. \\
 \hline
-UT-09 & & & & & \rule{0pt}{1.6em} \\
+UT-09 & No evaluado & $\approx$1 & N/A & N/A & Solo se mostró la barra de progreso. \\
 \hline
-UT-10 & & & & & \rule{0pt}{1.6em} \\
+UT-10 & Con dificultad & $\approx$6 & N/A & N/A & Error de carga al abrir el proyecto. \\
+\hline
+\end{longtable}
+\end{center}
+
+\subsection{Atención de las solicitudes de la sesión}
+\label{sec:td_ut_solicitudes}
+La Tabla~\ref{tab:td_ut_solicitudes} recoge las fallas y solicitudes que surgieron en las sesiones con el usuario y su estado a la fecha de este documento, según la verificación del equipo. Las dos primeras filas provienen de la sesión anterior; las demás, de la sesión del \fechasesion{}.
+
+\begin{center}
+\footnotesize
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.30\textwidth}|>{\raggedright\arraybackslash}p{0.09\textwidth}|>{\raggedright\arraybackslash}p{0.22\textwidth}|>{\raggedright\arraybackslash}p{0.27\textwidth}|}
+\hline
+\textbf{Solicitud u observación} & \textbf{Caso} & \textbf{Estado} & \textbf{Evidencia} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Solicitud u observación} & \textbf{Caso} & \textbf{Estado} & \textbf{Evidencia} \\
+\hline
+\endhead
+\hline
+\endfoot
+\hline
+\caption{Atención de las solicitudes de las sesiones con el usuario} \label{tab:td_ut_solicitudes} \\
+\endlastfoot
+Descripción emergente al pasar el cursor sobre las medidas & UT-01 & Implementada & \textit{test\_ayudas\_controles} \\
+\hline
+Tener varias instancias de un experimento abiertas en paralelo & UT-10 & Implementada; mostrada en la sesión del \fechasesion{} & Varios proyectos en el \textit{Explorer} (\textit{test\_nuevo\_proyecto\_explorer}) \\
+\hline
+Dibujar la línea de la pendiente & UT-08 & Implementada el 15/11 & \textit{test\_mediciones\_todos\_los\_trials} \\
+\hline
+Ofrecer una medida por derivada & UT-08 & Implementada el 15/11 (extensión \textit{Difference}) & \textit{test\_mediciones\_todos\_los\_trials} \\
+\hline
+Calcular la pendiente de cada \textit{trial} en \textit{Slope All Trials} & UT-08 & Implementada el 15/11 & \textit{test\_mediciones\_todos\_los\_trials} \\
+\hline
+Medir la amplitud sobre todos los \textit{trials} & UT-08 & Implementada el 15/11 & \textit{test\_mediciones\_todos\_los\_trials} \\
+\hline
+Medir sobre el promedio con el \textit{Butterfly} de fondo & UT-08 & Implementada el 15/11 en el \textit{Butterfly} del ERP & \textit{test\_medir\_sobre\_butterfly}, \textit{test\_erp\_grupos\_butterfly} \\
+\hline
+El campo NFFT de PSD solo admitía tres dígitos & --- & Corregida el 15/11: admite hasta 100\,000\,000 & Rango del campo en las extensiones PSD y \textit{PSD Average} \\
+\hline
+Instructivo de instalación con un enlace vencido & UT-01 & Corregida: el MU remite a la página de descarga & Manual de usuario, sección de instalación \\
+\hline
+Error de carga al abrir un proyecto con parámetros de PAC & UT-10 & Pendiente: causa no identificada & --- \\
+\hline
+Aviso de la señal anterior visible después de cargar otra & UT-10 & Pendiente & --- \\
+\hline
+Tomar la frecuencia de muestreo del encabezado de un \textit{.mat} & FR-IO-02 & No implementada: por acuerdo con la directora se ingresa de forma manual & \textit{test\_cu018\_sampling\_rate} \\
+\hline
+Combinar registros de varios archivos o animales & --- & Trabajo futuro: no forma parte de los requisitos & --- \\
 \hline
 \end{longtable}
 \end{center}
@@ -1315,33 +1371,43 @@ El participante califica cada afirmación de la Tabla~\ref{tab:td_sus} de 1 (tot
 \hline
 \caption{Cuestionario SUS} \label{tab:td_sus} \\
 \endlastfoot
-1 & Creo que me gustaría usar este sistema con frecuencia. & & & & & \\
+1 & Creo que me gustaría usar este sistema con frecuencia. & & & & & x \\
 \hline
-2 & Encontré el sistema innecesariamente complejo. & & & & & \\
+2 & Encontré el sistema innecesariamente complejo. & x & & & & \\
 \hline
-3 & Pensé que el sistema era fácil de usar. & & & & & \\
+3 & Pensé que el sistema era fácil de usar. & & x & & & \\
 \hline
-4 & Creo que necesitaría el apoyo de una persona con conocimientos técnicos para poder usar este sistema. & & & & & \\
+4 & Creo que necesitaría el apoyo de una persona con conocimientos técnicos para poder usar este sistema. & & x & & & \\
 \hline
-5 & Encontré que las distintas funciones del sistema estaban bien integradas. & & & & & \\
+5 & Encontré que las distintas funciones del sistema estaban bien integradas. & & & & & x \\
 \hline
-6 & Pensé que había demasiada inconsistencia en el sistema. & & & & & \\
+6 & Pensé que había demasiada inconsistencia en el sistema. & x & & & & \\
 \hline
-7 & Imagino que la mayoría de las personas aprenderían a usar este sistema muy rápidamente. & & & & & \\
+7 & Imagino que la mayoría de las personas aprenderían a usar este sistema muy rápidamente. & & & & & x \\
 \hline
-8 & Encontré el sistema muy engorroso de usar. & & & & & \\
+8 & Encontré el sistema muy engorroso de usar. & x & & & & \\
 \hline
-9 & Me sentí muy seguro al usar el sistema. & & & & & \\
+9 & Me sentí muy seguro al usar el sistema. & & & & & x \\
 \hline
-10 & Necesité aprender muchas cosas antes de poder empezar a usar el sistema. & & & & & \\
+10 & Necesité aprender muchas cosas antes de poder empezar a usar el sistema. & & x & & & \\
 \hline
-\multicolumn{2}{|r|}{\textbf{Puntuación SUS (0 a 100)}} & \multicolumn{5}{c|}{} \\
+\multicolumn{2}{|r|}{\textbf{Puntuación SUS (0 a 100)}} & \multicolumn{5}{c|}{\textbf{87,5}} \\
 \hline
 \end{longtable}
 \end{center}
 
+El cuestionario lo respondió el profesor investigador que participó en la sesión del \fechasesion{}. Su puntuación de 87,5 se ubica cerca de la media que Bangor, Kortum y Miller asocian con el adjetivo ``excelente'' (85,6) \cite{bangor2009}. Al provenir de un solo participante, el resultado indica una valoración alta del sistema, pero no permite generalizarla.
+
 \subsection{Conclusiones de las pruebas de usabilidad}
-\pendiente[Se redactarán una vez ejecutadas las sesiones con el usuario, a partir del consolidado de resultados y del cuestionario de satisfacción.]
+El Laboratorio de Electrofisiología, cliente del proyecto, compartió la siguiente valoración de Gamma Lab 2.0:
+
+\begin{quote}
+Las necesidades de análisis de un laboratorio de electrofisiología son tan diversas que difícilmente un solo programa logra cubrirlas. Gamma Lab 2.0 reúne en una misma herramienta los análisis que el laboratorio requiere, en los dominios del tiempo, la frecuencia y el tiempo-frecuencia. Incluye además el estudio de las relaciones entre bandas y canales mediante el acoplamiento entre frecuencias, y la toma de medidas sobre las señales. Su mayor aporte es su carácter semiautomático: el investigador conserva las decisiones que exigen su criterio, como la selección de canales, \textit{trials}, bandas e intervalos, mientras la herramienta automatiza los procedimientos repetitivos que antes se hacían a mano. Así, un análisis que tomaba semanas puede completarse en minutos. A esto se suman una interfaz amigable e intuitiva, un procesamiento rápido y la posibilidad de exportar los resultados para su uso posterior, así como la posibilidad de guardar el progreso. Gamma Lab 2.0 es una herramienta flexible que responde de manera integral a las necesidades del laboratorio.
+\end{quote}
+
+Entre la sesión guiada del \fechasesion{} y la sesión anterior se trataron ocho de los diez casos de prueba. La instalación y el primer arranque, la carga de la señal, la segmentación en \textit{trials}, la remoción de artefactos, el filtrado con vista previa y el análisis PAC funcionaron sin fallas, y el participante valoró en particular el PAC y el control del rango de color. Las dificultades se concentraron en las medidas sobre todos los \textit{trials} (UT-08) y en un error de carga al abrir un proyecto (UT-10); las primeras se corrigieron después de la sesión y quedaron cubiertas por pruebas automáticas, mientras que el error de carga sigue pendiente (Tabla~\ref{tab:td_ut_solicitudes}). La puntuación SUS de 87,5 confirma una valoración alta del sistema.
+
+Estos resultados tienen dos limitaciones: provienen de pocos participantes y, en su mayoría, de una sesión guiada en la que el equipo operó la aplicación, por lo que no miden del todo la autonomía del investigador frente a la interfaz. Quedaron sin evaluar los análisis entre dos canales y la cancelación de un cálculo.
 \capitulo{PRUEBAS DE ACEPTACIÓN DEL USUARIO (UAT)}
 \label{sec:td_uat}
 
@@ -1376,19 +1442,19 @@ FR-IO-01 (R08) & Persistir la señal cargada & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{La señal cargada se mantuvo disponible al pasar por \textit{Trials}, \textit{Filter}, PAC y los demás módulos, sin volver a cargarla.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sin comentarios específicos sobre este punto.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{x} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión guiada del \fechasesion{} (Sección~\ref{sec:td_usabilidad}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-IO-01 (R08)}
@@ -1417,19 +1483,19 @@ FR-IO-02 (R80) & Cargar señales ABF, EDF y MAT & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Se cargaron un archivo ABF y un archivo \textit{.mat}. Como el \textit{.mat} no trae la frecuencia de muestreo en su encabezado, se ingresó de forma manual, según lo acordado con la directora, y el registro quedó con su duración correcta de 180\,s. No se probó un archivo EDF.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Tras ingresar la frecuencia: ``Ahora sí, son 180 segundos. [...] Bueno, pero se puede, sí, bien.''} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{x} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión guiada del \fechasesion{} (Sección~\ref{sec:td_usabilidad}). Se acepta parcialmente porque no se probó un archivo EDF. Estado de la implementación (verificación del equipo): la lectura de ABF, EDF y MAT está implementada y probada (\textit{test\_fileio\_abf}, \textit{test\_fileio\_edf}, \textit{prueba\_congelado}); la frecuencia de muestreo de un \textit{.mat} se ingresa de forma manual (FR-UI-06).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-IO-02 (R80)}
@@ -1458,19 +1524,19 @@ FR-IO-03 (R07) & Guardar un proyecto & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El trabajo se guardó como proyecto \textit{.glab}; el sistema pidió elegir una carpeta y el proyecto apareció en el \textit{Explorer}.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El participante siguió la demostración sin objeciones.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{x} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión guiada del \fechasesion{} (Sección~\ref{sec:td_usabilidad}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-IO-03 (R07)}
@@ -1499,19 +1565,19 @@ FR-IO-04 (R78) & Abrir un proyecto guardado & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Se abrió un proyecto guardado con \textit{Open project}; al cargarlo apareció un mensaje de error, que el equipo atribuyó a una frecuencia en cero en los parámetros guardados de PAC.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sin comentarios del participante sobre este punto.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado \qquad \casilla{x} Probado con fallas} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión guiada del \fechasesion{} (Sección~\ref{sec:td_usabilidad}). Se probó con fallas, por lo que no se marca como aceptado. Estado de la implementación (verificación del equipo): la apertura está implementada y probada (\textit{test\_apertura\_proyecto}, \textit{test\_persistencia\_artifact\_remove}, \textit{test\_correcciones\_interaccion}), pero la causa del error observado en la sesión no se ha identificado y queda pendiente.} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-IO-04 (R78)}
@@ -1536,23 +1602,23 @@ FR-IO-05 (R05) & Exportar los resultados de los análisis & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se dispone de registro del comportamiento de la versión 1.0 para este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Se exportaron las medidas a CSV y Excel, la tabla del escalograma a Excel y JSON y la imagen en TIFF; los archivos quedaron en la carpeta del proyecto.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El participante revisó la tabla del escalograma en Excel e interpretó su estructura: una fila de frecuencias y los valores en cada instante.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{x} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión guiada del \fechasesion{} (Sección~\ref{sec:td_usabilidad}). La exportación de medidas incluyó solo las tomadas, porque la pendiente sobre todos los \textit{trials} falló en la sesión (caso UT-08).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-IO-05 (R05)}
@@ -1581,19 +1647,19 @@ FR-IO-06 (R09) & Una sola columna X en el CSV & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se trató en la sesión con el usuario.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se obtuvo retroalimentación del usuario sobre este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado \qquad \casilla{x} No evaluado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Estado de la implementación (verificación del equipo, no del usuario): implementado. Pruebas automáticas de la exportación con ejes iguales y distintos (\textit{test\_export}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-IO-06 (R09)}
@@ -1622,19 +1688,19 @@ FR-IO-07 (R28) & Nombre de exportación descriptivo & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se trató en la sesión con el usuario.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se obtuvo retroalimentación del usuario sobre este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado \qquad \casilla{x} No evaluado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Estado de la implementación (verificación del equipo, no del usuario): implementado. El nombre propuesto combina la señal, el canal, la extensión y la fecha (\textit{señal\_canal\_extensión\_fecha}), según \textit{core/services/export\_service.py}.} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-IO-07 (R28)}
@@ -1659,23 +1725,23 @@ FR-UI-01 (R01) & Cortar la señal en \textit{trials} & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se dispone de registro del comportamiento de la versión 1.0 para este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Se generaron los 60 \textit{trials} del registro \textit{17308005.abf}.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El participante indicó que los registros terminados en 0 ``no tienen estímulo'' y confirmó que el elegido ``sí tiene respuesta''.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{x} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión guiada del \fechasesion{} (Sección~\ref{sec:td_usabilidad}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-UI-01 (R01)}
@@ -1700,23 +1766,23 @@ FR-UI-02 (R24) & Modificar un \textit{trial} ya creado & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se dispone de registro del comportamiento de la versión 1.0 para este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se trató en la sesión con el usuario.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se obtuvo retroalimentación del usuario sobre este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado \qquad \casilla{x} No evaluado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Estado de la implementación (verificación del equipo, no del usuario): implementado. Pruebas automáticas de los conjuntos derivados, que dejan el original intacto (\textit{test\_trials\_derivados}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-UI-02 (R24)}
@@ -1745,19 +1811,19 @@ FR-UI-03 (R25) & Restablecer parámetros por defecto & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se trató en la sesión con el usuario.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se obtuvo retroalimentación del usuario sobre este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado \qquad \casilla{x} No evaluado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Estado de la implementación (verificación del equipo, no del usuario): implementado. Prueba automática del Clear de \textit{Trials} y verificación manual en las demás extensiones (\textit{test\_correcciones\_interaccion}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-UI-03 (R25)}
@@ -1786,19 +1852,19 @@ FR-UI-04 (R26) & Valores X/Y bajo el cursor & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se trató en la sesión con el usuario.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se obtuvo retroalimentación del usuario sobre este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado \qquad \casilla{x} No evaluado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Estado de la implementación (verificación del equipo, no del usuario): implementado. Pruebas automáticas de la conversión de píxeles a datos, del formato de la lectura y del punto más cercano (\textit{test\_indicadores\_ui}, \textit{test\_correcciones\_interaccion}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-UI-04 (R26)}
@@ -1823,23 +1889,23 @@ FR-UI-05 (R27) & Elegir los \textit{trials} de cada análisis & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se dispone de registro del comportamiento de la versión 1.0 para este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se trató en la sesión con el usuario.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se obtuvo retroalimentación del usuario sobre este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado \qquad \casilla{x} No evaluado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Estado de la implementación (verificación del equipo, no del usuario): implementado. Pruebas automáticas de la selección y de los descartes (\textit{test\_average\_seleccion}, \textit{test\_indicadores\_ui}, \textit{test\_correcciones\_interaccion}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-UI-05 (R27)}
@@ -1868,19 +1934,19 @@ FR-UI-06 (R29) & Ajustar la frecuencia de muestreo & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al abrir un archivo \textit{.mat} sin frecuencia de muestreo en el encabezado, el eje de tiempo mostró 1,8 millones de segundos; tras corregir la frecuencia de forma manual el registro quedó en 180\,s.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{``Ahora sí, son 180 segundos. [...] Bueno, pero se puede, sí, bien.''} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{x} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión guiada del \fechasesion{} (Sección~\ref{sec:td_usabilidad}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-UI-06 (R29)}
@@ -1909,19 +1975,19 @@ FR-UI-07 (R30) & \textit{Zoom} en todas las direcciones & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se trató en la sesión con el usuario.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se obtuvo retroalimentación del usuario sobre este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado \qquad \casilla{x} No evaluado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Estado de la implementación (verificación del equipo, no del usuario): implementado. Pruebas automáticas de los ejes del \textit{zoom} y verificación manual en cada gráfica (\textit{test\_correcciones\_interaccion}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-UI-07 (R30)}
@@ -1946,23 +2012,23 @@ FR-UI-08 (R31) & Mostrar el umbral en \textit{mV} & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se dispone de registro del comportamiento de la versión 1.0 para este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se trató en la sesión con el usuario.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se obtuvo retroalimentación del usuario sobre este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado \qquad \casilla{x} No evaluado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Estado de la implementación (verificación del equipo, no del usuario): implementado. Pruebas automáticas de la conversión de unidades y verificación manual del campo (\textit{test\_trials}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-UI-08 (R31)}
@@ -1991,19 +2057,19 @@ FR-UI-09 (R32) & Mostrar \textit{Butterfly} explícitamente & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Se generó el ERP y se mostraron el mapa de calor y el \textit{Butterfly Plot} con los \textit{trials} superpuestos.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El participante pidió ver el \textit{Butterfly} y lo revisó sin objeciones.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{x} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión guiada del \fechasesion{} (Sección~\ref{sec:td_usabilidad}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-UI-09 (R32)}
@@ -2028,23 +2094,23 @@ FR-UI-10 (R36) & Promediar todos los \textit{trials} & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se dispone de registro del comportamiento de la versión 1.0 para este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se trató en la sesión con el usuario.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se obtuvo retroalimentación del usuario sobre este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado \qquad \casilla{x} No evaluado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Estado de la implementación (verificación del equipo, no del usuario): implementado. Pruebas automáticas del promedio (\textit{test\_average\_plugin}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-UI-10 (R36)}
@@ -2073,19 +2139,19 @@ FR-UI-11 (R37) & Indicar el \textit{trial} actual & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se trató en la sesión con el usuario.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se obtuvo retroalimentación del usuario sobre este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado \qquad \casilla{x} No evaluado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Estado de la implementación (verificación del equipo, no del usuario): implementado. Pruebas automáticas del estado y del texto del indicador (\textit{test\_indicadores\_ui}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-UI-11 (R37)}
@@ -2110,23 +2176,23 @@ FR-UI-12 (R38) & Indicar qué \textit{trials} participan & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se dispone de registro del comportamiento de la versión 1.0 para este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se trató en la sesión con el usuario.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se obtuvo retroalimentación del usuario sobre este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado \qquad \casilla{x} No evaluado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Estado de la implementación (verificación del equipo, no del usuario): implementado. Pruebas automáticas de la descripción de los \textit{trials} y de la selección de \textit{Average} (\textit{test\_indicadores\_ui}, \textit{test\_average\_seleccion}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-UI-12 (R38)}
@@ -2151,23 +2217,23 @@ FR-UI-13 (R40) & Remover un artefacto con medidas & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se dispone de registro del comportamiento de la versión 1.0 para este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El participante removió un artefacto de un \textit{trial} sin problemas y comprobó que el resultado quedó claro.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Según el registro del equipo, el participante consideró que el resultado quedó claro.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{x} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión guiada del \fechasesion{} (Sección~\ref{sec:td_usabilidad}). Este tramo no quedó en la grabación y se registra a partir de las notas del equipo. Estado de la implementación: Pruebas automáticas del cálculo de las medidas y del uso del servicio de tareas (\textit{test\_medidas\_artefacto}, \textit{test\_artifact\_remove\_orquestador}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-UI-13 (R40)}
@@ -2192,23 +2258,23 @@ FR-UI-14 (R41) & Promediar los \textit{trials} seleccionados & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Antes (Gamma Lab)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se dispone de registro del comportamiento de la versión 1.0 para este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se trató en la sesión con el usuario.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se obtuvo retroalimentación del usuario sobre este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado \qquad \casilla{x} No evaluado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Estado de la implementación (verificación del equipo, no del usuario): implementado. Pruebas automáticas de la selección y del promedio (\textit{test\_average\_seleccion}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-UI-14 (R41)}
@@ -2237,19 +2303,19 @@ FR-UI-15 (R68) & \textit{Trials} identificados por archivo y canal & Investigado
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se trató en la sesión con el usuario.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se obtuvo retroalimentación del usuario sobre este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado \qquad \casilla{x} No evaluado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Estado de la implementación (verificación del equipo, no del usuario): implementado. Pruebas automáticas de la consulta de \textit{trials} por canal (\textit{test\_trials\_por\_canal}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-UI-15 (R68)}
@@ -2278,19 +2344,19 @@ FR-WV-01 (R33) & Escala y rango de color del escalograma & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Se cambió el rango de color del escalograma ya calculado (de $-10$ a 10 y de $-20$ a 20) sin volver a calcularlo; la escala disponible es la logarítmica.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El participante comprobó el cambio; la directora explicó que el mapa no se saturaba porque solo el pico alcanzaba el valor máximo.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{x} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión guiada del \fechasesion{} (Sección~\ref{sec:td_usabilidad}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-WV-01 (R33)}
@@ -2319,19 +2385,19 @@ FR-WV-02 (R34) & Normalizar el escalograma & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Se mostraron las opciones de normalización del escalograma.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Al cierre, el participante comentó que los resultados del \textit{Wavelet} ``están saliendo bien''.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{x} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión guiada del \fechasesion{} (Sección~\ref{sec:td_usabilidad}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-WV-02 (R34)}
@@ -2360,19 +2426,19 @@ FR-WV-03 (R35) & Exportar el escalograma en EMF & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se trató en la sesión con el usuario.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se obtuvo retroalimentación del usuario sobre este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado \qquad \casilla{x} No evaluado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Estado de la implementación (verificación del equipo, no del usuario): implementado. Pruebas automáticas del archivo EMF (\textit{test\_emf\_export}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-WV-03 (R35)}
@@ -2401,19 +2467,19 @@ FR-PAC-01 (R13) & Ejecutar el análisis PAC & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Se ejecutó PAC sobre los \textit{trials} del registro y sus resultados se mostraron en la misma pantalla.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{``El PAC está buenísimo.''} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{x} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión guiada del \fechasesion{} (Sección~\ref{sec:td_usabilidad}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-PAC-01 (R13)}
@@ -2442,19 +2508,19 @@ FR-PAC-02 (R14) & Banda de la fase & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se trató en la sesión con el usuario.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se obtuvo retroalimentación del usuario sobre este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado \qquad \casilla{x} No evaluado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Estado de la implementación (verificación del equipo, no del usuario): implementado. Pruebas automáticas del cálculo de PAC (\textit{test\_pac\_core}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-PAC-02 (R14)}
@@ -2483,19 +2549,19 @@ FR-PAC-03 (R15) & Banda de la amplitud & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Se ajustó el límite superior de la banda de amplitud a 125\,Hz, por debajo del filtro de 200\,Hz aplicado antes.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El participante propuso el cambio y comentó que el resultado quedó ``un poquito más limpio''.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{x} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión guiada del \fechasesion{} (Sección~\ref{sec:td_usabilidad}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-PAC-03 (R15)}
@@ -2524,19 +2590,19 @@ FR-PAC-04 (R16) & Intervalo temporal o \textit{trials} del análisis & Investiga
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Se recorrieron los 60 \textit{trials} uno por uno y se calculó el promedio (\textit{PAC Average}).} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El participante pidió ver el promedio de los \textit{trials} y lo revisó.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{x} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión guiada del \fechasesion{} (Sección~\ref{sec:td_usabilidad}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-PAC-04 (R16)}
@@ -2565,19 +2631,19 @@ FR-PAC-05 (R17) & Calcular el acoplamiento por fase y frecuencia & Investigador 
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Se calculó el acoplamiento por fase y frecuencia para cada \textit{trial} y para el promedio.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sin comentarios específicos sobre este punto.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{x} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión guiada del \fechasesion{} (Sección~\ref{sec:td_usabilidad}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-PAC-05 (R17)}
@@ -2606,19 +2672,19 @@ FR-PAC-06 (R18) & Mapa de acoplamiento fase-frecuencia & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Se mostró el mapa de acoplamiento fase-frecuencia y se cambió su rango de color.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{``Ay, sí, puede cambiar el rango de los colores, eso me gusta.''} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{x} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión guiada del \fechasesion{} (Sección~\ref{sec:td_usabilidad}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-PAC-06 (R18)}
@@ -2647,19 +2713,19 @@ FR-PAC-07 (R19) & Distribución de amplitud según la fase & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Se mostró el histograma de amplitud según la fase junto con la onda de referencia.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El participante preguntó por la onda de referencia y se comprobó que el histograma concuerda con el vector medio.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{x} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión guiada del \fechasesion{} (Sección~\ref{sec:td_usabilidad}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-PAC-07 (R19)}
@@ -2688,19 +2754,19 @@ FR-PAC-08 (R20) & Vector de acoplamiento medio & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Se mostró el vector medio en la brújula; en el promedio el ángulo quedó entre 240 y 270 grados.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El participante explicó que, como la distribución está extendida por encima de 200 grados, el promedio queda en 270 aunque el pico esté en 220.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{x} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión guiada del \fechasesion{} (Sección~\ref{sec:td_usabilidad}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-PAC-08 (R20)}
@@ -2729,19 +2795,19 @@ FR-PAC-09 (R21) & Exportar los números de PAC & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se trató en la sesión con el usuario.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se obtuvo retroalimentación del usuario sobre este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado \qquad \casilla{x} No evaluado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Estado de la implementación (verificación del equipo, no del usuario): implementado. Pruebas automáticas de la exportación y de los ángulos en grados (\textit{test\_export}, \textit{test\_pac\_grados}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-PAC-09 (R21)}
@@ -2770,19 +2836,19 @@ FR-PAC-10 (R22) & Exportar las gráficas de PAC & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se trató en la sesión con el usuario.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se obtuvo retroalimentación del usuario sobre este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado \qquad \casilla{x} No evaluado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Estado de la implementación (verificación del equipo, no del usuario): implementado. Pruebas automáticas de la exportación de imágenes y de EMF (\textit{test\_export}, \textit{test\_emf\_export}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-PAC-10 (R22)}
@@ -2811,19 +2877,19 @@ FR-PAC-11 (R23) & Guardar los parámetros de cada ejecución & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se trató en la sesión con el usuario.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se obtuvo retroalimentación del usuario sobre este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado \qquad \casilla{x} No evaluado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Estado de la implementación (verificación del equipo, no del usuario): implementado. Prueba automática de la restauración de análisis al abrir un proyecto (\textit{test\_apertura\_proyecto}). En la sesión, la apertura de un proyecto con parámetros de PAC mostró un error (FR-IO-04).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-PAC-11 (R23)}
@@ -2852,19 +2918,19 @@ FR-PAC-12 (R60) & Elegir el canal de fase y el de amplitud & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se trató en la sesión con el usuario.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se obtuvo retroalimentación del usuario sobre este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado \qquad \casilla{x} No evaluado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Estado de la implementación (verificación del equipo, no del usuario): implementado. Pruebas automáticas del selector y de su comportamiento (\textit{test\_pac\_intercanal\_plugin}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-PAC-12 (R60)}
@@ -2893,19 +2959,19 @@ FR-PAC-13 (R61) & Mapa de acoplamiento entre canales & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se trató en la sesión con el usuario.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se obtuvo retroalimentación del usuario sobre este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado \qquad \casilla{x} No evaluado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Estado de la implementación (verificación del equipo, no del usuario): implementado. Pruebas automáticas del cálculo entre canales (\textit{test\_pac\_intercanal}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-PAC-13 (R61)}
@@ -2934,19 +3000,19 @@ FR-PAC-14 (R62) & Mismas visualizaciones que PAC de un canal & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se trató en la sesión con el usuario.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se obtuvo retroalimentación del usuario sobre este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado \qquad \casilla{x} No evaluado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Estado de la implementación (verificación del equipo, no del usuario): implementado. Pruebas automáticas de que ambos modos dibujan los mismos paneles (\textit{test\_pac\_intercanal\_plugin}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-PAC-14 (R62)}
@@ -2975,19 +3041,19 @@ FR-PAC-15 (R63) & PPC: dos canales y rango de frecuencias & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se trató en la sesión con el usuario.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se obtuvo retroalimentación del usuario sobre este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado \qquad \casilla{x} No evaluado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Estado de la implementación (verificación del equipo, no del usuario): implementado. Pruebas automáticas del cálculo de \textit{PPC} y de su ejecución en el servicio de tareas (\textit{test\_ppc\_core}, \textit{test\_ppc\_plugin\_orquestado}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-PAC-15 (R63)}
@@ -3016,19 +3082,19 @@ FR-PAC-16 (R64) & PPC: mapa de frecuencia y tiempo & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se trató en la sesión con el usuario.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se obtuvo retroalimentación del usuario sobre este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado \qquad \casilla{x} No evaluado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Estado de la implementación (verificación del equipo, no del usuario): implementado. Pruebas automáticas del cálculo y de la transformada de Gabor compartida (\textit{test\_ppc\_core}, \textit{test\_gabor\_en\_core}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-PAC-16 (R64)}
@@ -3057,19 +3123,19 @@ FR-PAC-17 (R65) & Exportar los números de PPC y del PAC entre canales & Investi
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se trató en la sesión con el usuario.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se obtuvo retroalimentación del usuario sobre este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado \qquad \casilla{x} No evaluado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Estado de la implementación (verificación del equipo, no del usuario): implementado. Pruebas automáticas que exportan archivos reales de PAC entre canales (\textit{test\_pac\_intercanal\_exportacion}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-PAC-17 (R65)}
@@ -3098,19 +3164,19 @@ FR-PAC-18 (R66) & Exportar las gráficas de PPC y del PAC entre canales & Invest
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se trató en la sesión con el usuario.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se obtuvo retroalimentación del usuario sobre este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado \qquad \casilla{x} No evaluado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Estado de la implementación (verificación del equipo, no del usuario): implementado. Pruebas automáticas de la exportación de imágenes y de EMF; no hay prueba específica del modo entre canales (\textit{test\_emf\_export}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-PAC-18 (R66)}
@@ -3139,19 +3205,19 @@ FR-PAC-19 (R75) & PAC Psel segmenta por ciclo de la onda lenta & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se trató en la sesión con el usuario.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{No se obtuvo retroalimentación del usuario sobre este requisito.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado \qquad \casilla{x} No evaluado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Estado de la implementación (verificación del equipo, no del usuario): implementado. Pruebas automáticas de la selección de ciclos y de la transformada de Gabor (\textit{test\_pac\_core}, \textit{test\_gabor\_en\_core}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-PAC-19 (R75)}
@@ -3180,19 +3246,19 @@ FR-PAC-20 (R76) & Filtro Butterworth pasa-banda de fase cero & Investigador \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Después (Gamma Lab 2.0, observado durante la prueba)}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Se aplicó un filtro Butterworth pasa-banda; la vista previa no modificó la señal original y \textit{Filter} lo aplicó a todo el registro.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Retroalimentación del usuario}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.8em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{El participante confirmó que es un pasa-banda con límites en hertz y comentó que la señal ``quedó bien limpia''.} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Resultado de la prueba}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\casilla{x} Aceptado \qquad \casilla{} Aceptado parcialmente \qquad \casilla{} No aceptado} \\
 \hline
 \multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\centering\textbf{Observaciones}} \\
 \hline
-\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{\rule{0pt}{2.2em}} \\
+\multicolumn{3}{|>{\raggedright\arraybackslash}p{\dimexpr\textwidth-2\tabcolsep-2\arrayrulewidth}|}{Sesión guiada del \fechasesion{} (Sección~\ref{sec:td_usabilidad}).} \\
 \hline
 \end{tabularx}
 \caption{Prueba de aceptación del requisito FR-PAC-20 (R76)}
@@ -3207,11 +3273,15 @@ FR-PAC-20 (R76) & Filtro Butterworth pasa-banda de fase cero & Investigador \\
 \hline
 \textbf{Resultado} & \textbf{Requisitos} & \textbf{Porcentaje} \\
 \hline
-Aceptados & & \\
+Aceptados & 17 & 37,8\,\% \\
 \hline
-Aceptados parcialmente & & \\
+Aceptados parcialmente & 1 & 2,2\,\% \\
 \hline
-No aceptados & & \\
+No aceptados & 0 & 0\,\% \\
+\hline
+Probados con fallas & 1 & 2,2\,\% \\
+\hline
+No evaluados en la sesión & 26 & 57,8\,\% \\
 \hline
 \textbf{Total} & \textbf{45} & \textbf{100\,\%} \\
 \hline
@@ -3220,8 +3290,14 @@ No aceptados & & \\
 \label{tab:td_uat_consolidado}
 \end{center}
 
+FR-IO-02 se aceptó parcialmente porque no se probó un archivo EDF, y FR-IO-04 se probó con fallas porque al abrir el proyecto apareció un error de carga. Los 26 no evaluados no se trataron en la sesión; en sus cuadros se indica que están implementados, según la verificación del equipo, y las pruebas que lo respaldan. Solo se marcan como aceptados los requisitos que se demostraron sin fallas.
+
 \subsection{Conclusiones de las pruebas de aceptación}
-\pendiente[Se redactarán una vez ejecutadas las pruebas con el usuario, a partir de los cuadros de aceptación y del consolidado de resultados.]
+De los 45 requisitos funcionales, 17 (37,8\,\%) se aceptaron en la sesión: la persistencia de la señal, el guardado de proyectos y la exportación de resultados (FR-IO-01, FR-IO-03 y FR-IO-05); la segmentación en \textit{trials}, el ajuste manual de la frecuencia de muestreo, el \textit{Butterfly} y la remoción de artefactos (FR-UI-01, FR-UI-06, FR-UI-09 y FR-UI-13); el rango de color y la normalización del escalograma (FR-WV-01 y FR-WV-02), y el análisis PAC de un canal junto con el filtro Butterworth (FR-PAC-01, FR-PAC-03 a FR-PAC-08 y FR-PAC-20). Ningún requisito se rechazó.
+
+La carga de formatos se aceptó parcialmente, porque no se probó un archivo EDF, y la apertura de proyectos se probó con fallas por un error de carga. Los 26 restantes no se trataron por el tiempo disponible; entre ellos están los siete del análisis entre canales y de PPC, que requerían un registro con dos canales neuronales. Según la verificación del equipo, los 26 están implementados y cuentan con pruebas automáticas (Tabla~\ref{tab:td_trazabilidad}), pero no con la aceptación del usuario.
+
+La valoración general fue positiva: al cierre, el participante consideró que el desarrollo ``va bien'' y que las fallas observadas ``se arreglan fácil'', y la directora del proyecto indicó que los requisitos acordados se cumplieron. Para completar la aceptación conviene una nueva sesión que cubra los requisitos pendientes, en especial los análisis entre canales y la apertura de proyectos.
 \capitulo{TRAZABILIDAD ENTRE REQUISITOS Y PRUEBAS}
 La Tabla~\ref{tab:td_trazabilidad} relaciona cada uno de los 81 requisitos del SRS con las pruebas automáticas, las mediciones o las verificaciones manuales que lo comprueban. Los requisitos funcionales se validan, además, con el usuario en los cuadros de aceptación de la Sección~\ref{sec:td_uat}.
 
@@ -3406,11 +3482,13 @@ NFR-S-05 & R77 & Nuevo \textit{plugin} sin modificar el núcleo & Pruebas autom�
 \end{longtable}
 \end{center}
 \capitulo{CONCLUSIONES}
-La suite automática de Gamma Lab 2.0 consta de 917 pruebas, de las cuales 912 se aprobaron y 5 se mantienen como fallos esperados con su causa documentada; ninguna falla. Frente a la versión 1.0, cuyo TD reportó 60 pruebas unitarias \cite{td2025}, la cobertura se amplió a todos los servicios del núcleo, a los módulos nuevos de análisis y a los requisitos no funcionales.
+La suite automática de Gamma Lab 2.0 consta de 921 pruebas, de las cuales 916 se aprobaron y 5 se mantienen como fallos esperados con su causa documentada; ninguna falla. Frente a la versión 1.0, cuyo TD reportó 60 pruebas unitarias \cite{td2025}, la cobertura se amplió a todos los servicios del núcleo, a los módulos nuevos de análisis y a los requisitos no funcionales.
 
 La validación frente a BOARD-FTD-PACC confirma la equivalencia de \textit{Average}, ERP, FFT, \textit{FFT Average} y PSD. En la transformada \textit{wavelet} las diferencias se explican por una convención de amplitud distinta, medida y documentada, y no por errores de cálculo. En \textit{PSD Average} la corrección de la tendencia acercó el resultado a la referencia, pero queda una diferencia entre 0 y 3\,Hz cuya causa no se ha identificado. Los requisitos de rendimiento se cumplen con dos matices: el peor cuadro durante la interacción con tres canales y la primera apertura del módulo PAC.
 
-Quedan pendientes las pruebas de usabilidad y de aceptación con el usuario del laboratorio, cuyos casos y cuadros se encuentran preparados en las Secciones~\ref{sec:td_usabilidad} y~\ref{sec:td_uat}, así como la actualización de la prueba \textit{test\_el\_orden\_de\_botones\_viene\_de\_los\_metadatos}.
+Las pruebas con el usuario se hicieron en una sesión guiada con un profesor investigador del Laboratorio de Electrofisiología, el \fechasesion{}, y en una sesión anterior con otro investigador del laboratorio. Se trataron ocho de los diez casos de usabilidad, seis de ellos sin fallas; la puntuación SUS fue de 87,5, y 17 de los 45 requisitos funcionales se aceptaron y uno más de forma parcial, sin que ninguno se rechazara. Las fallas observadas en las medidas sobre todos los \textit{trials} se corrigieron después de la sesión. El cliente describió Gamma Lab 2.0 como una herramienta que reúne en un solo programa los análisis que el laboratorio requiere y automatiza los procedimientos repetitivos que antes se hacían a mano.
+
+Los resultados con el usuario son, sin embargo, parciales: provienen de pocos participantes, en la sesión principal la aplicación la operó el equipo, un requisito funcional se probó con fallas y 26 no se evaluaron. Se recomienda completar la evaluación con una sesión no guiada que cubra los análisis entre canales y la cancelación de cálculos.
 
 \begin{thebibliography}{9}
 
@@ -3419,6 +3497,9 @@ S. Asencio Rodríguez, M. F. González Valencia, J. E. Martínez Clavijo, y G. V
 
 \bibitem{brooke1996}
 J. Brooke, ``SUS: A quick and dirty usability scale,'' en \textit{Usability Evaluation in Industry}, P. W. Jordan, B. Thomas, B. A. Weerdmeester, e I. L. McClelland, Eds. Londres, Reino Unido: Taylor \& Francis, 1996, pp. 189--194.
+
+\bibitem{bangor2009}
+A. Bangor, P. Kortum, y J. Miller, ``Determining what individual SUS scores mean: Adding an adjective rating scale,'' \textit{Journal of Usability Studies}, vol. 4, n.\textsuperscript{o} 3, pp. 114--123, 2009.
 
 \end{thebibliography}
 

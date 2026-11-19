@@ -92,10 +92,10 @@ LOS REQUISITOS PARA EL TÍTULO EN INGENIERÍA DE SISTEMAS}
 \newcommand{\fechaLarga}{Noviembre, 2026}      % mes y año en la portada
 
 % Autoridades de la universidad
-\newcommand{\rector}{Nombre del Rector, S.J.}
-\newcommand{\decano}{Ing. Nombre del Decano de la Facultad}
-\newcommand{\directorDepto}{Ing. Nombre del Director de Departamento, Ph.D.}
-\newcommand{\directorCarrera}{Ing. Nombre de la Directora de Carrera}
+\newcommand{\rector}{P. Luis Fernando Múnera Congote, S.J.}
+\newcommand{\decano}{Ing. Diego Alejandro Patiño Guevara, Ph.D.}
+\newcommand{\directorDepto}{Ing. César Julio Bustacara Medina, Ph.D.}
+\newcommand{\directorCarrera}{Ing. Andrea del Pilar Rueda Olarte}
 
 % Nombres de los archivos de imagen (subalos con estos nombres)
 \newcommand{\logoUniversidad}{LogoJaveriana}
@@ -197,7 +197,7 @@ LOS REQUISITOS PARA EL TÍTULO EN INGENIERÍA DE SISTEMAS}
   \leyendaGrado\par
   \vspace{1.4cm}
 
-  {\bfseries Director}\par
+  {\bfseries Directora}\par
   \vspace{0.4cm}
   \director\par
   \vspace{1.2cm}
@@ -1057,7 +1057,6 @@ El diseño tiene los siguientes límites conocidos:
   \item \textbf{Submuestreo sin filtro \textit{antialias}.} Se conserva para coincidir con la referencia, por lo que el contenido sobre el nuevo Nyquist se pliega sobre frecuencias bajas.
   \item \textbf{Cancelación no inmediata.} Una etapa en curso no se puede interrumpir. Pasados dos segundos el resultado se descarta, pero el cálculo puede seguir activo hasta terminar, lo que deja parcialmente cubierto el requerimiento de garantizar que todo cálculo cancelado termine.
   \item \textbf{PAC entre canales solo en modo Psel.} Los modos PAC y PAC \textit{Average} trabajan sobre un canal.
-  \item \textbf{Índice de modulación sin persistencia.} Este módulo todavía no participa del mecanismo de guardado, por lo que su análisis no se conserva con el proyecto.
   \item \textbf{Aproximación de las muestras independientes en PPC.} Con ruido independiente, la media medida fue de $-0{,}009$ en lugar de 0. El sesgo va hacia abajo, de modo que no crea acoplamiento.
   \item \textbf{Tramos planos en PPC.} Se detecta un \textit{trial} constante, pero no un tramo plano dentro de un \textit{trial} por lo demás activo.
   \item \textbf{Dependencia entre módulos.} PPC reutiliza una operación de presentación de PAC, la única excepción al criterio de ubicar en el núcleo lo que comparten dos módulos.
@@ -1321,7 +1320,7 @@ La sección \textit{Analysis} agrupa las técnicas por dominio (Figura~\ref{fig:
 
 \subsection{Metodología aplicada}
 
-La metodología de verificación y validación de Gamma Lab 2.0 se organizó en seis frentes de pruebas, con el propósito de evaluar la solución desde una perspectiva técnica y funcional. Esta organización permitió abordar de manera progresiva la evaluación de los componentes internos, el comportamiento de la aplicación y su utilización por parte de los investigadores del Laboratorio de Electrofisiología. Los cuatro primeros frentes se orientaron a la verificación técnica realizada por el equipo de desarrollo, mientras que los dos restantes se enfocaron en la evaluación de la herramienta con la participación de sus usuarios.
+La metodología de verificación y validación de Gamma Lab 2.0 se organizó en seis frentes de pruebas. Esta organización permitió abordar de manera progresiva la evaluación de los componentes internos, el comportamiento de la aplicación y su utilización por parte de los investigadores del Laboratorio de Electrofisiología. Los cuatro primeros frentes se orientaron a la verificación técnica realizada por el equipo de desarrollo, mientras que los dos restantes se enfocaron en la evaluación de la herramienta con la participación de sus usuarios.
 
 \subsubsection{Pruebas unitarias y de integración del núcleo}
 
@@ -1337,16 +1336,32 @@ Las pruebas de integración comprueban que cada \textit{plugin} delegue su cálc
 
 \subsubsection{Validación frente al sistema de referencia}
 
-Para garantizar la exactitud de los análisis, sus resultados se contrastaron con los de BOARD-FTD-PACC sobre la señal \textit{17308005.abf}, de dos canales, suministrada por el laboratorio. En ambos sistemas se usaron los mismos parámetros de segmentación:
+Para garantizar la exactitud de los análisis, sus resultados se contrastaron con los de BOARD-FTD-PACC sobre la señal \textit{17308005.abf}, de dos canales, suministrada por el laboratorio. En ambos sistemas se usaron los mismos parámetros de segmentación (Tabla~\ref{tab:pruebas_segmentacion}).
 
-\begin{itemize}
-  \item Canal: CA1.
-  \item Canal de estímulo: IN7.
-  \item Umbral: 0,7.
-  \item Estímulos por \textit{trial}: 1.
-  \item Ventana: de $-0{,}05$ a $4{,}0$\,s respecto al estímulo.
-  \item Modo de cierre: \textit{Cut to the next stim}.
-\end{itemize}
+\begin{table}[H]
+\centering
+\scriptsize
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{|l|>{\raggedright\arraybackslash}X|}
+\hline
+\textbf{Parámetro} & \textbf{Valor} \\
+\hline
+Canal & CA1 \\
+\hline
+Canal de estímulo & IN7 \\
+\hline
+Umbral & 0,7 \\
+\hline
+Estímulos por \textit{trial} & 1 \\
+\hline
+Ventana & De $-0{,}05$ a $4{,}0$\,s respecto al estímulo \\
+\hline
+Modo de cierre & \textit{Cut to the next stim} \\
+\hline
+\end{tabularx}
+\caption{Parámetros de segmentación empleados en la validación}
+\label{tab:pruebas_segmentacion}
+\end{table}
 
 Cada análisis se aplicó sobre todos los \textit{trials}, ejecutando solo el cálculo del \textit{plugin}, y su matriz se comparó con la exportada desde BOARD-FTD-PACC. Los análisis espectrales usaron remuestreo a 1000\,Hz y un rango de 0 a 500\,Hz. PSD y PSD \textit{Average} emplearon ventana de Hamming, segmentos de 1024 muestras, solapamiento de 128 y 1024 puntos de transformada. La transformada \textit{wavelet} se calculó entre 1 y 500\,Hz, con dos ciclos y eje de frecuencias lineal, como en la referencia.
 
@@ -1362,11 +1377,11 @@ Cuando una comparación no cumple un criterio por una diferencia conocida entre 
 
 Los módulos nuevos se validaron de otra forma. PAC y el índice de modulación se portaron de BOARD-FTD-PACC, por lo que sus pruebas contrastan cada paso del cálculo con el código original: los filtros IIR, la transformada de Morse y la agrupación de la amplitud por fase. PPC, en cambio, se aparta deliberadamente de la referencia, por las razones expuestas en el capítulo de diseño. Por eso se verifica con señales sintéticas: dos canales con desfase constante deben arrojar una consistencia alta, y dos canales independientes, una cercana a cero.
 
-Como complemento, el usuario revisa las gráficas de cada análisis en ambos sistemas y califica cada caso como \textit{equivalente}, \textit{diferencia aceptada} o \textit{diferencia no aceptada}. \hl{[AQUÍ FALTA COMPLETAR LA REVISIÓN VISUAL DE LOS ANÁLISIS RESTANTES; A LA FECHA ESTÁN REGISTRADOS AVERAGE, WAVELET, PAC Y PPC]}
+Como complemento, se revisaron las gráficas de cada análisis en ambos sistemas y cada caso se calificó como \textit{equivalente}, \textit{diferencia aceptada} o \textit{diferencia no aceptada}. El usuario revisó \textit{Average}, \textit{Wavelet}, PAC y PPC, y el equipo de desarrollo revisó los demás frente a las referencias exportadas de BOARD-FTD-PACC. \textit{Relative PSD}, PAC entre canales y el índice de modulación no tienen una referencia exportada con la cual comparar, por lo que su cálculo se verificó con señales de respuesta conocida.
 
 \subsubsection{Pruebas de rendimiento y de requisitos no funcionales}
 
-Los requisitos de rendimiento, confiabilidad y soporte que no dependen de la percepción del usuario se verificaron de tres maneras:
+Los requisitos de rendimiento, confiabilidad y soporte que no dependen de la percepción del usuario se contrastaron con el criterio de aceptación definido en el SRS, y su cumplimiento se verificó de tres maneras:
 
 \begin{itemize}
   \item \textbf{Pruebas automáticas}, para los comportamientos expresables como aserción, por ejemplo que tras cerrar un proyecto no quede ninguna copia de la señal en memoria.
@@ -1374,21 +1389,21 @@ Los requisitos de rendimiento, confiabilidad y soporte que no dependen de la per
   \item \textbf{Mediciones sobre la aplicación completa} con \textit{time.perf\_counter}, para límites como el tiempo de arranque o el de cambio de módulo.
 \end{itemize}
 
-Cada valor se contrastó con el criterio de aceptación del SRS, por ejemplo cargar un archivo en 2\,s o menos.
-
 \subsubsection{Pruebas de usabilidad}
 
 Estas pruebas valoran la facilidad con que los investigadores completan las tareas habituales de su flujo de trabajo, y si la nueva organización de la interfaz resuelve los problemas de la versión anterior. Para ello se diseñaron diez casos, UT-01 a UT-10, que cubren los requisitos NFR-U-01 a NFR-U-09.
 
 Las sesiones son individuales y las conduce un moderador del equipo. El participante realiza cada tarea sin instrucciones adicionales y expresa en voz alta lo que piensa. El moderador solo interviene si se le solicita ayuda, y registra cada solicitud. Por caso se consignan cuatro métricas: finalización, tiempo, errores y solicitudes de ayuda. Al final, el participante responde el cuestionario SUS (\textit{System Usability Scale}), con puntuación entre 0 y 100.
 
-Las sesiones se realizaron con \hl{[AQUÍ FALTA EL NÚMERO DE PARTICIPANTES]} investigadores, entre el \hl{[AQUÍ FALTA LA FECHA DE INICIO DE LAS SESIONES DE USABILIDAD]} y el \hl{[AQUÍ FALTA LA FECHA DE FINALIZACIÓN DE LAS SESIONES DE USABILIDAD]} (Tabla~\ref{tab:pruebas_sesiones}).
+Por la disponibilidad de los participantes, las sesiones fueron remotas y guiadas. Los integrantes del equipo operaron la aplicación compartiendo pantalla, mientras el participante indicaba qué probar, hacía preguntas y comentaba los resultados. Por ello no se midieron el tiempo, los errores ni las solicitudes de ayuda de cada tarea; el tiempo de cada caso se estimó a partir de la grabación. 
 
 \subsubsection{Pruebas de aceptación del usuario}
 
-Estas pruebas confirman que Gamma Lab 2.0 satisface los requisitos funcionales y las expectativas del usuario en condiciones reales de uso. El usuario ejecuta, con señales y parámetros de su protocolo, la funcionalidad asociada a cada uno de los 45 requisitos funcionales del SRS. Por cada requisito se diligencia un cuadro que contrasta el comportamiento de la versión anterior (\textit{Antes}) con el de la versión 2.0 (\textit{Después}) y que registra la retroalimentación del usuario y el resultado: \textit{aceptado}, \textit{aceptado parcialmente} o \textit{no aceptado}.
+Estas pruebas buscan confirmar que Gamma Lab 2.0 satisface los requisitos funcionales y las expectativas del usuario en condiciones reales de uso. Se realizaron en la misma sesión guiada de usabilidad: con señales del laboratorio, el participante indicó qué funcionalidades revisar entre las asociadas a los 45 requisitos funcionales del SRS, mientras el equipo operaba la aplicación. Por cada requisito se diligenció un cuadro que contrasta el comportamiento de la versión anterior (\textit{Antes}) con el observado en la versión 2.0 (\textit{Después}) y que registra la retroalimentación del usuario y el resultado: \textit{aceptado}, \textit{aceptado parcialmente} o \textit{no aceptado}.
 
-Estas pruebas se realizaron entre el \hl{[AQUÍ FALTA LA FECHA DE INICIO DE LAS PRUEBAS DE ACEPTACIÓN]} y el \hl{[AQUÍ FALTA LA FECHA DE FINALIZACIÓN DE LAS PRUEBAS DE ACEPTACIÓN]} (Tabla~\ref{tab:pruebas_sesiones}).
+Solo se marca como aceptado un requisito que se demostró sin fallas durante la sesión. Los que presentaron fallas se registran como \textit{probados con fallas}, y los que no alcanzaron a tratarse, como \textit{no evaluados en la sesión}. Estos últimos no los utilizó personalmente el usuario, pero el equipo de trabajo verificó su implementación en el código y su respaldo en las pruebas automáticas.
+
+Las sesiones de usabilidad y de aceptación se realizaron entre el 11 y el 18 de noviembre de 2026, con tres participantes (Tabla~\ref{tab:pruebas_sesiones}).
 
 \begin{table}[H]
 \centering
@@ -1398,9 +1413,11 @@ Estas pruebas se realizaron entre el \hl{[AQUÍ FALTA LA FECHA DE INICIO DE LAS 
 \hline
 \textbf{Participante} & \textbf{Rol en el laboratorio} & \textbf{Tipo de sesión} & \textbf{Fecha} \\
 \hline
-\hl{[AQUÍ FALTA EL NOMBRE DEL PARTICIPANTE]} & \hl{[AQUÍ FALTA EL ROL]} & \hl{[USABILIDAD / ACEPTACIÓN]} & \hl{[AQUÍ FALTA LA FECHA]} \\
+Jonathan \hl{[AQUÍ FALTA EL APELLIDO]} & Investigador y profesor & Usabilidad y aceptación & 11 de noviembre de 2026 \\
 \hline
-\hl{[AQUÍ FALTA EL NOMBRE DEL PARTICIPANTE]} & \hl{[AQUÍ FALTA EL ROL]} & \hl{[USABILIDAD / ACEPTACIÓN]} & \hl{[AQUÍ FALTA LA FECHA]} \\
+Francisco Alejandro Munera Galarza & Investigador y profesor & Usabilidad y aceptación & 13 de noviembre de 2026 \\
+\hline
+Cécile Gauthier Umaña & Directora del trabajo de grado & Usabilidad y aceptación & 13 y 18 de noviembre de 2026 \\
 \hline
 \end{tabularx}
 \caption{Sesiones de pruebas con el usuario}
@@ -1409,7 +1426,7 @@ Estas pruebas se realizaron entre el \hl{[AQUÍ FALTA LA FECHA DE INICIO DE LAS 
 
 \subsection{Entorno y herramientas}
 
-Las pruebas automáticas se ejecutaron el 16 de noviembre de 2026 y las mediciones de rendimiento el 8 de noviembre de 2026, en los equipos de la Tabla~\ref{tab:pruebas_entorno}.
+Las pruebas automáticas se ejecutaron el 18 de noviembre de 2026 y las mediciones de rendimiento el 8 de noviembre de 2026, en los equipos de la Tabla~\ref{tab:pruebas_entorno}.
 
 \begin{table}[H]
 \centering
@@ -1427,7 +1444,7 @@ Sistema operativo & Windows 11, 64 bits & Windows 11, 64 bits \\
 \hline
 Intérprete & Python 3.13.7 & Python 3.12.1 \\
 \hline
-Fecha & 16 de noviembre de 2026 & 8 de noviembre de 2026 \\
+Fecha & 18 de noviembre de 2026 & 8 de noviembre de 2026 \\
 \hline
 \end{tabularx}
 \caption{Entorno de ejecución de las pruebas automáticas}
@@ -1453,11 +1470,13 @@ En las sesiones con el usuario, Gamma Lab 2.0 se instala con \textit{GammaLab-Se
 \hline
 \textbf{Elemento} & \textbf{Valor} \\
 \hline
-Procesador & \hl{[AQUÍ FALTA EL PROCESADOR DEL EQUIPO]} \\
+Equipo & Portátil Dell Inspiron 15 3520 \\
 \hline
-Memoria RAM & \hl{[AQUÍ FALTA LA MEMORIA RAM DEL EQUIPO]} \\
+Procesador & Intel Core i7-1255U (10 núcleos, 12 hilos) \\
 \hline
-Sistema operativo & \hl{[AQUÍ FALTA EL SISTEMA OPERATIVO DEL EQUIPO]} \\
+Memoria RAM & 24\,GB \\
+\hline
+Sistema operativo & Windows 11 Pro 25H2, 64 bits \\
 \hline
 Versión de Gamma Lab & 2.0, instalada con \textit{GammaLab-Setup-2.0.0.exe} \\
 \hline
@@ -1494,7 +1513,7 @@ Una matriz de trazabilidad vincula, además, cada uno de los 81 requisitos del S
 \subsection{Pruebas automáticas}
 \label{sec:resultados_automaticas}
 
-Los resultados obtenidos en las pruebas automáticas muestran un sistema estable: de las 917 pruebas ejecutadas el 16 de noviembre de 2026, 912 se aprobaron, 5 terminaron como fallos esperados (Tabla~\ref{tab:resultados_automaticas}).
+Los resultados obtenidos en las pruebas automáticas muestran un sistema estable: de las 921 pruebas ejecutadas el 18 de noviembre de 2026, 916 se aprobaron, 5 terminaron como fallos esperados (Tabla~\ref{tab:resultados_automaticas}).
 
 \begin{table}[H]
 \centering
@@ -1504,7 +1523,7 @@ Los resultados obtenidos en las pruebas automáticas muestran un sistema estable
 \hline
 \textbf{Frente} & \textbf{Pruebas} & \textbf{Aprobadas} & \textbf{Fallo esperado} & \textbf{Fallidas} \\
 \hline
-Núcleo: unitarias y de integración & 389 & 389 & 0 & 0 \\
+Núcleo: unitarias y de integración & 393 & 393 & 0 & 0 \\
 \hline
 Módulos de análisis & 476 & 476 & 0 & 0 \\
 \hline
@@ -1512,7 +1531,7 @@ Validación frente a BOARD-FTD-PACC & 27 & 22 & 5 & 0 \\
 \hline
 Rendimiento & 25 & 25 & 0 & 0 \\
 \hline
-\textbf{Total} & \textbf{917} & \textbf{912} & \textbf{5} & \textbf{0} \\
+\textbf{Total} & \textbf{921} & \textbf{916} & \textbf{5} & \textbf{0} \\
 \hline
 \end{tabularx}
 \caption{Resultados de las pruebas automáticas}
@@ -1536,7 +1555,7 @@ En la validación frente a BOARD-FTD-PACC, \textbf{cinco de los ocho análisis c
 
 Los módulos nuevos también se validaron. PAC y el índice de modulación reproducen paso a paso las funciones originales de BOARD-FTD-PACC. PPC responde como se espera ante señales sintéticas de respuesta conocida.
 
-En la comparación visual, el usuario calificó como \textit{equivalentes} las gráficas de \textit{Average}, \textit{Wavelet}, PAC y PPC. \hl{[AQUÍ FALTA EL RESULTADO DE LA COMPARACIÓN VISUAL DE ERP, FFT, FFT AVERAGE, PSD, PSD AVERAGE, RELATIVE PSD, WAVELET AVERAGE, PAC ENTRE CANALES Y MODULATION INDEX]}
+La comparación visual confirmó estos resultados. El usuario calificó como \textit{equivalentes} las gráficas de \textit{Average}, \textit{Wavelet}, PAC y PPC, y el equipo de desarrollo, las de ERP, FFT, \textit{FFT Average} y PSD. En \textit{Wavelet Average} la diferencia se calificó como \textit{aceptada}, por corresponder a la convención de amplitud, y en \textit{PSD Average} como \textit{no aceptada}, por la separación de las curvas entre 0 y 3\,Hz. \textit{Relative PSD}, PAC entre canales y el índice de modulación no se compararon por falta de una referencia exportada.
 
 \subsection{Requisitos no funcionales}
 
@@ -1571,26 +1590,32 @@ En memoria, liberar las ventanas gráficas de cada módulo redujo el consumo de 
 
 \subsection{Validación con el usuario}
 
+En las pruebas, realizadas entre el 11 y el 18 de noviembre de 2026, participaron tres personas: Jonathan \hl{[AQUÍ FALTA EL APELLIDO]} y Francisco Alejandro Munera Galarza, investigadores y profesores del laboratorio, y Cécile Gauthier Umaña, directora del trabajo de grado (Tabla~\ref{tab:pruebas_sesiones}). Los resultados provienen de la sesión guiada con un profesor investigador, en la que el equipo operó la aplicación.
+
+En usabilidad, \textbf{se trataron seis de los diez casos, cuatro de ellos sin fallas} (Tabla~\ref{tab:resultados_usabilidad}). La carga de la señal, la segmentación en \textit{trials}, el filtrado con vista previa y el análisis PAC funcionaron correctamente, y el participante valoró en particular el PAC y el control del rango de color. Las dificultades se concentraron en las medidas sobre todos los \textit{trials}, corregidas después de la sesión, y en un error de carga al abrir un proyecto.
+
 \begin{table}[H]
 \centering
 \scriptsize
 \renewcommand{\arraystretch}{1.3}
-\begin{tabularx}{\textwidth}{|l|>{\raggedright\arraybackslash}X|}
+\begin{tabularx}{\textwidth}{|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X|c|}
 \hline
-\textbf{Métrica} & \textbf{Resultado} \\
+\textbf{Resultado} & \textbf{Casos} & \textbf{Total} \\
 \hline
-Casos completados & \hl{[AQUÍ FALTA EL NÚMERO]} de 10 \\
+Completados sin fallas & UT-02, UT-03, UT-05, UT-06 & 4 \\
 \hline
-Tiempo promedio por caso & \hl{[AQUÍ FALTA EL TIEMPO EN MINUTOS]} \\
+Completados con dificultad & UT-08, UT-10 & 2 \\
 \hline
-Errores y solicitudes de ayuda & \hl{[AQUÍ FALTAN LOS TOTALES]} \\
-\hline
-Puntuación SUS (0 a 100) & \hl{[AQUÍ FALTA LA PUNTUACIÓN]} \\
+No evaluados en la sesión & UT-01, UT-04, UT-07, UT-09 & 4 \\
 \hline
 \end{tabularx}
 \caption{Resultados de las pruebas de usabilidad}
 \label{tab:resultados_usabilidad}
 \end{table}
+
+El cuestionario SUS obtuvo \textbf{87,5 puntos sobre 100}, cerca del valor que Bangor, Kortum y Miller asocian con una usabilidad ``excelente'' (85,6) \cite{bangor2009}. Al provenir de un solo participante, indica una valoración alta, pero no permite generalizarla.
+
+En aceptación, \textbf{16 de los 45 requisitos funcionales se aceptaron y ninguno se rechazó} (Tabla~\ref{tab:resultados_aceptacion}). Los aceptados cubren la persistencia de la señal, el guardado de proyectos, la exportación, la segmentación en \textit{trials}, el ajuste de la frecuencia de muestreo, el \textit{Butterfly}, el escalograma y el análisis PAC de un canal. Dos requisitos se probaron con fallas: la apertura de proyectos, por el error de carga, y la carga de formatos, porque no se probó un archivo EDF y el archivo \textit{.mat} se abrió sin frecuencia de muestreo.
 
 \begin{table}[H]
 \centering
@@ -1600,11 +1625,15 @@ Puntuación SUS (0 a 100) & \hl{[AQUÍ FALTA LA PUNTUACIÓN]} \\
 \hline
 \textbf{Resultado} & \textbf{Requisitos} & \textbf{Porcentaje} \\
 \hline
-Aceptados & \hl{[AQUÍ FALTA]} & \hl{[AQUÍ FALTA]} \\
+Aceptados & 16 & 35,6\,\% \\
 \hline
-Aceptados parcialmente & \hl{[AQUÍ FALTA]} & \hl{[AQUÍ FALTA]} \\
+Aceptados parcialmente & 0 & 0\,\% \\
 \hline
-No aceptados & \hl{[AQUÍ FALTA]} & \hl{[AQUÍ FALTA]} \\
+No aceptados & 0 & 0\,\% \\
+\hline
+Probados con fallas & 2 & 4,4\,\% \\
+\hline
+No evaluados en la sesión & 27 & 60,0\,\% \\
 \hline
 \textbf{Total} & \textbf{45} & \textbf{100\,\%} \\
 \hline
@@ -1613,12 +1642,16 @@ No aceptados & \hl{[AQUÍ FALTA]} & \hl{[AQUÍ FALTA]} \\
 \label{tab:resultados_aceptacion}
 \end{table}
 
-En las pruebas participaron \hl{[AQUÍ FALTA EL NÚMERO DE USUARIOS Y SU PERFIL]}. \hl{[AQUÍ FALTAN LOS PRINCIPALES RESULTADOS DE LAS SESIONES: FUNCIONALIDADES MEJOR VALORADAS, CASOS CON MAYOR DIFICULTAD Y MOTIVOS DE LOS REQUISITOS NO ACEPTADOS]}
+Los 27 requisitos no evaluados no alcanzaron a tratarse por el tiempo de la sesión; entre ellos están los del análisis entre canales y PPC, que requerían un registro con dos canales neuronales. No los utilizó personalmente el usuario, pero el equipo de trabajo verificó que están implementados en el código y que cuentan con pruebas automáticas aprobadas.
+
+De las trece solicitudes y observaciones surgidas en las sesiones, nueve se atendieron: entre ellas, la línea de la pendiente, la medida por derivada (\textit{Difference}), las medidas sobre todos los \textit{trials} y la posibilidad de tener varios proyectos abiertos. Dos siguen pendientes, una se resolvió de forma manual por acuerdo con la directora y una se dejó como trabajo futuro.
+
+Por último, el laboratorio valoró que Gamma Lab 2.0 reúne en una sola herramienta los análisis que requiere y automatiza los procedimientos repetitivos, de modo que ``un análisis que tomaba semanas puede completarse en minutos''.
 
 \subsection{Limitaciones identificadas}
 \label{sec:resultados_limitaciones}
 
-Ninguna de estas limitaciones impide el flujo de análisis:
+Los resultados anteriores dejan las siguientes limitaciones:
 
 \begin{itemize}
   \item \textbf{\textit{PSD Average}:} diferencia residual entre 0 y 3\,Hz, de causa no identificada.
@@ -1627,33 +1660,63 @@ Ninguna de estas limitaciones impide el flujo de análisis:
   \item \textbf{Primera apertura de PAC:} puede detener la interfaz entre 270 y 480\,ms, por encima del límite de 300\,ms. Las aperturas siguientes cumplen.
   \item \textbf{Instalación:} al no tener firma digital, el instalador genera un aviso de Windows que el usuario debe confirmar.
   \item \textbf{Pantallas pequeñas:} por debajo de 1366 píxeles de ancho, el área de gráficas se reduce notablemente.
+  \item \textbf{Apertura de proyectos con PAC:} abrir un proyecto con parámetros de PAC produjo un error de carga cuya causa no se ha identificado.
+  \item \textbf{Aviso de la señal anterior:} tras cargar otra señal, el aviso de la anterior sigue visible.
+  \item \textbf{Frecuencia de muestreo de archivos \textit{.mat}:} no se toma del encabezado; por acuerdo con la directora, el usuario la ingresa de forma manual.
+  \item \textbf{Alcance de la validación con el usuario:} proviene de un solo participante en una sesión guiada, por lo que no mide la autonomía del investigador frente a la interfaz, y 27 requisitos cuentan con la verificación del equipo pero no con la aceptación directa del usuario.
 \end{itemize}
-
-\hl{[AQUÍ FALTAN LAS LIMITACIONES QUE SURJAN DE LAS SESIONES CON EL USUARIO]}
 
 %=====================================================================
 \capitulo{CONCLUSIONES}
 
 \subsection{Análisis de Impacto del Proyecto}
-\pendiente
 
 \subsubsection{A corto, mediano y largo plazo}
-\pendiente
+
+\textbf{A corto plazo}, Gamma Lab 2.0 proporciona un entorno más estable y adecuado para las exigencias de la investigación electrofisiológica, superando limitaciones que anteriormente dificultaban el trabajo de los investigadores. La gestión de tareas, la persistencia de proyectos y la incorporación de nuevas técnicas de análisis permiten desarrollar procedimientos con mayor continuidad y eficiencia, reduciendo las dificultades operativas. Este avance fue destacado por el laboratorio, al señalar que determinados análisis que antes requerían semanas de trabajo podrían completarse en minutos.
+
+\textbf{A mediano plazo}, el proyecto establece una base tecnológica para continuar el desarrollo de nuevas funcionalidades mediante trabajos de grado, investigaciones de posgrado y proyectos conjuntos entre instituciones. La conservación de la arquitectura de \textit{microkernel} y su sistema de \textit{plugins} facilita incorporar nuevas técnicas de análisis sin modificar directamente el núcleo de la aplicación. A su vez, la documentación técnica y las pruebas desarrolladas proporcionan elementos para que futuros equipos comprendan, evalúen y extiendan la solución. Su distribución como \textit{software} libre también favorece el intercambio de conocimiento entre universidades y reduce la dependencia de herramientas comerciales para los procedimientos implementados.
+
+\textbf{A largo plazo}, Gamma Lab 2.0 tiene el potencial de contribuir al fortalecimiento de la investigación en neurociencia, al facilitar el acceso a herramientas de análisis electrofisiológico y promover su desarrollo colaborativo. Su carácter abierto permite que investigadores de distintas instituciones, particularmente en Latinoamérica, adapten y amplíen sus capacidades de acuerdo con sus necesidades experimentales. De esta manera, el proyecto no solo aporta una herramienta tecnológica, sino que también favorece la construcción de recursos científicos compartidos y el aprovechamiento del conocimiento generado en la región. Aunque sus resultados podrían servir de apoyo para futuras investigaciones con aplicaciones clínicas, cualquier uso de esta naturaleza requeriría procesos adicionales de validación que exceden el alcance del proyecto.
 
 \subsubsection{Impacto en Ingeniería de Sistemas}
-\pendiente
+
+Gamma Lab 2.0 refleja la importancia de la Ingeniería de Sistemas en la evolución de soluciones tecnológicas existentes. A diferencia de un desarrollo desde cero, trabajar sobre una arquitectura previamente construida exige comprender su funcionamiento, identificar sus limitaciones y plantear mejoras que respeten las decisiones de diseño originales. Asimismo, las restricciones técnicas y de recursos propias de un entorno de investigación representan un desafío que requiere evaluar alternativas y encontrar soluciones viables sin comprometer la continuidad del sistema. En este sentido, el proyecto permitió abordar problemas cercanos a los que enfrenta un ingeniero en contextos reales, donde las soluciones deben adaptarse a las condiciones existentes y responder a necesidades concretas de los usuarios. Además, el trabajo interdisciplinario con investigadores del área de neurociencia permitió integrar conocimientos de distintos campos y comprender cómo la ingeniería puede aportar soluciones tecnológicas a las necesidades de distintas áreas del conocimiento.
 
 \subsubsection{Impacto en Contextos Globales, Económicos, Ambientales y Sociales}
-\pendiente
+
+\begin{itemize}
+  \item \textbf{Académico y científico:} Gamma Lab 2.0 amplía las capacidades disponibles para el análisis de señales electrofisiológicas y proporciona mecanismos de verificación que contribuyen a la confiabilidad de los resultados. La posibilidad de conservar proyectos, exportar información y contrastar los análisis con una implementación de referencia favorece la continuidad de los procedimientos experimentales y su reproducibilidad.
+  \item \textbf{Tecnológico:} la evolución de la arquitectura de \textit{microkernel}, junto con la incorporación de un orquestador de tareas, fortalece la capacidad de la aplicación para gestionar operaciones computacionales y recursos. Su estructura modular facilita el mantenimiento y la incorporación progresiva de nuevas técnicas de procesamiento, permitiendo que la herramienta continúe evolucionando conforme surjan nuevas necesidades de investigación.
+  \item \textbf{Económico:} su distribución bajo licencia MIT elimina los costos de licenciamiento del propio \textit{software} y ofrece una alternativa abierta para los análisis implementados. Esto resulta especialmente relevante para universidades y centros de investigación con recursos limitados, al facilitar el acceso a herramientas especializadas sin depender exclusivamente de soluciones comerciales.
+  \item \textbf{Social y educativo:} la interfaz gráfica facilita el uso de técnicas de análisis electrofisiológico por parte de investigadores y estudiantes de distintas disciplinas, sin exigir conocimientos avanzados de programación. Además, su naturaleza abierta favorece la formación académica, el intercambio de experiencias y la participación de nuevos equipos en el desarrollo de herramientas científicas.
+  \item \textbf{Colaborativo y regional:} el proyecto fortalece la cooperación entre instituciones universitarias al dar continuidad a una herramienta desarrollada inicialmente en otro entorno académico. Este modelo de trabajo demuestra cómo el conocimiento y los recursos tecnológicos pueden compartirse y evolucionar entre universidades. Su disponibilidad como \textit{software} libre abre la posibilidad de extender esta colaboración a otros grupos de investigación latinoamericanos, promoviendo el desarrollo de capacidades científicas propias y un mejor aprovechamiento de los recursos disponibles en la región.
+  \item \textbf{Ambiental:} la posibilidad de ejecutar los análisis en equipos locales evita que el funcionamiento de la herramienta dependa de servicios externos de procesamiento. Esto permite aprovechar la infraestructura informática existente en los laboratorios, aunque su impacto ambiental dependerá del consumo energético de los equipos y de las condiciones particulares de uso.
+\end{itemize}
 
 \subsection{Conclusiones y Trabajo Futuro}
-\pendiente
 
 \subsubsection{Conclusiones}
-\pendiente
+
+Se identificaron las brechas de la primera versión a partir de las pruebas con usuarios del laboratorio y de la revisión del código. Se agruparon en cuatro frentes: errores funcionales, experiencia de navegación, estabilidad de la arquitectura y alcance analítico. Entre los hallazgos estructurales estaban la falta de liberación de memoria entre cargas y la ejecución de los análisis sobre el hilo de la interfaz.
+
+Se diseñó una solución que conserva la arquitectura \textit{microkernel} y la fortalece en tres puntos: un orquestador de tareas en el núcleo, servicios compartidos centralizados y la separación entre cálculo y presentación en cada módulo. Sobre esa base se incorporó la gestión de proyectos \textit{.glab}.
+
+Se implementó Gamma Lab 2.0, con 20 \textit{plugins} y 81 requisitos especificados (45 funcionales y 36 no funcionales). Se agregaron el análisis PAC en cuatro modos, el índice de modulación y la consistencia de fase entre canales (PPC). También se corrigieron las fallas de la versión anterior y la aplicación se empaquetó en un instalador para Windows.
+
+Se validó la solución con 921 pruebas automáticas, sin ninguna fallida. Cinco de los ocho análisis comparados resultaron equivalentes a BOARD-FTD-PACC, y las diferencias de los otros tres están medidas. Se cumplen, además, 25 de los 27 requisitos de rendimiento, confiabilidad y soporte. Con el usuario se aceptaron 16 de los 45 requisitos funcionales, ninguno se rechazó y el cuestionario de usabilidad alcanzó 87,5 sobre 100; los 27 requisitos no evaluados en la sesión cuentan con la verificación del equipo y con pruebas automáticas.
+
+En conjunto, se cumplió el objetivo general: Gamma Lab 2.0 amplía las capacidades de análisis hacia el acoplamiento entre frecuencias, sobre una arquitectura que ejecuta los cálculos en segundo plano, libera los recursos que deja de usar y mantiene los tiempos de respuesta muy por debajo de los límites fijados.
 
 \subsubsection{Trabajo futuro}
-\pendiente
+
+A partir de los resultados obtenidos, se identifican las siguientes líneas de trabajo:
+
+\begin{itemize}
+  \item \textbf{Fusionar registros de distintos animales}, en serie o en paralelo, para analizarlos en conjunto dentro de un mismo proyecto.
+  \item \textbf{Extender la herramienta a un entorno multiusuario}, de modo que varios investigadores puedan compartir proyectos y resultados.
+  \item \textbf{Implementar una tienda de \textit{plugins}}, propuesta desde la primera versión de Gamma Lab, que facilite publicar e incorporar nuevas técnicas de análisis y fomente la colaboración entre laboratorios.
+\end{itemize}
 
 %=====================================================================
 \capitulo{REFERENCIAS}
@@ -1717,6 +1780,8 @@ J. Aru \textit{et al.}, ``Untangling cross-frequency coupling in neuroscience,''
 \bibitem{iso29148} ISO/IEC/IEEE 29148:2018, "Systems and software engineering, Life cycle processes, Requirements engineering," 2.\textsuperscript{a} ed., International Organization for Standardization / International Electrotechnical Commission / Institute of Electrical and Electronics Engineers, nov. 2018. [En línea]. Disponible: \url{https://www.iso.org/standard/72089.html}.
 
 \bibitem{eeles2001} P. Eeles, "Capturing Architectural Requirements," Rational Software Corporation, nov. 2001. [En línea]. Disponible: \url{https://www.ibm.com/developerworks/rational/library/4706.html}.
+
+\bibitem{bangor2009} A. Bangor, P. Kortum, y J. Miller, "Determining what individual SUS scores mean: Adding an adjective rating scale," \textit{Journal of Usability Studies}, vol. 4, n.\textsuperscript{o} 3, pp. 114--123, 2009.
 
 \end{thebibliography}
 

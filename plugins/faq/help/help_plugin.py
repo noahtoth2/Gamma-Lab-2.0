@@ -59,7 +59,7 @@ class HelpPlugin(IPlugin):
             lambda: webbrowser.open("https://github.com/GAMMA-BOARD-FTD-PACC/Documentos")
         )
         self.ui.videosButton.clicked.connect(
-            lambda: webbrowser.open("https://youtube.com/playlist?list=PLTiLHF2jqOJZLib1CLtq1JnGZeNTktVmm&si=6JOE_WovbWcczJy2")
+            lambda: webbrowser.open("https://youtube.com/playlist?list=PLSRjfDRrG__0&si=_BHL58ZS9uqzWxLg")
         )
         self.ui.downloadButton.clicked.connect(
             lambda: webbrowser.open("https://garzonlj.github.io/webGammaLab/")
