@@ -1698,18 +1698,15 @@ Gamma Lab 2.0 refleja la importancia de la Ingeniería de Sistemas en la evoluci
 
 \subsubsection{Conclusiones}
 
-\begin{itemize}
-  \item \textbf{Se identificaron las brechas de la primera versión} a partir de las pruebas con usuarios del laboratorio y de la revisión del código. Se agruparon en cuatro frentes: errores funcionales, experiencia de navegación, estabilidad de la arquitectura y alcance analítico. Entre los hallazgos estructurales estaban la falta de liberación de memoria entre cargas y la ejecución de los análisis sobre el hilo de la interfaz.
-  \item \textbf{Se diseñó una solución que conserva la arquitectura \textit{microkernel}} y la fortalece en tres puntos: un orquestador de tareas en el núcleo, servicios compartidos centralizados y la separación entre cálculo y presentación en cada módulo. Sobre esa base se incorporó la gestión de proyectos \textit{.glab}.
-  \item \textbf{Se implementó Gamma Lab 2.0}, con 20 \textit{plugins} y 81 requisitos especificados (45 funcionales y 36 no funcionales). Se agregaron el análisis PAC en cuatro modos, el índice de modulación y la consistencia de fase entre canales (PPC). También se corrigieron las fallas de la versión anterior y la aplicación se empaquetó en un instalador para Windows.
-  \item \textbf{Se validó la solución} con 921 pruebas automáticas, sin ninguna fallida:
-  \begin{itemize}
-    \item cinco de los ocho análisis comparados resultaron equivalentes a BOARD-FTD-PACC, y las diferencias de los otros tres están medidas;
-    \item se cumplen 25 de los 27 requisitos de rendimiento, confiabilidad y soporte;
-    \item con el usuario se aceptaron 16 de los 45 requisitos funcionales, ninguno se rechazó y el cuestionario de usabilidad alcanzó 87,5 sobre 100. Los 27 requisitos no evaluados en la sesión cuentan con la verificación del equipo y con pruebas automáticas.
-  \end{itemize}
-  \item \textbf{En conjunto, se cumplió el objetivo general:} Gamma Lab 2.0 amplía las capacidades de análisis hacia el acoplamiento entre frecuencias, sobre una arquitectura que ejecuta los cálculos en segundo plano, libera los recursos que deja de usar y mantiene los tiempos de respuesta muy por debajo de los límites fijados.
-\end{itemize}
+Se identificaron las brechas de la primera versión a partir de las pruebas con usuarios del laboratorio y de la revisión del código. Se agruparon en cuatro frentes: errores funcionales, experiencia de navegación, estabilidad de la arquitectura y alcance analítico. Entre los hallazgos estructurales estaban la falta de liberación de memoria entre cargas y la ejecución de los análisis sobre el hilo de la interfaz.
+
+Se diseñó una solución que conserva la arquitectura \textit{microkernel} y la fortalece en tres puntos: un orquestador de tareas en el núcleo, servicios compartidos centralizados y la separación entre cálculo y presentación en cada módulo. Sobre esa base se incorporó la gestión de proyectos \textit{.glab}.
+
+Se implementó Gamma Lab 2.0, con 20 \textit{plugins} y 81 requisitos especificados (45 funcionales y 36 no funcionales). Se agregaron el análisis PAC en cuatro modos, el índice de modulación y la consistencia de fase entre canales (PPC). También se corrigieron las fallas de la versión anterior y la aplicación se empaquetó en un instalador para Windows.
+
+Se validó la solución con 921 pruebas automáticas, sin ninguna fallida. Cinco de los ocho análisis comparados resultaron equivalentes a BOARD-FTD-PACC, y las diferencias de los otros tres están medidas. Se cumplen, además, 25 de los 27 requisitos de rendimiento, confiabilidad y soporte. Con el usuario se aceptaron 16 de los 45 requisitos funcionales, ninguno se rechazó y el cuestionario de usabilidad alcanzó 87,5 sobre 100; los 27 requisitos no evaluados en la sesión cuentan con la verificación del equipo y con pruebas automáticas.
+
+En conjunto, se cumplió el objetivo general: Gamma Lab 2.0 amplía las capacidades de análisis hacia el acoplamiento entre frecuencias, sobre una arquitectura que ejecuta los cálculos en segundo plano, libera los recursos que deja de usar y mantiene los tiempos de respuesta muy por debajo de los límites fijados.
 
 \subsubsection{Trabajo futuro}
 
