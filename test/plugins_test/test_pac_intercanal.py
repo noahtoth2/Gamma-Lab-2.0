@@ -21,8 +21,8 @@ import pytest
 from plugins.analysis.time_frequency.pac import compute as cp
 
 FS = 2000.0
-FL = 5.0        # el ritmo lento, dentro de la banda de fase 3-8
-FR = 45.0       # la portadora rapida, dentro de la banda de amplitud 25-60
+FL = 5.0
+FR = 45.0
 P1, P2, A1, A2 = 3.0, 8.0, 25.0, 60.0
 
 
@@ -47,7 +47,7 @@ def canal(con_gamma, semilla, n_trials=6, dur=3.0):
     """
     t = np.arange(int(FS * dur)) / FS
     lento = np.sin(2 * np.pi * FL * t)
-    env = (1 - lento) / 2                      # maximo en el valle
+    env = (1 - lento) / 2
     extra = 0.6 * env * np.sin(2 * np.pi * FR * t) if con_gamma else 0.0
     rng = np.random.default_rng(semilla)
     return np.column_stack([lento + extra + 0.05 * rng.standard_normal(t.size)
@@ -59,7 +59,6 @@ def correr(fase, amplitud=None, **extra):
                        data_amplitud=amplitud, **extra)
 
 
-# Las dos pilas caras, una vez para todo el módulo.
 @pytest.fixture(scope="module")
 def inter():
     """El gamma está en el canal de amplitud: el caso que este modo existe para ver."""
@@ -73,9 +72,6 @@ def inter_control():
     return correr(canal(True, 0), canal(False, 1))
 
 
-# ============================================================
-#   Lo que mide: el acoplamiento del canal de amplitud
-# ============================================================
 def test_ve_el_gamma_del_canal_de_amplitud_y_no_el_del_otro(inter, inter_control):
     """**La prueba que discrimina.**
 
@@ -102,9 +98,6 @@ def test_intercambiar_los_canales_cambia_el_resultado():
     assert not np.allclose(correr(a, b).mapa, correr(b, a).mapa)
 
 
-# ============================================================
-#   La garantía: con un canal, nada cambió
-# ============================================================
 NUMERICOS = ("mapa", "frecuencias", "fases", "histograma", "mapa_tf", "tiempo_tf",
              "ciclos_full", "ciclos_theta", "ciclos_gamma", "promedio_theta",
              "promedio_full", "vectores_por_grupo", "senal", "senal_filtrada", "tiempo")
@@ -119,7 +112,7 @@ def test_la_misma_senal_como_los_dos_canales_da_lo_mismo_que_un_canal():
     """
     d = canal(True, 0)
     uno = correr(d)
-    dos = correr(d, d, permisivo=False)   # permisivo aparte: eso sí cambia a propósito
+    dos = correr(d, d, permisivo=False)
 
     for campo in NUMERICOS:
         assert np.array_equal(getattr(uno, campo), getattr(dos, campo)), \
@@ -138,9 +131,6 @@ def test_un_canal_no_llena_los_campos_nuevos():
     assert r.permisivo is False
 
 
-# ============================================================
-#   Cada pila, de su canal
-# ============================================================
 def test_los_ciclos_en_gamma_salen_del_canal_de_amplitud(inter, inter_control):
     """Decisión nuestra, no del original: la `_window` lo saca del canal de fase.
 
@@ -164,7 +154,6 @@ def test_la_onda_lenta_y_los_ciclos_solo_dependen_del_canal_de_fase():
     assert np.array_equal(a.ciclos_theta, b.ciclos_theta)
     assert np.array_equal(a.promedio_theta, b.promedio_theta)
     assert np.array_equal(a.senal_filtrada, b.senal_filtrada)
-    # y, a la vez, lo que sí depende del canal de amplitud cambió
     assert not np.array_equal(a.ciclos_full, b.ciclos_full)
 
 
@@ -174,16 +163,12 @@ def test_los_ciclos_crudos_son_los_del_canal_de_amplitud(inter):
     assert inter.senal_amplitud is not None
     columna = inter.ciclos_full[:, 0]
     senal = inter.senal_amplitud
-    # la ventana sale de algun punto de la senal de amplitud, no de la de fase
     encaja = any(np.allclose(senal[i:i + columna.size], columna)
                  for i in range(0, senal.size - columna.size, 1)
                  if abs(senal[i] - columna[0]) < 1e-12)
     assert encaja, "ciclos_full no proviene de la señal del canal de amplitud"
 
 
-# ============================================================
-#   Los dos canales tienen que estar alineados
-# ============================================================
 def test_rechaza_canales_con_distinto_numero_de_muestras():
     with pytest.raises(ValueError) as e:
         correr(canal(False, 0, dur=3.0), canal(True, 1, dur=2.0))
@@ -207,9 +192,6 @@ def test_el_canal_de_amplitud_puede_venir_en_una_dimension():
     assert r.n_ciclos > 0
 
 
-# ============================================================
-#   Los umbrales permisivos
-# ============================================================
 def test_permisivo_se_enciende_solo_entre_canales(inter):
     assert inter.permisivo is True
     assert correr(canal(True, 0)).permisivo is False
@@ -246,9 +228,6 @@ def test_permisivo_no_reduce_el_numero_de_ciclos():
     assert correr(d, d, permisivo=True).n_ciclos >= correr(d, d, permisivo=False).n_ciclos
 
 
-# ============================================================
-#   Los nombres, que son los que rotulan los paneles
-# ============================================================
 def test_guarda_el_nombre_de_cada_canal(inter):
     """El panel de gamma no lleva rótulo en MATLAB, y es justo lo que hace falta
     para saber qué se está mirando. El resultado tiene que cargar los nombres."""

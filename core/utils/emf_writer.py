@@ -18,7 +18,6 @@ import numpy as np
 import vtk
 from vtkmodules.util import numpy_support
 
-# --- Constantes de [MS-EMF]
 EMR_HEADER = 1
 EMR_POLYLINE16 = 87
 EMR_EOF = 14
@@ -42,7 +41,7 @@ TA_LEFT, TA_RIGHT, TA_CENTER = 0, 2, 6
 TA_TOP, TA_BOTTOM, TA_BASELINE = 0, 8, 24
 PS_SOLID, PS_NULL = 0, 5
 BS_SOLID, BS_NULL = 0, 1
-STOCK = 0x80000000          # bit de los objetos de serie
+STOCK = 0x80000000
 NULL_BRUSH = STOCK | 5
 NULL_PEN = STOCK | 8
 SRCCOPY = 0x00CC0020
@@ -81,13 +80,12 @@ class EmfWriter:
     def __init__(self, ancho_px, alto_px):
         self.w, self.h = int(ancho_px), int(alto_px)
         self._reg = []
-        self._n_obj = 0                  # índice 0 está reservado
+        self._n_obj = 0
         self._fuentes = {}
         self._medidores = {}
         self.emit(EMR_SETBKMODE, struct.pack("<I", TRANSPARENT))
         self.emit(EMR_SETSTRETCHBLTMODE, struct.pack("<I", COLORONCOLOR))
 
-    # ---- bajo nivel
     def emit(self, tipo, cuerpo=b""):
         cuerpo = _pad4(cuerpo)
         self._reg.append(struct.pack("<II", tipo, 8 + len(cuerpo)) + cuerpo)
@@ -99,7 +97,6 @@ class EmfWriter:
     def _seleccionar(self, idx):
         self.emit(EMR_SELECTOBJECT, struct.pack("<I", idx))
 
-    # ---- lápiz y pincel
     def pluma(self, color, ancho=1):
         idx = self._nuevo_objeto()
         self.emit(EMR_CREATEPEN, struct.pack("<IIiiI", idx, PS_SOLID, int(ancho), 0, _rgb(*color)))
@@ -118,7 +115,6 @@ class EmfWriter:
     def liberar(self, idx):
         self.emit(EMR_DELETEOBJECT, struct.pack("<I", idx))
 
-    # ---- figuras
     def linea(self, x0, y0, x1, y1):
         self.emit(EMR_MOVETOEX, struct.pack("<ii", int(round(x0)), int(round(y0))))
         self.emit(EMR_LINETO, struct.pack("<ii", int(round(x1)), int(round(y1))))
@@ -136,14 +132,11 @@ class EmfWriter:
         x1, y1 = pts.max(axis=0)
         self.emit(EMR_POLYLINE16, struct.pack("<iiiiI", x0, y0, x1, y1, n) + pts.tobytes())
 
-    # ---- texto
     def _fuente(self, alto_px, angulo=0, negrita=False):
         clave = (int(alto_px), int(angulo), bool(negrita))
         if clave in self._fuentes:
             return self._fuentes[clave]
         idx = self._nuevo_objeto()
-        # LOGFONTW: alto, ancho, escapement, orientation, weight, italic, underline,
-        # strikeout, charset, outprec, clipprec, quality, pitch, facename[32 WCHAR]
         nombre = "Arial".encode("utf-16-le").ljust(64, b"\x00")
         logfont = struct.pack("<iiiiiBBBBBBBB", -int(alto_px), 0, int(angulo) * 10, int(angulo) * 10,
                               700 if negrita else 400, 0, 0, 0, 1, 0, 0, 4, 34) + nombre
@@ -165,35 +158,32 @@ class EmfWriter:
         self.emit(EMR_SETTEXTALIGN, struct.pack("<I", alineacion))
         cadena = texto.encode("utf-16-le")
         n = len(texto)
-        # Espaciado por carácter: sin él cada lector elige uno y el texto sale desigual
         dx = struct.pack("<%di" % n, *[int(round(self.ancho_texto(c, alto_px))) for c in texto])
-        cuerpo = struct.pack("<iiii", 0, 0, 0, 0)                # bounds (se ignora)
-        cuerpo += struct.pack("<Iff", 1, 1.0, 1.0)               # graphics mode, exScale, eyScale
+        cuerpo = struct.pack("<iiii", 0, 0, 0, 0)
+        cuerpo += struct.pack("<Iff", 1, 1.0, 1.0)
         cuerpo += struct.pack("<iiIIIiiiiI", int(round(x)), int(round(y)), n, 76, 0, 0, 0, 0, 0,
                               76 + len(_pad4(cadena)))
         self.emit(EMR_EXTTEXTOUTW, cuerpo + _pad4(cadena) + dx)
 
-    # ---- imagen
     def imagen(self, rgb, x0, y0, ancho, alto):
         """`rgb`: arreglo (filas, columnas, 3) uint8, la fila 0 arriba."""
         filas, columnas, _ = rgb.shape
         bytes_fila = columnas * 3
         relleno = (-bytes_fila) % 4
-        bgr = np.ascontiguousarray(rgb[::-1, :, ::-1]).reshape(filas, bytes_fila)   # DIB: de abajo hacia arriba, BGR
+        bgr = np.ascontiguousarray(rgb[::-1, :, ::-1]).reshape(filas, bytes_fila)
         if relleno:
             bgr = np.pad(bgr, ((0, 0), (0, relleno)))
         datos = bgr.tobytes()
         cabecera = struct.pack("<IiiHHIIiiII", 40, columnas, filas, 1, 24, 0, len(datos), 0, 0, 0, 0)
         off_bmi = 80
         off_bits = off_bmi + len(cabecera)
-        cuerpo = struct.pack("<iiii", int(x0), int(y0), int(x0 + ancho), int(y0 + alto))   # bounds
-        cuerpo += struct.pack("<iiiiii", int(x0), int(y0), 0, 0, columnas, filas)            # dest, src
+        cuerpo = struct.pack("<iiii", int(x0), int(y0), int(x0 + ancho), int(y0 + alto))
+        cuerpo += struct.pack("<iiiiii", int(x0), int(y0), 0, 0, columnas, filas)
         cuerpo += struct.pack("<IIIIII", off_bmi, len(cabecera), off_bits, len(datos),
                               DIB_RGB_COLORS, SRCCOPY)
         cuerpo += struct.pack("<ii", int(ancho), int(alto))
         self.emit(EMR_STRETCHDIBITS, _pad4(cuerpo + cabecera + datos))
 
-    # ---- volcado
     def guardar(self, ruta):
         fin = struct.pack("<IIIII", EMR_EOF, 20, 0, 16, 20)
         cuerpo = b"".join(self._reg) + fin
@@ -201,20 +191,17 @@ class EmfWriter:
         marco = (0, 0, int(round(self.w * px_mm * 100)), int(round(self.h * px_mm * 100)))
         total = 88 + len(cuerpo)
         cab = struct.pack("<II", EMR_HEADER, 88)
-        cab += struct.pack("<iiii", 0, 0, self.w - 1, self.h - 1)          # bounds en píxeles
-        cab += struct.pack("<iiii", *marco)                                # frame en 0,01 mm
+        cab += struct.pack("<iiii", 0, 0, self.w - 1, self.h - 1)
+        cab += struct.pack("<iiii", *marco)
         cab += struct.pack("<IIIIHHIII", 0x464D4520, 0x10000, total, len(self._reg) + 2,
-                           self._n_obj + 1, 0, 0, 0, 0)                    # sin descripción ni paleta
-        cab += struct.pack("<ii", self.w, self.h)                          # dispositivo en píxeles
+                           self._n_obj + 1, 0, 0, 0, 0)
+        cab += struct.pack("<ii", self.w, self.h)
         cab += struct.pack("<ii", int(round(self.w * px_mm)), int(round(self.h * px_mm)))
         assert len(cab) == 88, len(cab)
         with open(ruta, "wb") as f:
             f.write(cab + cuerpo)
 
 
-# =====================================================================
-#   De una gráfica de VTK a un EMF
-# =====================================================================
 NEGRO = (0, 0, 0)
 GRIS = (150, 150, 150)
 GRIS_TEXTO = (60, 60, 60)
@@ -235,7 +222,7 @@ def _marcas_bonitas(vmin, vmax, n=6):
 
 
 def _formato(v):
-    v = v + 0.0                         # -0,0 se escribiría "-0"
+    v = v + 0.0
     return f"{v:.4g}" if abs(v) < 1e5 else f"{v:.3g}"
 
 
@@ -319,15 +306,13 @@ def heatmap_a_emf(chart, ruta, ancho=1000, alto=700):
     (x0, y0, x1, y1), to_x, to_y = _ejes(chart, ancho, alto, margenes, e,
                                         chart.GetTitle() or "")
 
-    # --- El mapa: se muestrea a la resolución de pantalla (x2) y no a la de los datos
     ax_x, ax_y = chart.GetAxis(vtk.vtkAxis.BOTTOM), chart.GetAxis(vtk.vtkAxis.LEFT)
     rx = (ax_x.GetMinimum(), ax_x.GetMaximum())
     ry = (ax_y.GetMinimum(), ax_y.GetMaximum())
-    # Con pocas celdas no hace falta más resolución que la de pantalla; con muchas, el doble
     w_px = max(2, min(int(2 * (x1 - x0)), max(int(x1 - x0), nx), 4000))
     h_px = max(2, min(int(2 * (y1 - y0)), max(int(y1 - y0), ny), 3000))
     xs = rx[0] + (np.arange(w_px) + 0.5) / w_px * (rx[1] - rx[0])
-    ys = ry[1] - (np.arange(h_px) + 0.5) / h_px * (ry[1] - ry[0])          # fila 0 = arriba
+    ys = ry[1] - (np.arange(h_px) + 0.5) / h_px * (ry[1] - ry[0])
     col = np.floor((xs - ox) / sx).astype(int)
     fila = np.floor((ys - oy) / sy).astype(int)
     dentro = ((col >= 0) & (col < nx))[None, :] & ((fila >= 0) & (fila < ny))[:, None]
@@ -338,16 +323,14 @@ def heatmap_a_emf(chart, ruta, ancho=1000, alto=700):
     rgba = numpy_support.vtk_to_numpy(tf.MapScalars(va, 1, 0)).reshape(h_px, w_px, -1)
     rgb = rgba[:, :, :3].astype(np.float32)
     alfa = (rgba[:, :, 3:4].astype(np.float32) / 255.0) if rgba.shape[2] == 4 else 1.0
-    rgb = (rgb * alfa + 255.0 * (1.0 - alfa))                                # sobre blanco
+    rgb = (rgb * alfa + 255.0 * (1.0 - alfa))
     rgb[~dentro] = 255.0
     e.imagen(np.clip(rgb, 0, 255).astype(np.uint8), x0, y0, x1 - x0, y1 - y0)
-    # el marco se redibuja encima del bitmap
     p = e.pluma(NEGRO, 1)
     e.sin_pincel()
     e.rectangulo(x0, y0, x1, y1)
     e.liberar(p)
 
-    # --- Barra de color, en vectores
     vmin, vmax = tf.GetRange()
     bx0, bx1 = x1 + 22, x1 + 44
     n = 96

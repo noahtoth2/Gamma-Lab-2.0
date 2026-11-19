@@ -20,10 +20,10 @@ from core.utils.submuestreo import agregar_columna, agregar_linea
 def calcular_psd(X, fs, target_fs, window, nperseg, noverlap, nfft, detrend, ctx=None, log=None):
     """Welch PSD of every trial: returns (freq, pxx, fs_eff). Pure, for the TaskService."""
     log = log or (lambda *a: None)
-    srt = max(1, int(round(fs / float(target_fs)))) if (target_fs and target_fs > 0) else 1    # integer downsample like MATLAB
+    srt = max(1, int(round(fs / float(target_fs)))) if (target_fs and target_fs > 0) else 1
     fs_eff = fs / srt
     Xds = X[::srt, :] if srt > 1 else X
-    Xds = np.nan_to_num(Xds, copy=True, nan=0.0, posinf=0.0, neginf=0.0)        # a copy: the trials stay untouched
+    Xds = np.nan_to_num(Xds, copy=True, nan=0.0, posinf=0.0, neginf=0.0)
 
     Ns_eff = Xds.shape[0]
     if nperseg > Ns_eff:
@@ -38,7 +38,7 @@ def calcular_psd(X, fs, target_fs, window, nperseg, noverlap, nfft, detrend, ctx
 
     freq, pxx = welch(Xds, fs=fs_eff, window=window, nperseg=nperseg, noverlap=noverlap,
                       nfft=nfft, detrend=detrend_arg, scaling='density', axis=0)
-    pxx = np.nan_to_num(pxx, nan=0.0, posinf=0.0, neginf=0.0).astype(np.float64)    # (Nf, T)
+    pxx = np.nan_to_num(pxx, nan=0.0, posinf=0.0, neginf=0.0).astype(np.float64)
     freq = freq.astype(np.float64)
     log(f"PSD: srt={srt}, fs_eff={fs_eff:.3f} Hz, Nf={freq.size}, T_calc={pxx.shape[1]}")
     return freq, pxx, fs_eff
@@ -62,7 +62,6 @@ class Relative_psd_plugin(IPlugin):
         self._plot_enabled: bool = True
         self._ultimo: dict | None = None
         self.vtk_menu: VTKContextMenu | None = None
-        # VTK
         self.vtk_interactor: QVTKRenderWindowInteractor | None = None
         self.vtk_view: vtk.vtkContextView | None = None
         self.chart: vtk.vtkChartXY | None = None
@@ -79,7 +78,6 @@ class Relative_psd_plugin(IPlugin):
 
         self._log(f"[Relative PSD] Process: enable {data}")
 
-    # ---------- UI ----------
     def get_widget(self, parent=None):
         if self.widget is None:
             self.ui = Ui_Relative_psd()
@@ -127,7 +125,6 @@ class Relative_psd_plugin(IPlugin):
             return lab
 
         def _add_form_row(label_text: str, w: QtWidgets.QWidget, apilada: bool = False):
-            # 1) Add to form layout if present
             if hasattr(self.ui, "welchParameters") and isinstance(self.ui.welchParameters, QtWidgets.QVBoxLayout):
                 # Apilada: la etiqueta arriba y el control debajo, a todo el ancho,
                 # para una etiqueta larga que junto al control no cabe en 300 px.
@@ -143,7 +140,6 @@ class Relative_psd_plugin(IPlugin):
                 self.ui.welchParameters.addLayout(row_layout)
 
                 return
-            # 2) Add to widget layout if present
             if hasattr(self.ui, "layoutWidget") and isinstance(self.ui.layoutWidget, QtWidgets.QWidget):
                 lay = self.ui.layoutWidget.layout()
                 if lay is not None:
@@ -152,7 +148,6 @@ class Relative_psd_plugin(IPlugin):
                     hl.addWidget(w)
                     lay.addLayout(hl)
                 else:
-                    # Create a layout if missing
                     lay = QtWidgets.QVBoxLayout(self.ui.layoutWidget)
                     hl = QtWidgets.QHBoxLayout()
                     hl.addWidget(QtWidgets.QLabel(label_text))
@@ -160,7 +155,6 @@ class Relative_psd_plugin(IPlugin):
                     lay.addLayout(hl)
                 return
 
-            # 3) Fallback: root plugin widget layout
             if self.widget.layout() is None:
                 self.widget.setLayout(QtWidgets.QVBoxLayout())
             hl = QtWidgets.QHBoxLayout()
@@ -168,14 +162,12 @@ class Relative_psd_plugin(IPlugin):
             hl.addWidget(w)
             self.widget.layout().addLayout(hl)
 
-        # --- Detrend ---
         if not hasattr(self.ui, "detrendComboBox"):
             detrend_cb = QtWidgets.QComboBox()
             detrend_cb.addItems(["none", "constant", "linear"])
             self.ui.detrendComboBox = detrend_cb
             _add_form_row("Detrend", detrend_cb)
 
-        # --- GF (calculation mode) ---
         if not hasattr(self.ui, "gainFactorComboBox"):
             gf_cb = QtWidgets.QComboBox()
             gf_cb.addItems(["Average (GF=0)", "All Trials (GF=1)"])
@@ -186,11 +178,10 @@ class Relative_psd_plugin(IPlugin):
         self.ui.calculateRelativePsd.clicked.connect(self._on_calculate_clicked)
         self.ui.clearButton.clicked.connect(self._init_defaults)
         self.ui.npersegSpinBox.valueChanged.connect(self._sync_noverlap)
-        # keep lo/hi consistent
         self.ui.lowFrequencySpinBox.valueChanged.connect(self._sync_range)
         self.ui.highFrequencySpinBox.valueChanged.connect(self._sync_range)
-        self.ui.npersegSpinBox.setRange(1, 100_000_000)  # sin tope de digitos: lo limita la longitud de la senal
-        self.ui.npersegSpinBox.setKeyboardTracking(False)  # sincroniza noverlap/nfft al terminar de escribir
+        self.ui.npersegSpinBox.setRange(1, 100_000_000)
+        self.ui.npersegSpinBox.setKeyboardTracking(False)
         self.ui.npersegSpinBox.setValue(256)
         self.ui.noverlapSpinBox.setRange(0, 100_000_000)
         self.ui.noverlapSpinBox.setValue(128)
@@ -205,8 +196,6 @@ class Relative_psd_plugin(IPlugin):
         self.ui.highFrequencySpinBox.setValue(12.0)
         self.ui.lowFrequencySpinBox.setDecimals(2)
         self.ui.lowFrequencySpinBox.setRange(0.0, 10000)
-        # Sync low/high only when the user finishes typing: while typing "100", the "1" was
-        # momentarily below the low limit and dragged it down
         self.ui.lowFrequencySpinBox.setKeyboardTracking(False)
         self.ui.highFrequencySpinBox.setKeyboardTracking(False)
         self.ui.lowFrequencySpinBox.setSingleStep(1.0)
@@ -214,25 +203,20 @@ class Relative_psd_plugin(IPlugin):
 
     def _init_defaults(self):
         self.ui.sampleDensitySpinBox.setValue(1000)
-        # Hamming window (like MATLAB)
         try:
             idx = self.ui.windowComboBox.findText("hamming", QtCore.Qt.MatchFixedString)
             if idx >= 0:
                 self.ui.windowComboBox.setCurrentIndex(idx)
         except Exception:
             pass
-        # Welch
         self.ui.npersegSpinBox.setValue(256)
         self._sync_noverlap()
         self.ui.nfftSpinBox.setValue(256)
-        # Default band
         self.ui.lowFrequencySpinBox.setValue(8.0)
         self.ui.highFrequencySpinBox.setValue(12.0)
-        # Detrend
         if hasattr(self.ui, "detrendComboBox"):
             self.ui.detrendComboBox.setProperty("variant", "input")
             self.ui.detrendComboBox.setCurrentText("none")
-        # Default GF = 1 (All Trials) to emulate MATLAB if untouched
         if hasattr(self.ui, "gainFactorComboBox"):
             self.ui.gainFactorComboBox.setProperty("variant", "input")
             self.ui.gainFactorComboBox.setCurrentIndex(1)
@@ -253,7 +237,6 @@ class Relative_psd_plugin(IPlugin):
                 self.ui.lowFrequencySpinBox.setValue(hi)
         self._log(f"range sync: low={lo}, high={hi}")
 
-    # ---------- actions ----------
     def _on_calculate_clicked(self):
         self._log("_on_calculate_clicked()")
 
@@ -265,11 +248,9 @@ class Relative_psd_plugin(IPlugin):
         if X is None:
             return
 
-        # Default target Fs (sufficient resolution)
         if self.ui.sampleDensitySpinBox.value() <= 0:
             self.ui.sampleDensitySpinBox.setValue(min(fs, 1000.0))
 
-        # Parameters
         try:
             target_fs = float(self.ui.sampleDensitySpinBox.value())
             window 	  = self.ui.windowComboBox.currentText()
@@ -281,7 +262,7 @@ class Relative_psd_plugin(IPlugin):
             detrend 	= getattr(self.ui, "detrendComboBox", None)
             detrend 	= detrend.currentText() if detrend else "none"
             gf_idx 	= getattr(self.ui, "gainFactorComboBox", None)
-            GF 	    = 1 if (gf_idx and gf_idx.currentIndex() == 1) else 0 	# 1=All Trials, 0=Average
+            GF 	    = 1 if (gf_idx and gf_idx.currentIndex() == 1) else 0
 
             if f1 >= f2:
                 raise ValueError("Low frequency must be lower than High frequency.")
@@ -289,7 +270,6 @@ class Relative_psd_plugin(IPlugin):
             self.alerts.warning(f"Parameter error: {str(e)}", "Invalid parameters")
             return
 
-        # PSD in the TaskService (R71); the band ratios and the UI update follow when it finishes
         p = dict(f1=f1, f2=f2, GF=GF, ch_name=ch_name, n_trials=total, posiciones=posiciones)
         self.run_task(calcular_psd, partial(self._on_psd_done, p),
                       on_failed=lambda m: self.alerts.error(f"Could not compute PSD: {m}"),
@@ -300,14 +280,11 @@ class Relative_psd_plugin(IPlugin):
         f1, f2, GF, ch_name = p["f1"], p["f2"], p["GF"], p["ch_name"]
         freq, pxx_all, fs_eff = resultado
 
-        # --- Relative PSD (GF) ---
         abs_power, rel_power = self._compute_relative_psd(freq, pxx_all, f1, f2, GF)
 
-        # UI
         self.ui.absPowerValue.setText(f"{abs_power:.4e}")
         self.ui.relPowerValue.setText(f"{rel_power:.4f}")
 
-        # Bands beyond Nyquist were silently cut to the last bin: say so
         nyq = float(fs_eff) / 2.0
         avisos = []
         if f1 >= nyq:
@@ -319,7 +296,6 @@ class Relative_psd_plugin(IPlugin):
             avisos.append(f"Total power is defined on 0.5-490 Hz, but with a sample density of "
                           f"{fs_eff:.0f} Hz it only reaches {nyq:.1f} Hz. Raise 'Sample density' "
                           f"to at least 980 Hz for MATLAB-comparable relative values.")
-        # Too few frequency bins in the band: the value depends on where the bins fall
         if len(freq) > 1 and f1 < nyq:
             df = float(freq[1] - freq[0])
             nb = self._bins_in_band(freq, f1, f2)
@@ -331,7 +307,6 @@ class Relative_psd_plugin(IPlugin):
         if avisos:
             self.alerts.warning("\n\n".join(avisos), "Relative PSD")
 
-        # GF solo cambia como se combinan (promedio o todos); entran todos los validos
         self._trials_used = trials_used(p["posiciones"], p["n_trials"], "all" if GF == 1 else "average",
                                         channel=ch_name)
         for lbl in (self.ui.absPowerValue, self.ui.relPowerValue):
@@ -352,7 +327,6 @@ class Relative_psd_plugin(IPlugin):
 
         self.mark_project_dirty()
 
-    # ====== Project save/restore ======
     def get_analysis_params(self) -> dict:
         return {
             "sample_density": self.ui.sampleDensitySpinBox.value(),
@@ -376,8 +350,6 @@ class Relative_psd_plugin(IPlugin):
         if idx >= 0:
             self.ui.windowComboBox.setCurrentIndex(idx)
 
-        # nperseg first: its valueChanged auto-syncs noverlap/nfft, so set the
-        # saved noverlap/nfft AFTER it to override that auto-sync if they differ.
         self.ui.npersegSpinBox.setValue(params.get("nperseg", self.ui.npersegSpinBox.value()))
         self.ui.noverlapSpinBox.setValue(params.get("noverlap", self.ui.noverlapSpinBox.value()))
         self.ui.nfftSpinBox.setValue(params.get("nfft", self.ui.nfftSpinBox.value()))
@@ -391,9 +363,7 @@ class Relative_psd_plugin(IPlugin):
 
         self._on_calculate_clicked()
 
-    # ---------- Relative PSD ----------
 
-    # 1) Replace _band_sum(...) with edge handling
     def _band_sum(self, freq: np.ndarray, pxx: np.ndarray, lo: float, hi: float,
                   edges: str = "matlab") -> float:
         """
@@ -403,20 +373,19 @@ class Relative_psd_plugin(IPlugin):
         """
         i1 = int(np.searchsorted(freq, lo, side="left"))
         if edges == "matlab":
-            i2 = int(np.searchsorted(freq, hi, side="left"))  # include hi bin
+            i2 = int(np.searchsorted(freq, hi, side="left"))
             i1 = max(0, min(i1, len(freq) - 1))
             i2 = max(0, min(i2, len(freq) - 1))
             if i2 < i1: i1, i2 = i2, i1
             return float(np.nansum(pxx[i1:i2 + 1]))
         else:
-            i2 = int(np.searchsorted(freq, hi, side="left"))  # exclusive
+            i2 = int(np.searchsorted(freq, hi, side="left"))
             i1 = max(0, min(i1, len(freq)))
             i2 = max(0, min(i2, len(freq)))
             if i2 < i1: i1, i2 = i2, i1
             return float(np.nansum(pxx[i1:i2]))
 
 
-    # 2) Main computation using that edge policy
     def _compute_relative_psd(self, freq: np.ndarray, pxx_all: np.ndarray,
                               f1: float, f2: float, GF: int):
         """
@@ -426,25 +395,19 @@ class Relative_psd_plugin(IPlugin):
         Ptot in [0.5, 490] Hz.
         Uses _band_sum to handle edges (inclusive/exclusive).
         """
-        # sum (GF=1) or average (GF=0)
         pxx_sum = np.nansum(pxx_all, axis=1) if GF == 1 else np.nanmean(pxx_all, axis=1)
 
-        edges_mode = "matlab"     # or "exclusive" if you want bands to sum ≈1
+        edges_mode = "matlab"
 
-        # Quick debug tip:
         df = freq[1]-freq[0]
         i1 = np.searchsorted(freq, f1, side="left")
         i2_matlab = np.searchsorted(freq, f2, side="left")
         self._log(f"df = {df:.4f} Hz")
         self._log(f"Band [{f1}-{f2}] Hz: bins [{i1}:{i2_matlab}] (MATLAB-style) -> f[{i1}]={freq[i1]:.4f}, f[{i2_matlab}]={freq[min(i2_matlab,len(freq)-1)]:.4f}")
-        # End quick tip
 
         Ptot     = self._band_sum(freq, pxx_sum, 0.5, 490.0, edges=edges_mode)
         pow_band = self._band_sum(freq, pxx_sum, f1,  f2,    edges=edges_mode)
         rel      = (pow_band / Ptot) if Ptot > 0 else 0.0
-        # Absolute power = integral of the PSD over the band: sum of bins times their width.
-        # Without df the value changed with nperseg (same signal: 0.07, 0.51 or 2.0); the
-        # relative power is a ratio of two sums with the same df, so it does not change.
         abs_power = pow_band * float(df)
 
         self._log(f"[GF={GF}, edges={edges_mode}] Band {f1}-{f2} Hz -> Abs={abs_power:.4e}, RelFrac={rel:.4f}")
@@ -459,11 +422,9 @@ class Relative_psd_plugin(IPlugin):
         return abs(i2 - i1) + 1
 
 
-    # 3) Log band parts similar to MATLAB
     def _log_bands(self, freq: np.ndarray, pxx_all: np.ndarray, GF: int):
-        # sum (GF=1) or average (GF=0)
         pxx_sum = np.nansum(pxx_all, axis=1) if GF == 1 else np.nanmean(pxx_all, axis=1)
-        edges_mode = "matlab"  # same as used above
+        edges_mode = "matlab"
 
         def bsum(lo, hi): return self._band_sum(freq, pxx_sum, lo, hi, edges=edges_mode)
 
@@ -471,7 +432,6 @@ class Relative_psd_plugin(IPlugin):
         if Ptot <= 0:
             self._log("Ptot <= 0; bands not logged."); return
 
-        # MATLAB band edges used by the original function
         bands = [
             ("delta",   0.5,   3.9),
             ("theta",   4.0,   7.9),
@@ -483,7 +443,7 @@ class Relative_psd_plugin(IPlugin):
             ("HFO2",  251.0, 490.0),
         ]
         parts = []
-        self._log("-" * 40) # Separator for band logs
+        self._log("-" * 40)
         for name, lo, hi in bands:
             val = bsum(lo, hi) / Ptot
             parts.append(val)
@@ -494,7 +454,6 @@ class Relative_psd_plugin(IPlugin):
         self._log("-" * 40)
 
 
-    # ---------- DATA ----------
     def _load_trials_from_store(self):
         if not self.mainwin:
             return None, None, None
@@ -509,9 +468,9 @@ class Relative_psd_plugin(IPlugin):
             return None, None, None
 
         fs = float(getattr(td, "sampling_rate", 0.0))
-        X = np.asarray(getattr(td, "trials", None), dtype=np.float64) 	# (Ns, T)
+        X = np.asarray(getattr(td, "trials", None), dtype=np.float64)
         ch = getattr(td, "channel_name", "")
-        self._unidad_psd = getattr(td, "unit", "") or ""      # para el rótulo del eje
+        self._unidad_psd = getattr(td, "unit", "") or ""
         if X is None or X.ndim != 2 or fs <= 0:
             self._log("Invalid TrialDataset (fs<=0 or trials not 2D).")
             return None, None, None
@@ -519,7 +478,6 @@ class Relative_psd_plugin(IPlugin):
         self._log(f"Trials: Ns={X.shape[0]}, T={X.shape[1]}, fs={fs}")
         return fs, X, ch
 
-    # ------- VTK -------
     def _ensure_vtk(self):
         self._log("ensure_vtk(): enter")
         if not hasattr(self.ui, "plotArea") or self.ui.plotArea is None:
@@ -563,7 +521,7 @@ class Relative_psd_plugin(IPlugin):
         ax_l = self.chart.GetAxis(vtk.vtkAxis.LEFT)
         ax_b.SetGridVisible(True); ax_l.SetGridVisible(True)
         ax_b.SetTitle("Frequency (Hz)")
-        ax_l.SetTitle(etiqueta_psd(getattr(self, "_unidad_psd", "")))   # antes «V^2/Hz» fijo
+        ax_l.SetTitle(etiqueta_psd(getattr(self, "_unidad_psd", "")))
 
         MAX_PLOTS = 200
         dibujar = pxx_v
@@ -580,7 +538,6 @@ class Relative_psd_plugin(IPlugin):
             prom.SetWidth(2.5)
             prom.SetLabel("Average")
 
-        # Band limits
         y_max = float(np.nanmax(pxx_v)) if np.isfinite(pxx_v).any() else 1.0
         for x in (lo, hi):
             linea = agregar_linea(self.chart, [x, x], [0.0, y_max], "frequency", "band")
@@ -616,7 +573,6 @@ class Relative_psd_plugin(IPlugin):
 
         self.vtk_view.GetRenderWindow().Render()
 
-    # ---------- Exportación ----------
     BANDAS = [
         ("delta", 0.5, 3.9), ("theta", 4.0, 7.9), ("alpha", 8.0, 11.9), ("beta", 12.0, 24.9),
         ("gamma1", 25.0, 59.0), ("gamma2", 61.0, 120.0), ("HFO1", 121.0, 250.0), ("HFO2", 251.0, 490.0),
@@ -652,7 +608,6 @@ class Relative_psd_plugin(IPlugin):
             return
         self.vtk_menu.export_service.export_sections(self._secciones_resultado(), fmt)
 
-    # ---------- Welch ----------
     def _compute_psd(self, X: np.ndarray, fs: float, target_fs: float,
                      window: str, nperseg: int, noverlap: int, nfft: int, detrend: str):
         return calcular_psd(X, fs, target_fs, window, nperseg, noverlap, nfft, detrend, log=self._log)

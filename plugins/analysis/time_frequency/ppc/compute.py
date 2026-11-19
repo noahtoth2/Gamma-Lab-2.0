@@ -46,43 +46,15 @@ import numpy as np
 from core.filters.gabor import gabor_en
 from core.filters.wavelet import tasa_efectiva
 from core.utils.parallel import MAX_HILOS, map_ordenado
-# La comprobación de que los dos canales salen del mismo corte vive en core:
-# PAC Psel entre canales la necesita igual. Se reexporta para no romper a
-# quien la importe desde aquí.
 from core.filters.trials import validar_alineacion  # noqa: F401
 
-CICLOS_PPC = 3.0          # ps_StDevCycles. El .m pasa 1; su propia cabecera
-                          # documenta 3 como lo normal, y con 1 la gaussiana es
-                          # tan ancha en frecuencia que no resuelve nada.
-VENTANA_MINIMA_S = 0.05   # el `wd` del panel, ahora como piso
-N_OBJETIVO = 20           # muestras independientes a reunir por celda
-SOLAPE = 0.5              # entre dos columnas consecutivas de la rejilla
-FILAS_POR_TANDA = 32      # cuántas frecuencias se transforman de una vez
-BORDES = "recortar"       # "recortar" llena el mapa hasta los extremos;
-                          # "descartar" deja el cono de influencia en blanco
-HILOS = MAX_HILOS         # hilos para repartir los trials; 1 los deja en serie
-# Medido el 25 de octubre sobre trials de 3 s a 2.000 Hz, el mejor de tres
-# corridas, con los MISMOS datos en las dos columnas:
-#
-#     escenario                        1 hilo   4 hilos   gana
-#     5 trials, 200 filas              1.050ms    576ms   1,82x
-#     20 trials, 200 filas             4.223ms  1.832ms   2,31x
-#     20 trials, eje completo (322)    4.963ms  1.981ms   2,50x
-#     60 trials, 200 filas            13.432ms  5.051ms   2,66x
-#
-# El resultado sale **identico bit a bit**: cada trial es independiente y
-# `map_ordenado` devuelve en orden, asi que la suma no depende de quien acabe
-# primero. Cuesta memoria —24 MB en serie contra 89 MB con cuatro hilos—,
-# porque conviven los acumulados de todos los trials.
-#
-# Cuatro es el punto justo: 1,93x con dos, 2,38x con tres, 2,56x con cuatro, y
-# con seis u ocho ya no mejora (2,33x y 2,49x). Coincide con el MAX_HILOS que
-# el proyecto ya tenia puesto.
-#
-# En el indice de modulacion el mismo reparto salio **mas lento** (0,65x). Aqui
-# gana porque la unidad de trabajo es grande: un trial entero es una
-# transformada de 6.000 muestras por 200 frecuencias, asi que el coste de
-# arrancar el hilo no se nota y la FFT de NumPy suelta el GIL.
+CICLOS_PPC = 3.0
+VENTANA_MINIMA_S = 0.05
+N_OBJETIVO = 20
+SOLAPE = 0.5
+FILAS_POR_TANDA = 32
+BORDES = "recortar"
+HILOS = MAX_HILOS
 
 
 def filas_por_decada(ciclos=CICLOS_PPC):
@@ -117,12 +89,9 @@ def eje_frecuencias(fmin, fmax, ciclos=CICLOS_PPC, n_freq=None, log=True):
             decadas = np.log10(fmax) - np.log10(fmin)
             n_freq = int(round(decadas * filas_por_decada(ciclos)))
         else:
-            n_freq = int(round(fmax - fmin))     # ps_FreqSeg del .m
-        n_freq = max(2, int(n_freq))             # una banda estrecha puede dar 1
+            n_freq = int(round(fmax - fmin))
+        n_freq = max(2, int(n_freq))
     else:
-        # Un numero pedido a mano NO se corrige en silencio: subirlo de 1 a 2
-        # sin decirlo es la misma clase de cosa que MATLAB hace al subir fmin
-        # de 0 a 0,1, y es lo que este puerto decidio no replicar.
         n_freq = int(n_freq)
         if n_freq < 2:
             raise ValueError(f"Se necesitan al menos 2 frecuencias (se pidieron {n_freq}).")
@@ -135,23 +104,21 @@ def eje_frecuencias(fmin, fmax, ciclos=CICLOS_PPC, n_freq=None, log=True):
 @dataclass
 class ResultadoPPC:
     """El mapa de consistencia de fase entre dos canales, y sus ejes."""
-    mapa: np.ndarray            # (frecuencia, tiempo), en [−1, 1]; NaN donde no se midió
-    frecuencias: np.ndarray     # eje Y en Hz, descendente
-    tiempos: np.ndarray         # eje X en s, rejilla común a todas las filas
-    ventanas_s: np.ndarray      # la ventana que usó cada fila
-    n_muestras: np.ndarray      # N nominal por fila = independientes × trials
-    n_por_celda: np.ndarray     # N real de CADA celda; en los extremos baja
-                                # porque la ventana se recortó contra el borde
-    bordes: str                 # "recortar" (mapa lleno) o "descartar" (cono)
+    mapa: np.ndarray
+    frecuencias: np.ndarray
+    tiempos: np.ndarray
+    ventanas_s: np.ndarray
+    n_muestras: np.ndarray
+    n_por_celda: np.ndarray
+    bordes: str
     fs_efectiva: float
-    fs_pedida: float            # la que se escribió en el panel, que no siempre
-                                # se alcanza: el factor de submuestreo es entero
+    fs_pedida: float
     n_trials: int
     ventana_min_s: float
     solape: float
     ciclos: float
     n_objetivo: int
-    filas_sin_resolver: int     # filas que salieron enteras en NaN
+    filas_sin_resolver: int
     canal_1: str
     canal_2: str
 
@@ -214,36 +181,18 @@ def _geometria(frecuencias, fs, n_muestras_trial, n_trials, wd, ciclos,
     ancho = 2.0 * ciclos * n_ind_pedidas / frecuencias
     ancho = np.clip(ancho, wd, dur)
 
-    # Hacia ARRIBA, no al más cercano. Media muestra de redondeo a la baja
-    # bastaba para que el `floor` de abajo contara una muestra independiente
-    # menos y la fila reportara la mitad de N de la que de verdad tiene.
     largos = np.maximum(1, np.ceil(ancho * fs - 1e-9).astype(int))
-    largos += 1 - largos % 2         # impar: así la ventana tiene centro exacto
+    largos += 1 - largos % 2
     largos = np.minimum(largos, n_muestras_trial - (1 - n_muestras_trial % 2))
     ventanas_s = largos / fs
 
-    # Las independientes que de verdad caben en la ventana que quedó, que no es
-    # la pedida cuando el piso o el techo recortaron.
     n_ind = np.maximum(1, np.floor(
         ventanas_s * frecuencias / (2.0 * ciclos) + 1e-9)).astype(int)
 
     paso = max(1, int(round(wd * (1.0 - solape) * fs)))
-    # La rejilla se ancla al centro del trial, no al principio. Si no, la fila
-    # cuya ventana ocupa el trial entero —solo cabe centrada— se quedaba en NaN
-    # por la tontería de que su único centro posible no caía en la rejilla.
     centro = (n_muestras_trial - 1) // 2
     centros = np.arange(centro % paso, n_muestras_trial, paso)
 
-    # --- Donde empieza y acaba la ventana de cada celda.
-    # `bordes="descartar"`: solo valen las celdas cuya ventana cabe ENTERA.
-    # Es el cono de influencia clásico y deja los extremos en blanco.
-    # `bordes="recortar"`: la ventana se corta contra el final del trial y la
-    # celda se calcula con las muestras que haya. Da un valor **más ruidoso,
-    # no falso**: el enrollado de la FFT revuelve la fase hasta 60° pegado al
-    # borde, pero revuelve los dos canales por separado, así que su diferencia
-    # sigue siendo aleatoria. Medido con ruido independiente, las celdas del
-    # borde dan entre −0,05 y +0,13, o sea ruido, no acoplamiento inventado.
-    # Lo que sí baja es la N, y por eso se cuenta **por celda**.
     semi = largos // 2
     if bordes == "descartar":
         lo = centros[None, :] - semi[:, None]
@@ -256,23 +205,11 @@ def _geometria(frecuencias, fs, n_muestras_trial, n_trials, wd, ciclos,
         hi = np.clip(centros[None, :] + semi[:, None], 0, n_muestras_trial - 1)
         cabe = hi > lo
 
-    # Las columnas que no le sirven a NADIE se recortan en vez de devolverlas
-    # enteras en NaN: una columna vacía en el borde es exactamente lo que se le
-    # critica al MATLAB, y da igual que aquí sea NaN y allí un cero.
     con_dato = cabe.any(axis=0)
     centros, cabe = centros[con_dato], cabe[:, con_dato]
     lo, hi = lo[:, con_dato], hi[:, con_dato]
 
-    # Muestras que de verdad se promedian en cada celda, y las independientes
-    # que salen de ellas. Con `descartar` son todas iguales dentro de una fila;
-    # con `recortar`, las de los extremos tienen menos.
     cuenta = (hi - lo + 1).astype(np.float64)
-    # La N de una celda recortada baja en la misma proporcion que su ventana.
-    # Se deja FRACCIONARIA a proposito: la formula del PPC admite cualquier
-    # N > 1, y redondear hacia arriba —o peor, poner un minimo de 1 como hacia
-    # una version anterior de esto— es exactamente el error que se le critica a
-    # MATLAB: declarar mas muestras independientes de las que hay. Una celda
-    # con media ventana tiene media N, y asi queda escrito.
     n_ind_celda = n_ind[:, None] * (cuenta / largos[:, None])
 
     return largos, lo, hi, ventanas_s, n_ind, n_ind_celda, cuenta, centros, cabe
@@ -324,8 +261,6 @@ def ppc_mapa(ctx, trials_1, trials_2, fs_calculado, fs, fmin, fmax,
     x1 = np.nan_to_num(x1[::factor, :], nan=0.0, posinf=0.0, neginf=0.0)
     x2 = np.nan_to_num(x2[::factor, :], nan=0.0, posinf=0.0, neginf=0.0)
 
-    # `gabor_en` descarta la ultima muestra si el largo es par, igual que el
-    # MATLAB. La geometria se calcula sobre lo que de verdad va a salir.
     n = x1.shape[0]
     if n % 2 == 0:
         n -= 1
@@ -337,9 +272,6 @@ def ppc_mapa(ctx, trials_1, trials_2, fs_calculado, fs, fmin, fmax,
 
     nyquist = fs_efectiva / 2.0
     if fmax > nyquist:
-        # `:.10g` y no `:g`: con fmax = 250,0001 y Nyquist 250 los seis digitos
-        # de `:g` imprimian «250 Hz pasa del Nyquist (250 Hz)», que no se
-        # entiende.
         raise ValueError(
             f"La frecuencia alta ({fmax:.10g} Hz) pasa del Nyquist ({nyquist:.10g} Hz) "
             f"que deja el remuestreo a {fs_efectiva:.10g} Hz. Baja la frecuencia final "
@@ -357,9 +289,6 @@ def ppc_mapa(ctx, trials_1, trials_2, fs_calculado, fs, fmin, fmax,
      centros, cabe) = _geometria(frecs, fs_efectiva, n, n_trials, wd, ciclos,
                                  solape, n_objetivo, bordes)
 
-    # Una celda se puede medir si su ventana cabe **y** reúne al menos dos
-    # muestras independientes: con una sola no hay ningún par que comparar, y
-    # el PPC es precisamente la media sobre los pares.
     N_fila = n_ind * n_trials
     N_celda = n_ind_celda * n_trials
     if not (cabe.any() and np.any(N_celda[cabe] >= 2)):
@@ -372,8 +301,6 @@ def ppc_mapa(ctx, trials_1, trials_2, fs_calculado, fs, fmin, fmax,
             f"frecuencia inicial, alarga los trials, o genera más trials para "
             f"repartir el trabajo entre ellos.")
 
-    # --- El acumulado sobre los trials. Solo hace falta la suma compleja: el
-    # PPC se saca del modulo, no de cada termino por separado.
     def aporte_de(tr):
         """Lo que suma un trial al acumulado. No toca nada de fuera.
 
@@ -392,11 +319,8 @@ def ppc_mapa(ctx, trials_1, trials_2, fs_calculado, fs, fmin, fmax,
                                 cycles=ciclos, magnitudes=False)
             c2, _, _ = gabor_en(x2[:, tr], fs_efectiva, tanda,
                                 cycles=ciclos, magnitudes=False)
-            # z = e^{i(φ1−φ2)}, sin pasar por angle() ni exp()
             z = _unidad(c1) * np.conj(_unidad(c2))
 
-            # Suma movil por filas: con la suma acumulada, cada ventana cuesta
-            # dos restas en vez de recorrerla entera.
             acumulada = np.concatenate(
                 [np.zeros((z.shape[0], 1), dtype=np.complex128),
                  np.cumsum(z, axis=1)], axis=1)
@@ -420,10 +344,6 @@ def ppc_mapa(ctx, trials_1, trials_2, fs_calculado, fs, fmin, fmax,
                 ctx.progress(int(100 * (tr + 1) / n_trials),
                              f"Trial {tr + 1}/{n_trials}")
     else:
-        # El reparto va **por trials**, con el mismo `map_ordenado` que usa
-        # `pac_promedio`. Él pone el avance y la cancelación, y acota los hilos
-        # por memoria: cada uno tiene en vuelo su acumulado y las dos tandas de
-        # la transformada.
         por_hilo = (frecs.size * centros.size
                     + 2 * FILAS_POR_TANDA * n) * 16
         aportes = map_ordenado(aporte_de, range(n_trials), ctx=ctx,
@@ -435,26 +355,6 @@ def ppc_mapa(ctx, trials_1, trials_2, fs_calculado, fs, fmin, fmax,
             acum += a
         del aportes
 
-    # --- De la suma al PPC.
-    # Los dos divisores son distintos a proposito: el PLV es la media de TODAS
-    # las muestras promediadas, y la correccion del sesgo usa solo las
-    # independientes. Confundirlos es justo el error de MATLAB.
-    #
-    # SOBRE LA EXACTITUD DE ESA N, que es lo unico aproximado del calculo.
-    # `n_ind` sale de suponer que dos puntos separados 2*sigma ya son
-    # independientes. Medido —400 ventanas de ruido, mirando E[PLV^2] = 1/N—,
-    # la N efectiva de verdad es 2,3 donde nosotros contamos 2: nos quedamos
-    # cortos un 15-20 %. Contar de menos hace que la correccion se pase, asi
-    # que el mapa queda sesgado **hacia abajo**: con ruido independiente la
-    # media sale -0,009 en vez de 0 (40 corridas, N=20).
-    #
-    # No se corrige, por dos razones. Es 10 veces mas chico que el umbral de
-    # ruido al 95 % para esa misma N (0,103), asi que no cambia ninguna
-    # lectura. Y el error va en la direccion segura: esta medida nunca inventa
-    # acoplamiento, que es el defecto que vinimos a arreglar. Calibrar el 2 a
-    # 1,74 seria ajustar una constante a una sola medida y heredar su
-    # dependencia de `ciclos`. Hay una prueba que fija el signo y el tamano del
-    # sesgo, para que un cambio futuro que lo vuelva positivo salte.
     with np.errstate(invalid="ignore", divide="ignore"):
         plv = np.abs(acum) / (cuenta * n_trials)
         N = N_celda.astype(np.float64)
@@ -499,18 +399,13 @@ def avisos(r):
     fuera = []
     sin_medir = np.all(np.isnan(r.mapa), axis=1)
 
-    # --- Dos canales iguales
     if r.canal_1 == r.canal_2:
         fuera.append(
             f"Los dos canales son el mismo ('{r.canal_1}'). El PPC de una señal "
             f"consigo misma vale 1 en todo el mapa por definición: no está midiendo "
             f"nada. Elige dos canales distintos.")
 
-    # El remuestreo que no se alcanza exacto (factor entero: 2000 Hz pedidos sobre
-    # 20 833 dan 2083,3) no se avisa: salía en casi todos los registros y tapaba los
-    # avisos que importan. La tasa real queda en `r.fs_efectiva` y en la exportación.
 
-    # --- Filas que no se pudieron medir en absoluto
     if sin_medir.any():
         f_sin = r.frecuencias[sin_medir]
         falta = 2.0 * r.ciclos * 2 / f_sin.max()
@@ -522,7 +417,6 @@ def avisos(r):
             f"{falta:.2f} s. Salen en blanco a propósito; MATLAB las devolvía "
             f"valiendo 1.")
 
-    # --- Filas medidas, pero con menos respaldo del pedido
     flojas = (~sin_medir) & (r.n_muestras < r.n_objetivo)
     if flojas.any():
         f_flojas = r.frecuencias[flojas]
@@ -536,14 +430,11 @@ def avisos(r):
             f"ruidoso y un número alto puede ser azar. Sube con más trials: el reparto "
             f"es {r.n_objetivo} entre {cuantos}.")
         if peor < 5:
-            # Medido: con fases al azar, el PPC tiene desviacion 0,71 con N=2 y
-            # 0,22 con N=5. Por debajo de 5 el valor no se puede leer.
             texto += (f" Con {peor} muestras el valor ni se puede leer: con fases al "
                       f"azar la desviación del PPC es de 0,7 para 2 muestras y 0,2 "
                       f"para 5, así que cualquier número es posible.")
         fuera.append(texto)
 
-    # --- Los extremos: o salen en blanco, o salen con menos respaldo
     medibles = r.mapa[~sin_medir]
     if medibles.size and r.bordes == "descartar":
         blanco = float(np.mean(np.isnan(medibles)))
@@ -554,8 +445,5 @@ def avisos(r):
                 f"frecuencias bajas —hasta {r.ventanas_s.max():.2f} s— no cabe pegada "
                 f"al borde del trial. No es un dato que falte, es que ahí no se puede "
                 f"calcular.")
-    # Con bordes='recortar' (el modo de la aplicación) los extremos se calculan con
-    # menos muestras. Ya no se avisa: salía en todas las corridas, siempre con el
-    # mismo texto. Cuánto respalda a cada celda sigue en `r.n_por_celda`.
 
     return fuera

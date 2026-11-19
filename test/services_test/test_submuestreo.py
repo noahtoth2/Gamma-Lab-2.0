@@ -71,12 +71,12 @@ def test_al_acercar_el_eje_se_recupera_el_detalle_y_al_alejar_vuelve_la_vista_ge
     plot = agregar_linea(chart, x, y, "Time (s)", "CA1")
     eje = chart.GetAxis(vtk.vtkAxis.BOTTOM)
 
-    eje.SetRange(0.0, 7.0)          # rango por defecto del eje: no es un zoom
+    eje.SetRange(0.0, 7.0)
     assert plot.GetInput().GetNumberOfRows() <= sm.MAX_PUNTOS + 2
     assert plot.GetInput().GetColumn(0).GetRange()[1] > 150, "sigue mostrando toda la serie"
 
-    eje.SetRange(0.0, x[-1])        # el eje abarca los datos: se arma
-    eje.SetRange(10.0, 10.5)        # zoom: 500 muestras
+    eje.SetRange(0.0, x[-1])
+    eje.SetRange(10.0, 10.5)
     tabla = plot.GetInput()
     assert 500 <= tabla.GetNumberOfRows() <= 504
     assert tabla.GetColumn(0).GetRange()[0] <= 10.0

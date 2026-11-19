@@ -16,9 +16,8 @@ import vtk
 
 from core.utils.submuestreo import datos_completos
 
-MARGEN = 0.05     # fracción del rango visible que se deja arriba y abajo
+MARGEN = 0.05
 
-# Plots que no son datos (las líneas de las medidas): no deben estirar el eje Y.
 _IGNORADOS = set()
 
 
@@ -43,7 +42,6 @@ def rango_visible_y(chart, x0, x1):
         plot = chart.GetPlot(i)
         if not plot.GetVisible() or getattr(plot, "__this__", None) in _IGNORADOS:
             continue
-        # Solo las curvas del eje izquierdo: la derivada de 'difference' va en el derecho, con otra escala
         try:
             if chart.GetPlotCorner(plot) not in (0, 3):
                 continue
@@ -54,7 +52,6 @@ def rango_visible_y(chart, x0, x1):
             continue
         x, y = datos
         if x[0] <= x[-1]:
-            # Se suma una muestra a cada lado: el tramo de línea que entra y sale de la ventana
             i0 = max(0, int(np.searchsorted(x, x0, side="left")) - 1)
             i1 = min(x.size, int(np.searchsorted(x, x1, side="right")) + 1)
             tramo = y[i0:i1]

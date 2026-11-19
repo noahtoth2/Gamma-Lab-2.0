@@ -39,22 +39,16 @@ class Wavelet_plugin(IPlugin):
         self._handle = None
         self._calculando = False
         self.params = {
-            # Con 0 no hay a qué submuestrear. El tope cubre registros de hasta 200 kHz.
             "sample_density_range": (1, 200_000),
             "frequencies_range": (0, 10000),
-            # None: la tasa del archivo, para que al acercar se vea con definición
-            # completa. Sin señal todavía se muestra DENSIDAD_SIN_SENAL.
             "sample_density_value": None,
             "high_frequency_value": 500,
             "low_frequency_value": 1,
             "cycles_range": (1, 20),
             "cycles_value": 2
         }
-        # Mientras el usuario no cambie la densidad, se usa la del archivo de los
-        # trials que se van a analizar (puede cambiar de una señal a otra).
         self._densidad_automatica = True
         self._poniendo_densidad = False
-    # end def
 
     DENSIDAD_SIN_SENAL = 1000
 
@@ -79,11 +73,7 @@ class Wavelet_plugin(IPlugin):
     def _al_cambiar_densidad(self, *_):
         if not self._poniendo_densidad:
             self._densidad_automatica = False
-    # end def
 
-    # =====================================================
-    # === Plugin lifecycle
-    # =====================================================
 
     def process(self, data: any):
         if self.vtk_widget:
@@ -92,18 +82,13 @@ class Wavelet_plugin(IPlugin):
         if self.vtk_widget and self.vtk_widget.GetRenderWindow():
             interactor = self.vtk_widget.GetRenderWindow().GetInteractor()
             interactor.Enable()
-    # end def
 
     def stop(self):
         if self.vtk_widget and self.vtk_widget.GetRenderWindow():
             interactor = self.vtk_widget.GetRenderWindow().GetInteractor()
             if interactor:
                 interactor.Disable()
-    # end def
 
-    # =====================================================
-    # === Create widget UI + VTK
-    # =====================================================
     def get_widget(self, parent=None):
         if self.widget is not None:
             self.widget.setParent(parent)
@@ -120,11 +105,7 @@ class Wavelet_plugin(IPlugin):
 
 
         return self.widget
-    # end def
 
-    # =====================================================
-    # === Utilities
-    # =====================================================
     def init_controls(self):
         self.ui.sampleDensitySpinBox.setRange(*self.params["sample_density_range"])
         self._poner_densidad(self._densidad_por_defecto())
@@ -153,7 +134,6 @@ class Wavelet_plugin(IPlugin):
 
         self.ui.createWaveletButton.clicked.connect(self.on_create_wavelet)
         self.ui.clearButton.clicked.connect(self._on_clear_clicked)
-    # end def
 
     def _on_clear_clicked(self):
         if self._calculando:
@@ -168,7 +148,6 @@ class Wavelet_plugin(IPlugin):
         self.ui.scaleCheckBox.setChecked(False)
         self.ui.scaleComboBox.setCurrentIndex(0)
         self.ui.colorRangeCheckBox.setChecked(False)
-    # end def
 
     def ensure_vtk(self):
         """Initialize VTK components for rendering."""
@@ -176,7 +155,6 @@ class Wavelet_plugin(IPlugin):
             if self.vtk_widget and self._context_view and self.renwin:
                 return
 
-            # --- Create VTK Widget ---
             if not self.vtk_widget:
                 vtk_layout = QVBoxLayout(self.ui.plotArea)
                 vtk_layout.setContentsMargins(0, 0, 0, 0)
@@ -184,35 +162,25 @@ class Wavelet_plugin(IPlugin):
                 self.vtk_widget = QVTKRenderWindowInteractor(self.ui.plotArea)
                 vtk_layout.addWidget(self.vtk_widget)
 
-            # --- Create Render Window ---
             if not self.renwin:
                 self.renwin = self.vtk_widget.GetRenderWindow()
 
-            # --- Create Context View ---
             if not self._context_view:
                 self._context_view = vtk.vtkContextView()
                 self._context_view.SetRenderWindow(self.renwin)
 
-            # --- Config renderer ---
             renderer = self._context_view.GetRenderer()
             renderer.SetBackground(0.98, 0.98, 0.98)
             self._vtk_renderer = renderer
 
-            # --- Initialize interactor ---
             interactor = self.vtk_widget.GetRenderWindow().GetInteractor()
             if interactor and not interactor.GetInitialized():
                 interactor.Initialize()
-            # end if
 
         except Exception as e:
             self._log("Error ensure_vtk:", e)
-    # end def
 
     
-
-    # =====================================================
-    # === Main Logic: CWT + Render
-    # =====================================================
     def on_create_wavelet(self):
         """ Load active signal, compute CWT wavelet and render scalogram in VTK """
         tasks = self.kernel.get_service("TaskService") if self.kernel else None
@@ -234,7 +202,6 @@ class Wavelet_plugin(IPlugin):
             self.alerts.error(f"No hay suficiente información de tiempo en {signal.name}.")
             return
 
-        # Este analisis calcula sobre un solo trial: el que marca el selector (el primero si no hay ninguno)
         n_total = trials.trials.shape[1] if trials.trials.ndim == 2 else 1
         self.selector_trials.establecer_total(n_total)
         marcados = self.selector_trials.posiciones()
@@ -248,7 +215,6 @@ class Wavelet_plugin(IPlugin):
         sig = np.nan_to_num(np.asarray(sig).flatten(), nan=0.0, posinf=0.0, neginf=0.0)
         fs_calculado = round(1.0 / (t[1] - t[0]), 3)
 
-        # Si el usuario no eligió otra, la densidad es la del archivo de estos trials
         if self._densidad_automatica:
             lo, hi = self.params["sample_density_range"]
             self._poner_densidad(min(max(round(fs_calculado), lo), hi))
@@ -260,8 +226,6 @@ class Wavelet_plugin(IPlugin):
         scaled = self.ui.scaleCheckBox.isChecked()
         norm_method = self.ui.normalizeComboBox.currentText().lower()
 
-        # Antes de tasa_efectiva, que divide por la densidad: esto corre en el hilo de
-        # la interfaz y una excepción aquí cerraba la aplicación.
         if fs <= 0:
             self.alerts.warning("La densidad de muestreo debe ser mayor que cero.")
             return
@@ -272,22 +236,15 @@ class Wavelet_plugin(IPlugin):
             self.alerts.warning(f"La frecuencia alta ({fmax:g} Hz) debe ser mayor que la baja ({fmin:g} Hz).")
             return
 
-        # El factor de submuestreo es entero, asi que una densidad que no divida
-        # a la del archivo no se puede alcanzar. Se valida y se avisa contra la
-        # que de verdad se va a usar, no contra la pedida (problema nº 18).
         fs_efectiva, _ = cw.tasa_efectiva(fs_calculado, fs)
         if fmax > fs_efectiva / 2:
             self.alerts.warning(f"La frecuencia alta ({fmax:g} Hz) no puede superar {fs_efectiva / 2:g} Hz, "
                               f"la mitad de la densidad efectiva ({fs_efectiva:g} Hz).")
             return
-        # Relativo: la densidad es entera y la del archivo no (10.101 frente a
-        # 10.101,01 Hz); esa centésima no corre nada y no merece un aviso.
         if abs(fs_efectiva - fs) > 1e-4 * fs:
             self.alerts.info(f"La densidad de {fs:g} Hz no divide a los {fs_calculado:g} Hz del archivo; "
                              f"se usará {fs_efectiva:.1f} Hz, la más cercana alcanzable.")
 
-        # Un cálculo anterior de este plugin (por ejemplo, al reabrir un proyecto)
-        # se cancela; sus señales tardías se ignoran porque ya no es la tarea vigente.
         tasks.cancel_all_from(self.meta.id)
         self._terminar_calculo()
         self.stop()
@@ -296,8 +253,6 @@ class Wavelet_plugin(IPlugin):
         self.ui.createWaveletButton.setEnabled(False)
         self.ui.createWaveletButton.setText("Computing...")
 
-        # Con escala logarítmica la CWT se calcula directamente sobre el eje
-        # logarítmico, así que la normalización trabaja sobre filas reales.
         handle = tasks.submit(
             cw.wavelet_individual, owner=self.meta.id,
             sig=sig, fs_calculado=fs_calculado, fs=fs, fmin=fmin, fmax=fmax,
@@ -310,7 +265,6 @@ class Wavelet_plugin(IPlugin):
         handle.finished.connect(partial(self._on_wavelet_done, handle))
         handle.failed.connect(partial(self._on_wavelet_failed, handle))
         handle.cancelled.connect(partial(self._on_wavelet_cancelled, handle))
-    # end def
 
     def _terminar_calculo(self):
         self._calculando = False
@@ -318,34 +272,29 @@ class Wavelet_plugin(IPlugin):
         if self.ui is not None:
             self.ui.createWaveletButton.setEnabled(True)
             self.ui.createWaveletButton.setText("Generate")
-    # end def
 
     def _on_wavelet_progress(self, handle, percent, message):
         if handle is not self._handle:
             return
         self._log(f"{message} ({percent}%)")
         self._notify(f"{message} ({percent}%)")
-    # end def
 
     def _on_wavelet_failed(self, handle, message):
         if handle is not self._handle:
             return
         self._terminar_calculo()
         self.alerts.error(f"No se pudo calcular la wavelet: {message}")
-    # end def
 
     def _on_wavelet_cancelled(self, handle):
         if handle is not self._handle:
             return
         self._terminar_calculo()
-    # end def
 
     def _on_wavelet_done(self, handle, result):
         """Se ejecuta ya en el hilo de la interfaz."""
         if handle is not self._handle:
             return
         try:
-            # Si el proyecto se cerró mientras calculaba, ya no hay dónde dibujar.
             if self.ui is None:
                 return
             times, freqs, scalogram, scaled = result
@@ -374,11 +323,7 @@ class Wavelet_plugin(IPlugin):
         finally:
             self._terminar_calculo()
             self.process("Done")
-    # end def
 
-    # =====================================================
-    # === Project save/restore
-    # =====================================================
     def current_trial_state(self):
         """Wavelet siempre calcula sobre el primer trial valido."""
         _, td = self._active_trials_quiet()
@@ -420,12 +365,6 @@ class Wavelet_plugin(IPlugin):
         restaurar_rango(self.ui, params)
         self.on_create_wavelet()
 
-    # =====================================================
-    # === Wavelet Calculation
-    # =====================================================
-    # =====================================================
-    # === Exportación
-    # =====================================================
     def exportar_resultados(self, fmt: str):
         """Exporta la matriz de la última ejecución, con los parámetros que la produjeron."""
         if not self._ultimo or self.vtk_menu is None:
@@ -443,20 +382,14 @@ class Wavelet_plugin(IPlugin):
         return cw.compute_wavelet(sig, fs_calculado, fs, fmin, fmax, num_cycles,
                                   escala_log=escala_log, t0=t0)
 
-    # end def
 
-    # =====================================================
-    # === Normalization and Scaling
-    # =====================================================
     def normalize_tf(self, tf, method="z-score"):
         return cw.normalize_tf(tf, method, log=self._log)
 
-    # end def
 
     def _scale_log(self, scalogram, freqs):
         return cw.scale_log(scalogram, freqs, log=self._log)
 
-    # end def
 
     def _get_log_ticks_coords(self, f_min_log, f_max_log):
         """Marcas 1-2-5 de cada década; entradas y posiciones en log10, etiquetas en Hz."""
@@ -468,11 +401,7 @@ class Wavelet_plugin(IPlugin):
             valores = [10 ** f_min_log, 10 ** f_max_log]
 
         return np.log10(valores), [f"{v:.3g}" for v in valores]
-    # end def
 
-    # =====================================================
-    # === Render 2D scalogram in VTK
-    # =====================================================
     def _redibujar_color(self, *_):
         """R33: aplica el rango de color sin volver a calcular y sin perder el zoom."""
         u = self._ultimo
@@ -497,15 +426,10 @@ class Wavelet_plugin(IPlugin):
         scene = context_view.GetScene()
         scene.ClearItems()
         
-        # --- Preprocessing and Assignment ---
         n_freqs, n_times = scalogram.shape
         t0, t_end = float(t[0]), float(t[-1])
-        # vtkChartHistogram2D dibuja cada punto con un paso de ancho, así que
-        # n pasos cubren exactamente de t0 a t_end.
         dt = (t_end - t0) / n_times if n_times > 1 else 1.0
 
-        # Filas ordenadas de la frecuencia más baja a la más alta, con el origen
-        # en la mínima y paso positivo (en log10 si la escala es logarítmica).
         f = np.asarray(freqs, dtype=float)
         Z = np.nan_to_num(scalogram.astype(np.float32))
         if f[0] > f[-1]:
@@ -519,25 +443,19 @@ class Wavelet_plugin(IPlugin):
             f0_range, f_end_range = float(f[0]), float(f[-1])
         df_spacing = (f_end_range - f0_range) / n_freqs if n_freqs > 1 else 1.0
 
-        # --- Configure vtkImageData ---
-        # La imagen completa no se dibuja: la leen las exportaciones (tabla y EMF).
-        # Lo que se pinta lo arma MapaConZoom con la zona visible.
         Z = np.ascontiguousarray(Z, dtype=np.float32)
         img = vtk.vtkImageData()
         img.SetDimensions(n_times, n_freqs, 1)
         img.SetSpacing(dt, df_spacing, 1.0)
         img.SetOrigin(t0, f0_range, 0.0)
-        # Sin copiar: el arreglo de VTK guarda una referencia a Z
         arr = numpy_support.numpy_to_vtk(Z.ravel(), deep=False, array_type=vtk.VTK_FLOAT)
         img.GetPointData().SetScalars(arr)
         img.Modified()
 
-        # --- Calculate limits and LUT ---
         vmin, vmax = limites_color(Z, *leer_rango(self.ui))
         mostrar_rango_automatico(self.ui, vmin, vmax)
         lut = self._build_lut("viridis", vmin, vmax)
         
-        # --- Create 2D Chart ---
         chart = vtk.vtkChartHistogram2D()
         chart.SetTransferFunction(lut)
         anotar_mapa(chart, img, lut)
@@ -547,14 +465,11 @@ class Wavelet_plugin(IPlugin):
         ax_bottom.SetTitle("Time (s)")
         ax_bottom.SetRange(t0, t_end)
 
-        # --- Y Axis Configuration ---
         ax_left.SetTitle(ax_title)
         ax_left.SetBehavior(vtk.vtkAxis.FIXED)
         ax_left.SetLogScale(False)
         ax_left.SetRange(f0_range, f_end_range)
 
-        # Con los ejes ya fijados: se dibuja la zona visible y al acercar se
-        # recorta de nuevo, hasta mostrar cada celda calculada.
         chart.mapa_zoom = MapaConZoom(chart, Z, t0, dt, f0_range, df_spacing)
 
         if log_scale:
@@ -570,7 +485,6 @@ class Wavelet_plugin(IPlugin):
             ax_left.SetNumberOfTicks(0)
 
         else:
-            # Standard linear mode
             ax_left.SetTickLabelAlgorithm(vtk.vtkAxis.TICK_WILKINSON_EXTENDED)
             ax_left.SetNumberOfTicks(-1)
             ax_left.SetPrecision(2)
@@ -580,7 +494,6 @@ class Wavelet_plugin(IPlugin):
 
         scene.AddItem(chart)
         
-        # --- Contextual menu ---
         try:
             ctx = self._contexto
             self.vtk_menu = VTKContextMenu(chart, self.vtk_widget, ctx.get("señal"), ctx.get("canal"),
@@ -595,11 +508,7 @@ class Wavelet_plugin(IPlugin):
             
         context_view.GetRenderer().SetBackground(0.98, 0.98, 0.98)
         context_view.GetRenderWindow().Render()
-    # end def
 
-    # =====================================================
-    # === Colormap LUT
-    # =====================================================
     def _build_lut(self, mode: str, vmin: float, vmax: float) -> vtk.vtkLookupTable:
         N = 256
         lut = vtk.vtkLookupTable()
@@ -610,17 +519,16 @@ class Wavelet_plugin(IPlugin):
         for i in range(N):
             t = i / (N - 1)
 
-            # --- JET ---
             if t < 0.125:
-                r, g, b = 0, 0, 0.5 + 0.5 * (t / 0.125)      # bright blue
+                r, g, b = 0, 0, 0.5 + 0.5 * (t / 0.125)
             elif t < 0.375:
-                r, g, b = 0, (t - 0.125) / 0.25, 1           # cyan
+                r, g, b = 0, (t - 0.125) / 0.25, 1
             elif t < 0.625:
-                r, g, b = (t - 0.375) / 0.25, 1, 1 - (t - 0.375) / 0.25  # green
+                r, g, b = (t - 0.375) / 0.25, 1, 1 - (t - 0.375) / 0.25
             elif t < 0.875:
-                r, g, b = 1, 1 - (t - 0.625) / 0.25, 0        # yellow
+                r, g, b = 1, 1 - (t - 0.625) / 0.25, 0
             else:
-                r, g, b = 1, 0.15 * (1 - (t - 0.875) / 0.125), 0  # bright red
+                r, g, b = 1, 0.15 * (1 - (t - 0.875) / 0.125), 0
 
             r = 0.9 * r + 0.03
             g = 0.9 * g + 0.03
@@ -629,11 +537,7 @@ class Wavelet_plugin(IPlugin):
             lut.SetTableValue(i, r, g, b, 1.0)
 
         return lut
-    # end def
 
-    # =====================================================
-    # === Convert LUT to CTF
-    # =====================================================
     def _lut_to_ctf(self, lut: vtk.vtkLookupTable) -> vtk.vtkColorTransferFunction:
         ctf = vtk.vtkColorTransferFunction()
         ctf.ClampingOn()
@@ -649,5 +553,3 @@ class Wavelet_plugin(IPlugin):
             x = vmin + (vmax - vmin) * (i / (n - 1))
             ctf.AddRGBPoint(x, *rgba[:3])
         return ctf
-    # end def
-# end class

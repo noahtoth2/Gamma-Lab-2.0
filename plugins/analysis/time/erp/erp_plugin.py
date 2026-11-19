@@ -23,7 +23,7 @@ from core.utils.submuestreo import agregar_columna, agregar_linea
 
 def calcular_erp(t, M, idx, ctx=None):
     """Selects the trials (1-based `idx`) and prepares the heat map. Pure, for the TaskService."""
-    sel = M[np.array(idx) - 1, :]                      # (K, Ns)
+    sel = M[np.array(idx) - 1, :]
     return sel, ce.preparar_mapa_calor(t, sel)
 
 
@@ -37,16 +37,14 @@ class Erp_plugin(IPlugin):
         self.td = None
         self.ch_name = None
         
-        # VTK widgets
         self.vtk_top: QVTKRenderWindowInteractor | None = None
         self.vtk_bot: QVTKRenderWindowInteractor | None = None
         self.view_top: vtk.vtkContextView | None = None
         self.view_bot: vtk.vtkContextView | None = None
 
-        # Butterfly groups: the selected trials are shown N at a time
         self._t = None
-        self._sel = None            # (K, Ns) selected trials
-        self._sel_ids = None        # 0-based index of each row of _sel
+        self._sel = None
+        self._sel_ids = None
         self._group_idx = 0
 
 
@@ -54,7 +52,6 @@ class Erp_plugin(IPlugin):
         print(f"ERP received data: {data}")
 
         print("[TrialsPlugin] process")
-        # enable interaction (zoom, pan, etc)
         if self.vtk_top and self.vtk_top.GetRenderWindow().GetInteractor():
             self.vtk_top.GetRenderWindow().GetInteractor().Enable()
 
@@ -65,7 +62,6 @@ class Erp_plugin(IPlugin):
 
     def stop(self):
         print("[TrialsPlugin] stop")
-        # disable interaction (freeze plugin)
         if self.vtk_top and self.vtk_top.GetRenderWindow().GetInteractor():
             self.vtk_top.GetRenderWindow().GetInteractor().Disable()
 
@@ -84,9 +80,7 @@ class Erp_plugin(IPlugin):
             self.widget.setParent(parent)
         return self.widget
 
-    # ===== VTK =====
     def ensure_vtk(self):
-        # Top (butterfly)
         self.vtk_top = QVTKRenderWindowInteractor(self.ui.butterflyPlot)
         self.ui.butterflyPlot.setLayout(QtWidgets.QVBoxLayout())
         self.ui.butterflyPlot.layout().setContentsMargins(0, 0, 0, 0)
@@ -96,7 +90,6 @@ class Erp_plugin(IPlugin):
         self.view_top.SetRenderWindow(self.vtk_top.GetRenderWindow())
         self.view_top.GetRenderer().SetBackground(0.98, 0.98, 0.98)
 
-        # Bottom (heatmap)
         self.vtk_bot = QVTKRenderWindowInteractor(self.ui.heatmapPlot)
         self.ui.heatmapPlot.setLayout(QtWidgets.QVBoxLayout())
         self.ui.heatmapPlot.layout().setContentsMargins(0, 0, 0, 0)
@@ -106,7 +99,6 @@ class Erp_plugin(IPlugin):
         self.view_bot.SetRenderWindow(self.vtk_bot.GetRenderWindow())
         self.view_bot.GetRenderer().SetBackground(0.98, 0.98, 0.98)
 
-        # Initialize interactors (avoid errors on some OS)
         try:
             self.vtk_top.Initialize()
             self.vtk_bot.Initialize()
@@ -136,7 +128,6 @@ class Erp_plugin(IPlugin):
         self.ui.cmbGroupSize.setCurrentIndex(0)
         self.ui.chkShowAverage.setChecked(True)
 
-    # ========= Dataset =========
     def _load_trials_from_store(self):
         """
         Find the active signal in the DataStore and return the latest TrialDataset:
@@ -152,13 +143,12 @@ class Erp_plugin(IPlugin):
         if td is None:
             return None, None, None
 
-        #td: TrialDataset = self.active_signal.trials_dataset[-1]  # last TD
         if not hasattr(td, "time_rel") or not hasattr(td, "trials"):
             self.alerts.error("The TrialDataset does not contain 'time_rel' or 'trials'.", "Incomplete Trials")
             return None, None, None
 
-        t = np.asarray(td.time_rel, dtype=float)           # (Ns,)
-        M = np.asarray(td.trials, dtype=float)             # (Ns, T)
+        t = np.asarray(td.time_rel, dtype=float)
+        M = np.asarray(td.trials, dtype=float)
 
         if M.ndim != 2 or t.ndim != 1:
             self.alerts.error("The TrialDataset has invalid dimensions.", "Invalid dimensions")
@@ -166,9 +156,9 @@ class Erp_plugin(IPlugin):
             return None, None, None
 
         if M.shape[0] == t.size:
-            M = M.T  # (T, Ns)
+            M = M.T
         elif M.shape[1] == t.size:
-            pass     # already (T, Ns)
+            pass
         else:
             self.alerts.error("time_rel does not match trials.", "Inconsistency")
 
@@ -176,7 +166,6 @@ class Erp_plugin(IPlugin):
 
         return t, M, td
             
-    # ========= Helpers UI =========
     def _collect_selected_indices(self, n_trials: int) -> list[int]:
         """Return indices (1-based) according to selection mode."""
         if self.ui.chkSelectAll.isChecked():
@@ -189,7 +178,6 @@ class Erp_plugin(IPlugin):
             if a > b:
                 a, b = b, a
             return list(range(a, b + 1))
-        # Manual (list)
         out: list[int] = []
         for i in range(self.ui.lstTrials.count()):
             it = self.ui.lstTrials.item(i)
@@ -227,7 +215,6 @@ class Erp_plugin(IPlugin):
             match = (f in it.data(QtCore.Qt.UserRole)) if f else True
             self.ui.lstTrials.setRowHidden(i, not match)
 
-    # ========= Actions =========
     def _on_plot_clicked(self):
         t, M, td = self._load_trials_from_store()
         if t is None or M is None:
@@ -236,7 +223,6 @@ class Erp_plugin(IPlugin):
         n_trials, n_samples = M.shape
         self._ensure_trials_list(n_trials)
 
-        # 2) collect selection
         idx = self._collect_selected_indices(n_trials)
         if not idx:
             self._notify("No trials selected.", "warning")
@@ -247,7 +233,6 @@ class Erp_plugin(IPlugin):
 
         self._last_idx0 = [int(i) - 1 for i in idx]
 
-        # 3) selection + heat-map preparation in the TaskService (R71), render when it finishes
         self.run_task(calcular_erp, partial(self._on_erp_done, t, used, n_trials),
                       t=t, M=M, idx=list(idx))
 
@@ -266,7 +251,6 @@ class Erp_plugin(IPlugin):
         self.publish_current_trial()
         self.mark_project_dirty()
 
-    # ====== Project save/restore ======
     def get_analysis_params(self) -> dict:
         if self.ui.chkSelectAll.isChecked():
             mode = "all"
@@ -309,8 +293,6 @@ class Erp_plugin(IPlugin):
         self.ui.chkShowAverage.setChecked(bool(params.get("show_average", True)))
 
         if mode == "manual":
-            # Plot once first so lstTrials gets (re)built at the right size,
-            # then apply the exact saved checkmarks and plot again for real.
             self._on_plot_clicked()
             checked = set(params.get("manual_checked_indices", []))
             for i in range(self.ui.lstTrials.count()):
@@ -337,7 +319,6 @@ class Erp_plugin(IPlugin):
             it.setData(QtCore.Qt.UserRole, f"trial-{i}".lower())
             self.ui.lstTrials.addItem(it)
 
-    # ========= Render VTK =========
     
     def cleanup_vtk(self):
         """Properly release VTK resources before destroying the widget."""
@@ -356,7 +337,6 @@ class Erp_plugin(IPlugin):
         except Exception as e:
             print("[TrialsPlugin] cleanup_vtk() error:", e)
             
-    # ===== Butterfly groups =====
     def _group_size(self, n: int) -> int:
         ui = getattr(self, "ui", None)
         if ui is None or not hasattr(ui, "cmbGroupSize"):
@@ -429,20 +409,18 @@ class Erp_plugin(IPlugin):
         trial_ids = [int(i) for i in trial_ids]
 
         dibujar = sel
-        if sel.shape[0] > self.MAX_CURVAS:      # R73: solo se limita lo que se dibuja
+        if sel.shape[0] > self.MAX_CURVAS:
             self._log(f"Hay {sel.shape[0]} trials, se dibujan {self.MAX_CURVAS}")
             dibujar = sel[:self.MAX_CURVAS]
 
         chart = vtk.vtkChartXY()
         scene.AddItem(chart)
 
-        # One plot per trial, named with its number
         for row, k in zip(dibujar, trial_ids):
             plot = agregar_linea(chart, t, row, "time", f"trial_{k + 1}")
             plot.SetWidth(0.5)
             plot.SetLabel(f"Trial {k + 1}")
 
-        # Average of the trials on screen, added last so it is drawn on top of the butterfly
         ui = getattr(self, "ui", None)
         show_avg = True
         if ui is not None and hasattr(ui, "chkShowAverage"):
@@ -458,14 +436,11 @@ class Erp_plugin(IPlugin):
         ax_bottom = chart.GetAxis(vtk.vtkAxis.BOTTOM)
         ax_left = chart.GetAxis(vtk.vtkAxis.LEFT)
 
-        # R32: the superposition of all trials is named as such on screen
         chart.SetTitle(f"Butterfly Plot — {title}" if title else "Butterfly Plot")
         ax_bottom.SetTitle("Time (s)")
         ax_left.SetTitle("Amplitude")
 
         try:
-            # One menu for the butterfly, kept across renders: the ribbon (slope, difference,
-            # amplitude) measures through it, so it must stay the same object.
             if getattr(self, "vtk_menu", None) is None:
                 self.vtk_menu = VTKContextMenu(chart, self.vtk_top, self.active_signal.name, self.ch_name,
                                                self.meta.id, parent=self.widget)
@@ -477,7 +452,6 @@ class Erp_plugin(IPlugin):
             mw = getattr(self, "mainwin", None)
             if mw is not None and hasattr(mw, "_refresh_measurement_tables"):
                 svc.on_change = mw._refresh_measurement_tables
-            # "All trials" measurements use the trials on screen; their lines are drawn per trial
             t_m, sel_m, ids_m = t, sel, trial_ids
             self.vtk_menu.set_trials_source(lambda: (t_m, sel_m.T, ids_m), visible_trial_ids=ids_m)
             self.vtk_menu.set_measurement_context(
@@ -495,39 +469,31 @@ class Erp_plugin(IPlugin):
         scene = self.view_bot.GetScene()
         scene.ClearItems()
 
-        # Data
         X, t, vmin, vmax, t0, t_end, dt, factor = preparado or ce.preparar_mapa_calor(t, sel)
         K, Tn = X.shape
         self._log(f"Heatmap: {K} trials x {Tn} muestras, submuestreo x{factor}, "
                   f"rango [{vmin:.3f}, {vmax:.3f}], t0={t0:.3f}s, dt={dt:.6f}s")
 
-        # Create image with correct SPACING and ORIGIN
         img = vtk.vtkImageData()
         img.SetDimensions(Tn, K, 1)
-        img.SetSpacing(dt, 1.0, 1.0)      # dt on X to map to time
-        img.SetOrigin(t0, 0.0, 0.0)       # Starts at t0
+        img.SetSpacing(dt, 1.0, 1.0)
+        img.SetOrigin(t0, 0.0, 0.0)
 
-        # X llega como (trials, muestras) y VTK espera la x primero, que aqui es
-        # el tiempo: raveling una matriz contigua por filas da ese mismo orden.
         X_plano = np.ascontiguousarray(X, dtype=np.float32).ravel()
         arr = numpy_support.numpy_to_vtk(X_plano, deep=True, array_type=vtk.VTK_FLOAT)
         img.GetPointData().SetScalars(arr)
         img.Modified()
         
-        # Verify
         self._log(f"Heatmap VTK: rango={img.GetScalarRange()} "
                   f"spacing={img.GetSpacing()} origen={img.GetOrigin()}")
 
-        # Use LUT function
-        lut = self._build_lut("blue", vmin, vmax)  # Change to "viridis" if preferred
+        lut = self._build_lut("blue", vmin, vmax)
 
-        # Chart
         chart = vtk.vtkChartHistogram2D()
         chart.SetInputData(img, 0)
         chart.SetTransferFunction(lut)
         anotar_mapa(chart, img, lut)
         
-        # Configure axes - should now show time correctly
         ax_bottom = chart.GetAxis(vtk.vtkAxis.BOTTOM)
         ax_left = chart.GetAxis(vtk.vtkAxis.LEFT)
         
@@ -536,12 +502,9 @@ class Erp_plugin(IPlugin):
         if title:
             chart.SetTitle(title)
         
-        # The chart should respect spacing/origin automatically
-        # but enforce just in case
         ax_bottom.SetRange(t0, t_end)
         ax_left.SetRange(0, K)
         
-        # Add to scene
         scene.AddItem(chart)
         
         try:
@@ -551,18 +514,13 @@ class Erp_plugin(IPlugin):
             self.alerts.error(f"Error creating contextual menu\n {str(e)}", "Contextual menu")
 
 
-
-
-        # Render
         self.view_bot.GetRenderWindow().Render()
 
-    # Not-implemented functions of context menus
 
     def _on_change_lut(self):
         self.alerts.warning("Change color map (not implemented).", "Change LUT")
 
 
-# Small helper for the LUT (you can keep only one and ignore the rest)
     def _build_lut(self, mode: str, vmin: float, vmax: float) -> vtk.vtkScalarsToColors:
         mode = (mode or "blue").lower()
         N = 256
@@ -577,21 +535,18 @@ class Erp_plugin(IPlugin):
             lut.SetUseAboveRangeColor(True); lut.SetAboveRangeColor(*bg, 1.0)
             return lut
 
-        # === Divergent: blue -> white -> red, with gamma (more aggressive)
         if mode in ("blue_red", "br"):
-            gamma = 0.6  # <1 = more contrast in low ranges
+            gamma = 0.6
             lut = vtk.vtkLookupTable()
             lut = finalize(lut)
             for i in range(N):
-                s = (i / (N - 1)) ** gamma  # non-linear curve
+                s = (i / (N - 1)) ** gamma
                 if s < 0.5:
-                    # blue (0,0.1,0.6) -> white (1,1,1)
                     k = s / 0.5
                     r = k*1.0 + (1-k)*0.00
                     g = k*1.0 + (1-k)*0.10
                     b = k*1.0 + (1-k)*0.60
                 else:
-                    # white (1,1,1) -> red (0.8,0.0,0.0)
                     k = (s - 0.5) / 0.5
                     r = k*0.80 + (1-k)*1.0
                     g = k*0.00 + (1-k)*1.0
@@ -599,11 +554,10 @@ class Erp_plugin(IPlugin):
                 lut.SetTableValue(i, r, g, b, 1.0)
             return lut
 
-        # === Monochrome blue with gamma (more aggressive than before)
         if mode in ("blue", "blue_r"):
             light = (0.93, 0.97, 1.00)
             dark  = (0.00, 0.10, 0.60)
-            gamma = 0.6  # <1 = increases contrast
+            gamma = 0.6
             lut = vtk.vtkLookupTable()
             lut = finalize(lut)
             for i in range(N):
@@ -617,11 +571,9 @@ class Erp_plugin(IPlugin):
             return lut
 
         if mode == "jet":
-            # (your current jet) ...
             ...
             return lut
 
-        # viridis by default (you can also apply gamma here if you want)
         ctf = vtk.vtkColorTransferFunction()
         ctf.ClampingOn()
         ctf.SetRange(vmin, vmax)
@@ -632,7 +584,7 @@ class Erp_plugin(IPlugin):
 
         lut = vtk.vtkLookupTable()
         lut = finalize(lut)
-        gamma = 0.8  # slightly more aggressive
+        gamma = 0.8
         for i in range(N):
             s = (i / (N - 1)) ** gamma
             x = vmin + s * (vmax - vmin)

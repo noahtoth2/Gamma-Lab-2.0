@@ -2,77 +2,45 @@ import numpy as np
 import pytest
 from pathlib import Path
 
-# --- Real pipeline imports (core app services & plugins) ---
 from core.services.fileio_service import FileIOService
 from core.filters import trials as tr
 from core.model.trial_dataset import TrialDataset
 from core.plugins.meta import PluginMeta
 
-# Real ERP plugin
 from plugins.analysis.time.erp.erp_plugin import Erp_plugin
 
 
-# ============================================================
-#                  GLOBAL CONFIG / TEST DATA
-# ============================================================
-
-# Base directory for test data files
 BASE_DIR = Path(__file__).resolve().parents[2] / "test" / "data"
 
-# Input ABF file
 ABF_PATH = BASE_DIR / "17308005.abf"
 
-# MATLAB reference CSV
 MATLAB_CSV = BASE_DIR / "erp_data_matlab.csv"
 
 
-# ============================================================
-#                 TRIALS DIVISION PARAMETERS
-# ============================================================
-
-# Channel where the signal of interest is stored
 TARGET_CHANNEL = 0
 
-# Channel used to detect stimulus onsets
 STIM_CHANNEL = 1
 
-# Threshold to detect a stimulus event
 THRESHOLD = 0.7
 
-# Time window around each stimulus (in seconds)
-T0 = -0.05     # Start time relative to stimulus
-T1 = 4.00      # End time relative to stimulus
+T0 = -0.05
+T1 = 4.00
 
-# How to decide the end of a trial
 END_MODE = "until_next_onset"
 
-# Expected number of stimuli per trial
 STIM_EXPECTED = 1
 
-# Inter-stimulus interval (used by the cutting logic)
 ISI = 0.0
 
-# Value used to pad trials if needed
 PAD_VALUE = 0.0
 
 
-# ============================================================
-#                 NUMERICAL COMPARISON PARAMETERS
-# ============================================================
-
-# Expected number of columns (trials) in the ERP matrix
 K_EXPECTED = 60
 
-# Absolute tolerance for pointwise ERP comparison
 TOL_ABS = 0.001
 
-# Minimum acceptable Pearson correlation per column (trial)
 MIN_CORR = 0.98
 
-
-# ============================================================
-#                    NUMPY HELPER FUNCTIONS
-# ============================================================
 
 def _detect_delimiter(path: Path) -> str | None:
     """
@@ -180,14 +148,11 @@ def assert_points_within_tolerance_fraction(
     B = np.asarray(B, dtype=float)
     A, B = crop_rows_to_min(A, B)
 
-    # Only evaluate points where both matrices are finite.
     valid = np.isfinite(A) & np.isfinite(B)
     total = int(np.sum(valid))
     if total == 0:
-        # Nothing to compare: silently accept.
         return
 
-    # Choose which matrix is used as "reference" in the tolerance formula.
     ref_mat = A if ref.upper() == "A" else B
     tol_mat = atol + rtol * np.abs(ref_mat)
 
@@ -197,10 +162,8 @@ def assert_points_within_tolerance_fraction(
     ratio = passed / float(total)
 
     if ratio >= min_pass_ratio:
-        # Enough points are within tolerance → test passes.
         return
 
-    # Build a detailed report to help debugging failures.
     over_mask = valid & (~within)
     excess = np.full_like(diffs, np.nan, dtype=float)
     excess[over_mask] = diffs[over_mask] - tol_mat[over_mask]
@@ -243,10 +206,6 @@ def assert_points_within_tolerance_fraction(
     raise AssertionError("\n".join(lines))
 
 
-# ============================================================
-#                 TEST FOR ERP BUTTERFLY
-# ============================================================
-
 class ErpButterflyDouble(Erp_plugin):
     """
     Headless version of the ERP plugin (test double).
@@ -269,24 +228,19 @@ class ErpButterflyDouble(Erp_plugin):
         )
         super().__init__(meta)
 
-        # References to active signal and trials set by the test.
         self._active_signal = None
         self._active_trials: TrialDataset | None = None
 
-        # Captured outputs (time and ERP lines).
         self.captured_t = None
         self.captured_lines = None
 
-    # --- UI / VTK handling overrides ---
 
     def ensure_vtk(self):
         """
         Override the VTK initialization to keep the test completely headless.
         """
-        # No-op: do not create any view or VTK widget.
         return
 
-    # --- Injection helpers used by the tests ---
 
     def set_active_signal(self, sd):
         """
@@ -300,7 +254,6 @@ class ErpButterflyDouble(Erp_plugin):
         """
         self._active_trials = td
 
-    # --- Bridges required by the original plugin API ---
 
     def get_active_signal(self):
         """
@@ -314,7 +267,6 @@ class ErpButterflyDouble(Erp_plugin):
         """
         return self._active_trials
 
-    # --- Main execution used by the tests ---
 
     def run_all(self):
         """
@@ -330,13 +282,9 @@ class ErpButterflyDouble(Erp_plugin):
         t = np.asarray(td.time_rel, dtype=float)
         M = np.asarray(td.trials, dtype=float)
 
-        # Trials shape adjustments:
-        #   - We expect M to end up as (N_time, N_trials).
         if M.shape[0] == t.size:
-            # Already (N_time, N_trials)
             pass
         elif M.shape[1] == t.size:
-            # Currently (N_trials, N_time), transpose to match expected shape.
             M = M.T
         else:
             raise ValueError("time_rel length does not match trials shape.")
@@ -344,10 +292,6 @@ class ErpButterflyDouble(Erp_plugin):
         self.captured_t = t
         self.captured_lines = M
 
-
-# ============================================================
-#                   TEST FOR Erp_plugin
-# ============================================================
 
 @pytest.mark.skipif(not ABF_PATH.exists(), reason="ABF file not found")
 @pytest.mark.skipif(not MATLAB_CSV.exists(), reason="MATLAB CSV not found")
@@ -363,9 +307,6 @@ class TestErpButterflyABFVsMatlab:
          absolute tolerance.
     """
 
-    # --------------------------------------------------------
-    # Fixtures: dataset, trials and matrices
-    # --------------------------------------------------------
     @pytest.fixture(scope="class")
     def ds(self):
         """
@@ -375,7 +316,6 @@ class TestErpButterflyABFVsMatlab:
         fio = FileIOService()
         sd = fio.load_abf(str(ABF_PATH))
 
-        # Ensure we work with float64 for better numerical stability.
         sd.signals = sd.signals.astype(np.float64, copy=False)
         sd.time = sd.time.astype(np.float64, copy=False)
 
@@ -423,9 +363,6 @@ class TestErpButterflyABFVsMatlab:
         M = load_csv_auto(MATLAB_CSV)
         return np.asarray(M, dtype=np.float64, copy=False)
 
-    # --------------------------------------------------------
-    # 1. Structure / columns checks
-    # --------------------------------------------------------
     def test_shape_and_columns(self, app_matrix, matlab_matrix):
         """
         Ensure that both APP and MATLAB matrices:
@@ -444,9 +381,6 @@ class TestErpButterflyABFVsMatlab:
 
         assert app_matrix.shape[0] >= 1 and matlab_matrix.shape[0] >= 1
 
-    # --------------------------------------------------------
-    # 2. Correlation per column (trial)
-    # --------------------------------------------------------
     def test_correlation_by_column(self, app_matrix, matlab_matrix):
         """
         Check that each trial (column) in the APP ERP matrix has
@@ -471,9 +405,6 @@ class TestErpButterflyABFVsMatlab:
             )
             pytest.fail(msg)
 
-    # --------------------------------------------------------
-    # 3. Pointwise comparison with tolerance (allows outliers)
-    # --------------------------------------------------------
     def test_pointwise_fraction_allowing_outliers(self, app_matrix, matlab_matrix):
         """
         Require that at least 95% of valid points between APP and MATLAB

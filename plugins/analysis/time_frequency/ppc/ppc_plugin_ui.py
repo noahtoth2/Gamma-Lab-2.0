@@ -50,12 +50,10 @@ class Ui_Ppc(object):
         self.splitter.setOrientation(QtCore.Qt.Horizontal)
         self.mainWindow.addWidget(self.splitter)
 
-        # --- Izquierda: el gráfico
         self.plotArea = QtWidgets.QFrame(self.splitter)
         self.plotArea.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.plotArea.setObjectName("plotArea")
 
-        # --- Derecha: cabecera fija y cuerpo con parámetros
         self.rightContainer = QtWidgets.QWidget(self.splitter)
         self.rightLayoutOuter = QtWidgets.QVBoxLayout(self.rightContainer)
         self.rightLayoutOuter.setContentsMargins(8, 0, 8, 0)
@@ -96,7 +94,6 @@ class Ui_Ppc(object):
         self.rightLayoutOuter.addWidget(self.scrollArea)
         self.splitter.widget(1).setMaximumWidth(300)
 
-        # --- Los campos
         self.channel1ComboBox = self._combo(
             "Channel 1", "First channel of the pair. Only channels that already have trials are listed.")
         self.channel2ComboBox = self._combo(
@@ -115,7 +112,6 @@ class Ui_Ppc(object):
             "Gaussian cycles", "Cycles of the Gabor wavelet. More cycles give a sharper frequency "
                                "and a blurrier time resolution.")
 
-        # --- El color del mapa (R33), el mismo control de Wavelet
         self.colorLabel = self._etiqueta("Map color")
         self.colorLayout = QtWidgets.QVBoxLayout()
         self.colorRangeCheckBox, self.colorMinSpinBox, self.colorMaxSpinBox = agregar_rango_color(
@@ -128,7 +124,6 @@ class Ui_Ppc(object):
         self.paramsLayout.addStretch(1)
         self.retranslateUi(PPC)
 
-    # --- Tres ayudas para no repetir el mismo bloque
     def _etiqueta(self, texto):
         lab = QtWidgets.QLabel(self.layoutWidget)
         lab.setText(texto)

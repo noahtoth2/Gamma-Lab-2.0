@@ -1,4 +1,3 @@
-# plugins/analysis/frequency/fft/fft_plugin.py
 from PyQt5 import QtWidgets, QtCore
 import vtk
 import numpy as np
@@ -23,8 +22,8 @@ def calcular_fft(X, fs, target_fs, ctx=None):
         srt = 1
     fs_eff = fs / srt
     Xds = X[::srt, :] if srt > 1 else X
-    mag = np.abs(np.fft.rfft(Xds, axis=0)).astype(np.float64)       # (Nf, T)
-    freq = np.fft.rfftfreq(Xds.shape[0], d=1.0 / fs_eff)           # (Nf,)
+    mag = np.abs(np.fft.rfft(Xds, axis=0)).astype(np.float64)
+    freq = np.fft.rfftfreq(Xds.shape[0], d=1.0 / fs_eff)
     return freq, mag, fs_eff
 
 
@@ -35,7 +34,6 @@ class Fft_plugin(IPlugin):
         super().__init__(meta)
         self.ui: Ui_Fft | None = None
 
-        # VTK
         self.vtk_interactor: QVTKRenderWindowInteractor | None = None
         self.vtk_view: vtk.vtkContextView | None = None
         self.chart: vtk.vtkChartXY | None = None
@@ -43,7 +41,6 @@ class Fft_plugin(IPlugin):
 
     def stop(self):
         self._log("stop() - cleanup VTK")
-        #self._cleanup_vtk()
         if self.vtk_interactor:
             self.vtk_interactor.Disable()
         
@@ -61,14 +58,11 @@ class Fft_plugin(IPlugin):
             self.ui.setupUi(self.widget)
             self.alerts.parent = self.widget
 
-            # UI structure log
             self._log("UI created. plotArea:", bool(self.ui.plotArea),
                       "panel:", bool(self.ui.layoutWidget),
                       "splitter:", bool(self.ui.splitter))
-            #self._ensure_vtk()
             self._wire_ui()
 
-            # post-show logs (actual dimensions)
             QtCore.QTimer.singleShot(0, self._log_sizes)
         else:
             self.widget.setParent(parent)
@@ -95,8 +89,6 @@ class Fft_plugin(IPlugin):
         self.ui.highFrequencySpinBox.setValue(500.0)
         self.ui.lowFrequencySpinBox.setDecimals(2)
         self.ui.lowFrequencySpinBox.setRange(0.0, 10000)
-        # Sync low/high only when the user finishes typing: while typing "100", the "1" was
-        # momentarily below the low limit and dragged it down
         self.ui.lowFrequencySpinBox.setKeyboardTracking(False)
         self.ui.highFrequencySpinBox.setKeyboardTracking(False)
         self.ui.lowFrequencySpinBox.setSingleStep(1.0)
@@ -107,7 +99,6 @@ class Fft_plugin(IPlugin):
         self.ui.lowFrequencySpinBox.setValue(0.0)
         self.ui.highFrequencySpinBox.setValue(500.0)
 
-    # ------- VTK -------
     def _ensure_vtk(self):
         self._log("ensure_vtk(): enter")
         self.vtk_interactor = QVTKRenderWindowInteractor(self.ui.plotArea)
@@ -127,24 +118,20 @@ class Fft_plugin(IPlugin):
         self._log("ensure_vtk(): scheduled init")
 
 
-    # ------- actions (placeholder) -------
     def _on_calculate_clicked(self):
             self._log("_on_calculate_clicked()")
 
-            # 1) Load trials from the active signal
             fs, X, ch_name = self._load_trials_from_store()
             if X is None or fs is None:
                 self._notify("FFT: no trials in the active signal.")
                 return
 
-            # 2) UI parameters
-            target_fs = float(self.ui.sampleDensitySpinBox.value())  # 0 = no resampling
+            target_fs = float(self.ui.sampleDensitySpinBox.value())
             lo = float(self.ui.lowFrequencySpinBox.value())
             hi = float(self.ui.highFrequencySpinBox.value())
             if lo > hi:
                 lo, hi = hi, lo
 
-            # 3) FFT in the TaskService (R71), 4) plot when it finishes
             self.run_task(calcular_fft, partial(self._on_fft_done, ch_name, lo, hi, X.shape[1]),
                           X=X, fs=fs, target_fs=target_fs)
 
@@ -158,7 +145,6 @@ class Fft_plugin(IPlugin):
             self.publish_current_trial()
             self.mark_project_dirty()
 
-    # ====== Project save/restore ======
     def get_analysis_params(self) -> dict:
         return {
             "sample_density": self.ui.sampleDensitySpinBox.value(),
@@ -184,7 +170,6 @@ class Fft_plugin(IPlugin):
                 self.ui.lowFrequencySpinBox.setValue(hi)
         self._log(f"range sync: low={lo}, high={hi}")
 
-    # ====== DATA ======
     def _load_trials_from_store(self):
         """
         Find the active signal in the DataStore and return:
@@ -205,7 +190,7 @@ class Fft_plugin(IPlugin):
 
 
         fs = float(getattr(td, "sampling_rate", 0.0))
-        X  = np.asarray(getattr(td, "trials", None), dtype=np.float64)  # (Ns, T)
+        X  = np.asarray(getattr(td, "trials", None), dtype=np.float64)
         ch = getattr(td, "channel_name", "")
         if X is None or X.ndim != 2 or fs <= 0:
             self._log("Invalid TrialDataset (fs<=0 or trials not 2D).")
@@ -214,7 +199,6 @@ class Fft_plugin(IPlugin):
         self._log(f"Trials: Ns={X.shape[0]}, T={X.shape[1]}, fs={fs}")
         return fs, X, ch
 
-    # ====== FFT ======
     def _compute_fft(self, X: np.ndarray, fs: float, target_fs: float):
         """
         Returns (freq:(Nf,), mag:(Nf,T), fs_eff:float)
@@ -223,7 +207,6 @@ class Fft_plugin(IPlugin):
         self._log(f"FFT: fs_eff={fs_eff:.3f} Hz, Nf={freq.size}, T={mag.shape[1]}")
         return freq, mag, fs_eff
 
-    # ====== Plot in VTK using the adapter ======
     def _plot_fft(self, freq: np.ndarray, mag: np.ndarray, ch_name: str, lo: float, hi: float):
         """
         Build a vtkTable using trials_matrix_to_vtk_table(freq, mag)
@@ -232,12 +215,10 @@ class Fft_plugin(IPlugin):
         if self.vtk_view is None:
             self._ensure_vtk()
 
-        # Frequency range filter
         sel = (freq >= lo) & (freq <= hi)
         freq_v = freq[sel]
-        mag_v  = mag[sel, :]  # (Nf_sel, T)
+        mag_v  = mag[sel, :]
 
-        # Limit number of displayed curves
         MAX_PLOTS = self.MAX_PLOTS
         n_trials = mag_v.shape[1]
         if mag_v.shape[1] > MAX_PLOTS:
@@ -246,7 +227,6 @@ class Fft_plugin(IPlugin):
 
         table = trials_matrix_to_vtk_table(freq_v, mag_v)
 
-        # Create clean chart
         scene = self.vtk_view.GetScene()
         scene.ClearItems()
         self.chart = vtk.vtkChartXY()
@@ -268,14 +248,12 @@ class Fft_plugin(IPlugin):
         except Exception:
             pass
         
-        # One plot per column
         num_cols = table.GetNumberOfColumns()
         print(f"num_cols={num_cols}")
         for c in range(1, num_cols):
             plot = agregar_columna(self.chart, table, c)
             plot.SetWidth(0.5)
 
-         # --- Context menu ---
 
         try:
             self.vtk_menu = VTKContextMenu(self.chart, self.vtk_interactor, self.active_signal.name, ch_name, self.meta.id, parent=self.widget)

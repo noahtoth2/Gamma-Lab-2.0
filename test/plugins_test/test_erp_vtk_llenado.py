@@ -68,7 +68,6 @@ def test_el_tiempo_queda_en_la_x():
                   [4.0, 5.0, 6.0]], dtype=np.float32)
     img = llenar_vectorizado(X, 1.0, 0.0)
 
-    # (x=tiempo, y=trial): el valor en (i, j) debe ser X[j, i]
     for j in range(X.shape[0]):
         for i in range(X.shape[1]):
             assert img.GetScalarComponentAsFloat(i, j, 0, 0) == X[j, i], \

@@ -38,7 +38,6 @@ class ExportService:
         return self.settings.get("last_export_dir", carpeta_inicial())
 
     def recordar_carpeta(self, ruta):
-        # Una exportación suelta dentro del proyecto no debe pisar la carpeta que el usuario eligió fuera de él.
         if self._proyecto_abierto() is None:
             self.settings.set("last_export_dir", ruta)
 
@@ -64,7 +63,6 @@ class Exportador:
         self._get_last_dir = last_dir_getter
         self._set_last_dir = last_dir_setter
 
-    # ---------- image ----------
     def export_image(self, format: str, filename: str = None):
         """
         Export the VTK window to an image (png/jpg/jpeg/bmp/tiff).
@@ -119,7 +117,6 @@ class Exportador:
         except Exception as e:
             self.alerts.error(f"Error exporting image:\n{e}", "Export error")
 
-    # ---------- vector graphic (EMF) ----------
     def export_emf(self, filename: str = None):
         """
         Export the active chart as an Enhanced Metafile: axes, ticks, labels and
@@ -150,7 +147,6 @@ class Exportador:
 
             self._set_last_dir(os.path.dirname(filename))
 
-            # Same proportions as the chart on screen
             w, h = max(1, self.vtk_widget.width()), max(1, self.vtk_widget.height())
             ancho = 1000
             alto = int(min(max(ancho * h / w, 400), 1400))
@@ -163,7 +159,6 @@ class Exportador:
         except Exception as e:
             self.alerts.error(f"Error exporting graphic \n{str(e)}")
 
-    # ---------- sections (results made of several tables) ----------
     def export_sections(self, sections: dict, fmt: str, filename: str = None):
         """
         Export a result made of several tables (parameters, summary, matrices...).
@@ -224,7 +219,6 @@ class Exportador:
         except Exception as e:
             self.alerts.error(f"Error exporting results \n{str(e)}")
 
-    # ---------- table ----------
     def _heatmap_sections(self, chart):
         """The matrix behind a heat map: one row per Y value, one column per X value."""
         from vtkmodules.util import numpy_support
@@ -240,7 +234,6 @@ class Exportador:
         y = oy + np.arange(ny) * sy
         y_title = chart.GetAxis(vtk.vtkAxis.LEFT).GetTitle() or "Y"
         if "log" in y_title.lower():
-            # the axis is drawn in log10; the table carries the real frequency
             y = 10.0 ** y
             y_title = "Frequency (Hz)"
         x_title = chart.GetAxis(vtk.vtkAxis.BOTTOM).GetTitle() or "X"
@@ -321,7 +314,7 @@ class Exportador:
             data_rows, headers, series = [], [], []
             for i in range(chart.GetNumberOfPlots()):
                 plot = chart.GetPlot(i)
-                table = tabla_de(plot)   # full data, not the reduced series that is drawn (R73)
+                table = tabla_de(plot)
                 if table is None:
                     continue
                 x_col = table.GetColumn(0)
@@ -338,7 +331,6 @@ class Exportador:
                     data_rows[r].extend([xs[r], ys[r]])
 
             if fmt in ("csv", "xlsx"):
-                # R09: when every series shares the X axis, one X column is enough
                 headers, data_rows = self._share_x_axis(chart, series, headers, data_rows)
 
             if fmt == "csv":

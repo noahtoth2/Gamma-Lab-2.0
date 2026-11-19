@@ -20,7 +20,7 @@ def secciones():
     trials = np.column_stack([np.sin(2 * np.pi * 10 * t) + 0.1 * np.random.default_rng(i).standard_normal(t.size)
                               for i in range(3)])
     freq, pxx, fs_eff = calcular_psd(trials, FS, FS, "hamming", 256, 128, 256, "none")
-    plugin = Relative_psd_plugin.__new__(Relative_psd_plugin)      # sin __init__: no levanta Qt ni VTK
+    plugin = Relative_psd_plugin.__new__(Relative_psd_plugin)
     plugin.ui = None
     plugin.meta = Mock(name="meta")
     plugin._trials_used = {"label": "3 trials"}

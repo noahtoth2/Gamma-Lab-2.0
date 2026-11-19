@@ -2,7 +2,6 @@ import numpy as np
 from pathlib import Path
 import pytest
 
-# --- Real pipeline imports (core app services & plugins) ---
 from core.services.fileio_service import FileIOService
 from core.filters import trials as tr
 from core.model.trial_dataset import TrialDataset
@@ -13,84 +12,45 @@ from plugins.analysis.time_frequency.wavelet_average.wavelet_average_plugin impo
 from plugins.analysis.time_frequency.wavelet_average import compute as cw
 
 
-# ============================================================
-#                  GLOBAL CONFIG / TEST DATA
-# ============================================================
-
-# Base directory for test data files
 BASE_DIR = Path(__file__).resolve().parents[2] / "test" / "data"
 
-# Input ABF file
 ABF_PATH = BASE_DIR / "17308005.abf"
 
-# MATLAB reference CSV
 MATLAB_SCALO_AVG = BASE_DIR / "wavelet_average_data_matlab.csv"
 
 
-# ============================================================
-#                 TRIALS DIVISION PARAMETERS
-# ============================================================
-
-# Channel where the signal of interest is stored
 TARGET_CHANNEL = 0
 
-# Channel used to detect stimulus onsets
 STIM_CHANNEL = 1
 
-# Threshold to detect a stimulus event
 THRESHOLD = 0.7
 
-# Time window around each stimulus (in seconds)
-T0 = -0.05     # Start time relative to stimulus
-T1 = 4.00      # End time relative to stimulus
+T0 = -0.05
+T1 = 4.00
 
-# How to decide the end of a trial
 END_MODE = "until_next_onset"
 
-# Expected number of stimuli per trial (sanity check inside filter)
 STIM_EXPECTED = 1
 
-# Inter-stimulus interval (used by the cutting logic)
 ISI = 0.0
 
-# Value used to pad trials if needed
-# We keep it at 0.0 to avoid contaminating the scalogram with NaNs.
 PAD_VALUE = 0.0
 
 
-# ============================================================
-#            WAVELET / TIME-FREQUENCY PARAMETERS
-# ============================================================
-
-# Default plugin parameters (as in the UI)
-TARGET_FS = 1000.0   # sampleDensitySpinBox
-F_LO = 1.0           # lowFrequencySpinBox
-F_HI = 500.0         # highFrequencySpinBox
-CYCLES = 2.0         # cyclesSpinBox
-NORMALIZE = False    # normalizeCheckBox
-# La referencia de MATLAB son filas en eje LINEAL. Con SCALE_LOG=True se
-# comparaba el eje logaritmico de produccion (geomspace, 144 filas) contra las
-# primeras 144 de las 999 lineales de MATLAB, asi que no medía nada util.
-# Ver problemas-encontrados.md nº 2 y nº 16.
-SCALE_LOG = False    # scaleCheckBox
+TARGET_FS = 1000.0
+F_LO = 1.0
+F_HI = 500.0
+CYCLES = 2.0
+NORMALIZE = False
+SCALE_LOG = False
 
 
-# ============================================================
-#                 NUMERICAL COMPARISON PARAMETERS
-# ============================================================
-
-# Minimum acceptable Pearson correlation per row (frequency)
 MIN_CORR = 0.8
 
-# Fractional test parameters
-FRAC_MIN_PASS = 0.95   # At least 95% of points must be within tolerance
-FRAC_ATOL = 0.0001        # Absolute tolerance
-FRAC_RTOL = 0.0        # Relative tolerance
+FRAC_MIN_PASS = 0.95
+FRAC_ATOL = 0.0001
+FRAC_RTOL = 0.0
 
-
-# ============================================================
-#       MATLAB CSV LOADING HELPER (AVERAGE SCALOGRAM 2D)
-# ============================================================
 
 def load_csv_matlab_scalogram_avg(path: Path) -> np.ndarray:
     """
@@ -101,10 +61,6 @@ def load_csv_matlab_scalogram_avg(path: Path) -> np.ndarray:
     M = np.loadtxt(path, delimiter=";")
     return np.asarray(M, dtype=np.float64)
 
-
-# ============================================================
-#                    NUMPY HELPER FUNCTIONS
-# ============================================================
 
 def crop_to_min(A: np.ndarray, B: np.ndarray):
     """
@@ -159,7 +115,6 @@ def diff_debug_report_fraction(
     excess = np.full_like(diffs, np.nan, dtype=float)
     excess[over_mask] = diffs[over_mask] - tol_mat[over_mask]
 
-    # Worst violating point (ignoring NaNs).
     flat_idx = np.nanargmax(excess)
     r, c = np.unravel_index(flat_idx, excess.shape)
     worst_excess = float(excess[r, c])
@@ -167,7 +122,6 @@ def diff_debug_report_fraction(
     worst_tol = float(tol_mat[r, c])
     va, vb = float(A[r, c]), float(B[r, c])
 
-    # Aggregated statistics by row (frequencies).
     by_row_counts = np.nansum(over_mask, axis=1)
     with np.errstate(all="ignore", invalid="ignore"):
         by_row_maxexc = np.nanmax(excess, axis=1)
@@ -175,7 +129,6 @@ def diff_debug_report_fraction(
     rows = np.where(by_row_counts > 0)[0]
     topk = []
     if rows.size > 0:
-        # Sort by (#violations desc, max_excess desc).
         order = np.lexsort((-by_row_maxexc[rows], -by_row_counts[rows]))[::-1]
         for idx in order[:topk_rows]:
             ridx = int(rows[idx])
@@ -241,14 +194,11 @@ def assert_points_within_tolerance_fraction(
     B = np.asarray(B, dtype=float)
     A, B = crop_to_min(A, B)
 
-    # Only evaluate points where both matrices are finite.
     valid = np.isfinite(A) & np.isfinite(B)
     total = int(np.sum(valid))
     if total == 0:
-        # Nothing to compare: silently accept.
         return
 
-    # Choose which matrix is used as "reference" in the tolerance formula.
     ref_mat = A if ref.upper() == "A" else B
     tol_mat = atol + rtol * np.abs(ref_mat)
 
@@ -258,10 +208,8 @@ def assert_points_within_tolerance_fraction(
     ratio = passed / float(total)
 
     if ratio >= min_pass_ratio:
-        # Enough points are within tolerance → test passes.
         return
 
-    # Build a detailed report to help debugging failures.
     lines = []
     lines.append(msg or "Fractional tolerance check failed")
     lines.append(f"[frac] shape {label_a}={A.shape}, {label_b}={B.shape}")
@@ -277,10 +225,6 @@ def assert_points_within_tolerance_fraction(
     )
     raise AssertionError("\n".join(lines))
 
-
-# ============================================================
-#            TEST FOR WAVELET AVERAGE PLUGIN
-# ============================================================
 
 class WaveletAverageDouble(Wavelet_average_plugin):
     """
@@ -313,7 +257,6 @@ class WaveletAverageDouble(Wavelet_average_plugin):
         self.f_axis = None
         self._last_error = None
 
-    # --- Injection helpers used by the tests ---
 
     def set_active_signal(self, sd):
         """
@@ -327,7 +270,6 @@ class WaveletAverageDouble(Wavelet_average_plugin):
         """
         self._active_trials = td
 
-    # --- Bridges required by the original plugin API ---
 
     def get_active_signal(self):
         """
@@ -341,7 +283,6 @@ class WaveletAverageDouble(Wavelet_average_plugin):
         """
         return self._active_trials
 
-    # --- UI / VTK handling overrides ---
 
     def _create_vtk_container(self):
         """
@@ -367,7 +308,6 @@ class WaveletAverageDouble(Wavelet_average_plugin):
         """
         pass
 
-    # --- Synchronous "full pipeline" using the real task function ---
 
     def run_average(
         self,
@@ -395,13 +335,11 @@ class WaveletAverageDouble(Wavelet_average_plugin):
         t = np.asarray(td.time_rel, dtype=float)
         data = np.array(td.trials)
 
-        # Ensure shape is (n_samples, n_trials)
         if data.ndim == 1:
             data = data[:, np.newaxis]
         if data.shape[0] < data.shape[1]:
-            data = data.T  # (n_samples, n_trials)
+            data = data.T
 
-        # Compute sampling rate from time axis
         fs_calculated = round(1.0 / (t[1] - t[0]), 3)
 
         class _CtxSincrono:
@@ -433,11 +371,6 @@ class WaveletAverageDouble(Wavelet_average_plugin):
         return self.scalo, self.t_axis, self.f_axis
 
 
-# ============================================================
-#                   INTEGRATION TEST SUITE
-#      APP Wavelet Average vs MATLAB Average Scalogram
-# ============================================================
-
 @pytest.mark.skipif(not ABF_PATH.exists(), reason="ABF file not found")
 @pytest.mark.skipif(not MATLAB_SCALO_AVG.exists(), reason="MATLAB average scalogram CSV not found")
 class TestWaveletAverageABFVsMatlab:
@@ -453,9 +386,6 @@ class TestWaveletAverageABFVsMatlab:
          absolute and relative tolerance.
     """
 
-    # --------------------------------------------------------
-    # Fixtures
-    # --------------------------------------------------------
     @pytest.fixture(scope="class")
     def ds(self):
         """
@@ -465,7 +395,6 @@ class TestWaveletAverageABFVsMatlab:
         fio = FileIOService()
         sd = fio.load_abf(str(ABF_PATH))
 
-        # Ensure we work with float64 for better numerical stability.
         sd.signals = sd.signals.astype(np.float64, copy=False)
         sd.time = sd.time.astype(np.float64, copy=False)
 
@@ -538,9 +467,6 @@ class TestWaveletAverageABFVsMatlab:
         print("MATLAB WAVELET AVG shape:", M.shape)
         return M
 
-    # --------------------------------------------------------
-    # 1. Basic structure / size checks
-    # --------------------------------------------------------
     def test_shape_and_size(self, app_scalogram_avg, matlab_scalogram_avg):
         """
         Both scalograms (APP and MATLAB) must be 2D and have
@@ -553,9 +479,6 @@ class TestWaveletAverageABFVsMatlab:
         assert A.shape[0] >= 1 and A.shape[1] >= 1
         assert B.shape[0] >= 1 and B.shape[1] >= 1
 
-    # --------------------------------------------------------
-    # 2. Correlation per frequency row
-    # --------------------------------------------------------
     @pytest.mark.xfail(reason="la referencia de MATLAB usa otra convención de amplitud (sin la normalización 1/raiz(escala) de PyWavelets y unas 2,05 veces mayor) y su trial empieza una muestra antes; ver test_referencias_matlab_wavelet_psd.py", strict=False)
     def test_correlation_by_row(self, app_scalogram_avg, matlab_scalogram_avg):
         """
@@ -584,9 +507,6 @@ class TestWaveletAverageABFVsMatlab:
             )
             pytest.fail(msg)
 
-    # --------------------------------------------------------
-    # 3. Pointwise comparison with tolerance (allows outliers)
-    # --------------------------------------------------------
     @pytest.mark.xfail(reason="la referencia de MATLAB usa otra convención de amplitud (sin la normalización 1/raiz(escala) de PyWavelets y unas 2,05 veces mayor) y su trial empieza una muestra antes; ver test_referencias_matlab_wavelet_psd.py", strict=False)
     def test_pointwise_fraction_allowing_outliers(
         self,

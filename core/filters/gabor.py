@@ -16,7 +16,7 @@ así que si algún día un segundo plugin la pide, el movimiento es este mismo.
 """
 import numpy as np
 
-CICLOS_GABOR = 1.0   # ps_StDevCycles de f_Phase_PAC_Pdetect (el .m dice 3)
+CICLOS_GABOR = 1.0
 
 
 def gabor_tf(sig, fs, fmin, fmax, n_freq, cycles=CICLOS_GABOR, magnitudes=True):
@@ -65,13 +65,6 @@ def gabor_tf(sig, fs, fmin, fmax, n_freq, cycles=CICLOS_GABOR, magnitudes=True):
         raise ValueError(f"La frecuencia alta ({fmax:g} Hz) debe ser mayor que la baja "
                          f"({fmin:g} Hz).")
 
-    # MATLAB hace aqui dos ajustes **en silencio**: sube `ps_MinFreqHz` de 0 a
-    # 0,1 y recorta `ps_MaxFreqHz` al Nyquist. No se replican, a proposito:
-    # quien pide un analisis hasta 1.500 Hz y recibe uno hasta 1.000 sin que
-    # nadie se lo diga leera el resultado como si cubriera lo que pidio. Es mas
-    # util negarse y decir por que. El resto de PAC ya se comporta asi
-    # —`_preparar` lanza el mismo error para la Morse—, y dejar una transformada
-    # recortando y la otra avisando seria lo peor de los dos mundos.
     nyquist = fs / 2.0
     if fmax > nyquist:
         raise ValueError(
@@ -82,7 +75,6 @@ def gabor_tf(sig, fs, fmin, fmax, n_freq, cycles=CICLOS_GABOR, magnitudes=True):
     if n_freq < 2:
         raise ValueError(f"Se necesitan al menos 2 frecuencias (se pidieron {n_freq}).")
 
-    # Eje lineal e invertido, como el MATLAB
     return gabor_en(x, fs, np.linspace(fmin, fmax, n_freq)[::-1],
                     cycles=cycles, magnitudes=magnitudes)
 
@@ -129,7 +121,6 @@ def gabor_en(sig, fs, frecuencias, cycles=CICLOS_GABOR, magnitudes=True):
     n_freq = frecuencias.size
     eje_frecuencias = frecuencias
 
-    # Largo par: se descarta la ultima muestra y **no** se repone (ver arriba)
     if x.size % 2 == 0:
         x = x[:-1]
 
@@ -137,22 +128,17 @@ def gabor_en(sig, fs, frecuencias, cycles=CICLOS_GABOR, magnitudes=True):
     eje_tiempo = np.arange(n, dtype=np.float64) / fs
     mitad = n // 2 + 1
 
-    # Eje angular: (2π/N)·(0:N−1)·fs
     w_mitad = ((2.0 * np.pi / n) * np.arange(mitad, dtype=np.float64)) * fs
 
     fft_sig = np.fft.fft(x)
 
-    # Mismo criterio de memoria que morse_tf: si solo se quieren magnitudes se
-    # reserva float64 y se escribe fila por fila con el abs ya aplicado.
     salida = np.empty((n_freq, n), dtype=np.float64 if magnitudes else np.complex128)
     ventana = np.zeros(n, dtype=np.float64)
 
     for i, f in enumerate(eje_frecuencias):
-        desviacion = cycles / f          # s_StDevSec, en segundos
+        desviacion = cycles / f
         ventana[:mitad] = np.exp(
             -0.5 * (w_mitad - 2.0 * np.pi * f) ** 2 * desviacion ** 2)
-        # La cola sigue en cero y queda en cero al escalar, asi que se puede
-        # normalizar sobre el arreglo entero sin reservar otro.
         ventana *= np.sqrt(n) / np.linalg.norm(ventana)
         coef = np.fft.ifft(fft_sig * ventana) / np.sqrt(desviacion)
         salida[i, :] = np.abs(coef) if magnitudes else coef

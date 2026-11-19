@@ -15,7 +15,7 @@ class PluginAlerts:
     vuelve al `QMessageBox` de siempre.
     """
 
-    _center = None  # NotificationCenter compartido por todas las instancias
+    _center = None
 
     def __init__(self, parent: QWidget = None):
         self.parent = parent
@@ -37,7 +37,6 @@ class PluginAlerts:
                 center.show_message(level, title, message)
                 return
             except RuntimeError:
-                # El widget C++ ya no existe (ventana cerrada)
                 PluginAlerts._center = None
 
         parent = self.parent
@@ -47,7 +46,6 @@ class PluginAlerts:
             except RuntimeError:
                 parent = None
         if not parent:
-            # No UI context (console or test mode)
             return
 
         if level == "error":
@@ -71,7 +69,6 @@ class PluginAlerts:
         defaults = {"info": "Information", "warning": "Warning", "error": "Error"}
         self.__show_message(title or defaults.get(level, ""), message, level)
 
-    #  LOADING SPINNER
     def show_spinner(self, text: str = "Processing...", gif_path: str = None):
         if self._spinner_dialog and self._spinner_dialog.isVisible():
             return
@@ -86,7 +83,6 @@ class PluginAlerts:
         layout.setAlignment(Qt.AlignCenter)
         layout.setContentsMargins(20, 20, 20, 20)
 
-        # -------- Spinner GIF or ProgressBar --------
         if gif_path:
             spinner_label = QLabel()
             movie = QMovie(gif_path)
@@ -100,7 +96,6 @@ class PluginAlerts:
             bar.setObjectName("spinnerProgressBar")
             layout.addWidget(bar, alignment=Qt.AlignCenter)
 
-        # -------- Text --------
         label = QLabel(text)
         label.setAlignment(Qt.AlignCenter)
         label.setObjectName("spinnerText")
@@ -109,7 +104,6 @@ class PluginAlerts:
         self._spinner_dialog.setLayout(layout)
         self._spinner_dialog.resize(240, 140)
 
-        # -------- INLINE CSS STYLES --------
         self._spinner_dialog.setStyleSheet("""
             #spinnerDialog {
                 background-color: #ffffff;
@@ -135,7 +129,6 @@ class PluginAlerts:
             }
         """)
 
-        # -------- Optional Shadow (looks premium) --------
         try:
             from PyQt5.QtWidgets import QGraphicsDropShadowEffect
             shadow = QGraphicsDropShadowEffect()

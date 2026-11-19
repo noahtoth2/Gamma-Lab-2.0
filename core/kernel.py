@@ -1,4 +1,3 @@
-# core/kernel.py
 from PyQt5.QtCore import QObject, pyqtSignal
 import sys
 import importlib
@@ -6,8 +5,8 @@ import os
 
 class Kernel(QObject):
   
-    event = pyqtSignal(str, object)  # General events
-    plugin_registered = pyqtSignal(str)  # Emitted when a plugin is registered
+    event = pyqtSignal(str, object)
+    plugin_registered = pyqtSignal(str)
 
 
     def __init__(self):
@@ -19,34 +18,26 @@ class Kernel(QObject):
         if name in self._plugins:
             print(f"Plugin '{name}' is already registered; it will be overwritten.")
         print(f"Registering plugin: {name}")
-        # Add the plugin to the plugins dict
         self._plugins[name] = plugin
 
-        # Verify plugin has initialize() and call it
         if hasattr(plugin, "initialize"):
             try:
                 plugin.initialize(self)
             except Exception as e:
                 print(f"Error initializing plugin '{name}':", e)
 
-        # Emit the plugin-registered event
         self.plugin_registered.emit(name)
 
-    # Get all registered plugin names
     def get_plugins(self):
         return list(self._plugins.keys())
     
-    # Get a plugin by name
     def get_plugin(self, name):
         return self._plugins.get(name)
 
-    # Get all plugins by category
     def get_plugins_by_category(self, category: str):
         return [name for name, p in self._plugins.items() if hasattr(p, "category") and p.category() == category]
 
     
-
-    # Dynamically load and register a plugin
     def load_and_register(self, name: str, module_path: str, class_name: str):
         """
         Dynamically load a plugin from a Python module and register it.

@@ -1,4 +1,3 @@
-# test/performance_test/test_io_bench.py
 """
 Benchmarks de carga de archivos (core/services/fileio_service.py), corte de
 trials (core/filters/trials.py) y del almacén en memoria (core/services/
@@ -35,21 +34,12 @@ pytestmark = [
 ]
 
 
-# ---------------------------------------------------------------------
-# FileIOService.load_abf -- lectura real de disco + parseo con pyabf
-# ---------------------------------------------------------------------
-
 def test_bench_load_abf():
     fio = FileIOService()
     stats = time_block(fio.load_abf, str(ABF_PATH), reps=5, warmup=1)
     ds = stats["result"]
     record(f"fileio.load_abf ({ds.signals.shape[0]} canales x {ds.signals.shape[1]} muestras)", stats)
 
-
-# ---------------------------------------------------------------------
-# core.filters.trials.cut_trials_single_channel -- detección de estímulos y
-# corte de la señal continua en trials
-# ---------------------------------------------------------------------
 
 @pytest.fixture(scope="module")
 def ds():
@@ -72,11 +62,6 @@ def test_bench_cut_trials_single_channel(ds):
     td = stats["result"]
     record(f"trials.cut_trials_single_channel ({td.trials.shape[0]}x{td.trials.shape[1]})", stats)
 
-
-# ---------------------------------------------------------------------
-# DataStore -- diccionario central en memoria (todo el flujo de la app pasa
-# por acá: cada señal cargada, cada juego de trials generado)
-# ---------------------------------------------------------------------
 
 def test_bench_datastore_add_signal(ds):
     """

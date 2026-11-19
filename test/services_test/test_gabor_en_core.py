@@ -65,6 +65,5 @@ def test_sigue_calculando_lo_mismo():
     assert tf.shape == (40, 501)
     assert eje_t.size == 501
     assert eje_f[0] > eje_f[-1], "el eje de frecuencias va descendente"
-    # la fila de más energía tiene que caer sobre los 60 Hz de la señal
     fila = int(np.argmax(tf.mean(axis=1)))
     assert abs(eje_f[fila] - 60.0) < 5.0

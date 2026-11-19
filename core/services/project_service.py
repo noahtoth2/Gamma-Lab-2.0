@@ -67,11 +67,10 @@ class ProjectService:
         self.kernel = kernel
         self.project_dir: Path | None = None
         self.glab_path: Path | None = None
-        self.project_name: str | None = None  # e.g. "23n09000_gammalab" (no extension)
-        self.dirty = False  # True when there are changes not yet written to the .glab
-        self.on_change = None  # callback() fired on open/save/rename/close
+        self.project_name: str | None = None
+        self.dirty = False
+        self.on_change = None
 
-    # ---------------- naming ----------------
     @staticmethod
     def default_project_name(signal_name: str) -> str:
         stem = Path(signal_name).stem if signal_name else "untitled"
@@ -101,7 +100,6 @@ class ProjectService:
         d.mkdir(parents=True, exist_ok=True)
         return str(d)
 
-    # ---------------- internals ----------------
     def _notify(self):
         if self.on_change:
             try:
@@ -112,7 +110,6 @@ class ProjectService:
     def _datastore(self):
         return self.kernel.get_service("DataStore") if self.kernel else None
 
-    # ---------------- save ----------------
     def save(self, parent_widget=None):
         """Save to the already-known project location, or fall back to Save As."""
         job = self.iniciar_guardado(parent_widget, como=False)
@@ -127,7 +124,6 @@ class ProjectService:
             self._copiar_si_cambio(*job.copia)
         return self.completar_guardado(job)
 
-    # ---- guardar en pasos (R04): decidir -> copiar la señal -> escribir el manifiesto ----
     def iniciar_guardado(self, parent_widget=None, como=False):
         """Decide dónde se guarda. Devuelve un `TrabajoGuardado`, o None si el usuario canceló.
 
@@ -142,7 +138,6 @@ class ProjectService:
         previo = (self.project_dir, self.glab_path, self.project_name)
 
         if not como and self.is_open:
-            # rename target if the project was renamed since the last save
             expected_path = self.project_dir / f"{self.project_name}.glab"
             if expected_path != self.glab_path:
                 if self.glab_path and self.glab_path.exists():
@@ -293,12 +288,9 @@ class ProjectService:
         for td in ds.get_all_trials_datasets():
             params = (td.metadata or {}).get("generation_params")
             if not params:
-                continue  # generated before this feature existed, or by another path
+                continue
             discarded = sorted(discards_map.get((ds.name, td.channel_name), set()))
             entry = {"generation_params": params, "discarded_indices": discarded}
-            # Las modificaciones de artifact_remove se guardan como receta, no
-            # como datos: el proyecto guarda cómo se generó cada cosa (nº 21).
-            # R79: the recipes live in the derived set, not in the original trials
             derivado = ds.get_derived_trials(ds.name, td.channel_name) if hasattr(ds, "get_derived_trials") else None
             mods = ((derivado.metadata if derivado is not None else td.metadata) or {}).get("modificaciones")
             if mods:
@@ -345,7 +337,6 @@ class ProjectService:
                 m2[k] = tuple(m2[k])
         return m2
 
-    # ---------------- open ----------------
     def preparar_apertura(self, glab_path_str, ctx=None):
         """Lee el manifiesto y el archivo de la señal sin tocar el DataStore ni la interfaz.
 
@@ -360,7 +351,6 @@ class ProjectService:
         info = manifest.get("signal") or {}
         filename = info.get("filename")
         if filename:
-            # primero la copia que está junto al proyecto; si no, la ruta de origen registrada (R07)
             candidatos = [glab_path.parent / filename]
             if info.get("source_path"):
                 candidatos.append(Path(info["source_path"]))
@@ -369,8 +359,6 @@ class ProjectService:
                 if ctx is not None:
                     ctx.progress(20, f"Leyendo {filename}")
                 ds = self._leer_senal(signal_path)
-                # La señal aún no está en el DataStore: corregir su frecuencia y volver a cortar los trials
-                # es cómputo que corre aquí, en el hilo de la tarea y no en el de la interfaz (R71).
                 if info.get("sampling_rate_source") == "manual" and info.get("sampling_rate"):
                     try:
                         ds.set_sampling_rate(float(info["sampling_rate"]))
@@ -453,11 +441,8 @@ class ProjectService:
                 ds.add_trial_dataset(td)
                 for idx in entry.get("discarded_indices", []):
                     ds.discard_trial(ds.name, td.channel_name, idx)
-                # Después de los descartes, porque cada receta guarda los
-                # descartes que estaban vigentes cuando se aplicó (nº 21).
                 recetas = entry.get("modifications") or []
                 if recetas:
-                    # R79: the recipes are replayed on a derived copy; the cut trials stay as generated
                     derivado = crear_derivado(td)
                     n = reaplicar_modificaciones(derivado, recetas)
                     if n:
@@ -491,8 +476,6 @@ class ProjectService:
                     widget.setVisible(False)
                 setter = getattr(plugin, "apply_analysis_params", None)
                 if callable(setter):
-                    # Lo que el plugin recalcule ahora es lo guardado, no un cambio:
-                    # mientras dura, sus resultados no marcan el proyecto (IPlugin).
                     plugin._restaurando_proyecto = True
                     try:
                         setter(params)
@@ -501,7 +484,6 @@ class ProjectService:
             except Exception as e:
                 print(f"[ProjectService] Could not restore analysis '{name}':", e)
 
-    # ---------------- nuevo y duplicar ----------------
     @staticmethod
     def crear_proyecto_vacio(carpeta_proyecto, nombre) -> Path:
         """Crea `carpeta_proyecto/nombre.glab` sin señal. Al abrirlo, la señal que se cargue será suya."""
@@ -539,13 +521,12 @@ class ProjectService:
         if destino.exists() and any(destino.iterdir()):
             raise FileExistsError(f"La carpeta de destino ya existe y no está vacía:\n{destino}")
 
-        # La lista se arma antes de copiar nada.
         archivos, total = [], 0
         for raiz, _dirs, nombres in os.walk(carpeta_origen):
             for n in nombres:
                 ruta = Path(raiz) / n
                 if n.endswith(".part"):
-                    continue  # restos de una copia de señal cortada
+                    continue
                 archivos.append(ruta)
                 try:
                     total += ruta.stat().st_size
@@ -598,7 +579,6 @@ class ProjectService:
         else:
             shutil.rmtree(destino, ignore_errors=True)
 
-    # ---------------- close ----------------
     def close(self):
         self.project_dir = None
         self.glab_path = None

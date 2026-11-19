@@ -17,13 +17,11 @@ class Ui_ModulationIndex(object):
         self.splitter.setObjectName("splitter")
         self.mainWindow.addWidget(self.splitter)
 
-        # --- Left Area: Plot ---
         self.plotArea = QtWidgets.QFrame(self.splitter)
         self.plotArea.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.plotArea.setFrameShadow(QtWidgets.QFrame.Raised)
         self.plotArea.setObjectName("plotArea")
 
-        # --- Right Area: Panel (fixed header + scrollable body) ---
         self.rightContainer = QtWidgets.QWidget(self.splitter)
         self.rightContainer.setObjectName("rightContainer")
 
@@ -31,7 +29,6 @@ class Ui_ModulationIndex(object):
         self.rightLayoutOuter.setContentsMargins(8, 0, 8, 0)
         self.rightLayoutOuter.setSpacing(0)
 
-        # ===== Header: Parameters + clear + Generate (always visible) =====
         self.headerLayout = QtWidgets.QHBoxLayout()
         self.headerLayout.setContentsMargins(0, 0, 0, 5)
 
@@ -64,7 +61,6 @@ class Ui_ModulationIndex(object):
         self.paramsLine.setProperty("role", "section-divider")
         self.rightLayoutOuter.addWidget(self.paramsLine)
 
-        # ===== Scrollable body =====
         self.scrollArea = QtWidgets.QScrollArea(self.rightContainer)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
@@ -84,19 +80,12 @@ class Ui_ModulationIndex(object):
 
         self.splitter.widget(1).setMaximumWidth(300)
 
-        # --- Sample frequency ---
-        # MI la necesita: f_PAC_sing recibe `srt` y hace downsample(v_Data, srt).
-        # En MATLAB la lee de `ResampleFr`, que vive en el panel Frequency y vale
-        # 1000 —no del campo de 2000 que esta dibujado justo al lado del boton MI,
-        # que es el de PAC—. Aqui lleva el suyo propio: un plugin no lee los
-        # widgets de otro.
         self.sampleSection = self._section_layout("sampleFqLabel")
         self.sampleFqLabel = self.sampleSection.title
         self.sampleFqRowLabel, self.sampleFqSpinBox, self.sampleFqHzLabel = \
             self._add_spin_row(self.sampleSection, "sampleFq", QtWidgets.QSpinBox)
         self.paramsLayout.addLayout(self.sampleSection)
 
-        # --- Phase band ---
         self.phaseSection = self._section_layout("phaseBandLabel")
         self.phaseBandLabel = self.phaseSection.title
         self.fqP1Label, self.fqP1SpinBox, self.fqP1HzLabel = self._add_spin_row(self.phaseSection, "fqP1")
@@ -104,7 +93,6 @@ class Ui_ModulationIndex(object):
         self.pStepLabel, self.pStepSpinBox, self.pStepHzLabel = self._add_spin_row(self.phaseSection, "pStep")
         self.paramsLayout.addLayout(self.phaseSection)
 
-        # --- Amplitude band ---
         self.amplitudeSection = self._section_layout("amplitudeBandLabel")
         self.amplitudeBandLabel = self.amplitudeSection.title
         self.fqA1Label, self.fqA1SpinBox, self.fqA1HzLabel = self._add_spin_row(self.amplitudeSection, "fqA1")
@@ -112,27 +100,20 @@ class Ui_ModulationIndex(object):
         self.aStepLabel, self.aStepSpinBox, self.aStepHzLabel = self._add_spin_row(self.amplitudeSection, "aStep")
         self.paramsLayout.addLayout(self.amplitudeSection)
 
-        # --- Trial ---
-        # f_PAC_sing hace v_Data(:,Tr): trabaja sobre UN trial, como PAC. En
-        # MATLAB es una casilla numerica global; aqui lleva ademas flechas,
-        # porque la directora pidio poder navegar entre los trials.
         self.trialSection = self._section_layout("trialLabel")
         self.trialLabel = self.trialSection.title
         self.prevTrialButton, self.trialSpinBox, self.nextTrialButton, self.trialTotalLabel = \
             self._add_trial_row(self.trialSection)
         self.paramsLayout.addLayout(self.trialSection)
 
-        # --- Spacer ---
         self.paramsLayout.addStretch(1)
 
-        # Size splitter
         self.splitter.setStretchFactor(0, 1)
         self.splitter.setStretchFactor(1, 0)
 
         self.retranslateUi(ModulationIndex)
         QtCore.QMetaObject.connectSlotsByName(ModulationIndex)
 
-    # ---------- helpers (same widgets/properties the other plugins build by hand) ----------
     def _section_layout(self, title_name):
         section = QtWidgets.QVBoxLayout()
         section.setObjectName(title_name + "Layout")
@@ -183,8 +164,6 @@ class Ui_ModulationIndex(object):
         anterior.setCursor(QtCore.Qt.PointingHandCursor)
         row.addWidget(anterior)
 
-        # Muestra 1 para el primer trial, como MATLAB; el plugin resta uno al
-        # indexar, porque Python cuenta desde cero.
         spin = QtWidgets.QSpinBox(self.layoutWidget)
         spin.setAlignment(QtCore.Qt.AlignCenter)
         spin.setMinimum(1)

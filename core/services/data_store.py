@@ -42,7 +42,6 @@ class DataStore:
         self._propietario = threading.get_ident()
         self._duenos = {}
 
-    # ---------- propiedad ----------
     def _exigir_propietario(self):
         if threading.get_ident() != self._propietario:
             raise EscrituraNoPermitida(
@@ -58,7 +57,6 @@ class DataStore:
         with self._lock:
             return self._duenos.get(key)
 
-    # ---------- lectura ----------
     def get(self, key, default=None):
         with self._lock:
             return self._data.get(key, default)
@@ -92,7 +90,6 @@ class DataStore:
         with self._lock:
             return self._data.get("active_signal") == key
 
-    # ---------- escritura ----------
     @_escribe
     def set(self, key, value, owner=None):
         actual = self._duenos.get(key)

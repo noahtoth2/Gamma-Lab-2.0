@@ -4,9 +4,6 @@ title Gamma Lab
 echo Launching Gamma Lab...
 echo.
 
-REM ==========================================
-REM CHECK SYSTEM PYTHON VERSION
-REM ==========================================
 
 for /f "tokens=2 delims= " %%v in ('python -V 2^>nul') do set PYV=%%v
 
@@ -24,7 +21,6 @@ if "%PY_MAJOR%"=="" (
 
 echo Python detected: %PY_MAJOR%.%PY_MINOR%.%PY_PATCH%
 
-REM Require Python >= 3.11
 if %PY_MAJOR% LSS 3 (
     echo [ERROR] Python 3.11 or newer is required.
     pause
@@ -40,9 +36,6 @@ if %PY_MAJOR%==3 if %PY_MINOR% LSS 11 (
 echo Python version OK.
 echo.
 
-REM ==========================================
-REM ALWAYS INSTALL DEPENDENCIES
-REM ==========================================
 
 echo Installing/Checking dependencies...
 pip install --upgrade pip
@@ -50,9 +43,6 @@ pip install -r requirements.txt
 echo Dependencies up to date.
 echo.
 
-REM ==========================================
-REM RUN APPLICATION
-REM ==========================================
 
 echo Running Gamma Lab...
 python main.py

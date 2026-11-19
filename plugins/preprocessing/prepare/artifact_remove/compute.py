@@ -1,4 +1,3 @@
-# plugins/preprocessing/prepare/artifact_remove/compute.py
 """Cálculo puro de la modificación de artefactos.
 
 Es lo que corre dentro del orquestador (TaskService): recibe arreglos de NumPy

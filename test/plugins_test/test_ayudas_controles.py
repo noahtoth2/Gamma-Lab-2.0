@@ -19,7 +19,7 @@ def _interfaces():
         rel = os.path.relpath(ruta, RAIZ)[:-3].replace(os.sep, ".")
         try:
             mod = importlib.import_module(rel)
-        except ImportError:        # la ayuda necesita QtWebEngine, que pide inicializarse antes de QApplication
+        except ImportError:
             continue
         for nombre, cls in inspect.getmembers(mod, inspect.isclass):
             if cls.__module__ == mod.__name__ and hasattr(cls, "setupUi"):
@@ -34,7 +34,7 @@ def app():
 
 @pytest.mark.parametrize("nombre,cls", _interfaces(), ids=lambda v: v if isinstance(v, str) else "")
 def test_ningun_control_queda_sin_descripcion(app, nombre, cls):
-    if issubclass(cls, QtWidgets.QWidget):      # las interfaces que son su propio widget
+    if issubclass(cls, QtWidgets.QWidget):
         widget = cls()
         widget.setupUi()
     else:

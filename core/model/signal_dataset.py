@@ -14,7 +14,7 @@ from core.model.trial_dataset import TrialDataset
 @dataclass
 class SignalDataset:
     name: str
-    format: str                     # "abf"
+    format: str
     source_path: str
     sampling_rate: float            
     time: np.ndarray                
@@ -23,7 +23,7 @@ class SignalDataset:
     units: List[str]
     metadata: Dict[str, Any] = field(default_factory=dict)
     sampling_rate_source: str = "header"     
-    original_sampling_rate: float | None = None  # value auto-detected at load time
+    original_sampling_rate: float | None = None
     vtk_table = None
 
     __trials_dataset:List[TrialDataset] = field(default_factory=list)
@@ -31,16 +31,11 @@ class SignalDataset:
     __discarded_trials: Dict[tuple[str, str], set[int]] = field(default_factory=dict)
 
 
-    # Internal cache to avoid recomputing the same trials_dataset
     __filtered_cache: Dict[tuple[str, str], TrialDataset] = field(default_factory=dict, init=False, repr=False)
     __discard_versions: Dict[tuple[str, str], int] = field(default_factory=dict, init=False, repr=False)
 
-    # R79: preprocessing never writes into the cut trials. Its result is a derived
-    # TrialDataset (same shape, same discards) kept apart, one per (file, channel);
-    # `get_active_trials` serves it, and the original stays available.
     __derived_trials: Dict[tuple[str, str], TrialDataset] = field(default_factory=dict, init=False, repr=False)
 
-    # Add a trial_dataset to the trials list
     def add_trial_dataset(self, trial: "TrialDataset", activar: bool = True):
         """Guarda un juego de trials, **reemplazando** el anterior del mismo canal.
 
@@ -100,7 +95,6 @@ class SignalDataset:
         self.__discard_versions.clear()
         self.__derived_trials.clear()
 
-    # ---------------- sampling rate (CU-018) ----------------
     def set_sampling_rate(self, new_fs: float):
         """Public API to correct the sampling rate (R67): no caller should
         reach into `sampling_rate`/`time` directly. Recomputes the time axis
@@ -124,7 +118,6 @@ class SignalDataset:
     def number_of_trials_dataset(self):
         return len(self.__trials_dataset)
 
-    # ---------------- derived trial sets (R79) ----------------
     def get_original_trials(self, file_name: str, channel_name: str = None):
         """The cut trials as they were generated, never modified by preprocessing."""
         if not self.__trials_dataset:
@@ -211,10 +204,6 @@ class SignalDataset:
 
         key = (file_name, channel_name)
 
-        # El ULTIMO que coincida, no el primero. `add_trial_dataset` ya se
-        # encarga de que haya uno solo por (archivo, canal), pero cargar un
-        # proyecto antiguo puede traer duplicados: quedarse con el primero
-        # devolveria el mas viejo.
         coincidencias = [
             t for t in self.__trials_dataset
             if Path(t.source).name == file_name and t.channel_name == channel_name
@@ -225,24 +214,19 @@ class SignalDataset:
             print(f"[SignalDataset] No dataset found for {key}")
             return None
 
-        # R79: if preprocessing derived this channel, that is what the analyses read
         td = self.__derived_trials.get(key, td)
 
-        # Get the discards specific to that dataset
         discarded = self.__discarded_trials.get(key, set())
         version = len(discarded)
 
-        # If present in cache and discard version hasn't changed, reuse it
         if key in self.__filtered_cache and self.__discard_versions.get(key) == version:
             return self.__filtered_cache[key]
 
-        # If there are no discards, return the original dataset
         if not discarded:
             self.__filtered_cache[key] = td
             self.__discard_versions[key] = version
             return td
 
-        # Apply filter
 
         Ns, T = td.trials.shape
         valid_mask = np.ones(T, dtype=bool)
@@ -251,15 +235,12 @@ class SignalDataset:
             if 0 <= idx < T:
                 valid_mask[idx] = False
 
-        # If all trials are valid, return the original dataset directly
         if valid_mask.all():
             return td
 
-        # Apply the filter only to valid indices
         filtered_trials = td.trials[:, valid_mask]
         filtered_onsets = [on for i, on in enumerate(td.onsets_s) if valid_mask[i]] if td.onsets_s else []
 
-        # Create a new filtered instance (without copying arrays unnecessarily)
         filtered_dataset = TrialDataset(
             source=td.source,
             sampling_rate=td.sampling_rate,
@@ -275,7 +256,6 @@ class SignalDataset:
             metadata=td.metadata
         )
 
-        # Cache with current version
         self.__filtered_cache[key] = filtered_dataset
         self.__discard_versions[key] = version
 
@@ -320,7 +300,7 @@ class SignalDataset:
         if key in self.__discarded_trials:
             self.__discarded_trials[key].discard(index)
             if not self.__discarded_trials[key]:
-                del self.__discarded_trials[key]  # clean empty entries
+                del self.__discarded_trials[key]
         self.__invalidate_cache(key)
 
 

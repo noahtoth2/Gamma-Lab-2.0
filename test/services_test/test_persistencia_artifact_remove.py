@@ -48,8 +48,6 @@ def _cortar(senal_real, descartes=()):
     """Una copia nueva de la senal con sus trials recortados, como al abrir un proyecto."""
     sd = copy.deepcopy(senal_real)
     td = tr.cut_trials_single_channel(ds=sd, **CORTE)
-    # El plugin de trials deja esto en los metadatos, y _trials_to_json salta las
-    # entradas que no lo tienen: sin ello el manifiesto saldria vacio.
     td.metadata["generation_params"] = {k: v for k, v in CORTE.items()
                                         if k not in ("pad_value", "debug")}
     sd.add_trial_dataset(td)
@@ -73,8 +71,6 @@ def _der(sd, td):
     assert d is not None, "aplicar una modificacion debe registrar un conjunto derivado"
     return d
 
-
-# ---------------------------------------------------------------- la receta
 
 def test_aplicar_deja_la_receta_en_los_metadatos(senal_real):
     kernel, sd, td = _entorno(senal_real)
@@ -106,17 +102,13 @@ def test_la_receta_sobrevive_a_json(senal_real):
     assert json.loads(json.dumps(r)) == r, "la receta debe ser serializable tal cual"
 
 
-# -------------------------------------------------- la reconstruccion exacta
-
 @pytest.mark.parametrize("descartes", [(), (3, 10, 25), (0,), (0, 1, 2, 58, 59)])
 def test_reaplicar_reconstruye_bit_a_bit(senal_real, descartes):
-    # 1) Sesion de trabajo: se modifica y se guarda la receta
     kernel, sd, td = _entorno(senal_real, descartes=descartes)
     assert apply_modification_to_all_valid(kernel, **PARAMS) is True
     esperado = np.array(_der(sd, td).trials, copy=True)
     recetas = [json.loads(json.dumps(r)) for r in _der(sd, td).metadata["modificaciones"]]
 
-    # 2) Reapertura: los trials se recortan de cero y se reaplica la receta
     _, td2 = _cortar(senal_real, descartes=descartes)
     sin_reaplicar = np.array(td2.trials, copy=True)
     assert not np.array_equal(sin_reaplicar, esperado), \
@@ -176,8 +168,6 @@ def test_reaplicar_marca_los_trials_modificados(senal_real):
         "el trial descartado no estaba activo, no debe aparecer como modificado"
 
 
-# ------------------------------------------------------------- casos limite
-
 def test_sin_recetas_no_toca_nada(senal_real):
     _, td = _cortar(senal_real)
     antes = np.array(td.trials, copy=True)
@@ -201,8 +191,6 @@ def test_columnas_activas_respeta_los_descartes():
     assert columnas_activas(5, (0, 1, 2, 3, 4)) == []
     assert columnas_activas(3, (9,)) == [0, 1, 2], "un indice fuera de rango se ignora"
 
-
-# ----------------------------------------------- el manifiesto del proyecto
 
 def test_el_manifiesto_incluye_la_receta(senal_real):
     kernel, sd, td = _entorno(senal_real, descartes=(4,))

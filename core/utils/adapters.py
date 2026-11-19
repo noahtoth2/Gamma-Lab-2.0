@@ -18,12 +18,10 @@ def dataset_to_vtk_table(ds: SignalDataset) -> vtk.vtkTable:
 
     table = vtk.vtkTable()
 
-    # time column
     arr_time = numpy_support.numpy_to_vtk(ds.time.astype(np.float64), deep=True)
     arr_time.SetName("time")
     table.AddColumn(arr_time)
 
-    # per-channel columns
     for ch in range(C):
         arr = numpy_support.numpy_to_vtk(ds.signals[ch].astype(np.float64), deep=True)
         name = ds.channel_names[ch] if ch < len(ds.channel_names) else f"ch{ch}"

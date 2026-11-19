@@ -8,7 +8,6 @@ Resumen** cuánto se recortó; CSV y JSON llevan siempre la matriz completa.
 """
 import numpy as np
 
-# Celdas que Excel escribe en unos diez segundos
 MAX_CELDAS_XLSX = 1_000_000
 MAX_COLUMNAS_XLSX = 16_000
 

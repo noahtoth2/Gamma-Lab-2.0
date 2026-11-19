@@ -1,4 +1,3 @@
-# test/performance_test/bench_common.py
 """
 Utilidades compartidas por toda la suite de benchmarks de rendimiento.
 
@@ -37,8 +36,6 @@ RESULTS_FILE = RESULTS_DIR / "perf_results.json"
 
 DEFAULT_LABEL = "baseline"
 
-# Prefijo usado para las entradas que NO son un benchmark de tiempo (p. ej. el
-# snapshot de entorno). compare_report.py las ignora al armar la tabla comparativa.
 META_PREFIX = "_"
 
 

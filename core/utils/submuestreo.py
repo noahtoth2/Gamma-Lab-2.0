@@ -17,16 +17,8 @@ from vtkmodules.util import numpy_support
 
 MAX_PUNTOS = 2000
 
-# Hasta este tamaño la serie se dibuja completa, sin reducir. Un trial de 4,5 s
-# a 10 kHz son 45.454 puntos: redibujarlo al hacer zoom cuesta unos 16 ms, frente
-# a 13 ms con 2000 (medido con VTK 9.5, ventana de 1600 x 500). La señal entera de
-# un registro (3,6 millones de puntos) tardaría más de un segundo por paso, por
-# eso Open Signal sigue con `MAX_PUNTOS`. Solo una serie más larga que esto —PAC
-# Psel con muchos trials concatenados a alta densidad— se reduce, y el zoom
-# recupera todas las muestras en cuanto la ventana tiene menos de este tope.
 MAX_PUNTOS_DETALLE = 250_000
 
-# dirección del plot -> (x, y, nombre_x, nombre_y); se limpia cuando el plot se destruye
 _COMPLETAS = {}
 
 
@@ -37,10 +29,6 @@ def indices_reducidos(y, n_max=MAX_PUNTOS, con_nan=True):
         return np.arange(n)
     y = np.asarray(y, dtype=np.float64)
     tramos = max(1, n_max // 2)
-    # Los tramos cubren toda la serie: los `r` primeros llevan una muestra más.
-    # Antes todos medían n // tramos y lo que sobraba al final quedaba en solo
-    # 2 puntos, dibujado como una recta: con 2999 muestras visibles era un
-    # tercio de la ventana (99 ms a 10 kHz).
     k, r = divmod(n, tramos)
     corte = r * (k + 1)
     partes = [np.asarray([0, n - 1], dtype=np.int64)]
@@ -49,7 +37,6 @@ def indices_reducidos(y, n_max=MAX_PUNTOS, con_nan=True):
             continue
         bloques = y[inicio:fin].reshape(-1, largo)
         base = inicio + np.arange(bloques.shape[0], dtype=np.int64) * largo
-        # los NaN no ganan ni el mínimo ni el máximo
         if con_nan:
             partes.append(base + np.argmin(np.where(np.isnan(bloques), np.inf, bloques), axis=1))
             partes.append(base + np.argmax(np.where(np.isnan(bloques), -np.inf, bloques), axis=1))
@@ -103,8 +90,6 @@ class _Controlador:
         self.series = []
         self._ventana = None
         self._ocupado = False
-        # El eje arranca con un rango por defecto que no es un zoom del usuario:
-        # se empieza a recortar cuando el eje ya abarcó todos los datos.
         self._armado = False
 
     def _abarca_todo(self, ventana):
@@ -189,8 +174,8 @@ def restablecer_vista(chart):
         return
     eje = chart.GetAxis(vtk.vtkAxis.BOTTOM)
     if (eje.GetMinimum(), eje.GetMaximum()) != rango:
-        eje.SetRange(*rango)            # el controlador vuelve a llenar las tablas con todo el registro
-        chart.RecalculateBounds()       # y con ellas completas, los ejes abarcan todos los datos
+        eje.SetRange(*rango)
+        chart.RecalculateBounds()
 
 
 def tabla_de(plot):

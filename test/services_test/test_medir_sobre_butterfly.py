@@ -10,7 +10,6 @@ from core.services.measurement_service import SesionDeMedicion
 from core.utils.submuestreo import agregar_linea
 
 T = np.linspace(0.0, 1.0, 101)
-# Pantalla simulada de 1000 x 1000 px: x en [0, 1] s, y en [-10, 10]
 RECT = (0.0, 1000.0, 0.0, 1000.0)
 
 
@@ -69,9 +68,9 @@ def test_slope_sobre_un_trial_del_butterfly():
     chart, curvas, _ = _butterfly()
     svc, almacen = _sesion(chart)
     svc.start("slope")
-    _clic(svc, 0.2, curvas[2][20])           # sobre el trial 2
+    _clic(svc, 0.2, curvas[2][20])
     assert svc.state == "waiting_p2"
-    _clic(svc, 0.8, curvas[2][80] + 0.05)    # P2 se busca sobre la misma curva
+    _clic(svc, 0.8, curvas[2][80] + 0.05)
     (m,) = almacen["measurements"]
     assert m["slope"] == pytest.approx(4.0)
     assert m["ctx"]["trial_id"] == 1 and m["ctx"]["plugin"] == "erp"
@@ -110,7 +109,7 @@ def test_un_clic_lejos_de_toda_curva_no_avanza():
 def test_las_lineas_de_medicion_no_cuentan_como_curvas():
     chart, curvas, _ = _butterfly()
     svc, _ = _sesion(chart)
-    del svc._add_overlay_for_points           # el dibujo real
+    del svc._add_overlay_for_points
     svc.vtk_widget = Mock()
     svc._add_overlay_for_points("slope-001", (0.2, 0.2), (0.8, 0.8))
     assert len(svc._series_of_chart(chart)) == 4
@@ -122,5 +121,5 @@ def test_la_cinta_usa_el_menu_vivo_del_plugin_en_pantalla():
     mw = SimpleNamespace(_active_vtk_menu=viejo, active_plugin=SimpleNamespace(vtk_menu=nuevo))
     mw._live_vtk_menu = MainWindow._live_vtk_menu.__get__(mw)
     assert MainWindow._get_active_measure_service(mw) == "nuevo"
-    mw.active_plugin = SimpleNamespace(vtk_menu=None)       # vista sin gráfica: la última visitada
+    mw.active_plugin = SimpleNamespace(vtk_menu=None)
     assert MainWindow._get_active_measure_service(mw) == "nuevo"

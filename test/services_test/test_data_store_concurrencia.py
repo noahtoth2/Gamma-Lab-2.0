@@ -77,7 +77,7 @@ def test_reasignar_propietario_cede_la_escritura_al_hilo_que_llama():
     r, error = _en_otro_hilo(adoptar)
     assert error is None and r == 1
     with pytest.raises(EscrituraNoPermitida):
-        s.set("otra", 2)            # ahora el hilo de la prueba ya no es el propietario
+        s.set("otra", 2)
 
 
 def test_un_dato_con_dueno_no_lo_sobrescribe_otro_dueno():
@@ -88,7 +88,7 @@ def test_un_dato_con_dueno_no_lo_sobrescribe_otro_dueno():
         s.set("resultado", 3, owner="PPC")
     assert s.get("resultado") == 2 and s.dueno_de("resultado") == "PAC"
     s.remove("resultado")
-    s.set("resultado", 4, owner="PPC")      # al borrarlo se libera
+    s.set("resultado", 4, owner="PPC")
     assert s.dueno_de("resultado") == "PPC"
 
 
@@ -103,7 +103,7 @@ def test_lecturas_concurrentes_con_escrituras_nunca_ven_el_diccionario_a_medias(
                 s.items()
                 s.get_signals()
                 s.get_active_signal()
-            except Exception as e:      # "dictionary changed size during iteration"
+            except Exception as e:
                 errores.append(e)
                 return
 
@@ -145,7 +145,7 @@ def test_una_tarea_que_escribe_en_el_datastore_falla_y_su_resultado_se_publica_e
     assert "DataStore" in resultados["falla"] and not s.has("directo")
 
     hb = ts.submit(buena, owner="t2")
-    hb.finished.connect(lambda r: s.set("publicado", r))        # llega al hilo de la interfaz
+    hb.finished.connect(lambda r: s.set("publicado", r))
     t0 = time.time()
     while not s.has("publicado") and time.time() - t0 < 10:
         app.processEvents()

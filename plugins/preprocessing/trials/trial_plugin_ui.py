@@ -10,17 +10,14 @@ class Ui_Trials(QtWidgets.QWidget):
     def setupUi(self):
         self.setObjectName("TrialsWidget")
 
-        # ===== Root =====
         self._root = QtWidgets.QVBoxLayout(self)
         self._root.setContentsMargins(0, 0, 5, 0)
         self._root.setSpacing(0)
 
-        # ===== Splitter L/R =====
         self.splitter = QtWidgets.QSplitter(self)
         self.splitter.setOrientation(QtCore.Qt.Horizontal)
         self._root.addWidget(self.splitter)
 
-        # ----- Left: VTK viewer (top) + Results panel (bottom) -----
         self.plotSplitter = QtWidgets.QSplitter(self.splitter)
         self.plotSplitter.setOrientation(QtCore.Qt.Vertical)
         self.plotSplitter.setObjectName("plotSplitter")
@@ -38,13 +35,11 @@ class Ui_Trials(QtWidgets.QWidget):
         self.plotSplitter.setStretchFactor(0, 1)
         self.plotSplitter.setStretchFactor(1, 0)
 
-        # ----- Right: Parameters panel (fixed header + scrollable body) -----
         self.rightContainer = QtWidgets.QWidget(self.splitter)
         self.rightLayoutOuter = QtWidgets.QVBoxLayout(self.rightContainer)
         self.rightLayoutOuter.setContentsMargins(8, 0, 8, 0)
         self.rightLayoutOuter.setSpacing(0)
 
-        # ===== Header: Parameters + clear + Generate (always visible, not scrollable) =====
         self.headerLayout = QtWidgets.QHBoxLayout()
 
         self.lblParameters = QtWidgets.QLabel(self.rightContainer)
@@ -75,7 +70,6 @@ class Ui_Trials(QtWidgets.QWidget):
         self.sep0.setProperty("role", "section-divider")       
         self.rightLayoutOuter.addWidget(self.sep0)
 
-        # ===== Scrollable body (only scrolls if the panel is squeezed, e.g. by Results) =====
         self.scrollArea = QtWidgets.QScrollArea(self.rightContainer)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
@@ -92,7 +86,6 @@ class Ui_Trials(QtWidgets.QWidget):
 
         self.splitter.setSizes([700, 300])
 
-        # ===== Total Trials / Current Trial readout =====
         self.totalTrialsRow = QtWidgets.QHBoxLayout()
         self.totalTrialsLabel = QtWidgets.QLabel(self.panel)
         self.totalTrialsLabel.setText("Total Trials")
@@ -119,7 +112,6 @@ class Ui_Trials(QtWidgets.QWidget):
         self.currentTrialRow.addWidget(self.currentTrialValueBox)
         self.vbox.addLayout(self.currentTrialRow)
 
-        # ===== Channel / Stim Channel (two columns, one shared header+divider) =====
         self.channelHeaderRow = QtWidgets.QHBoxLayout()
 
         self.lblChannelTitle = QtWidgets.QLabel(self.panel)
@@ -165,7 +157,6 @@ class Ui_Trials(QtWidgets.QWidget):
 
         self.vbox.addLayout(self.channelBodyRow)
 
-        # ===== Threshold / Stim Number (two columns, one shared header+divider) =====
         self.thresholdHeaderRow = QtWidgets.QHBoxLayout()
 
         self.lblThTitle = QtWidgets.QLabel(self.panel)
@@ -203,7 +194,6 @@ class Ui_Trials(QtWidgets.QWidget):
 
         self.vbox.addLayout(self.thresholdBodyRow)
 
-        # ===== Time (one title, 2x2 grid of label-above-field cells) =====
         self.lblTimeTitle = QtWidgets.QLabel(self.panel)
         self.lblTimeTitle.setText("Time")
         self.lblTimeTitle.setProperty("variant", "subtitle")        
@@ -264,7 +254,6 @@ class Ui_Trials(QtWidgets.QWidget):
         self.timeRow2.addLayout(endModeCol, 1)
         self.vbox.addLayout(self.timeRow2)
 
-        # ===== Subtitle: Trials =====
         self.lblTrialsTitle = QtWidgets.QLabel(self.panel)
         self.lblTrialsTitle.setText("Trials")
         self.lblTrialsTitle.setProperty("variant", "subtitle")      
@@ -276,7 +265,6 @@ class Ui_Trials(QtWidgets.QWidget):
         self.sep5.setProperty("role", "divider")                    
         self.vbox.addWidget(self.sep5)
 
-        # ==== Trials navigation buttons ====
         self.trialNavLayout = QtWidgets.QHBoxLayout()
 
         self.Btn_prev_trial = QtWidgets.QPushButton(self.panel)
@@ -299,17 +287,14 @@ class Ui_Trials(QtWidgets.QWidget):
 
         self.vbox.addLayout(self.trialNavLayout)
 
-        # label para numero de trial revisado
         self.currentTrialLabel = QtWidgets.QLabel(self.panel)
         self.currentTrialLabel.setText("Current Trial : -")
         self.currentTrialLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.currentTrialLabel.setProperty("variant", "subtitle")    
         self.vbox.addWidget(self.currentTrialLabel)
 
-        # ===== Spacer =====
         self.vbox.addStretch(1)
 
-        # Default splitter sizes
         self.splitter.setStretchFactor(0, 1)
         self.splitter.setStretchFactor(1, 0)
 

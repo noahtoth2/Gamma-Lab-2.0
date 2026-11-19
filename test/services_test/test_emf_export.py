@@ -112,15 +112,14 @@ def test_un_mapa_sin_anotar_avisa_en_vez_de_escribir_basura(tmp_path):
 
 def test_el_escritor_alinea_cada_registro_a_cuatro_bytes(tmp_path):
     e = EmfWriter(200, 100)
-    e.texto(10, 10, "abc")          # 3 caracteres: el relleno importa
+    e.texto(10, 10, "abc")
     e.texto(10, 30, "abcde")
     e.guardar(str(tmp_path / "t.emf"))
     _registros((tmp_path / "t.emf").read_bytes())
 
 
-# ---------------------------------------------------------------- tablas
 def test_excel_recorta_un_mapa_grande_y_lo_dice():
-    ny, nx = 800, 3000                       # 2,4 millones de celdas
+    ny, nx = 800, 3000
     m = np.random.default_rng(0).random((ny, nx))
     sec = secciones_de_mapa({"canal": "a"}, [["n", 1]], np.linspace(500, 1, ny),
                             np.arange(nx) / 1000, m, "xlsx", nombre="Escalograma")

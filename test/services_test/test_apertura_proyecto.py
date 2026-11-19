@@ -84,6 +84,6 @@ def test_guardar_dos_veces_no_vuelve_a_copiar_la_senal(tmp_path, monkeypatch):
     assert ps._copy_signal_into_project(ds) == "s.abf"
     assert len(copias) == 1, "la segunda vez la copia ya está al día"
 
-    (origen / "s.abf").write_bytes(b"y" * 2000)      # la señal cambió
+    (origen / "s.abf").write_bytes(b"y" * 2000)
     ps._copy_signal_into_project(ds)
     assert len(copias) == 2

@@ -15,33 +15,27 @@ class Ui_ErpPlot(QtWidgets.QWidget):
     def setupUi(self):
         self.setObjectName("ErpPlotWidget")
 
-        # ====== Root layout ======
         root = QtWidgets.QHBoxLayout(self)
         root.setSpacing(0)
 
-        # ====== Main splitter (horizontal) ======
         self.main_splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal, self)
         self.main_splitter.setObjectName("main_splitter")
 
         root.addWidget(self.main_splitter)
 
-        # ====== Center: QSplitter with 2 graphic zones ======
         self.splitter = QtWidgets.QSplitter(QtCore.Qt.Vertical, self)
         self.splitter.setObjectName("splitterPlots")
 
-        # Up: butterfly plot
         self.butterflyPlot = QtWidgets.QFrame(self.splitter)
         self.butterflyPlot.setObjectName("butterflyPlot")
         self.butterflyPlot.setFrameShape(QtWidgets.QFrame.StyledPanel)
 
-        # Down: heatmap
         self.heatmapPlot = QtWidgets.QFrame(self.splitter)
         self.heatmapPlot.setObjectName("heatmapPlot")
         self.heatmapPlot.setFrameShape(QtWidgets.QFrame.StyledPanel)
 
         self.main_splitter.addWidget(self.splitter)
 
-        # ====== Right: Parameters panel (fixed header + scrollable body) ======
         self.rightContainer = QtWidgets.QWidget(self.main_splitter)
         self.rightContainer.setObjectName("rightContainer")
         self.rightContainer.setMaximumWidth(360)
@@ -50,7 +44,6 @@ class Ui_ErpPlot(QtWidgets.QWidget):
         self.rightLayoutOuter.setContentsMargins(8, 0, 8, 0)
         self.rightLayoutOuter.setSpacing(0)
 
-        # ===== Header: Parameters + clear + Plot ERP (always visible) =====
         self.headerLayout = QtWidgets.QHBoxLayout()
         self.headerLayout.setContentsMargins(0, 0, 0, 5)
 
@@ -83,7 +76,6 @@ class Ui_ErpPlot(QtWidgets.QWidget):
         self.paramsLine.setProperty("role", "section-divider")
         self.rightLayoutOuter.addWidget(self.paramsLine)
 
-        # ===== Scrollable body =====
         self.scrollArea = QtWidgets.QScrollArea(self.rightContainer)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
@@ -100,7 +92,6 @@ class Ui_ErpPlot(QtWidgets.QWidget):
 
         self.scrollArea.setWidget(self.panel)
 
-        # --- Parameters: Trials Selection ---
         self.trialsSelection = QtWidgets.QVBoxLayout()
         self.trialsSelection.setObjectName("trialsSelection")
 
@@ -115,13 +106,11 @@ class Ui_ErpPlot(QtWidgets.QWidget):
         self.trialsSelectionLine.setProperty("role", "divider")
         self.trialsSelection.addWidget(self.trialsSelectionLine)
 
-        # Checkbox: Select all trials
         self.chkSelectAll = QtWidgets.QCheckBox("Select all trials", self.panel)
         self.chkSelectAll.setObjectName("chkSelectAll")
         self.chkSelectAll.setChecked(True)
         self.trialsSelection.addWidget(self.chkSelectAll)
 
-        # Row: Single trial
         self.singleTrialRow = QtWidgets.QHBoxLayout()
         self.singleTrialRow.setObjectName("singleTrialRow")
 
@@ -139,10 +128,8 @@ class Ui_ErpPlot(QtWidgets.QWidget):
 
         self.trialsSelection.addLayout(self.singleTrialRow)
 
-        # Add section to main layout
         self.panelLay.addLayout(self.trialsSelection)
 
-        # --- Range Section ---
         self.rangeSection = QtWidgets.QVBoxLayout()
         self.rangeSection.setObjectName("rangeSection")
 
@@ -157,7 +144,6 @@ class Ui_ErpPlot(QtWidgets.QWidget):
         self.rangeLine.setProperty("role", "divider")
         self.rangeSection.addWidget(self.rangeLine)
 
-        # Row: Trials range
         self.rangeRow = QtWidgets.QHBoxLayout()
         self.rangeRow.setObjectName("rangeRow")
 
@@ -190,7 +176,6 @@ class Ui_ErpPlot(QtWidgets.QWidget):
 
         self.panelLay.addLayout(self.rangeSection)
 
-        # --- Butterfly display: trials per group + average on top ---
         self.groupSection = QtWidgets.QVBoxLayout()
         self.groupSection.setObjectName("groupSection")
 
@@ -246,7 +231,6 @@ class Ui_ErpPlot(QtWidgets.QWidget):
 
         self.panelLay.addLayout(self.groupSection)
 
-        # --- Filter trials ---
         self.trialsSection = QtWidgets.QVBoxLayout()
         self.trialsSection.setObjectName("trialsSection")
 
@@ -261,8 +245,6 @@ class Ui_ErpPlot(QtWidgets.QWidget):
         self.trialsLine.setProperty("role", "divider")
         self.trialsSection.addWidget(self.trialsLine)
 
-        # --- Group: Trials (filter + list) ---
-        # Filter input
         self.trialsFilterLayout = QtWidgets.QHBoxLayout()
         self.trialsFilterLayout.setObjectName("trialsFilterLayout")
 
@@ -273,7 +255,6 @@ class Ui_ErpPlot(QtWidgets.QWidget):
 
         self.trialsSection.addLayout(self.trialsFilterLayout)
 
-        # Trials list
         self.lstTrials = QtWidgets.QListWidget(self.panel)
         self.lstTrials.setObjectName("lstTrials")
         self.lstTrials.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
@@ -283,10 +264,8 @@ class Ui_ErpPlot(QtWidgets.QWidget):
 
         self.panelLay.addLayout(self.trialsSection)
 
-        # --- Spacer ---
         self.panelLay.addStretch(1)
 
-        # Size splitter
         self.main_splitter.setStretchFactor(0, 1)
         self.main_splitter.setStretchFactor(1, 0)
 
@@ -295,7 +274,6 @@ class Ui_ErpPlot(QtWidgets.QWidget):
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def _wireDefaultState(self):
-        # Default states and enablement rules
         self.chkSelectAll.toggled.connect(self._onSelectAllToggled)
         self.chkSingleTrial.toggled.connect(self._onSingleToggled)
         self.chkUseRange.toggled.connect(self._onRangeToggled)
@@ -304,7 +282,6 @@ class Ui_ErpPlot(QtWidgets.QWidget):
         self._onSingleToggled(self.chkSingleTrial.isChecked())
         self._onRangeToggled(self.chkUseRange.isChecked())
 
-    # ==== enablement rules ====
     def _onSelectAllToggled(self, on: bool):
         if on:
             self.chkSingleTrial.setChecked(False)
@@ -332,7 +309,6 @@ class Ui_ErpPlot(QtWidgets.QWidget):
         self.spnFrom.setEnabled(rng)
         self.spnTo.setEnabled(rng)
 
-        # Trials list enabled only in manual mode
         manual = not (sel_all or single or rng)
         self.txtFilter.setEnabled(manual)
         self.lstTrials.setEnabled(manual)

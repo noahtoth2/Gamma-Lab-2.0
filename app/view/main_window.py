@@ -54,7 +54,6 @@ from core.utils.vtk_ventanas import liberar_ventanas
 from core.services.project_service import ProjectService
 
 class MainWindow(QMainWindow):
-    # Results tables fed by DataStore['measurements'] (Results panel tabs + refresh + export)
     RESULT_PLUGINS = ("Slope Results", "Difference Results", "Amplitude Results")
 
     def __init__(self, kernel):
@@ -62,10 +61,8 @@ class MainWindow(QMainWindow):
         self.kernel = kernel
         self._project_busy = False
 
-        # Register the main window as a service in the kernel so plugins can access it.
         self.kernel.register_service("MainWindow", self)
 
-        # Prefer embedded resource; fallback to file path
         icon = QIcon(":/assets/logos/app-logo.png")
         if icon.isNull():
             icon = QIcon("assets/logos/app-logo.png")
@@ -79,9 +76,6 @@ class MainWindow(QMainWindow):
 
         self.kernel.event.connect(self.on_kernel_event)
 
-        # Project (.glab) persistence
-        # Proyectos abiertos en el Explorer (rutas .glab). Solo uno está activo: el que
-        # tiene cargado el ProjectService; los demás se activan con doble clic en su .glab.
         self._proyectos_abiertos = []
         self._glab_activo = None
         self._abriendo_proyecto = False
@@ -90,18 +84,12 @@ class MainWindow(QMainWindow):
         self.kernel.register_service("ProjectService", self.project_service)
         store = self.kernel.get_service("DataStore")
         if store is not None:
-            # Reachable from VTKContextMenu/ExportService (which only ever get a
-            # DataStore reference) so exports can default into the project folder.
             store.set("_project_service", self.project_service)
         self.ui.titleProjectNameLabel.renamed.connect(self._on_project_name_edited)
 
-        # Progreso de las tareas del orquestador: una sola barra en la barra de
-        # estado, enganchada al servicio. Cualquier plugin que use submit()
-        # obtiene porcentaje y boton Cancelar sin hacer nada (problema nº 9).
         self.task_progress = TaskProgressBar(self)
         self.statusBar().addPermanentWidget(self.task_progress)
 
-        # Valores X/Y bajo el cursor en cualquier grafica (core.utils.cursor_readout)
         self.cursor_readout = QLabel(self)
         self.cursor_readout.setObjectName("cursorReadoutLabel")
         self.cursor_readout.setToolTip("Posición del cursor en unidades de los ejes del gráfico")
@@ -111,21 +99,17 @@ class MainWindow(QMainWindow):
             tasks.task_started.connect(self._on_task_started)
 
         self.current_section = "Home"
-        self.active_plugin = None  # Currently active plugin
-        self.active_plugin_widget = None  # Widget of the active plugin
-        self.plugin_widgets = {}  # Store plugin widgets to preserve work/state
-        self._active_vtk_menu = None  # Last VTKContextMenu visited (used by Home ribbon zoom/show-hide)
+        self.active_plugin = None
+        self.active_plugin_widget = None
+        self.plugin_widgets = {}
+        self._active_vtk_menu = None
 
-        # Workspace area where plugins render
         self.plugin_area = self.ui.workspace
 
-        # Avisos no modales (info/warning) en la esquina del workspace; los
-        # errores siguen siendo un dialogo modal (ver PluginAlerts).
         self.notifications = NotificationCenter(self.plugin_area)
         PluginAlerts.set_center(self.notifications)
         self.statusBar().messageChanged.connect(self._on_status_message_changed)
 
-        # Initialize sidebar functionality
         self.setup_sidebar_functionality()
 
         if not self.plugin_area.layout():
@@ -134,7 +118,6 @@ class MainWindow(QMainWindow):
         else:
             self.plugin_layout = self.plugin_area.layout()
 
-        # Single watermark label (does not intercept mouse events)
         self._bg_logo_label = QLabel(self.plugin_area)
         self._bg_logo_label.setObjectName("gammaLabWatermark")
         self._bg_logo_label.setAlignment(Qt.AlignCenter)
@@ -143,28 +126,19 @@ class MainWindow(QMainWindow):
         self._bg_logo_label.setAttribute(Qt.WA_NoSystemBackground, True)
         self._bg_logo_label.setStyleSheet("background: transparent; border: none;")
         self._bg_logo_pixmap = QPixmap("assets/logos/app-logo.png")
-        # Watermark opacity (applied to PNG alpha channel)
-        # Very subtle for plugins' background
         self._logo_opacity = 0.1
-        # Keep it behind content by default
         self._bg_logo_label.lower()
         self._bg_logo_label.setScaledContents(False)
-        # Adjust initial size and scale
         self._position_background_logo()
-        # Track workspace area resize events
         self.plugin_area.installEventFilter(self)
 
-        # Home welcome panel (shown in Home when no plugin is active)
         self._home_welcome = self._build_home_welcome_widget()
         self.plugin_layout.addWidget(self._home_welcome)
 
-        # Forced watermark state (not used now, but kept for API symmetry)
         self._watermark_forced = False
-        # Initial visibility
         self._update_background_logo_visibility()
         self._update_home_welcome_visibility()
 
-        # Section button dictionary
         self.section_buttons = {
             "Home": self.ui.bnt_home,
             "Preprocessing": self.ui.btn_preprocessing,
@@ -178,7 +152,6 @@ class MainWindow(QMainWindow):
         self.setup_file_menu()
         self._update_title_bar_signal_name()
 
-        # Show Home plugins by default
         self.switch_section(self.current_section)
         
         self._app_quitting = False
@@ -188,7 +161,6 @@ class MainWindow(QMainWindow):
 
 
     '''buttons section'''
-    # Update buttons when a new plugin is registered
     def on_plugin_registered(self, name):
         plugin = self.kernel.get_plugin(name)
         if plugin and plugin.category() == self.current_section:
@@ -202,18 +174,15 @@ class MainWindow(QMainWindow):
         model = self._search_completer.model()
         model.setStringList(names)
 
-    # Switch section
     def switch_section(self, section):
         self.current_section = section
         self.setWindowTitle(f"Gamma Lab - {self.current_section}")
 
-        # Toggle the section button
         for btn in self.section_buttons.values():
             btn.setChecked(False)
         if section in self.section_buttons:
             self.section_buttons[section].setChecked(True)
 
-        # Layout of the blue container
         contenedor = self.ui.buttonContainer.layout()
         while contenedor.count():
             item = contenedor.takeAt(0)
@@ -221,25 +190,21 @@ class MainWindow(QMainWindow):
             if w:
                 w.deleteLater()
 
-        # Align left with no outer margins
         contenedor.setContentsMargins(0, 0, 0, 0)
         contenedor.setSpacing(8)
         contenedor.setAlignment(Qt.AlignLeft)
 
-        # Group plugins by subcategory
         subcategories = defaultdict(list)
         for name in self.kernel.get_plugins_by_category(section):
             plugin = self.kernel.get_plugin(name)
             subcategories[plugin.subcategory()].append(name)
 
-        # Order comes from each plugin's properties.yml (`order`, `subcategory_order`)
         def _orden(n):
             o = getattr(self.kernel.get_plugin(n).meta, "order", None)
             return o if o is not None else float("inf")
         for plugins in subcategories.values():
             plugins.sort(key=_orden)
 
-        # Build each subcategory and put a divider between them
         subcats = list(subcategories.items())
         if section == "Analysis":
             def _orden_grupo(kv):
@@ -251,7 +216,6 @@ class MainWindow(QMainWindow):
             group_box = QGroupBox(subcat, self.ui.buttonContainer)
             group_box.setAlignment(Qt.AlignHCenter | Qt.AlignBottom)
             row = QHBoxLayout(group_box)
-            # Side margins keep the selected outline off the group dividers
             row.setContentsMargins(10, 6, 10, 25)
             row.setSpacing(20)
 
@@ -277,7 +241,6 @@ class MainWindow(QMainWindow):
             if subcat == "Measurements":
                 measurements_row = row
 
-        # Home-only ribbon extras: delete dropdown, show/hide dropdown, zoom popup
         if section == "Home":
             if measurements_row is not None:
                 measurements_row.addWidget(self._build_delete_toggle_stack(), 0, Qt.AlignTop)
@@ -290,10 +253,8 @@ class MainWindow(QMainWindow):
             zoom_row.addWidget(self._build_zoom_button(), 0, Qt.AlignBottom)
             contenedor.addWidget(zoom_group, 0, Qt.AlignVCenter)
 
-        # Push everything to the left
         contenedor.addStretch(1)
         self._update_plugin_button_selection()
-        # Update section-dependent visuals
         self._update_background_logo_visibility()
         self._update_home_welcome_visibility()
         
@@ -302,16 +263,13 @@ class MainWindow(QMainWindow):
         btn = QToolButton(self.ui.buttonContainer)
         btn.setObjectName(f"btn_{name}")
         btn.setProperty("pluginName", name)
-        # Checkable so the active plugin keeps a highlighted outline (see QSS :checked)
         btn.setCheckable(True)
         btn.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
 
-        # Same height and minimum width for every plugin button; text on a single line
         btn.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
         btn.setFixedHeight(64)
         btn.setMinimumWidth(72)
 
-        # Icon
         try:
             icon_path = plugin.icon()
             if icon_path:
@@ -334,7 +292,6 @@ class MainWindow(QMainWindow):
         body = f"<b>{title}</b>"
         if desc:
             body += f"<br>{desc}"
-        # Fixed-width table forces Qt to wrap the text into lines instead of one wide row
         return f"<table width='260'><tr><td>{body}</td></tr></table>"
 
     def _update_plugin_button_selection(self):
@@ -619,7 +576,6 @@ class MainWindow(QMainWindow):
         menu.addAction(widget_action)
         return self._build_icon_arrow_pair(btn, menu, gap=6)
 
-    # Clean workspace
     def clear_plugin_area(self):
         if self.active_plugin_widget and self.active_plugin:
             self._cancel_tasks_of(self.active_plugin)
@@ -628,21 +584,19 @@ class MainWindow(QMainWindow):
             except Exception as e:
                 self.alerts.error(f"An error occurred while stopping the VTK render plugin.\n\nDetails:\n{str(e)}", "Error stopping plugin")
             try:
-                retirar_de(self.active_plugin_widget)   # R58
+                retirar_de(self.active_plugin_widget)
             except Exception as e:
                 print("retirar_observadores error:", e)
             self.active_plugin_widget.setVisible(False)
             if getattr(self.active_plugin.meta, "free_graphics", True):
-                # R45: la ventana OpenGL se libera cuando ya se mostro el modulo siguiente
                 QTimer.singleShot(0, partial(self._liberar_graficos, self.active_plugin_widget))
 
         self.active_plugin_widget = None
         self.active_plugin = None
-        # Update background/placeholder visibility
         self._update_background_logo_visibility()
 
     def _liberar_graficos(self, widget):
-        if widget is self.active_plugin_widget:   # el usuario volvio antes de que corriera
+        if widget is self.active_plugin_widget:
             return
         try:
             liberar_ventanas(widget)
@@ -650,10 +604,6 @@ class MainWindow(QMainWindow):
             print("liberar_ventanas error:", e)
 
     def _cancel_tasks_of(self, plugin):
-        # Un plugin no gestiona sus propios hilos: solo pone su meta.id como
-        # owner al encolar, y al salir de su seccion se cancela todo lo suyo
-        # desde aqui. Sin esto un calculo largo sigue vivo tras cambiar de
-        # pestana e intenta dibujar sobre un widget que ya no esta.
         try:
             tasks = self.kernel.get_service("TaskService")
             if tasks is not None and getattr(plugin, "meta", None) is not None:
@@ -664,7 +614,6 @@ class MainWindow(QMainWindow):
         self._update_plugin_button_selection()
 
 
-    # Insert the active plugin's widget into the workspace
     def show_plugin_widget(self, plugin: IPlugin):
         try:
             plugin.process(None)
@@ -674,7 +623,6 @@ class MainWindow(QMainWindow):
         if plugin is None:
             return
 
-        # Start plugin if not started yet
         if not getattr(plugin, "started", False):
             try:
                 plugin.start(self.kernel)
@@ -682,11 +630,9 @@ class MainWindow(QMainWindow):
             except Exception as e:
                 print("Error starting plugin:", e)
 
-        # Reuse if it already exists
         if plugin.name() in self.plugin_widgets:
             widget = self.plugin_widgets[plugin.name()]
         else:
-            # Get widget from plugin
             try:
                 widget = plugin.get_widget(parent=self.plugin_area)
             except Exception as e:
@@ -694,7 +640,6 @@ class MainWindow(QMainWindow):
                 print("[Main Window] Error in plugin get_widget:", e)
                 widget = None
 
-            # If no widget is returned, create a placeholder
             if widget is None:
                 self.alerts.error(f"No UI available for the plugin '{plugin.name()}'.", "Error rendering plugin")
 
@@ -708,30 +653,26 @@ class MainWindow(QMainWindow):
             self.plugin_layout.addWidget(widget)
             self.plugin_widgets[plugin.name()] = widget
 
-        completar_ayudas(widget)    # R42: ningun control queda sin descripcion emergente
+        completar_ayudas(widget)
 
-        # Hide previous and show the new one
         self.clear_plugin_area()
         try:
-            reponer_en(widget)   # R58
+            reponer_en(widget)
         except Exception as e:
             print("reponer_observadores error:", e)
         widget.setVisible(True)
         self.active_plugin_widget = widget
         self.active_plugin = plugin
-        # Remember the last chart view visited so Home's zoom/show-hide have a target
         vtk_menu = getattr(plugin, "vtk_menu", None)
         if vtk_menu is not None:
             self._active_vtk_menu = vtk_menu
             svc = getattr(vtk_menu, "measure_service", None)
             if svc is not None:
                 svc.on_change = self._refresh_measurement_tables
-        # Update background/placeholder visibility
         self._update_background_logo_visibility()
         self._update_home_welcome_visibility()
         self._update_plugin_button_selection()
 
-        # Notify it is shown
         if hasattr(plugin, "on_show"):
             try:
                 plugin.on_show()
@@ -753,14 +694,12 @@ class MainWindow(QMainWindow):
         if self._bg_logo_pixmap.isNull():
             return
         area_size = self.plugin_area.size()
-        # Scale to ~50% of the shortest side and center
         target = int(min(area_size.width(), area_size.height()) * 0.5)
         if target <= 0:
             return
         scaled = self._bg_logo_pixmap.scaled(
             target, target, Qt.KeepAspectRatio, Qt.SmoothTransformation
         )
-        # Apply global opacity using painter (preserves PNG transparency)
         scaled = self._make_translucent(scaled, self._logo_opacity)
         w = scaled.width(); h = scaled.height()
         x = max(0, (area_size.width() - w) // 2)
@@ -795,12 +734,10 @@ class MainWindow(QMainWindow):
             sig = datastore.get_active_signal()
             if not sig:
                 return False
-            # If there is any TrialDataset associated
             try:
                 td = sig.get_active_trials(sig.name, None)
                 return td is not None and getattr(td, "trials", None) is not None and td.trials.size > 0
             except Exception:
-                # If the method signature differs or fails, assume there are no active trials
                 return sig.number_of_trials_dataset() > 0
         except Exception:
             return False
@@ -824,13 +761,11 @@ class MainWindow(QMainWindow):
         outer.setContentsMargins(0, 0, 0, 0)
         outer.setSpacing(0)
 
-        # Center block
         block = QWidget(w)
         block_layout = QVBoxLayout(block)
         block_layout.setContentsMargins(40, 40, 40, 40)
         block_layout.setSpacing(12)
 
-        # Logo (bigger)
         logo = QLabel(block)
         logo.setAttribute(Qt.WA_TranslucentBackground, True)
         logo.setAttribute(Qt.WA_NoSystemBackground, True)
@@ -839,7 +774,6 @@ class MainWindow(QMainWindow):
         logo.setPixmap(pix)
         block_layout.addWidget(logo, 0, Qt.AlignHCenter)
 
-        # Title (very large, centered)
         title = QLabel("Welcome to GAMMA LAB", block)
         f = title.font()
         try:
@@ -851,7 +785,6 @@ class MainWindow(QMainWindow):
         title.setStyleSheet("color: #2a63a9;")
         block_layout.addWidget(title, 0, Qt.AlignHCenter)
 
-        # Small subtitle
         subtitle = QLabel("To get started, open a signal", block)
         f2 = subtitle.font()
         try:
@@ -862,13 +795,11 @@ class MainWindow(QMainWindow):
         subtitle.setStyleSheet("color: #6f7a86;")
         block_layout.addWidget(subtitle, 0, Qt.AlignHCenter)
 
-        # Divider line using app defaults
         line = QFrame(block)
         line.setFrameShape(QFrame.HLine)
         line.setFrameShadow(QFrame.Sunken)
         block_layout.addWidget(line)
 
-        # Assemble outer layout with vertical centering effect
         outer.addStretch(1)
         outer.addWidget(block, 0, Qt.AlignHCenter)
         outer.addStretch(2)
@@ -883,7 +814,6 @@ class MainWindow(QMainWindow):
         show = (self.current_section == "Home") and (self.active_plugin_widget is None)
         self._home_welcome.setVisible(show)
 
-    # Explicit control from plugins
     def show_watermark(self):
         self._watermark_forced = False
         if hasattr(self, "_bg_logo_label"):
@@ -916,10 +846,7 @@ class MainWindow(QMainWindow):
         for d in delays:
             QTimer.singleShot(d, self._check_and_autohide_plugin_content)
 
-    # Heuristic auto-hide removed; plugins control the watermark
 
-               
-    # Event when a plugin button is clicked: show its UI and optionally process
     def on_button_click(self, name):
         plugin = self.kernel.get_plugin(name)
         if plugin:
@@ -932,7 +859,6 @@ class MainWindow(QMainWindow):
                     print("Error in plugin process:", e)
         else:
             print("Plugin not found:", name)
-        # Clicking toggles the checkable button; re-sync so only the active one stays outlined
         self._update_plugin_button_selection()
 
     '''File menu'''
@@ -1073,7 +999,6 @@ class MainWindow(QMainWindow):
             return
         self.abrir_proyecto_desde_ruta(path_str)
 
-    # ---------- nuevo proyecto y duplicar ----------
     def _proyecto_ocupado(self) -> bool:
         if self._project_busy or getattr(self, "_guardando", False):
             self.statusBar().showMessage("Espera a que termine la operación con el proyecto en curso.", 4000)
@@ -1096,15 +1021,30 @@ class MainWindow(QMainWindow):
         if respuesta is None:
             return
         carpeta, nombre, ventana_nueva = respuesta
-        # En esta ventana el activo se descarga: se pregunta antes de crear nada.
-        if not ventana_nueva and not self._confirm_discard_unsaved_changes():
-            return
         try:
             glab = ProjectService.crear_proyecto_vacio(carpeta, nombre)
         except Exception as e:
             self.alerts.error(str(e), "New Project")
             return
+        if not ventana_nueva and self._hay_trabajo_cargado():
+            self._agregar_al_explorer(glab)
+            return
         self._abrir_proyecto_creado(glab, ventana_nueva)
+
+    def _hay_trabajo_cargado(self) -> bool:
+        """Hay un proyecto activo o una señal cargada que no conviene descargar."""
+        if self.project_service.is_open:
+            return True
+        store = self.kernel.get_service("DataStore")
+        return store is not None and store.get_active_signal() is not None
+
+    def _agregar_al_explorer(self, glab):
+        """Añade el proyecto al Explorer, debajo de los abiertos, sin cambiar el proyecto activo."""
+        if self._indice_proyecto_abierto(glab) is None:
+            self._proyectos_abiertos.append(Path(glab))
+        self._refrescar_explorer()
+        self.statusBar().showMessage(
+            f"Proyecto «{Path(glab).name}» creado. Haz doble clic en su .glab en el Explorer para abrirlo.", 8000)
 
     @staticmethod
     def _glabs_de_carpeta(carpeta) -> list:
@@ -1194,7 +1134,6 @@ class MainWindow(QMainWindow):
             self._abrir_proyecto_creado(nuevo, ventana_nueva)
             return
 
-        # La carpeta puede pesar (la señal va dentro): se copia en el TaskService (R04).
         self._project_busy = True
         self.statusBar().showMessage(f"Duplicando {glab.name}…")
         handle = tasks.submit(ProjectService.duplicar_proyecto, owner="project",
@@ -1224,7 +1163,6 @@ class MainWindow(QMainWindow):
             if self.abrir_en_ventana_nueva(glab):
                 self.statusBar().showMessage(f"Abriendo «{Path(glab).name}» en una ventana nueva…", 6000)
             return
-        # El aviso de cambios sin guardar ya se mostró antes de crear el proyecto.
         self.abrir_proyecto_desde_ruta(str(glab))
 
     def abrir_en_ventana_nueva(self, glab) -> bool:
@@ -1240,7 +1178,6 @@ class MainWindow(QMainWindow):
                               "New Window")
         return ok
 
-    # ---------- proyectos abiertos en el Explorer ----------
     def _indice_proyecto_abierto(self, glab):
         clave = clave_ruta(glab)
         for i, p in enumerate(self._proyectos_abiertos):
@@ -1273,7 +1210,6 @@ class MainWindow(QMainWindow):
                          and clave_ruta(viejo) != clave_ruta(nuevo))
             if reemplaza:
                 self._proyectos_abiertos[i_viejo] = nuevo
-                # Si el destino ya estaba abierto aparte, queda una sola entrada.
                 self._proyectos_abiertos = [
                     p for j, p in enumerate(self._proyectos_abiertos)
                     if j == i_viejo or clave_ruta(p) != clave_ruta(nuevo)
@@ -1289,9 +1225,6 @@ class MainWindow(QMainWindow):
             self._finish_open_project(path_str, None)
             return
 
-        # R04: reading the project and its signal file leaves the UI thread; progress
-        # bar and Cancel come with the TaskService. Registering the signal and
-        # restoring trials/analyses happen back here, on the UI thread (R54).
         self.statusBar().showMessage(f"Opening {Path(path_str).name}…")
         handle = tasks.submit(self.project_service.preparar_apertura, owner="project",
                               glab_path_str=path_str)
@@ -1302,7 +1235,6 @@ class MainWindow(QMainWindow):
     def _finish_open_project(self, path_str, preparado):
         try:
             self.liberar_senal_anterior()
-            # Abrir otro proyecto lo añade al Explorer sin quitar el que estaba activo.
             self._abriendo_proyecto = True
             try:
                 self.project_service.open(path_str, self, preparado=preparado)
@@ -1377,7 +1309,6 @@ class MainWindow(QMainWindow):
         """
         if not self.project_service.is_open:
             return True
-        # Proyecto en blanco (File > New project): la señal se carga en él en vez de cerrarlo.
         kernel = getattr(self, "kernel", None)
         store = kernel.get_service("DataStore") if kernel is not None else None
         if store is not None and store.get_active_signal() is None:
@@ -1404,7 +1335,6 @@ class MainWindow(QMainWindow):
         activo = self.project_service.glab_path
         clave_activo = clave_ruta(activo) if activo is not None else None
 
-        # (ruta .glab o None si aún no se ha guardado, título, detalle, es el activo)
         opciones = [(p, p.name, str(p.parent), clave_ruta(p) == clave_activo)
                     for p in self._proyectos_abiertos]
         store = self.kernel.get_service("DataStore")
@@ -1433,7 +1363,6 @@ class MainWindow(QMainWindow):
 
         if not self._confirm_discard_unsaved_changes():
             return
-        # Guardar desde el aviso pudo darle ruta (o cambiarla): se quita la que tenga ahora.
         activo = self.project_service.glab_path
         if activo is not None:
             i = self._indice_proyecto_abierto(activo)
@@ -1534,10 +1463,6 @@ class MainWindow(QMainWindow):
             plugin = self.kernel.get_plugin(name)
             if plugin is not None and getattr(plugin, "meta", None) is not None:
                 tasks.cancel_all_from(plugin.meta.id)
-        # También las de la propia ventana (dueño "project": abrir y guardar). Antes no
-        # se cancelaban: cerrar o cargar otra señal mientras se abría un proyecto dejaba
-        # la lectura en marcha y, al terminar, el proyecto se abría igual, encima de lo
-        # que el usuario hubiera hecho después.
         tasks.cancel_all_from("project")
 
     def _any_background_worker_running(self) -> bool:
@@ -1597,7 +1522,6 @@ class MainWindow(QMainWindow):
             if box.clickedButton() is not close_btn:
                 return False
             self._stop_all_background_workers()
-            # Sin return: si además hay cambios sin guardar, se pregunta abajo.
         if not self.project_service.dirty:
             return True
 
@@ -1618,7 +1542,7 @@ class MainWindow(QMainWindow):
             try:
                 path = self.project_service.save(self)
                 if not path:
-                    return False  # user cancelled the folder picker inside Save As
+                    return False
             except Exception as e:
                 self.alerts.error(str(e), "Save Project")
                 return False
@@ -1659,7 +1583,6 @@ class MainWindow(QMainWindow):
             self.ui.titleProjectNameLabel.setVisible(False)
             self.ui.titleSeparatorLabel.setVisible(False)
 
-    # ---------- Mensajes por severidad en la barra de estado ----------
     def show_status(self, msg: str, level: str = "info", timeout: int = 3000):
         """Mensaje en la barra de estado, coloreado por severidad (QSS
         `QStatusBar[severity=...]`). El color se quita al borrarse el mensaje."""
@@ -1679,7 +1602,6 @@ class MainWindow(QMainWindow):
         widget.style().unpolish(widget)
         widget.style().polish(widget)
 
-    # ---------- Indicador del trial actual ----------
     def _refresh_trial_indicator(self):
         """Pide al plugin visible su estado de trial y lo muestra. Sin plugin
         con trials, muestra el estado general de la senal activa."""
@@ -1771,7 +1693,6 @@ class MainWindow(QMainWindow):
         if topic == "signal_added":
             print(f"New signal added: {payload}")
             if getattr(self, "_senal_para_proyecto_en_blanco", False):
-                # La señal ya es del proyecto en blanco, pero aún no está guardada en él.
                 self._senal_para_proyecto_en_blanco = False
                 if self.project_service.is_open:
                     self.project_service.mark_dirty()
@@ -1783,10 +1704,8 @@ class MainWindow(QMainWindow):
             self._update_background_logo_visibility()
             self._update_title_bar_signal_name()
         elif topic in ("trials_generated", "trial_discard_updated"):
-            # State changes that affect data availability
             self._update_background_logo_visibility()
         elif topic == "current_trial_changed":
-            # Solo cuenta lo que publica el plugin que el usuario esta viendo
             if (isinstance(payload, dict) and self.active_plugin is not None
                     and payload.get("plugin") == self.active_plugin.name()):
                 self._update_trial_indicator(payload)
@@ -1798,14 +1717,11 @@ class MainWindow(QMainWindow):
 
     def setup_sidebar_functionality(self):
         sidebar = self.ui.widget_3
-        # No practical cap: the user can drag the Explorer as wide as they want
         sidebar.setMaximumWidth(16777215)
         sidebar.setMinimumWidth(0)
-        # Start collapsed; the user opens it via the sidebar icon
         self.ui.splitter_3.setSizes([0, 9999])
         self._sidebar_collapsed = True
         """Initialize and connect all sidebar functions."""
-        # Sidebar collapse / navigation icons
         self.ui.nav_explorer_btn.clicked.connect(lambda: self.toggle_sidebar_collapse(sidebar))
         self.ui.help_nav_btn.clicked.connect(lambda: self.on_button_click("Help"))
         self.ui.nav_results_btn.clicked.connect(self.toggle_results_panel)
@@ -1820,11 +1736,7 @@ class MainWindow(QMainWindow):
 
         self.setup_explorer_section()
 
-    # Collapse and expand the sidebar
     def toggle_sidebar_collapse(self, sidebar):
-        # Track collapsed state explicitly: the sidebar's minimum content
-        # (labels, tree padding, etc.) can keep its rendered width above 0
-        # even when "collapsed", so measuring sidebar.width() is unreliable.
         is_collapsed = getattr(self, "_sidebar_collapsed", False)
         splitter = self.ui.splitter_3
 
@@ -1834,15 +1746,10 @@ class MainWindow(QMainWindow):
                 self._last_sidebar_width = current_width
 
             sidebar.setMinimumWidth(0)
-            # Animating maximumWidth doesn't reliably reclaim space from a
-            # QSplitter sibling; setSizes() is the call the splitter always
-            # honors, so drive the resize through it directly.
             splitter.setSizes([0, 9999])
             self._sidebar_collapsed = True
 
         else:
-            # First-ever open (no manual resize yet): a compact width where
-            # file names are at least partially readable.
             width = getattr(self, "_last_sidebar_width", 560)
 
             sidebar.setMinimumWidth(100)
@@ -1855,7 +1762,6 @@ class MainWindow(QMainWindow):
         """Update logo/watermark visibility depending on loaded signals."""
         self._update_background_logo_visibility()
 
-    # === FUTURE FUNCTIONS (placeholder with pass) ===
     def toggle_results_panel(self):
         """Show/hide the bottom Results panel, refreshing its data on open."""
         panel = self.ui.resultsPanel
@@ -1937,10 +1843,9 @@ class MainWindow(QMainWindow):
         self.explorer_placeholder.setAlignment(Qt.AlignCenter)
         self.explorer_placeholder.setWordWrap(True)
 
-        # Un árbol por carpeta de proyecto abierta (ver app/view/explorer_proyectos.py).
         self.explorer_splitter = QSplitter(Qt.Vertical, container)
         self.explorer_splitter.setChildrenCollapsible(False)
-        self.explorer_arboles = {}  # clave de la carpeta -> ArbolProyecto
+        self.explorer_arboles = {}
 
         self.explorer_stack.addWidget(self.explorer_placeholder)
         self.explorer_stack.addWidget(self.explorer_splitter)
@@ -1950,7 +1855,6 @@ class MainWindow(QMainWindow):
 
     def _crear_arbol_proyecto(self, carpeta: Path):
         arbol = ArbolProyecto(carpeta, self.explorer_splitter)
-        # Doble clic: un .glab cambia de proyecto; otro archivo se abre con su programa.
         arbol.doubleClicked.connect(partial(self._on_explorer_double_clicked, arbol))
         arbol.customContextMenuRequested.connect(partial(self._on_explorer_context_menu, arbol))
         self.explorer_splitter.addWidget(arbol)
@@ -1981,7 +1885,7 @@ class MainWindow(QMainWindow):
     def _on_explorer_double_clicked(self, arbol, index):
         """Double-click: a .glab switches to that project; any other file opens in its OS app."""
         if not index.isValid() or arbol.modelo.isDir(index):
-            return  # let the default expand/collapse behavior handle folders
+            return
         path = arbol.modelo.filePath(index)
         if path.lower().endswith(".glab"):
             self.cambiar_a_proyecto(path)
@@ -1998,7 +1902,6 @@ class MainWindow(QMainWindow):
             copy_action = menu.addAction("Copy")
             paste_action = menu.addAction("Paste")
             paste_action.setEnabled(QApplication.clipboard().mimeData().hasUrls())
-            # La carpeta de un proyecto (la que guarda su .glab) se puede duplicar.
             duplicate_action = None
             ruta_item = arbol.modelo.filePath(index)
             if arbol.modelo.isDir(index) and self._glabs_de_carpeta(ruta_item):
@@ -2057,7 +1960,6 @@ class MainWindow(QMainWindow):
         except Exception as e:
             self.alerts.error(f"Could not delete '{path.name}':\n{e}", "Delete")
             return
-        # Si se borró un proyecto que no es el activo (su .glab o su carpeta), sale del Explorer.
         self._refrescar_explorer()
 
     def _explorer_paste_into(self, target_dir: Path):
@@ -2106,7 +2008,6 @@ class MainWindow(QMainWindow):
             return
         self._app_quitting = True
 
-        # Las tareas se cancelan antes de desmontar los widgets en los que dibujarían.
         try:
             self._cancel_all_tasks()
         except Exception as e:
@@ -2158,7 +2059,6 @@ class MainWindow(QMainWindow):
         self._on_app_about_to_quit()
         super().closeEvent(event)
 
-    #seacrh bar
     def _get_registered_plugin_names(self):
         """Obtiene los nombres de todos los plugins registrados (cualquier categoría)."""
         return sorted(self.kernel.get_plugins())

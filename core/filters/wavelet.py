@@ -11,7 +11,6 @@ def _sin_log(*args):
 
 VOCES_POR_OCTAVA = 16
 
-# Frecuencias por bloque al repartir la CWT entre hilos (ver compute_wavelet)
 ESCALAS_POR_BLOQUE = 16
 
 
@@ -32,9 +31,6 @@ def tasa_efectiva(fs_calculado, fs):
     de frecuencias un 11 % (problema nº 18). MATLAB calcula `srate/srt`, esta
     misma tasa, y `fft_average` tambien; el wavelet era el unico que no.
     """
-    # Con 0 la división de abajo revienta con un ZeroDivisionError sin explicación;
-    # en Wavelet ocurría en el hilo de la interfaz y PyQt 5.15 cierra la aplicación
-    # ante una excepción no atrapada en un slot.
     if fs <= 0:
         raise ValueError(f"La densidad de muestreo debe ser mayor que cero (se recibió {fs:g}).")
     factor = max(1, int(round(fs_calculado / fs)))
@@ -53,20 +49,10 @@ def compute_wavelet(sig, fs_calculado, fs, fmin, fmax, num_cycles, escala_log=Fa
 
     fs_efectiva, factor = tasa_efectiva(fs_calculado, fs)
 
-    # Contra la tasa efectiva y no contra la pedida: con 3.800 Hz sobre un
-    # archivo de 10.000 el factor sale 3 y el Nyquist real es 1.666, pero
-    # comparar contra la pedida dejaria pasar un fmax de 1.800.
     if fmax > fs_efectiva / 2:
         raise ValueError(f"La frecuencia alta ({fmax:g} Hz) no puede superar {fs_efectiva / 2:g} Hz, "
                          f"la mitad de la densidad efectiva ({fs_efectiva:g} Hz).")
 
-    # Se descartan muestras sin filtrar antes, igual que el `downsample` de
-    # MATLAB, que es la referencia. Eso deja aliasing: lo que este por encima
-    # del nuevo Nyquist se pliega sobre las frecuencias bajas, y un tono de
-    # 800 Hz submuestreado a 1.000 aparece en 200. Es una limitacion conocida y
-    # heredada, no un olvido: filtrar antes corrige el aliasing pero aparta el
-    # resultado de la referencia (en el promedio, de 5 a 371 filas discordantes).
-    # Medido y argumentado en el problema nº 18.
     sig = sig[::factor]
 
     if len(sig) < 4:
@@ -78,22 +64,12 @@ def compute_wavelet(sig, fs_calculado, fs, fmin, fmax, num_cycles, escala_log=Fa
     central_freq = pywt.central_frequency(wavelet)
     scales = central_freq * fs_efectiva / freq_axis
 
-    # method="fft": mismo resultado que el "conv" por defecto de PyWavelets
-    # (diferencia de 2,6e-14, nueve ordenes por debajo de la tolerancia de las
-    # pruebas) pero 1,8x mas rapido en eje lineal y 8,1x en logaritmico.
-    #
-    # Las frecuencias se reparten en bloques entre hilos. Con method="fft"
-    # PyWavelets calcula cada escala por separado, así que el resultado es el
-    # mismo **bit a bit** que en un solo llamado. Importa con la densidad
-    # completa del archivo: un trial de 4,5 s a 10 kHz con 998 frecuencias pasa
-    # de 11,7 s y 1,04 GB a 6,7 s y 0,69 GB con 4 hilos.
     bloques = [scales[i:i + ESCALAS_POR_BLOQUE] for i in range(0, len(scales), ESCALAS_POR_BLOQUE)]
 
     def un_bloque(escalas):
         coef, _ = pywt.cwt(sig, escalas, wavelet, sampling_period=1/fs_efectiva, method="fft")
         return np.abs(coef)
 
-    # complejo de 16 bytes más su módulo de 8, por muestra y por escala
     partes = map_ordenado(un_bloque, bloques, ctx=ctx, etiqueta="Transformada wavelet: bloque",
                           bytes_por_item=24 * ESCALAS_POR_BLOQUE * len(sig))
     if partes is None:

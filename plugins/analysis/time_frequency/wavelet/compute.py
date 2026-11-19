@@ -1,7 +1,5 @@
 import numpy as np
 
-# El cálculo de wavelet vive en core/filters/wavelet.py porque lo comparten este
-# plugin y el del promedio.
 from core.filters.wavelet import (  # noqa: F401
     VOCES_POR_OCTAVA,
     eje_frecuencias,
@@ -23,8 +21,6 @@ def wavelet_individual(ctx, sig, fs_calculado, fs, fmin, fmax, cycles,
     resultado = compute_wavelet(
         sig, fs_calculado, fs, fmin, fmax, cycles, escala_log=scaled, t0=t0, ctx=ctx)
 
-    # La CWT va por bloques de frecuencias: la cancelación se atiende entre
-    # bloques, y compute_wavelet devuelve None si llegó a cancelarse.
     if resultado is None or ctx.cancelled:
         return None
     scalogram, times, freqs = resultado

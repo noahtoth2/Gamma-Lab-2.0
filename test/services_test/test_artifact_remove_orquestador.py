@@ -82,7 +82,6 @@ def test_por_el_orquestador_da_lo_mismo_que_sin_el(qt_app, senal_real):
                                     escrito.append(True)))
     assert wait_for(lambda: escrito)
 
-    # R79: the result lives in the derived set; the original trials are not touched
     d_a = sd_a.get_derived_trials(Path(td_a.source).name, td_a.channel_name)
     d_b = sd_b.get_derived_trials(Path(td_b.source).name, td_b.channel_name)
     assert np.array_equal(d_a.trials, d_b.trials, equal_nan=True)
@@ -136,8 +135,6 @@ def test_cancelar_no_escribe_nada(qt_app, senal_real):
 
 
 def test_funciona_con_trials_de_otro_canal(qt_app, senal_real):
-    # Hasta el 30 de septiembre de 2026 siempre se usaba el primer canal de la
-    # senal, y con trials de otro canal fallaba al buscar el TrialDataset base.
     kernel, sd, td = entorno(senal_real, canal=1)
     assert td.channel_name == sd.channel_names[1]
     antes = td.trials.copy()
@@ -151,7 +148,6 @@ def test_funciona_con_trials_de_otro_canal(qt_app, senal_real):
 
 
 def test_ningun_plugin_crea_hilos_propios():
-    # Fase 3: todo trabajo en segundo plano pasa por core/services/task_service.py.
     patron = re.compile(r"\bQThread\b|moveToThread|threading\.Thread")
     culpables = [str(p.relative_to(REPO)) for p in (REPO / "plugins").rglob("*.py")
                  if patron.search(p.read_text(encoding="utf-8", errors="ignore"))]

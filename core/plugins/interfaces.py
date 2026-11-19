@@ -20,13 +20,11 @@ class IPlugin(ABC):
         self.meta: PluginMeta = meta
         self.started: bool = False
         self.mainwin = None
-        self.widget: QWidget = None  # Where the PyQt UI is rendered
+        self.widget: QWidget = None
         self.kernel: Kernel = None
         self.active_signal: SignalDataset = None
         self.active_chanel = None
         self.alerts = PluginAlerts()
-        # Trials que uso la ultima operacion (core.utils.trial_labels.trials_used);
-        # se guarda con los parametros del analisis en el proyecto.
         self._trials_used: dict | None = None
 
         
@@ -45,7 +43,6 @@ class IPlugin(ABC):
             elif nombre in ("_contexto", "_params_en_curso") and isinstance(valor, dict):
                 valor.clear()
 
-    # ===== Getters read from YAML =====
     def name(self) -> str:
         """Display name for UI (from properties.yml)."""
         return self.meta.name
@@ -105,7 +102,7 @@ class IPlugin(ABC):
         if capa is None or self.selector_trials is not None:
             return self.selector_trials
         self.selector_trials = SelectorDeTrials(self.ui.layoutWidget, unico=unico)
-        capa.insertWidget(max(0, capa.count() - 1), self.selector_trials)    # antes del espaciador final
+        capa.insertWidget(max(0, capa.count() - 1), self.selector_trials)
         return self.selector_trials
 
     def elegir_trials(self, X):
@@ -199,7 +196,6 @@ class IPlugin(ABC):
                 return
             terminar()
             if result is not None:
-                # Un resultado pedido al abrir un proyecto no es un cambio del usuario
                 self._resultado_restaurado = restaura
                 try:
                     on_done(result)
@@ -225,19 +221,6 @@ class IPlugin(ABC):
         handle.cancelled.connect(al_cancelar)
         return handle
 
-    # ---------------- Abrir un proyecto no es un cambio ----------------
-    # Al abrir un proyecto, ProjectService llama a apply_analysis_params de cada
-    # análisis guardado y casi todos recalculan. Cuando el cálculo terminaba, el
-    # plugin llamaba a mark_project_dirty como si el usuario hubiera hecho un
-    # análisis nuevo, y el proyecto recién abierto quedaba marcado como modificado:
-    # al cerrarlo pedía guardar sin que nada hubiera cambiado.
-    #
-    # ProjectService activa `_restaurando_proyecto` mientras dura
-    # apply_analysis_params. Las tareas enviadas en ese lapso se anotan, y su
-    # resultado no marca el proyecto. run_task lo hace solo; un plugin que envía
-    # sus tareas por su cuenta llama a `_anotar_si_restaura(handle)` al enviarla y
-    # a `mark_project_dirty(handle)` al recibir el resultado. PAC y PPC tienen
-    # además su propio `_restaurando`, que hace lo mismo.
 
     def _anotar_si_restaura(self, handle) -> bool:
         """Anota `handle` si se envió para restaurar un proyecto. Devuelve si lo anotó."""
@@ -344,7 +327,6 @@ class IPlugin(ABC):
             self.alerts.error(f"Error al obtener los trials del canal '{channel_name}': {e}")
             return None
 
-    # ===== Trial actual (indicador global de la barra de titulo) =====
     def _active_trials_quiet(self):
         """(senal, trials activos) sin avisar al usuario si faltan."""
         try:

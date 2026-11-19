@@ -43,18 +43,11 @@ class Filter_plugin(IPlugin):
         self.vtk_menu = None
         self._context_view = None
 
-        # VTK widgets
         self.vtk_top: QVTKRenderWindowInteractor | None = None
         self.vtk_bot: QVTKRenderWindowInteractor | None = None
         self.view_top: vtk.vtkContextView | None = None
         self.view_bot: vtk.vtkContextView | None = None
  
-    # end def
-
-    # =====================================================
-    # === Plugin lifecycle
-    # =====================================================
-
 
     def process(self, data: any):
         if self.vtk_widget:
@@ -65,7 +58,6 @@ class Filter_plugin(IPlugin):
 
         if self.vtk_bot and self.vtk_bot.GetRenderWindow().GetInteractor():
                 self.vtk_bot.GetRenderWindow().GetInteractor().Enable()
-    # end def
 
 
     def stop(self):
@@ -74,12 +66,8 @@ class Filter_plugin(IPlugin):
 
         if self.vtk_bot and self.vtk_bot.GetRenderWindow().GetInteractor():
             self.vtk_bot.GetRenderWindow().GetInteractor().Disable()
-    # end def
 
     
-    # =====================================================
-    # === Create widget UI + VTK
-    # =====================================================
     def get_widget(self, parent=None):
         if self.widget is not None:
             self.widget.setParent(parent)
@@ -97,11 +85,7 @@ class Filter_plugin(IPlugin):
 
 
         return self.widget
-    # end def
     
-    # =====================================================
-    # === Utilities
-    # =====================================================
     def init_controls(self):
         self.ui.main_splitter.setStretchFactor(0, 0)
         self.ui.main_splitter.setStretchFactor(1, 1)
@@ -115,24 +99,20 @@ class Filter_plugin(IPlugin):
         self.ui.orderSpinBox.setValue(8)
         self.ui.typeSelectComboBox.addItems(["Butterworth"])
 
-        # "Filter" filters the trials for real (R79); "Preview" only draws the result
         self.ui.applyFilterButton.clicked.connect(self.on_apply_to_trials)
         self.ui.previewButton.clicked.connect(self.on_apply_filter)
         self.ui.restoreOriginalButton.clicked.connect(self.on_restore_original)
         self.ui.Btn_clear_params.clicked.connect(self._on_clear_clicked)
-    # end def
 
     def _on_clear_clicked(self):
         self.ui.highFrequencySpinBox.setValue(4.0)
         self.ui.lowFrequencySpinBox.setValue(0.5)
         self.ui.orderSpinBox.setValue(8)
         self.ui.typeSelectComboBox.setCurrentIndex(0)
-    # end def
 
     def ensure_vtk(self):
         """Initialize VTK components for rendering."""
 
-        # Filtered signal
         self.vtk_top = QVTKRenderWindowInteractor(self.ui.filteredSignal)
         self.ui.filteredSignal.setLayout(QtWidgets.QVBoxLayout())
         self.ui.filteredSignal.layout().setContentsMargins(0, 0, 0, 0)
@@ -142,7 +122,6 @@ class Filter_plugin(IPlugin):
         self.view_top.SetRenderWindow(self.vtk_top.GetRenderWindow())
         self.view_top.GetRenderer().SetBackground(0.98, 0.98, 0.98)
 
-        # Filtered trial
         self.vtk_bot = QVTKRenderWindowInteractor(self.ui.filteredTrial)
         self.ui.filteredTrial.setLayout(QtWidgets.QVBoxLayout())
         self.ui.filteredTrial.layout().setContentsMargins(0, 0, 0, 0)
@@ -160,12 +139,8 @@ class Filter_plugin(IPlugin):
 
         except Exception as e:
             self._log("Error ensure_vtk:", e)
-    # end def
 
     
-    # =====================================================
-    # === Main Logic: Filter + Render
-    # =====================================================
     def on_apply_filter(self):
         try:
             if self.get_active_signal() is None:
@@ -175,8 +150,6 @@ class Filter_plugin(IPlugin):
             if trials is None or trials.trials is None:
                 return
 
-            # La vista previa filtra el canal de los trials (el canal 0 si no se puede identificar)
-            # y el primer trial valido; se indica tal cual en los titulos.
             nombres = list(getattr(self.active_signal, "channel_names", []) or [])
             canal = nombres.index(trials.channel_name) if trials.channel_name in nombres else 0
             signal_data = self.active_signal.signals[canal, :]
@@ -192,7 +165,6 @@ class Filter_plugin(IPlugin):
             order = int(self.ui.orderSpinBox.value())
             type_filter = self.ui.typeSelectComboBox.currentText().lower()
 
-            # Filtering in the TaskService (R71); the preview is drawn when it finishes
             self.run_task(filtrar_vista_previa,
                           partial(self._on_filter_done, canal_senal, trials.channel_name),
                           on_failed=lambda m: self.alerts.warning(m, "Invalid parameters"),
@@ -204,9 +176,7 @@ class Filter_plugin(IPlugin):
         except Exception as e:
             self.alerts.error(f"Unexpected error in on_apply_filter: {str(e)}")
             self._log("Unexpected error in on_apply_filter:", e)
-    # end def
 
-    # ---- R79: filtering the trials leaves a derived set; the originals are never written ----
     def on_apply_to_trials(self):
         try:
             if self.get_active_signal() is None:
@@ -278,7 +248,6 @@ class Filter_plugin(IPlugin):
         except Exception as e:
             self._log("Error running filter:", e)
             return np.zeros_like(signal)
-    # end def
 
     def _render_filtered(self, filtered_output, fs: float, unit: str = "mV", type: str = "",
                          title: str = None):
@@ -286,7 +255,6 @@ class Filter_plugin(IPlugin):
         Render filtered signal or trial using the correct vtkContextView.
         """
         try:
-            # --- Select proper rendering context ---
             if type == "signal":
                 vtk_widget = self.vtk_top
                 view = self.view_top
@@ -301,7 +269,6 @@ class Filter_plugin(IPlugin):
                 print(f"[Filter] VTK context for '{type}' not initialized.")
                 return
 
-            # --- Get render window & scene ---
             renwin = view.GetRenderWindow()
             if not renwin:
                 print(f"[Filter] Could not get RenderWindow for '{type}'.")
@@ -312,15 +279,12 @@ class Filter_plugin(IPlugin):
                 print(f"[Filter] Could not get Scene for '{type}'.")
                 return
 
-            # --- Clear any previous charts ---
             scene.ClearItems()
 
-            # --- Validate filtered output ---
             if not isinstance(filtered_output, np.ndarray):
                 print(f"[Filter] filtered_output for '{type}' is not np.ndarray")
                 return
 
-            # --- Build time and signal arrays for plotting ---
             n_points = len(filtered_output)
 
             arr_time = vtk.vtkFloatArray()
@@ -334,19 +298,16 @@ class Filter_plugin(IPlugin):
                 arr_time.InsertNextValue(t)
                 arr_signal.InsertNextValue(float(filtered_output[i]))
 
-            # --- Build VTK table ---
             table = vtk.vtkTable()
             table.AddColumn(arr_time)
             table.AddColumn(arr_signal)
 
-            # --- Create and configure chart ---
             chart = vtk.vtkChartXY()
             plot = agregar_columna(chart, table, 1)
             plot.SetWidth(1.2)
             plot.SetColor(0, 0, 0)
             plot.SetLabel(f"Filtered {type.capitalize()}")
 
-            # Axes configuration
             ax_b = chart.GetAxis(vtk.vtkAxis.BOTTOM)
             ax_l = chart.GetAxis(vtk.vtkAxis.LEFT)
             ax_b.SetGridVisible(True)
@@ -356,10 +317,8 @@ class Filter_plugin(IPlugin):
 
             chart.SetTitle(title or f"Filtered {type.capitalize()}")
 
-            # --- Add chart to scene ---
             scene.AddItem(chart)
 
-            # --- Contextual menu ---
             try:
                 if type == "signal":
                     self.vtk_menu = VTKContextMenu(chart, self.vtk_top, parent=self.widget)
@@ -373,7 +332,6 @@ class Filter_plugin(IPlugin):
             except Exception as e:
                 self.alerts.error(f"Error creating contextual menu: {e}")
 
-            # --- Render final ---
             try:
                 renwin.Render()
                 vtk_widget.update()
@@ -383,6 +341,4 @@ class Filter_plugin(IPlugin):
 
         except Exception as e:
             print(f"[Filter] Error rendering {type}:", e)
-    # end def
 
-# end class

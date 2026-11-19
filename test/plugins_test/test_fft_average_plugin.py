@@ -2,7 +2,6 @@ import numpy as np
 import pytest
 from pathlib import Path
 
-# --- Real pipeline imports (core app services & plugins) ---
 from core.services.fileio_service import FileIOService
 from core.filters import trials as tr
 from core.model.trial_dataset import TrialDataset
@@ -10,79 +9,44 @@ from core.plugins.meta import PluginMeta
 from plugins.analysis.frequency.fft_average.fft_average_plugin import Fft_average_plugin
 
 
-# ============================================================
-#                  GLOBAL CONFIG / TEST DATA
-# ============================================================
-
-# Base directory for test data files
 BASE_DIR = Path(__file__).resolve().parents[2] / "test" / "data"
 
-# Input ABF file
 ABF_PATH = BASE_DIR / "17308005.abf"
 
-# MATLAB reference CSV
 MATLAB_CSV = BASE_DIR / "fft_average_data_matlab.csv"
 
 
-# ============================================================
-#                 TRIALS DIVISION PARAMETERS
-# ============================================================
-
-# Channel where the signal of interest is stored
 TARGET_CHANNEL = 0
 
-# Channel used to detect stimulus onsets
 STIM_CHANNEL = 1
 
-# Threshold to detect a stimulus event
 THRESHOLD = 0.7
 
-# Time window around each stimulus (in seconds)
-T0 = -0.05     # Start time relative to stimulus
-T1 = 4.00      # End time relative to stimulus
+T0 = -0.05
+T1 = 4.00
 
-# How to decide the end of a trial
 END_MODE = "until_next_onset"
 
-# Expected number of stimuli per trial (sanity check inside filter)
 STIM_EXPECTED = 1
 
-# Inter-stimulus interval (used by the cutting logic)
 ISI = 0.0
 
-# Value used to pad trials if needed
 PAD_VALUE = 0.0
 
 
-# ============================================================
-#                 FFT UI / SAMPLING PARAMETERS
-# ============================================================
-
-# UI parameters that the test double enforces
-UI_TARGET_FS = 1000    # 0 -> no resampling
+UI_TARGET_FS = 1000
 UI_F_LO = 0.0
 UI_F_HI = 500.0
 
 
-# ============================================================
-#                 NUMERICAL COMPARISON PARAMETERS
-# ============================================================
+K_EXPECTED = 1
 
-# Expected number of columns in the average FFT (we use 1)
-K_EXPECTED = 1          # Single average curve: (Nf, 1)
-
-# Minimum acceptable Pearson correlation between APP vs MATLAB curves
 MIN_CORR = 0.98
 
-# Fractional test parameters
-FRAC_MIN_PASS = 0.95    # At least 95% of points must be within tolerance
-FRAC_ATOL = 0.15        # |APP - MATLAB| <= 0.5
-FRAC_RTOL = 0.0        # Only absolute tolerance is used
+FRAC_MIN_PASS = 0.95
+FRAC_ATOL = 0.15
+FRAC_RTOL = 0.0
 
-
-# ============================================================
-#                 MATLAB CSV LOADING HELPER
-# ============================================================
 
 def load_csv_matlab(path: Path) -> np.ndarray:
     """
@@ -94,7 +58,7 @@ def load_csv_matlab(path: Path) -> np.ndarray:
     """
     arr = np.genfromtxt(
         path,
-        delimiter=";",     # <-- If your CSV uses ',', change this to ','
+        delimiter=";",
         dtype=np.float64,
         filling_values=np.nan,
     )
@@ -102,10 +66,6 @@ def load_csv_matlab(path: Path) -> np.ndarray:
         arr = arr.reshape(-1, 1)
     return arr
 
-
-# ============================================================
-#                    NUMPY HELPER FUNCTIONS
-# ============================================================
 
 def crop_rows_to_min(A: np.ndarray, B: np.ndarray):
     """
@@ -148,7 +108,6 @@ def diff_debug_report_fraction(A, B, within, tol_mat, label_a="APP", label_b="MA
     excess = np.full_like(diffs, np.nan, dtype=float)
     excess[over_mask] = diffs[over_mask] - tol_mat[over_mask]
 
-    # Worst violating point (ignoring NaNs).
     flat_idx = np.nanargmax(excess)
     r, c = np.unravel_index(flat_idx, excess.shape)
     worst_excess = float(excess[r, c])
@@ -156,16 +115,13 @@ def diff_debug_report_fraction(A, B, within, tol_mat, label_a="APP", label_b="MA
     worst_tol = float(tol_mat[r, c])
     va, vb = float(A[r, c]), float(B[r, c])
 
-    # Aggregated statistics by column (avoid all-NaN warnings).
     by_col_counts = np.nansum(over_mask, axis=0)
     with np.errstate(all="ignore", invalid="ignore"):
         by_col_maxexc = np.nanmax(excess, axis=0)
 
-    # Filter columns that actually have violations.
     cols = np.where(by_col_counts > 0)[0]
     topk = []
     if cols.size > 0:
-        # Sort by (#violations desc, max_excess desc).
         order = np.lexsort((-by_col_maxexc[cols], -by_col_counts[cols]))[::-1]
         for idx in order[:topk_cols]:
             cidx = int(cols[idx])
@@ -238,14 +194,11 @@ def assert_points_within_tolerance_fraction(
     B = np.asarray(B, dtype=float)
     A, B = crop_rows_to_min(A, B)
 
-    # Only evaluate points where both matrices are finite.
     valid = np.isfinite(A) & np.isfinite(B)
     total = int(np.sum(valid))
     if total == 0:
-        # Nothing to compare: silently accept.
         return
 
-    # Choose which matrix is used as "reference" in the tolerance formula.
     ref_mat = A if ref.upper() == "A" else B
     tol_mat = atol + rtol * np.abs(ref_mat)
 
@@ -255,10 +208,8 @@ def assert_points_within_tolerance_fraction(
     ratio = passed / float(total)
 
     if ratio >= min_pass_ratio:
-        # Enough points are within tolerance → test passes.
         return
 
-    # Build a detailed report to help debugging failures.
     lines = []
     lines.append(msg or "Fractional tolerance check failed")
     lines.append(f"[frac] shape {label_a}={A.shape}, {label_b}={B.shape}")
@@ -273,10 +224,6 @@ def assert_points_within_tolerance_fraction(
     )
     raise AssertionError("\n".join(lines))
 
-
-# ============================================================
-#            MINIMAL STUBS FOR FFT AVERAGE PLUGIN
-# ============================================================
 
 class _Spin:
     """
@@ -336,10 +283,8 @@ class FftDoubleAvg(Fft_average_plugin):
         self._active_td: TrialDataset | None = None
         self._active_sd = None
 
-        # Headless UI stub used by the plugin.
         self.ui = _FftUiStub(target_fs, f_lo, f_hi)
 
-    # --- UI / VTK handling overrides ---
 
     def _ensure_vtk(self):
         """
@@ -349,7 +294,6 @@ class FftDoubleAvg(Fft_average_plugin):
         self.vtk_view = None
         self.chart = None
 
-    # --- Injection helpers used by the tests ---
 
     def set_active_trials(self, td: TrialDataset):
         """
@@ -363,7 +307,6 @@ class FftDoubleAvg(Fft_average_plugin):
         """
         self._active_sd = sd
 
-    # --- Bridges required by the original plugin API ---
 
     def get_active_signal(self):
         """
@@ -387,15 +330,11 @@ class FftDoubleAvg(Fft_average_plugin):
             return None, None, None
 
         fs = float(getattr(td, "sampling_rate", 0.0))
-        X = np.asarray(td.trials, dtype=np.float64)  # (Ns, T)
+        X = np.asarray(td.trials, dtype=np.float64)
         ch = getattr(td, "channel_name", "")
 
         return fs, X, ch
 
-
-# ============================================================
-#                        FIXTURES
-# ============================================================
 
 @pytest.fixture(scope="session")
 def ds():
@@ -406,7 +345,6 @@ def ds():
     fio = FileIOService()
     sd = fio.load_abf(str(ABF_PATH))
 
-    # Ensure we work with float64 for better numerical stability.
     sd.signals = sd.signals.astype(np.float64, copy=False)
     sd.time = sd.time.astype(np.float64, copy=False)
 
@@ -449,11 +387,10 @@ def app_fft_avg(ds, td):
 
     freq, mag, fs_eff = plug._compute_fft_average(X, fs, UI_TARGET_FS, per_trial=False)
 
-    # Simple logs for inspection (same style as other tests).
     print("APP FFT AVG mag:\n", mag, mag.shape)
     print("APP FFT AVG freq shape:", freq.shape, "fs_eff:", fs_eff)
 
-    return np.asarray(freq, float), np.asarray(mag, float)  # (Nf,), (Nf, K)
+    return np.asarray(freq, float), np.asarray(mag, float)
 
 
 @pytest.fixture(scope="session")
@@ -473,10 +410,6 @@ def matlab_fft_avg_matrix():
     return M
 
 
-# ============================================================
-#                   TEST FOR FFT AVERAGE
-# ============================================================
-
 @pytest.mark.skipif(not ABF_PATH.exists(), reason="ABF file not found")
 @pytest.mark.skipif(not MATLAB_CSV.exists(), reason="MATLAB CSV not found")
 class TestFFTAverageABFVsMatlab:
@@ -491,9 +424,6 @@ class TestFFTAverageABFVsMatlab:
          absolute tolerance.
     """
 
-    # --------------------------------------------------------
-    # Helper to match MATLAB orientation to the APP matrix
-    # --------------------------------------------------------
     def _orient_matlab_like_app(self, mag_app, M):
         """
         Return M with the same orientation (Nf, K) as mag_app.
@@ -505,17 +435,13 @@ class TestFFTAverageABFVsMatlab:
         if M.shape[1] == Nf_app:
             return M.T
 
-        # Fallback: choose the orientation with larger number of rows.
         return M if M.shape[0] >= M.shape[1] else M.T
 
-    # --------------------------------------------------------
-    # 1. Structure / columns checks
-    # --------------------------------------------------------
     def test_shape_and_columns(self, app_fft_avg, matlab_fft_avg_matrix):
         """
         Both matrices must have K=1 column (average FFT).
         """
-        _, mag_app = app_fft_avg  # (Nf,), (Nf, K_app)
+        _, mag_app = app_fft_avg
         M_use = self._orient_matlab_like_app(mag_app, matlab_fft_avg_matrix)
 
         assert mag_app.ndim == 2 and M_use.ndim == 2
@@ -527,9 +453,6 @@ class TestFFTAverageABFVsMatlab:
         )
         assert mag_app.shape[0] >= 1 and M_use.shape[0] >= 1
 
-    # --------------------------------------------------------
-    # 2. Correlation per column
-    # --------------------------------------------------------
     def test_correlation_by_column(self, app_fft_avg, matlab_fft_avg_matrix):
         """
         Check Pearson correlation per column (in practice, a single
@@ -557,9 +480,6 @@ class TestFFTAverageABFVsMatlab:
             )
             pytest.fail(msg)
 
-    # --------------------------------------------------------
-    # 3. Pointwise comparison with tolerance (allows outliers)
-    # --------------------------------------------------------
     def test_pointwise_fraction_allowing_outliers(self, app_fft_avg, matlab_fft_avg_matrix):
         """
         Require that at least 95% of the points (Nf x 1) satisfy:

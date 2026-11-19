@@ -1,4 +1,3 @@
-# test/performance_test/compare_report.py
 """
 Imprime una tabla comparativa "antes/después" entre dos corridas de benchmarks
 (identificadas por etiqueta) guardadas por test/performance_test/*.

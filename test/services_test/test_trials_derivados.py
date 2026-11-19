@@ -159,7 +159,6 @@ def test_crear_derivado_copia_los_datos_y_los_metadatos():
     assert td.metadata["generation_params"]["threshold"] == RECETA["threshold"]
 
 
-# --------------------------------------------------------------- el filtro (R79)
 from core.filters.bandpass import filtrar_banda, filtrar_columnas
 from core.filters.artifacts import reaplicar_modificaciones
 from plugins.preprocessing.prepare.artifact_remove.artifact_logic import (

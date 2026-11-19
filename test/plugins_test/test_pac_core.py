@@ -23,7 +23,6 @@ from plugins.analysis.time_frequency.pac.compute import (
 FS = 1000.0
 DUR = 4.0
 T = np.arange(int(FS * DUR)) / FS
-# Rebanada central, para no medir sobre los transitorios de los filtros
 CENTRO = slice(len(T) // 4, 3 * len(T) // 4)
 
 
@@ -32,11 +31,9 @@ def tono(f_hz, fs=FS, t=None):
     return np.sin(2 * np.pi * f_hz * tt)
 
 
-# ------------------------------------------------------------------ filtro_iir
-
 @pytest.mark.parametrize("f1,f2,orden_esperado", [
-    (3.0, 8.0, 26),        # la banda de fase por defecto de PAC
-    (25.0, 250.0, 155),    # una banda de amplitud
+    (3.0, 8.0, 26),
+    (25.0, 250.0, 155),
 ])
 def test_filtro_iir_calcula_el_orden_automaticamente(f1, f2, orden_esperado):
     """El orden no se elige: lo calcula `cheb2ord` con Rp=0,5 y Rs=100 dB, igual
@@ -71,8 +68,6 @@ def test_filtro_iir_acepta_frecuencias_por_debajo_de_un_hercio():
     assert orden > 0 and np.all(np.isfinite(sos))
 
 
-# -------------------------------------------------------------------- bifiltro
-
 def test_bifiltro_es_de_fase_cero():
     """Filtrar hacia adelante y hacia atras cancela el retardo. Si quedara
     desfase, la fase instantanea estaria corrida y PAC entero saldria mal."""
@@ -99,8 +94,6 @@ def test_bifiltro_rechaza_matrices():
     with pytest.raises(ValueError, match="una dimensión"):
         bifiltro(sos, np.zeros((4, 10)))
 
-
-# ----------------------------------------------------------- fase y envolvente
 
 def test_fase_instantanea_da_una_vuelta_por_ciclo():
     """Un seno de 5 Hz tiene que dar 5 vueltas de -pi a pi por segundo."""
@@ -129,8 +122,6 @@ def test_envolvente_de_un_tono_puro_es_casi_constante():
     env = envolvente(tono(60.0), FS, 40.0, 90.0)
     assert np.std(env[CENTRO]) / np.mean(env[CENTRO]) < 0.05
 
-
-# -------------------------------------------------------------------- morse_tf
 
 @pytest.mark.parametrize("f_tono", [12.0, 40.0, 90.0])
 def test_morse_pone_el_maximo_en_la_frecuencia_del_tono(f_tono):
@@ -194,8 +185,6 @@ def test_morse_rechaza_senales_muy_cortas():
         morse_tf(np.zeros(3), FS, 10.0, 70.0, n_freq=60)
 
 
-# ------------------------------------------------------------ bins y agrupado
-
 def test_los_bins_cubren_el_circulo_completo():
     bordes = bordes_bins(100)
     assert bordes.size == 101
@@ -241,8 +230,6 @@ def test_agrupar_rechaza_formas_que_no_casan():
         agrupar_por_fase(np.ones(100), np.zeros(100))
 
 
-# --------------------------------------- el NaN de MATLAB, replicado a proposito
-
 def test_un_bin_vacio_da_nan_como_en_matlab():
     """MATLAB divide sin comprobar: a un bin vacio no se le sumo nada, asi que
     es 0/0 y da NaN —no infinito—. Se replica a proposito."""
@@ -282,8 +269,6 @@ def test_el_zscore_normaliza_por_n_menos_1_como_matlab():
     assert not np.allclose(z.std(axis=1, ddof=0), 1.0, atol=1e-6), "y no N"
 
 
-# --------------------------------------------------------------- vector medio
-
 def test_el_vector_medio_apunta_a_la_fase_del_maximo():
     bins = centros_bins(100)
     for fase_esperada in (0.0, np.pi / 2, -np.pi / 2, 2.0):
@@ -297,13 +282,11 @@ def test_un_histograma_plano_da_vector_casi_nulo():
     assert abs(vector_medio(np.ones(100))) < 1e-12
 
 
-# ----------------------------------------------------- acoplamiento sintetico
-
 def test_detecta_un_acoplamiento_construido_a_proposito():
     """Prueba de punta a punta: se construye gamma de 60 Hz cuya amplitud es
     maxima en el pico del theta de 5 Hz, y PAC tiene que encontrarlo ahi."""
-    lento = np.cos(2 * np.pi * 5 * T)              # con coseno, la fase medida es 2*pi*5*t
-    modulador = (1.0 + lento) / 2.0                # maximo donde la fase medida es 0
+    lento = np.cos(2 * np.pi * 5 * T)
+    modulador = (1.0 + lento) / 2.0
     sig = lento + 0.4 * modulador * np.sin(2 * np.pi * 60 * T)
 
     fase = fase_instantanea(sig, FS, 3.0, 8.0)
@@ -322,7 +305,7 @@ def test_detecta_un_acoplamiento_construido_a_proposito():
 def test_una_senal_sin_acoplamiento_da_un_vector_mucho_menor():
     rng = np.random.default_rng(0)
     lento = np.cos(2 * np.pi * 5 * T)
-    sin_acople = lento + 0.4 * np.sin(2 * np.pi * 60 * T)     # gamma de amplitud fija
+    sin_acople = lento + 0.4 * np.sin(2 * np.pi * 60 * T)
     modulador = (1.0 + lento) / 2.0
     con_acople = lento + 0.4 * modulador * np.sin(2 * np.pi * 60 * T)
 
@@ -335,15 +318,9 @@ def test_una_senal_sin_acoplamiento_da_un_vector_mucho_menor():
     assert fuerza(con_acople) > 2 * fuerza(sin_acople)
 
 
-# ==========================================================================
-# Fase 2: pac_un_trial y pac_promedio, los ocho pasos compuestos
-# ==========================================================================
-
 from plugins.analysis.time_frequency.pac.compute import (  # noqa: E402
     ResultadoPac, pac_promedio, pac_un_trial)
 
-# Parámetros chicos, para que las pruebas corran rápido. Con los de la interfaz
-# —1.900 frecuencias— cada trial toma cerca de un segundo.
 FS_ARCHIVO = 1000.0
 PAR = dict(fs_calculado=FS_ARCHIVO, fs=1000.0, p1=3.0, p2=8.0, a1=25.0, a2=100.0)
 
@@ -427,8 +404,6 @@ def test_pac_rechaza_una_senal_demasiado_corta():
                      p1=3.0, p2=8.0, a1=25.0, a2=45.0)
 
 
-# ------------------------------------------------------------- el acumulador
-
 def test_el_promedio_de_un_trial_da_lo_mismo_que_el_individual():
     sig = _senal_acoplada()
     uno = pac_un_trial(None, sig, **PAR)
@@ -461,8 +436,6 @@ def test_el_promedio_rechaza_una_matriz_sin_trials():
     with pytest.raises(ValueError, match="No hay trials"):
         pac_promedio(None, np.zeros((2000, 0)), **PAR)
 
-
-# -------------------------------------------------------- avance y cancelacion
 
 class _Ctx:
     def __init__(self, cancelar_en=None):
@@ -501,10 +474,6 @@ def test_se_puede_cancelar_antes_de_empezar():
     assert pac_promedio(ctx, _senal_acoplada(), **PAR) is None
 
 
-# ==================================================================== gabor_tf
-# La transformada de PAC Psel (Fase 5). No es la Morse: `f_Phase_PAC_Pdetect`
-# llama a `f_GaborAWTransformMatlab`, que es otra funcion entera.
-
 def gabor_literal(sig, fs, fmin, fmax, nfreq, ciclos):
     """Traducción línea por línea de `f_GaborAWTransformMatlab`, sin optimizar.
 
@@ -514,7 +483,7 @@ def gabor_literal(sig, fs, fmin, fmax, nfreq, ciclos):
     """
     v = np.asarray(sig, float).ravel()
     paso = (fmax - fmin) / (nfreq - 1)
-    eje = np.arange(fmin, fmax + paso / 2, paso)[:nfreq][::-1]      # fliplr
+    eje = np.arange(fmin, fmax + paso / 2, paso)[:nfreq][::-1]
     if v.size % 2 == 0:
         v = v[:-1]
     t = np.arange(v.size) / fs
@@ -533,9 +502,9 @@ def gabor_literal(sig, fs, fmin, fmax, nfreq, ciclos):
 
 
 @pytest.mark.parametrize("n,fmin,fmax,nfreq,ciclos", [
-    (1001, 25.0, 129.0, 208, 1.0),   # lo que usa PAC Psel: n_freq = 2*(129-25)
-    (1000, 10.0, 100.0, 180, 1.0),   # largo PAR, que descarta una muestra
-    (777, 5.0, 60.0, 50, 3.0),       # con los 3 ciclos que dice la cabecera del .m
+    (1001, 25.0, 129.0, 208, 1.0),
+    (1000, 10.0, 100.0, 180, 1.0),
+    (777, 5.0, 60.0, 50, 3.0),
 ])
 def test_gabor_coincide_con_la_traduccion_literal(n, fmin, fmax, nfreq, ciclos):
     x = np.random.default_rng(0).standard_normal(n)
@@ -621,11 +590,7 @@ def test_gabor_valida_sus_parametros_en_espanol(kwargs, trozo):
         gabor_tf(**args)
 
 
-# ========================================================= deteccion de ciclos
-# Lo propio de PAC Psel: en vez de recorrer la señal entera, busca ciclos
-# completos del ritmo lento y promedia ventanas centradas en sus valles.
-
-FS_PSEL = 2000.0       # el muestreo por defecto de PAC
+FS_PSEL = 2000.0
 P1_PSEL, P2_PSEL = 3.0, 8.0
 SEMIANCHO = int(np.floor(2 * (0.5 / P1_PSEL) * FS_PSEL))
 
@@ -642,7 +607,7 @@ def valles_elegidos(y, t, p1=P1_PSEL, p2=P2_PSEL):
 
 
 def test_detectar_extremos_encuentra_un_pico_y_un_valle_por_ciclo():
-    t, y = ritmo_lento(f_hz=5.0, dur=6.0)      # 30 ciclos
+    t, y = ritmo_lento(f_hz=5.0, dur=6.0)
     picos, valles = detectar_extremos(y)
     assert picos.size == 30 and valles.size == 30
     assert np.all(y[picos] > 0.99) and np.all(y[valles] < -0.99)
@@ -650,7 +615,6 @@ def test_detectar_extremos_encuentra_un_pico_y_un_valle_por_ciclo():
 
 def test_cruces_por_cero_da_dos_por_ciclo():
     t, y = ritmo_lento(f_hz=5.0, dur=6.0)
-    # 30 ciclos -> 60 cruces, mas el que anade el circshift al dar la vuelta
     assert cruces_por_cero(y).size == 61
 
 
@@ -709,7 +673,7 @@ def test_los_ciclos_pegados_al_borde_se_omiten_en_vez_de_reventar():
     """**Desviación deliberada.** MATLAB recorta sin mirar los bordes y se cae
     con un error de índice; aquí se omiten y se informa de cuántos."""
     y = np.zeros(1000)
-    valles = np.array([10, 20, 500, 995])       # los dos primeros se saltan igual
+    valles = np.array([10, 20, 500, 995])
     mats, fuera = ventanas_por_valle({"a": y}, valles, 100)
     assert mats["a"].shape[1] == 1, "solo el de la muestra 500 cabe entero"
     assert fuera == 1, "el de la 995 se omite"
@@ -726,13 +690,8 @@ def test_sin_suficientes_valles_no_se_elige_ninguno():
                               np.array([]), 0.0625, 0.167).size == 0
 
 
-# ================================================================== pac_psel
-# Fase 5. Concatena los trials, busca ciclos completos del ritmo lento y
-# promedia ventanas centradas en sus valles. Usa Gabor, no Morse.
-
-FR_PSEL = 45.0          # la portadora rapida: dentro de la banda 25-60 que usan
-                        # las pruebas, que es estrecha a proposito para correr rapido
-FL_PSEL = 5.0           # el ritmo lento, dentro de la banda de fase 3-8
+FR_PSEL = 45.0
+FL_PSEL = 5.0
 
 
 def senal_psel(acoplada=True, n_trials=6, dur=3.0, fs=FS_PSEL, semilla=0):
@@ -873,8 +832,6 @@ def test_psel_avisa_si_no_hay_trials():
                  p1=3.0, p2=8.0, a1=25.0, a2=60.0)
 
 
-# ------------------------------------------------- el recorte por valles
-
 @pytest.mark.parametrize("n_valles,esperado", [
     (3, "primero_a_tercero"),
     (5, "segundo_a_cuarto"),
@@ -899,20 +856,12 @@ def test_el_recorte_sigue_la_tabla_del_matlab(n_valles, esperado):
         assert (ct1, ct2) == (int(valles[1]), int(valles[3]))
 
 
-# ======================================================== remuestrear_en_log
-# El eje del mapa de PAC Psel. `f_Phase_PAC` llama a f_ImageMatrix con 6
-# argumentos (rama de imagesc, eje lineal); Pdetect llama con 10 (rama de
-# pcolor) y ademas pasa el eje por log10, asi que las filas van a alturas
-# desiguales y hay que remuestrear antes de dibujarlas con una imagen uniforme.
-
 def test_el_remuestreo_deja_el_eje_ascendente_y_en_logaritmo():
-    fr = np.linspace(25.0, 129.0, 208)[::-1]        # como sale de la Gabor
+    fr = np.linspace(25.0, 129.0, 208)[::-1]
     m = np.arange(208.0)[:, None] * np.ones((1, 5))
     out, lmin, lmax = remuestrear_en_log(m, fr)
     assert out.shape == m.shape
     assert lmin == pytest.approx(np.log10(25.0)) and lmax == pytest.approx(np.log10(129.0))
-    # la fila 0 de la salida es la frecuencia mas BAJA, que en la entrada
-    # descendente era la ultima
     assert out[0, 0] == pytest.approx(207.0)
     assert out[-1, 0] == pytest.approx(0.0)
 
@@ -931,7 +880,7 @@ def test_el_remuestreo_usa_el_vecino_mas_cercano_y_no_interpola():
     """`pcolor` con `shading flat` pinta cada celda de un color plano, así que
     interpolar inventaría valores que la referencia no muestra."""
     fr = np.array([100.0, 10.0])
-    m = np.array([[5.0], [1.0]])          # 100 Hz -> 5, 10 Hz -> 1
+    m = np.array([[5.0], [1.0]])
     out, _, _ = remuestrear_en_log(m, fr, n_filas=5)
     assert set(np.unique(out)) <= {1.0, 5.0}, "no deben aparecer valores intermedios"
     assert out[0, 0] == 1.0 and out[-1, 0] == 5.0
@@ -954,11 +903,6 @@ def test_el_remuestreo_valida_en_espanol(mapa, frecs, trozo):
     with pytest.raises(ValueError, match=trozo):
         remuestrear_en_log(mapa, frecs)
 
-
-# ============================================== la cache de diseños de filtro
-# El diseño no depende de la señal, solo de (fs, f1, f2), y es lo caro: medido
-# sobre las 178 bandas de amplitud de MI, el 86 % del tiempo se va en diseñar y
-# solo el 14 % en aplicar. Con el selector de trial, cada flecha los rediseñaba.
 
 def test_el_diseno_se_recuerda_entre_llamadas():
     olvidar_filtros()

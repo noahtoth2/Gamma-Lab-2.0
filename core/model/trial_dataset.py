@@ -1,21 +1,20 @@
-# core/services/trials_matrix.py
 from dataclasses import dataclass, field
 from typing import List, Dict, Any, Optional
 import numpy as np
 
 @dataclass
 class TrialDataset:
-    source: str                         # source file
-    sampling_rate: float                # Hz
-    channel_index: int                  # channel index used
-    channel_name: str                   # channel name
-    unit: str                           # channel unit (e.g., "uV", "mV")
-    t0: float                           # s (relative to onset)
-    t1: float                           # s
-    time_rel: np.ndarray                # (Ns,) relative time axis [t0..t1)
-    trials: np.ndarray                  # (Ns, T) matrix -> each column is a trial
-    onsets_s: List[float]               # onsets in seconds (len = T)
-    isi_s: List[float] = field(default_factory=list)    # inter-stimulus intervals (optional)
+    source: str
+    sampling_rate: float
+    channel_index: int
+    channel_name: str
+    unit: str
+    t0: float
+    t1: float
+    time_rel: np.ndarray
+    trials: np.ndarray
+    onsets_s: List[float]
+    isi_s: List[float] = field(default_factory=list)
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):

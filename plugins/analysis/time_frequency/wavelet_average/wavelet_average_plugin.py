@@ -37,7 +37,7 @@ class Wavelet_average_plugin(IPlugin):
         self._handle = None
         self._calculando = False
         self.params = {
-            "sample_density_range": (1, 10000),   # con 0 no hay a qué submuestrear
+            "sample_density_range": (1, 10000),
             "frequencies_range": (0, 10000),
             "sample_density_value": 1000,
             "high_frequency_value": 500,
@@ -46,11 +46,6 @@ class Wavelet_average_plugin(IPlugin):
             "cycles_value": 2
         }
 
-    # end def
-
-    # =====================================================
-    # === Lifecycle
-    # =====================================================
 
     def process(self, data: any):
         """Optional hook; show status message if available."""
@@ -59,7 +54,6 @@ class Wavelet_average_plugin(IPlugin):
             if interactor:
                 interactor.Enable()
                 self._log("VTK interactor enabled.")
-    # end def
 
     def stop(self):
         """Stop plugin and disable VTK interactor if present."""
@@ -68,11 +62,7 @@ class Wavelet_average_plugin(IPlugin):
             if interactor:
                 interactor.Disable()
                 self._log("VTK interactor disabled.")
-    # end def
 
-    # =====================================================
-    # === UI + VTK creation
-    # =====================================================
     def get_widget(self, parent=None):
       
         if self.widget is not None:
@@ -86,14 +76,12 @@ class Wavelet_average_plugin(IPlugin):
         self.alerts.parent = self.widget
         self.crear_selector_de_trials()
 
-        # initialize controls and VTK container
         self._init_controls()
         self._create_vtk_container()
 
         self.ui.createWaveletButton.clicked.connect(self.on_create_wavelet)
         self.ui.clearButton.clicked.connect(self._on_clear_clicked)
         return self.widget
-    # end def
 
     def _on_clear_clicked(self):
         if self._calculando:
@@ -108,7 +96,6 @@ class Wavelet_average_plugin(IPlugin):
         self.ui.scaleCheckBox.setChecked(False)
         self.ui.scaleComboBox.setCurrentIndex(0)
         self.ui.colorRangeCheckBox.setChecked(False)
-    # end def
 
     def _init_controls(self):
        
@@ -136,7 +123,6 @@ class Wavelet_average_plugin(IPlugin):
         for señal in (self.ui.colorRangeCheckBox.toggled, self.ui.colorMinSpinBox.editingFinished,
                       self.ui.colorMaxSpinBox.editingFinished):
             señal.connect(self._redibujar_color)
-    # end def
 
     def _create_vtk_container(self):
        
@@ -160,7 +146,6 @@ class Wavelet_average_plugin(IPlugin):
             self._log("VTK container initialized.")
         except Exception as e:
             self._log("Error creating VTK container:", e)
-    # end def
 
     def ensure_vtk(self):
        
@@ -176,12 +161,8 @@ class Wavelet_average_plugin(IPlugin):
             self._vtk_renderer = renderer
         except Exception as e:
             self._log("ensure_vtk error:", e)
-    # end def
 
 
-    # =====================================================
-    # === Main logic: compute average CWT and render
-    # =====================================================
     def on_create_wavelet(self):
         """Compute average CWT across all active trials and render the average scalogram."""
         tasks = self.kernel.get_service("TaskService") if self.kernel else None
@@ -204,8 +185,7 @@ class Wavelet_average_plugin(IPlugin):
             return
 
         try:
-            data = np.array(trials.trials)  # shape: (n_samples, n_trials) or (n_trials, n_samples)
-            # Ensure shape is (n_samples, n_trials)
+            data = np.array(trials.trials)
             if data.ndim == 1:
                 data = data[:, np.newaxis]
             if data.shape[0] < data.shape[1]:
@@ -221,7 +201,6 @@ class Wavelet_average_plugin(IPlugin):
             return
         self._trials_en_curso = trials_used(posiciones, n_total, "average", channel=trials.channel_name)
 
-        # UI parameters
         fs = self.ui.sampleDensitySpinBox.value()
         fmin = self.ui.lowFrequencySpinBox.value()
         fmax = self.ui.highFrequencySpinBox.value()
@@ -230,8 +209,6 @@ class Wavelet_average_plugin(IPlugin):
         scaled = self.ui.scaleCheckBox.isChecked()
         norm_method = self.ui.normalizeComboBox.currentText().lower()
 
-        # Antes de tasa_efectiva, que divide por la densidad: esto corre en el hilo de
-        # la interfaz y una excepción aquí cerraba la aplicación.
         if fs <= 0:
             self.alerts.warning("La densidad de muestreo debe ser mayor que cero.")
             return
@@ -242,9 +219,6 @@ class Wavelet_average_plugin(IPlugin):
             self.alerts.warning(f"La frecuencia alta ({fmax:g} Hz) debe ser mayor que la baja ({fmin:g} Hz).")
             return
 
-        # El factor de submuestreo es entero, asi que una densidad que no divida
-        # a la del archivo no se puede alcanzar. Se valida y se avisa contra la
-        # que de verdad se va a usar, no contra la pedida (problema nº 18).
         fs_efectiva, _ = cw.tasa_efectiva(fs_calculado, fs)
         if fmax > fs_efectiva / 2:
             self.alerts.warning(f"La frecuencia alta ({fmax:g} Hz) no puede superar {fs_efectiva / 2:g} Hz, "
@@ -254,8 +228,6 @@ class Wavelet_average_plugin(IPlugin):
             self.alerts.info(f"La densidad de {fs:g} Hz no divide a los {fs_calculado:g} Hz del archivo; "
                              f"se usará {fs_efectiva:.1f} Hz, la más cercana alcanzable.")
 
-        # Un cálculo anterior de este plugin (por ejemplo, al reabrir un proyecto)
-        # se cancela; sus señales tardías se ignoran porque ya no es la tarea vigente.
         tasks.cancel_all_from(self.meta.id)
         self._terminar_calculo()
         self.stop()
@@ -277,7 +249,6 @@ class Wavelet_average_plugin(IPlugin):
         handle.failed.connect(partial(self._on_wavelet_failed, handle))
         handle.cancelled.connect(partial(self._on_wavelet_cancelled, handle))
 
-    # end def
 
     def _terminar_calculo(self):
         self._calculando = False
@@ -308,7 +279,6 @@ class Wavelet_average_plugin(IPlugin):
         if handle is not self._handle:
             return
         try:
-            # Si el proyecto se cerró mientras calculaba, ya no hay dónde dibujar.
             if self.ui is None:
                 return
             times, freqs, avg_scalogram, scaled = result
@@ -339,9 +309,6 @@ class Wavelet_average_plugin(IPlugin):
             self._terminar_calculo()
             self.process("Done")
 
-    # =====================================================
-    # === Project save/restore
-    # =====================================================
     def get_analysis_params(self) -> dict:
         return {
             "sample_density": self.ui.sampleDensitySpinBox.value(),
@@ -376,12 +343,6 @@ class Wavelet_average_plugin(IPlugin):
         self.on_create_wavelet()
 
 
-    # =====================================================
-    # === Wavelet computation (single trial)
-    # =====================================================
-    # =====================================================
-    # === Exportación
-    # =====================================================
     def exportar_resultados(self, fmt: str):
         """Exporta la matriz de la última ejecución, con los parámetros que la produjeron."""
         if not self._ultimo or self.vtk_menu is None:
@@ -399,20 +360,14 @@ class Wavelet_average_plugin(IPlugin):
         return cw.compute_wavelet(sig, fs_calculado, fs, fmin, fmax, num_cycles,
                                   escala_log=escala_log, t0=t0)
 
-    # end def
 
-    # =====================================================
-    # === Normalization and scaling helpers
-    # =====================================================
     def normalize_tf(self, tf, method="z-score"):
         return cw.normalize_tf(tf, method, log=self._log)
 
-    # end def
 
     def _scale_log(self, scalogram, freqs):
         return cw.scale_log(scalogram, freqs, log=self._log)
 
-    # end def
 
     def _get_log_ticks_coords(self, f_min_log, f_max_log):
         """Marcas 1-2-5 de cada década; entradas y posiciones en log10, etiquetas en Hz."""
@@ -424,11 +379,7 @@ class Wavelet_average_plugin(IPlugin):
             valores = [10 ** f_min_log, 10 ** f_max_log]
 
         return np.log10(valores), [f"{v:.3g}" for v in valores]
-    # end def
 
-    # =====================================================
-    # === Rendering (VTK)
-    # =====================================================
     def _redibujar_color(self, *_):
         """R33: aplica el rango de color sin volver a calcular y sin perder el zoom."""
         u = self._ultimo
@@ -464,19 +415,14 @@ class Wavelet_average_plugin(IPlugin):
         scene.ClearItems()
         scene.RemoveAllItems()
 
-        # Preprocess scalogram array and compute geometry
         n_freqs, n_times = scalogram.shape
         if n_times <= 0 or n_freqs <= 0:
             self._log("render_scalogram: invalid scalogram shape:", scalogram.shape)
             return
 
         t0, t_end = float(t[0]), float(t[-1])
-        # vtkChartHistogram2D dibuja cada punto con un paso de ancho, así que
-        # n pasos cubren exactamente de t0 a t_end.
         dt = (t_end - t0) / n_times if n_times > 1 else 1.0
 
-        # Filas ordenadas de la frecuencia más baja a la más alta, con el origen
-        # en la mínima y paso positivo (en log10 si la escala es logarítmica).
         f = np.asarray(freqs, dtype=float)
         Z = np.nan_to_num(scalogram.astype(np.float32))
         if f[0] > f[-1]:
@@ -490,25 +436,19 @@ class Wavelet_average_plugin(IPlugin):
             f0_range, f_end_range = float(f[0]), float(f[-1])
         df_spacing = (f_end_range - f0_range) / n_freqs if n_freqs > 1 else 1.0
 
-        # Configure vtkImageData
-        # La imagen completa no se dibuja: la leen las exportaciones (tabla y EMF).
-        # Lo que se pinta lo arma MapaConZoom con la zona visible.
         Z = np.ascontiguousarray(Z, dtype=np.float32)
         img = vtk.vtkImageData()
         img.SetDimensions(n_times, n_freqs, 1)
         img.SetSpacing(dt, df_spacing, 1.0)
         img.SetOrigin(t0, f0_range, 0.0)
-        # Sin copiar: el arreglo de VTK guarda una referencia a Z
         arr = numpy_support.numpy_to_vtk(Z.ravel(), deep=False, array_type=vtk.VTK_FLOAT)
         img.GetPointData().SetScalars(arr)
         img.Modified()
 
-        # Compute limits and LUT
         vmin, vmax = limites_color(Z, *leer_rango(self.ui))
         mostrar_rango_automatico(self.ui, vmin, vmax)
         lut = self._build_lut("viridis", vmin, vmax)
 
-        # Create chart
         chart = vtk.vtkChartHistogram2D()
         chart.SetTransferFunction(lut)
         anotar_mapa(chart, img, lut)
@@ -523,8 +463,6 @@ class Wavelet_average_plugin(IPlugin):
         ax_left.SetLogScale(False)
         ax_left.SetRange(f0_range, f_end_range)
 
-        # Con los ejes ya fijados: se dibuja la zona visible y al acercar se
-        # recorta de nuevo, hasta mostrar cada celda calculada.
         chart.mapa_zoom = MapaConZoom(chart, Z, t0, dt, f0_range, df_spacing)
 
         if log_scale:
@@ -548,7 +486,6 @@ class Wavelet_average_plugin(IPlugin):
 
         scene.AddItem(chart)
 
-        # --- Contextual menu ---
         try:
             ctx = self._contexto
             self.vtk_menu = VTKContextMenu(chart, self.vtk_widget, ctx.get("señal"), ctx.get("canal"),
@@ -562,11 +499,7 @@ class Wavelet_average_plugin(IPlugin):
 
         context_view.GetRenderer().SetBackground(0.98, 0.98, 0.98)
         context_view.GetRenderWindow().Render()
-    # end def
 
-    # =====================================================
-    # === Colormap LUT & helpers
-    # =====================================================
     def _build_lut(self, mode: str, vmin: float, vmax: float) -> vtk.vtkLookupTable:
         """Build a lookup table (similar to 'jet' like mapping)."""
         N = 256
@@ -596,7 +529,6 @@ class Wavelet_average_plugin(IPlugin):
             lut.SetTableValue(i, r, g, b, 1.0)
 
         return lut
-    # end def
 
     def _lut_to_ctf(self, lut: vtk.vtkLookupTable) -> vtk.vtkColorTransferFunction:
         """Convert a VTK lookup table into a vtkColorTransferFunction."""
@@ -614,4 +546,3 @@ class Wavelet_average_plugin(IPlugin):
             x = vmin + (vmax - vmin) * (i / (n - 1))
             ctf.AddRGBPoint(x, *rgba[:3])
         return ctf
-    # end def

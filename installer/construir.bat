@@ -1,6 +1,4 @@
 @echo off
-rem Construye el instalador de Gamma Lab (R39): congela la aplicación y la empaqueta.
-rem Uso:  installer\construir.bat      (desde cualquier carpeta)
 setlocal
 set RAIZ=%~dp0..
 cd /d "%RAIZ%"

@@ -50,15 +50,12 @@ def _timer_event_seguro(self):
         interactor = getattr(self, "_Iren", None)
         if interactor is None:
             return
-        # El plugin no esta en pantalla: su contexto de OpenGL no esta activo
         if not self.isVisible():
             return
         if interactor.GetRenderWindow() is None:
             return
         interactor.TimerEvent()
     except RuntimeError:
-        # PyQt lanza "wrapped C/C++ object has been deleted" cuando el widget
-        # ya se destruyo y el QTimer alcanza a saltar una ultima vez.
         return
 
 

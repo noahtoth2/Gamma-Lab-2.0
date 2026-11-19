@@ -118,7 +118,7 @@ class MapaConZoom:
                                                      rango_x, rango_y, self.max_columnas, self.max_filas)
             recorte = (bloque.shape, x0, dx, y0, dy)
             if recorte == self._recorte:
-                return          # mismo recorte: no se vuelve a subir la imagen
+                return
             self._recorte = recorte
             filas, columnas = bloque.shape
             self.imagen.SetDimensions(columnas, filas, 1)

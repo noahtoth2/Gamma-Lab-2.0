@@ -19,13 +19,11 @@ class Ui_Wavelet(object):
         self.splitter.setObjectName("splitter")
         self.mainWindow.addWidget(self.splitter)
 
-        # --- Left Area: Plot ---
         self.plotArea = QtWidgets.QFrame(self.splitter)
         self.plotArea.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.plotArea.setFrameShadow(QtWidgets.QFrame.Raised)
         self.plotArea.setObjectName("plotArea")
 
-        # --- Right Area: Panel (fixed header + scrollable body) ---
         self.rightContainer = QtWidgets.QWidget(self.splitter)
         self.rightContainer.setObjectName("rightContainer")
 
@@ -33,7 +31,6 @@ class Ui_Wavelet(object):
         self.rightLayoutOuter.setContentsMargins(8, 0, 8, 0)
         self.rightLayoutOuter.setSpacing(0)
 
-        # ===== Header: Parameters + clear + Create Wavelet (always visible) =====
         self.headerLayout = QtWidgets.QHBoxLayout()
         self.headerLayout.setContentsMargins(0, 0, 0, 5)
 
@@ -66,7 +63,6 @@ class Ui_Wavelet(object):
         self.paramsLine.setProperty("role", "section-divider")
         self.rightLayoutOuter.addWidget(self.paramsLine)
 
-        # ===== Scrollable body =====
         self.scrollArea = QtWidgets.QScrollArea(self.rightContainer)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
@@ -86,7 +82,6 @@ class Ui_Wavelet(object):
 
         self.splitter.widget(1).setMaximumWidth(300)
 
-        # --- Sample density ---
         self.sampleDensity = QtWidgets.QVBoxLayout()
         self.sampleDensity.setObjectName("sampleDensity")
 
@@ -117,7 +112,6 @@ class Ui_Wavelet(object):
         self.sampleDensity.addLayout(self.sampleDensityInput)
         self.paramsLayout.addLayout(self.sampleDensity)
 
-        # --- Range ---
         self.rangeLayout = QtWidgets.QVBoxLayout()
         self.rangeLayout.setObjectName("rangeLayout")
 
@@ -140,7 +134,6 @@ class Ui_Wavelet(object):
         self.frequencyLabel.setProperty("variant", "input")
         self.frequencyLayout.addWidget(self.frequencyLabel)
 
-        # Low Frequency
         self.lowFqLayout = QtWidgets.QHBoxLayout()
         self.lowFqLayout.setObjectName("lowFqLayout")
 
@@ -161,7 +154,6 @@ class Ui_Wavelet(object):
 
         self.frequencyLayout.addLayout(self.lowFqLayout)
     
-        # High Frequency
         self.highFqLayout = QtWidgets.QHBoxLayout()
         self.highFqLayout.setObjectName("highFqLayout")
 
@@ -185,7 +177,6 @@ class Ui_Wavelet(object):
         self.rangeLayout.addLayout(self.frequencyLayout)
         self.paramsLayout.addLayout(self.rangeLayout)
 
-        # --- Wavelet ---
         self.waveletLayout = QtWidgets.QVBoxLayout()
         self.waveletLayout.setObjectName("waveletLayout")
 
@@ -216,7 +207,6 @@ class Ui_Wavelet(object):
         self.waveletLayout.addLayout(self.cyclesLayout)
         self.paramsLayout.addLayout(self.waveletLayout)
 
-        # --- Scalogram ---
         self.scalogramLayout = QtWidgets.QVBoxLayout()
         self.scalogramLayout.setObjectName("scalogramLayout")
 
@@ -234,7 +224,6 @@ class Ui_Wavelet(object):
         self.normScaleLayout = QtWidgets.QVBoxLayout()
         self.normScaleLayout.setObjectName("normScaleLayout")
 
-        # Normalize
         self.normalizeLayout = QtWidgets.QHBoxLayout()
         self.normalizeLayout.setObjectName("normalizeLayout")
 
@@ -265,7 +254,6 @@ class Ui_Wavelet(object):
         self.normTypeLayout.addWidget(self.normalizeComboBox)
         self.normScaleLayout.addLayout(self.normTypeLayout)
 
-        # Scale
         self.scaleLayout = QtWidgets.QHBoxLayout()
         self.scaleLayout.setObjectName("scaleLayout")
 
@@ -301,10 +289,8 @@ class Ui_Wavelet(object):
         self.scalogramLayout.addLayout(self.normScaleLayout)
         self.paramsLayout.addLayout(self.scalogramLayout)
 
-        # --- Spacer ---
         self.paramsLayout.addStretch(1)
 
-        # Size splitter
         self.splitter.setStretchFactor(0, 1)
         self.splitter.setStretchFactor(1, 0)
 

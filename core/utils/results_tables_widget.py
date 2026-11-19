@@ -21,7 +21,6 @@ class ResultsTablesWidget(QtWidgets.QWidget):
         self._root.setContentsMargins(0, 6, 0, 0)
         self._root.setSpacing(4)
 
-        # === Header bar ===
         self.headerLayout = QtWidgets.QHBoxLayout()
         self.headerLayout.setObjectName("resultsHeaderLayout")
 
@@ -54,7 +53,6 @@ class ResultsTablesWidget(QtWidgets.QWidget):
         self.sep.setProperty("role", "section-divider")
         self._root.addWidget(self.sep)
 
-        # === Table: fixed rows Slope / Amplitude ===
         self.table = QtWidgets.QTableWidget(self)
         self.table.setObjectName("resultsTable")
         self.table.setRowCount(2)
@@ -67,8 +65,6 @@ class ResultsTablesWidget(QtWidgets.QWidget):
         self.table.setMaximumHeight(110)
         self._root.addWidget(self.table)
 
-        # By default the "x" button just hides the panel; whoever integrates it
-        # can override/disconnect this if they need different behavior.
         self.closeRequested.connect(self.hide)
 
     def set_values(self, slope=None, amplitude=None):

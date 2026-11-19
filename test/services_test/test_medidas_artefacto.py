@@ -10,7 +10,7 @@ T = np.arange(0, 1.0, 1 / FS)
 
 def _trials():
     base = np.zeros((T.size, 4))
-    base[200:210, :] = 5.0           # el artefacto, entre 0,200 y 0,209 s
+    base[200:210, :] = 5.0
     base[205, :] = 9.0
     return base
 

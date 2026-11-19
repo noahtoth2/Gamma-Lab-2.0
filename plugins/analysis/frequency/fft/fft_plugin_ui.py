@@ -14,13 +14,11 @@ class Ui_Fft(object):
         self.splitter.setObjectName("splitter")
         self.mainWindow.addWidget(self.splitter)
 
-        # --- Left Area: Plot ---
         self.plotArea = QtWidgets.QFrame(self.splitter)
         self.plotArea.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.plotArea.setFrameShadow(QtWidgets.QFrame.Raised)
         self.plotArea.setObjectName("plotArea")
 
-        # --- Right Area: Panel (fixed header + scrollable body) ---
         self.rightContainer = QtWidgets.QWidget(self.splitter)
         self.rightContainer.setObjectName("rightContainer")
 
@@ -28,7 +26,6 @@ class Ui_Fft(object):
         self.rightLayoutOuter.setContentsMargins(8, 0, 8, 0)
         self.rightLayoutOuter.setSpacing(0)
 
-        # ===== Header: Parameters + clear + Calculate FFT (always visible) =====
         self.headerLayout = QtWidgets.QHBoxLayout()
         self.headerLayout.setContentsMargins(0, 0, 0, 5)
 
@@ -61,7 +58,6 @@ class Ui_Fft(object):
         self.paramsLine.setProperty("role", "section-divider")
         self.rightLayoutOuter.addWidget(self.paramsLine)
 
-        # ===== Scrollable body =====
         self.scrollArea = QtWidgets.QScrollArea(self.rightContainer)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
@@ -81,7 +77,6 @@ class Ui_Fft(object):
 
         self.splitter.widget(1).setMaximumWidth(300)
 
-        # --- Sample density ---
         self.sampleDensity = QtWidgets.QVBoxLayout()
         self.sampleDensity.setObjectName("sampleDensity")
 
@@ -112,7 +107,6 @@ class Ui_Fft(object):
         self.sampleDensity.addLayout(self.sampleDensityInput)
         self.paramsLayout.addLayout(self.sampleDensity)
 
-        # --- Range ---
         self.rangeLayout = QtWidgets.QVBoxLayout()
         self.rangeLayout.setObjectName("rangeLayout")
 
@@ -135,7 +129,6 @@ class Ui_Fft(object):
         self.frequencyLabel.setProperty("variant", "input")
         self.frequencyLayout.addWidget(self.frequencyLabel)
 
-        # Low Frequency
         self.lowFqLayout = QtWidgets.QHBoxLayout()
         self.lowFqLayout.setObjectName("lowFqLayout")
 
@@ -156,7 +149,6 @@ class Ui_Fft(object):
 
         self.frequencyLayout.addLayout(self.lowFqLayout)
     
-        # High Frequency
         self.highFqLayout = QtWidgets.QHBoxLayout()
         self.highFqLayout.setObjectName("highFqLayout")
 
@@ -180,10 +172,8 @@ class Ui_Fft(object):
         self.rangeLayout.addLayout(self.frequencyLayout)
         self.paramsLayout.addLayout(self.rangeLayout)
 
-        # --- Spacer ---
         self.paramsLayout.addStretch(1)
 
-        # Size splitter
         self.splitter.setStretchFactor(0, 1)
         self.splitter.setStretchFactor(1, 0)
 

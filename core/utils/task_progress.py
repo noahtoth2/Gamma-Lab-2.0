@@ -43,7 +43,6 @@ class TaskProgressBar(QWidget):
 
         self.setVisible(False)
 
-    # ---------------------------------------------------------------- publico
 
     def seguir(self, handle, titulo: str = ""):
         """Engancha un TaskHandle y se muestra mientras la tarea viva.
@@ -71,7 +70,6 @@ class TaskProgressBar(QWidget):
         self._soltar()
         self.setVisible(False)
 
-    # ---------------------------------------------------------------- interno
 
     @staticmethod
     def _titulo_de(handle) -> str:

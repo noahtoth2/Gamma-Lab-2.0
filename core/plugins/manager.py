@@ -10,7 +10,6 @@ class PluginManager:
         self.registry: Dict[str, Tuple[PluginMeta, IPlugin]] = {}
 
     def load_all(self, on_progress=None) -> None:
-        # on_progress(index, total, name) is optional, used by the splash screen
         found = discover(self.plugins_dir)
         for i, (meta, PluginCls) in enumerate(found, start=1):
             plugin = PluginCls(meta)
