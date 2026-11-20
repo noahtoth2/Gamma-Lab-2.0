@@ -284,7 +284,13 @@ varios párrafos; cada uno inicia con sangría automática.]
 \noindent{\bfseries \autorCuatro:}
 \vspace{0.3cm}
 
-\pendiente[Escriba aquí los agradecimientos del cuarto autor.]
+Al mirar atrás y reconocer el camino recorrido hasta aquí, entiendo que la universidad no se compone únicamente de la formación académica que recibimos como estudiantes. También representa una experiencia llena de retos que nos transforman y nos permiten crecer como personas. Más allá de cualquier medida de inteligencia o logro académico, hoy quiero destacar dos valores fundamentales en este proceso: la perseverancia y la autoconfianza.
+
+Con esto en mente, quiero comenzar agradeciendo a las distintas versiones de mí misma que hicieron posible llegar hasta aquí. A aquellas que enfrentaron no solo las exigencias académicas, sino también las circunstancias personales que acompañaron este camino. A la que perseveró cuando los resultados parecían lejanos y a la que aprendió a confiar en sus capacidades. Quiero que este logro sea un recordatorio para mi yo del futuro, especialmente cuando dude de sí misma o sienta que algo está fuera de su alcance. Que me recuerde que una ambición respetuosa, guiada por los valores correctos y la voluntad de seguir adelante, puede llevarme más lejos de lo que imaginé, hasta alcanzar aquello que alguna vez consideré tan distante.
+
+Además, quiero agradecer a dos personas que creyeron en mí mucho antes de que yo aprendiera a hacerlo, incluso cuando no sabía por dónde empezar: mi papá y mi mamá. A ellos no solo les agradezco, sino que también les dedico este camino y el logro que hoy representa. No han sido únicamente testigos, sino parte fundamental de lo que hizo posible alcanzarlo. Su crianza, sus enseñanzas y su acompañamiento durante estos cinco años han sido ese ancla que me ha permitido mantenerme firme y recordar por qué hago lo que hago cuando las dificultades me hacían dudar. En esos momentos, su confianza me ayudó a recuperar la mía, y su apoyo, a seguir perseverando.
+
+Por último, quiero agradecer a esa compañía del día a día, a quienes compartieron conmigo trabajos hasta altas horas de la noche, hicieron más ligeros los días difíciles y, aun con un mal chiste, lograron devolverme el ánimo. Aprendí que perseverar no significa mantenerse fuerte todo el tiempo, ni tener autoconfianza implica nunca dudar de uno mismo. Gestos tan sencillos como escuchar, acompañar o dedicar unas palabras de aliento hicieron una gran diferencia. Por eso, agradezco a mis amigos y compañeros, quienes con su compañía, sus ocurrencias y sus pequeños gestos hicieron que incluso los momentos más difíciles de este camino fueran un poco más llevaderos.
 
 \clearpage
 
@@ -305,7 +311,7 @@ Gamma Lab 2.0 es la segunda versión de una plataforma de \textit{software} libr
 
 La solución se desarrolló sobre la arquitectura de \textit{microkernel} basada en \textit{plugins} de la versión original, conservando su implementación en Python y fortaleciendo los servicios del núcleo. Entre las principales mejoras se incorporaron un orquestador de tareas para ejecutar cálculos en segundo plano, mecanismos de gestión de recursos y persistencia de proyectos, así como una reorganización de la interfaz para facilitar la interacción con la herramienta. Además, se corrigieron funcionalidades existentes y se amplió el alcance analítico mediante la incorporación del análisis de acoplamiento fase-amplitud (PAC), incluyendo el índice de modulación y la consistencia de fase por pares (PPC) para el estudio de relaciones entre canales.
 
-La solución se evaluó mediante 921 pruebas automáticas, comparaciones numéricas con el sistema de referencia BOARD-FTD-PACC y sesiones de validación con investigadores del laboratorio. Los resultados no registraron fallas inesperadas en las pruebas automáticas y la evaluación de usabilidad alcanzó una puntuación de 87,5 sobre 100, aunque esta última se realizó con un único participante. En conjunto, Gamma Lab 2.0 representa un avance en la estabilidad, usabilidad y capacidad de análisis de la herramienta, proporcionando una base tecnológica más adecuada para las exigencias de la investigación electrofisiológica. Asimismo, su arquitectura extensible y distribución como \textit{software} libre favorecen la continuidad del desarrollo y la colaboración entre instituciones académicas.
+La solución se evaluó mediante 921 pruebas automáticas, comparaciones numéricas con el sistema de referencia BOARD-FTD-PACC y sesiones de validación con investigadores del laboratorio. Los resultados no registraron fallas inesperadas en las pruebas automáticas y la evaluación de usabilidad alcanzó puntuaciones de 87,5 y 92,5 sobre 100. En conjunto, Gamma Lab 2.0 representa un avance en la estabilidad, usabilidad y capacidad de análisis de la herramienta, proporcionando una base tecnológica más adecuada para las exigencias de la investigación electrofisiológica. Asimismo, su arquitectura extensible y distribución como \textit{software} libre favorecen la continuidad del desarrollo y la colaboración entre instituciones académicas.
 
 \textbf{Palabras clave:} electroencefalografía (EEG), procesamiento de señales, acoplamiento entre frecuencias, \textit{software} científico, arquitectura \textit{microkernel}, Python.
 \end{abstract}
@@ -318,7 +324,10 @@ La solución se evaluó mediante 921 pruebas automáticas, comparaciones numéri
 
 %=====================================================================
 \capitulo{INTRODUCCIÓN}
-\pendiente
+
+En el ámbito de la investigación neurofisiológica, el procesamiento y análisis de señales electroencefalográficas (EEG) requiere herramientas especializadas que permitan gestionar grandes volúmenes de datos y aplicar distintas técnicas de análisis de manera confiable. Gamma Lab surgió como una alternativa de \textit{software} libre para atender estas necesidades, integrando funcionalidades de procesamiento, visualización y análisis en una aplicación de escritorio. Sin embargo, su primera versión presentó limitaciones funcionales, arquitectónicas y de usabilidad que dificultaban su utilización continua en el Laboratorio de Electrofisiología de la Universidad Nacional de Colombia.
+
+Este trabajo presenta Gamma Lab 2.0, una evolución de la herramienta original orientada a fortalecer su estabilidad, mejorar la experiencia de usuario y ampliar sus capacidades de análisis. La solución conserva la arquitectura de \textit{microkernel} basada en \textit{plugins} y su implementación en Python, incorporando mejoras en la gestión de tareas y recursos, la navegación y la continuidad de los proyectos de investigación. Asimismo, amplía las técnicas disponibles para el estudio de las señales EEG, con el propósito de proporcionar una herramienta más sólida, accesible y adaptable a las necesidades del trabajo experimental.
 
 %=====================================================================
 %=====================================================================
@@ -1645,9 +1654,9 @@ En memoria, liberar las ventanas gráficas de cada módulo redujo el consumo de 
 
 \subsection{Validación con el usuario}
 
-En las pruebas, realizadas entre el 11 y el 18 de noviembre de 2026, participaron tres personas: Jonathan Muñoz y Francisco Alejandro Munera Galarza, investigadores y profesores del laboratorio, y Cécile Gauthier Umaña, directora del trabajo de grado (Tabla~\ref{tab:pruebas_sesiones}). Los resultados provienen de la sesión guiada con un profesor investigador, en la que el equipo operó la aplicación.
+En las pruebas, realizadas entre el 11 y el 18 de noviembre de 2026, participaron tres personas: Jonathan Muñoz y Francisco Alejandro Munera Galarza, investigadores y profesores del laboratorio, y Cécile Gauthier Umaña, directora del trabajo de grado (Tabla~\ref{tab:pruebas_sesiones}). Los resultados provienen principalmente de la sesión guiada con un profesor investigador, en la que el equipo operó la aplicación, y se complementan con una sesión anterior con otro investigador.
 
-En usabilidad, \textbf{se trataron seis de los diez casos, cuatro de ellos sin fallas} (Tabla~\ref{tab:resultados_usabilidad}). La carga de la señal, la segmentación en \textit{trials}, el filtrado con vista previa y el análisis PAC funcionaron correctamente, y el participante valoró en particular el PAC y el control del rango de color. Las dificultades se concentraron en las medidas sobre todos los \textit{trials}, corregidas después de la sesión, y en un error de carga al abrir un proyecto.
+En usabilidad, \textbf{se trataron ocho de los diez casos, seis de ellos sin fallas} (Tabla~\ref{tab:resultados_usabilidad}). La instalación y el primer arranque, la carga de la señal, la segmentación en \textit{trials}, la remoción de artefactos, el filtrado con vista previa y el análisis PAC funcionaron correctamente, y el participante valoró en particular el PAC y el control del rango de color. Las dificultades se concentraron en las medidas sobre todos los \textit{trials}, corregidas después de la sesión, y en un error de carga al abrir un proyecto.
 
 \begin{table}[H]
 \centering
@@ -1657,20 +1666,20 @@ En usabilidad, \textbf{se trataron seis de los diez casos, cuatro de ellos sin f
 \hline
 \textbf{Resultado} & \textbf{Casos} & \textbf{Total} \\
 \hline
-Completados sin fallas & UT-02, UT-03, UT-05, UT-06 & 4 \\
+Completados sin fallas & UT-01, UT-02, UT-03, UT-04, UT-05, UT-06 & 6 \\
 \hline
 Completados con dificultad & UT-08, UT-10 & 2 \\
 \hline
-No evaluados en la sesión & UT-01, UT-04, UT-07, UT-09 & 4 \\
+No evaluados en la sesión & UT-07, UT-09 & 2 \\
 \hline
 \end{tabularx}
 \caption{Resultados de las pruebas de usabilidad}
 \label{tab:resultados_usabilidad}
 \end{table}
 
-El cuestionario SUS obtuvo \textbf{87,5 puntos sobre 100}, cerca del valor que Bangor, Kortum y Miller asocian con una usabilidad ``excelente'' (85,6) \cite{bangor2009}. Al provenir de un solo participante, indica una valoración alta, pero no permite generalizarla.
+El cuestionario SUS lo respondieron dos profesores investigadores del laboratorio, que otorgaron \textbf{87,5 y 92,5 puntos sobre 100}. Ambos valores superan el que Bangor, Kortum y Miller asocian con una usabilidad ``excelente'' (85,6) \cite{bangor2009}.
 
-En aceptación, \textbf{16 de los 45 requisitos funcionales se aceptaron y ninguno se rechazó} (Tabla~\ref{tab:resultados_aceptacion}). Los aceptados cubren la persistencia de la señal, el guardado de proyectos, la exportación, la segmentación en \textit{trials}, el ajuste de la frecuencia de muestreo, el \textit{Butterfly}, el escalograma y el análisis PAC de un canal. Dos requisitos se probaron con fallas: la apertura de proyectos, por el error de carga, y la carga de formatos, porque no se probó un archivo EDF y el archivo \textit{.mat} se abrió sin frecuencia de muestreo.
+En aceptación, \textbf{17 de los 45 requisitos funcionales se aceptaron, uno más se aceptó parcialmente y ninguno se rechazó} (Tabla~\ref{tab:resultados_aceptacion}). Los aceptados cubren la persistencia de la señal, el guardado de proyectos, la exportación, la segmentación en \textit{trials}, el ajuste de la frecuencia de muestreo, el \textit{Butterfly}, la remoción de artefactos, el escalograma y el análisis PAC de un canal. La carga de formatos se aceptó parcialmente, porque no se probó un archivo EDF, y la apertura de proyectos se probó con fallas, por el error de carga.
 
 \begin{table}[H]
 \centering
@@ -1680,15 +1689,15 @@ En aceptación, \textbf{16 de los 45 requisitos funcionales se aceptaron y ningu
 \hline
 \textbf{Resultado} & \textbf{Requisitos} & \textbf{Porcentaje} \\
 \hline
-Aceptados & 16 & 35,6\,\% \\
+Aceptados & 17 & 37,8\,\% \\
 \hline
-Aceptados parcialmente & 0 & 0\,\% \\
+Aceptados parcialmente & 1 & 2,2\,\% \\
 \hline
 No aceptados & 0 & 0\,\% \\
 \hline
-Probados con fallas & 2 & 4,4\,\% \\
+Probados con fallas & 1 & 2,2\,\% \\
 \hline
-No evaluados en la sesión & 27 & 60,0\,\% \\
+No evaluados en la sesión & 26 & 57,8\,\% \\
 \hline
 \textbf{Total} & \textbf{45} & \textbf{100\,\%} \\
 \hline
@@ -1697,7 +1706,7 @@ No evaluados en la sesión & 27 & 60,0\,\% \\
 \label{tab:resultados_aceptacion}
 \end{table}
 
-Los 27 requisitos no evaluados no alcanzaron a tratarse por el tiempo de la sesión; entre ellos están los del análisis entre canales y PPC, que requerían un registro con dos canales neuronales. No los utilizó personalmente el usuario, pero el equipo de trabajo verificó que están implementados en el código y que cuentan con pruebas automáticas aprobadas.
+Los 26 requisitos no evaluados no alcanzaron a tratarse por el tiempo de la sesión; entre ellos están los del análisis entre canales y PPC, que requerían un registro con dos canales neuronales. No los utilizó personalmente el usuario, pero el equipo de trabajo verificó que están implementados en el código y que cuentan con pruebas automáticas aprobadas.
 
 De las trece solicitudes y observaciones surgidas en las sesiones, nueve se atendieron: entre ellas, la línea de la pendiente, la medida por derivada (\textit{Difference}), las medidas sobre todos los \textit{trials} y la posibilidad de tener varios proyectos abiertos. Dos siguen pendientes, una se resolvió de forma manual por acuerdo con la directora y una se dejó como trabajo futuro.
 
@@ -1718,7 +1727,7 @@ Los resultados anteriores dejan las siguientes limitaciones:
   \item \textbf{Apertura de proyectos con PAC:} abrir un proyecto con parámetros de PAC produjo un error de carga cuya causa no se ha identificado.
   \item \textbf{Aviso de la señal anterior:} tras cargar otra señal, el aviso de la anterior sigue visible.
   \item \textbf{Frecuencia de muestreo de archivos \textit{.mat}:} no se toma del encabezado; por acuerdo con la directora, el usuario la ingresa de forma manual.
-  \item \textbf{Alcance de la validación con el usuario:} proviene de un solo participante en una sesión guiada, por lo que no mide la autonomía del investigador frente a la interfaz, y 27 requisitos cuentan con la verificación del equipo pero no con la aceptación directa del usuario.
+  \item \textbf{Alcance de la validación con el usuario:} se realizó con tres participantes, en su mayoría en una sesión guiada, por lo que no mide del todo la autonomía del investigador frente a la interfaz, y 26 requisitos cuentan con la verificación del equipo pero no con la aceptación directa del usuario.
 \end{itemize}
 
 %=====================================================================
@@ -1759,7 +1768,7 @@ Se diseñó una solución que conserva la arquitectura \textit{microkernel} y la
 
 Se implementó Gamma Lab 2.0, con 20 \textit{plugins} y 81 requisitos especificados (45 funcionales y 36 no funcionales). Se agregaron el análisis PAC en cuatro modos, el índice de modulación y la consistencia de fase entre canales (PPC). También se corrigieron las fallas de la versión anterior y la aplicación se empaquetó en un instalador para Windows.
 
-Se validó la solución con 921 pruebas automáticas, sin ninguna fallida. Cinco de los ocho análisis comparados resultaron equivalentes a BOARD-FTD-PACC, y las diferencias de los otros tres están medidas. Se cumplen, además, 25 de los 27 requisitos de rendimiento, confiabilidad y soporte. Con el usuario se aceptaron 16 de los 45 requisitos funcionales, ninguno se rechazó y el cuestionario de usabilidad alcanzó 87,5 sobre 100; los 27 requisitos no evaluados en la sesión cuentan con la verificación del equipo y con pruebas automáticas.
+Se validó la solución con 921 pruebas automáticas, sin ninguna fallida. Cinco de los ocho análisis comparados resultaron equivalentes a BOARD-FTD-PACC, y las diferencias de los otros tres están medidas. Se cumplen, además, 25 de los 27 requisitos de rendimiento, confiabilidad y soporte. Con el usuario se aceptaron 17 de los 45 requisitos funcionales y uno más de forma parcial, ninguno se rechazó y el cuestionario de usabilidad alcanzó 87,5 y 92,5 sobre 100; los 26 requisitos no evaluados en la sesión cuentan con la verificación del equipo y con pruebas automáticas.
 
 En conjunto, se cumplió el objetivo general: Gamma Lab 2.0 amplía las capacidades de análisis hacia el acoplamiento entre frecuencias, sobre una arquitectura que ejecuta los cálculos en segundo plano, libera los recursos que deja de usar y mantiene los tiempos de respuesta muy por debajo de los límites fijados.
 
