@@ -296,6 +296,20 @@ varios párrafos; cada uno inicia con sangría automática.]
 % \clearpage
 % \listoftables
 
+%------------------------------ ABSTRACT -----------------------------
+\clearpage
+\section*{ABSTRACT}
+
+\begin{abstract}
+Gamma Lab 2.0 es la segunda versión de una plataforma de \textit{software} libre para el procesamiento, visualización y análisis de señales electroencefalográficas (EEG), desarrollada para el Laboratorio de Electrofisiología de la Universidad Nacional de Colombia. Aunque su primera versión permitió integrar distintas técnicas de análisis en una interfaz gráfica, las pruebas con usuarios y la revisión del código evidenciaron limitaciones que dificultaban su uso continuo en un entorno de investigación. A partir de este diagnóstico, el proyecto se orientó a cuatro frentes de mejora: la corrección de errores funcionales, la experiencia de navegación, la estabilidad de la arquitectura y la ampliación de las capacidades analíticas.
+
+La solución se desarrolló sobre la arquitectura de \textit{microkernel} basada en \textit{plugins} de la versión original, conservando su implementación en Python y fortaleciendo los servicios del núcleo. Entre las principales mejoras se incorporaron un orquestador de tareas para ejecutar cálculos en segundo plano, mecanismos de gestión de recursos y persistencia de proyectos, así como una reorganización de la interfaz para facilitar la interacción con la herramienta. Además, se corrigieron funcionalidades existentes y se amplió el alcance analítico mediante la incorporación del análisis de acoplamiento fase-amplitud (PAC), incluyendo el índice de modulación y la consistencia de fase por pares (PPC) para el estudio de relaciones entre canales.
+
+La solución se evaluó mediante 921 pruebas automáticas, comparaciones numéricas con el sistema de referencia BOARD-FTD-PACC y sesiones de validación con investigadores del laboratorio. Los resultados no registraron fallas inesperadas en las pruebas automáticas y la evaluación de usabilidad alcanzó una puntuación de 87,5 sobre 100, aunque esta última se realizó con un único participante. En conjunto, Gamma Lab 2.0 representa un avance en la estabilidad, usabilidad y capacidad de análisis de la herramienta, proporcionando una base tecnológica más adecuada para las exigencias de la investigación electrofisiológica. Asimismo, su arquitectura extensible y distribución como \textit{software} libre favorecen la continuidad del desarrollo y la colaboración entre instituciones académicas.
+
+\textbf{Palabras clave:} electroencefalografía (EEG), procesamiento de señales, acoplamiento entre frecuencias, \textit{software} científico, arquitectura \textit{microkernel}, Python.
+\end{abstract}
+
 %---------------------------------------------------------------------
 %  CUERPO DEL DOCUMENTO (numeracion arabiga: 1, 2, 3, ...)
 %---------------------------------------------------------------------
