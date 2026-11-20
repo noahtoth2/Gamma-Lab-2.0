@@ -1396,7 +1396,49 @@ El participante califica cada afirmación de la Tabla~\ref{tab:td_sus} de 1 (tot
 \end{longtable}
 \end{center}
 
-El cuestionario lo respondió el profesor investigador que participó en la sesión del \fechasesion{}. Su puntuación de 87,5 se ubica cerca de la media que Bangor, Kortum y Miller asocian con el adjetivo ``excelente'' (85,6) \cite{bangor2009}. Al provenir de un solo participante, el resultado indica una valoración alta del sistema, pero no permite generalizarla.
+
+\begin{center}
+\small
+\begin{longtable}{|>{\centering\arraybackslash}p{0.04\textwidth}|>{\raggedright\arraybackslash}p{0.56\textwidth}|c|c|c|c|c|}
+\hline
+\textbf{N.\textsuperscript{o}} & \textbf{Afirmación} & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5} \\
+\hline
+\endfirsthead
+\hline
+\textbf{N.\textsuperscript{o}} & \textbf{Afirmación} & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5} \\
+\hline
+\endhead
+\hline
+\endfoot
+\hline
+\caption{Cuestionario SUS} \label{tab:td_sus} \\
+\endlastfoot
+1 & Creo que me gustaría usar este sistema con frecuencia. & & & & & x \\
+\hline
+2 & Encontré el sistema innecesariamente complejo. & x & & & & \\
+\hline
+3 & Pensé que el sistema era fácil de usar. & & & & & x \\
+\hline
+4 & Creo que necesitaría el apoyo de una persona con conocimientos técnicos para poder usar este sistema. & & & & x & \\
+\hline
+5 & Encontré que las distintas funciones del sistema estaban bien integradas. & & & & & x \\
+\hline
+6 & Pensé que había demasiada inconsistencia en el sistema. & x & & & & \\
+\hline
+7 & Imagino que la mayoría de las personas aprenderían a usar este sistema muy rápidamente. & & & & & x \\
+\hline
+8 & Encontré el sistema muy engorroso de usar. & x & & & & \\
+\hline
+9 & Me sentí muy seguro al usar el sistema. & & & & & x \\
+\hline
+10 & Necesité aprender muchas cosas antes de poder empezar a usar el sistema. & x & & & & \\
+\hline
+\multicolumn{2}{|r|}{\textbf{Puntuación SUS (0 a 100)}} & \multicolumn{5}{c|}{\textbf{92,5}} \\
+\hline
+\end{longtable}
+\end{center}
+
+Los cuestionarios fueron respondidos por profesores investigadores que participaron en la sesión del \fechasesion{}. Su puntuación de 87,5 y 92,5 se ubica cerca de la media que Bangor, Kortum y Miller asocian con el adjetivo ``excelente'' (85,6) \cite{bangor2009}. Al provenir de un solo participante, el resultado indica una valoración alta del sistema, pero no permite generalizarla.
 
 \subsection{Conclusiones de las pruebas de usabilidad}
 El Laboratorio de Electrofisiología, cliente del proyecto, compartió la siguiente valoración de Gamma Lab 2.0:
@@ -1405,7 +1447,7 @@ El Laboratorio de Electrofisiología, cliente del proyecto, compartió la siguie
 Las necesidades de análisis de un laboratorio de electrofisiología son tan diversas que difícilmente un solo programa logra cubrirlas. Gamma Lab 2.0 reúne en una misma herramienta los análisis que el laboratorio requiere, en los dominios del tiempo, la frecuencia y el tiempo-frecuencia. Incluye además el estudio de las relaciones entre bandas y canales mediante el acoplamiento entre frecuencias, y la toma de medidas sobre las señales. Su mayor aporte es su carácter semiautomático: el investigador conserva las decisiones que exigen su criterio, como la selección de canales, \textit{trials}, bandas e intervalos, mientras la herramienta automatiza los procedimientos repetitivos que antes se hacían a mano. Así, un análisis que tomaba semanas puede completarse en minutos. A esto se suman una interfaz amigable e intuitiva, un procesamiento rápido y la posibilidad de exportar los resultados para su uso posterior, así como la posibilidad de guardar el progreso. Gamma Lab 2.0 es una herramienta flexible que responde de manera integral a las necesidades del laboratorio.
 \end{quote}
 
-Entre la sesión guiada del \fechasesion{} y la sesión anterior se trataron ocho de los diez casos de prueba. La instalación y el primer arranque, la carga de la señal, la segmentación en \textit{trials}, la remoción de artefactos, el filtrado con vista previa y el análisis PAC funcionaron sin fallas, y el participante valoró en particular el PAC y el control del rango de color. Las dificultades se concentraron en las medidas sobre todos los \textit{trials} (UT-08) y en un error de carga al abrir un proyecto (UT-10); las primeras se corrigieron después de la sesión y quedaron cubiertas por pruebas automáticas, mientras que el error de carga sigue pendiente (Tabla~\ref{tab:td_ut_solicitudes}). La puntuación SUS de 87,5 confirma una valoración alta del sistema.
+Entre la sesión guiada del \fechasesion{} y la sesión anterior se trataron ocho de los diez casos de prueba. La instalación y el primer arranque, la carga de la señal, la segmentación en \textit{trials}, la remoción de artefactos, el filtrado con vista previa y el análisis PAC funcionaron sin fallas, y el participante valoró en particular el PAC y el control del rango de color. Las dificultades se concentraron en las medidas sobre todos los \textit{trials} (UT-08) y en un error de carga al abrir un proyecto (UT-10); las primeras se corrigieron después de la sesión y quedaron cubiertas por pruebas automáticas, mientras que el error de carga sigue pendiente (Tabla~\ref{tab:td_ut_solicitudes}). La puntuación SUS de 87,5 y 92,5 confirma una valoración alta del sistema.
 
 Estos resultados tienen dos limitaciones: provienen de pocos participantes y, en su mayoría, de una sesión guiada en la que el equipo operó la aplicación, por lo que no miden del todo la autonomía del investigador frente a la interfaz. Quedaron sin evaluar los análisis entre dos canales y la cancelación de un cálculo.
 \capitulo{PRUEBAS DE ACEPTACIÓN DEL USUARIO (UAT)}
