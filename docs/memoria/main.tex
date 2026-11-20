@@ -1786,6 +1786,10 @@ A partir de los resultados obtenidos, se identifican las siguientes líneas de t
 %=====================================================================
 \capitulo{REFERENCIAS}
 
+% thebibliography escribe su propio titulo con \section*{\refname}; se anula
+% dentro de este grupo para que solo quede el titulo numerado del capitulo.
+\begingroup
+\renewcommand{\section}[2]{}
 \begin{thebibliography}{99}
 
 \bibitem{singh2023}
@@ -1867,6 +1871,7 @@ J. Aru \textit{et al.}, ``Untangling cross-frequency coupling in neuroscience,''
 \bibitem{bangor2009} A. Bangor, P. Kortum, y J. Miller, "Determining what individual SUS scores mean: Adding an adjective rating scale," \textit{Journal of Usability Studies}, vol. 4, n.\textsuperscript{o} 3, pp. 114--123, 2009.
 
 \end{thebibliography}
+\endgroup
 
 %=====================================================================
 \capitulo{ANEXOS}
